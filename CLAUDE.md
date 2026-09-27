@@ -34,17 +34,48 @@ TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Andr
 - Rate limiting en login
 - Deliberadamente sin 2FA ni JWT
 
-## Plan de fases (0–10)
+## Estructura del repo
 
-Fases 0–4 (objetivo beta v0.1, mediados de diciembre 2026): setup, métricas, seguridad, energía/procesos, instalación + servicio systemd.
+- `app/`: cliente Flutter
+- `agent/`: agente Python (incluye `schema.sql`)
+- Ramas: `main` (estable), `develop` (integración), `feature/<nombre>` (una por tarea/fase)
+- Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`)
+- Una etiqueta por versión (`v0.1-beta`, `v0.2`…)
 
-Fases 5–10 (trabajo principal del TFG, enero–mayo 2026): CRUD de acciones rápidas, terminal, discovery/pairing/archivos, acceso remoto vía iroh, notificaciones/alertas, subida de archivos y pulido final.
+## Plan de fases
 
-> Nota: el detalle exacto de cada fase (qué entra en cada una) está pendiente de confirmar con alex — este resumen viene de las decisiones tomadas hasta ahora, no del documento completo de plan de fases. Alex: si algo aquí no coincide con tu plan de fases real, dímelo y lo corrijo.
+Ver el detalle completo en [`docs/04-plan-de-fases.md`](docs/04-plan-de-fases.md). Resumen:
+
+**Bloque 1 — Beta v0.1 (objetivo: mediados de diciembre 2026):**
+- Fase 0 🟢 Preparación y aprender Flutter/Dart (sep–oct)
+- Fase 1 🟢 Métricas del sistema (oct)
+- Fase 2 🔴 Seguridad: login, TLS, Argon2, tokens de sesión (nov)
+- Fase 3 🟢🟡 Energía y procesos (nov–dic)
+- Fase 4 🟡 Instalación y servicio systemd (dic)
+
+**Bloque 2 — Núcleo del TFG (enero–mayo 2026):**
+- PoC de iroh 🔴 (2–3 días, principios de enero)
+- Fase 5 🟡 CRUD de acciones rápidas — cubre el requisito mínimo de CRUD de 2 entidades relacionadas (ene)
+- Fase 6 🔴 Terminal remota vía WebSocket + PTY — función estrella del proyecto (feb)
+- Fase 7 🟢🟡 Descubrimiento (mDNS), emparejamiento por QR y archivos (mar)
+- Fase 8 🔴 Acceso remoto vía iroh (mar–abr)
+- Fase 9 🟡 Notificaciones y reglas de alerta (abr–may)
+- Fase 10 🟢 Subida de archivos y pulido final (may)
+
+**Nunca se recortan:** login/TLS (fase 2), instalación del servicio (fase 4), CRUD de acciones rápidas (fase 5) y la terminal (fase 6).
 
 ## Decisiones abiertas
-- Registro de usuario in-app vs. creación de usuario solo por CLI (pendiente de resolver antes de la fase 7).
+- ¿El centro acepta Flutter? — **ya resuelto: sí, confirmado con el tutor (2026-09-26).**
+- ¿El agente en Python cuenta como parte del proyecto? — preguntar al tutor.
+- Registro de usuario in-app (código de un solo uso + formulario) vs. creación de usuario solo por CLI — pendiente de resolver antes de la fase 7.
 
 ## Documentación completa
 
-La documentación técnica completa (memoria técnica, necesidades tecnológicas, contexto del sistema, plan de fases detallado, referencias, decisiones) vive en la carpeta local "Documentacion TFG" de alex, fuera de este repo. Pendiente de subir a un directorio `docs/` de este repositorio.
+La documentación técnica completa vive en [`docs/`](docs/):
+- `01-memoria-tecnica.md`
+- `02-necesidades-tecnologicas.md`
+- `03-system-context.md`
+- `04-plan-de-fases.md`
+- `05-referencias-y-proyectos.md`
+- `06-ideas-de-futuro.md`
+- `07-resumen-decisiones-y-contexto.md`
