@@ -2,6 +2,8 @@
 
 TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Android + un agente Python en el PC Linux del usuario para administrar ese PC en remoto desde el móvil (LAN o WAN), sin configurar router ni VPN.
 
+> ⚠️ **Stack cliente en revisión (2026-09-27):** el cliente está planteado en Flutter/Dart, pero alex encontró una serie de contras y está evaluando pasar todo el proyecto a Kotlin nativo. Todas las referencias a Flutter/Dart/MVVM+provider/xterm.dart en este documento son **provisionales**, no una decisión cerrada. No asumas Flutter al generar código del cliente sin confirmar primero.
+
 **Alcance de este repo:** aquí vive únicamente el trabajo del PROYECTO (el entregable que se presenta al tribunal). El aprendizaje personal de las tecnologías (hilos "APRENDIZAJE:") se lleva en el chat del proyecto de claude.ai, no en este repositorio — no aplican aquí las instrucciones de estilo docente de esos hilos.
 
 ## Módulos previstos
@@ -15,11 +17,12 @@ TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Andr
 
 ## Stack
 
-**Cliente (Android):**
-- Flutter/Dart, arquitectura MVVM + provider
+**Cliente (Android) — 🔶 en revisión, ver nota al principio:**
+- Planteado en Flutter/Dart, arquitectura MVVM + provider
 - xterm.dart para la terminal remota
+- Alternativa que se está evaluando: Kotlin nativo (Jetpack Compose) para todo el proyecto
 
-**Agente (PC Linux):**
+**Agente (PC Linux) — confirmado:**
 - Python 3.11+, FastAPI + Uvicorn, asyncio
 - Se ejecuta como servicio **systemd de usuario** (nunca root/sudo)
 - SQLite con patrón repository, sin ORM (schema.sql)
@@ -36,18 +39,25 @@ TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Andr
 
 ## Estructura del repo
 
-- `app/`: cliente Flutter
+- `app/`: cliente Android (lenguaje pendiente de confirmar — ver nota sobre Flutter/Kotlin)
 - `agent/`: agente Python (incluye `schema.sql`)
 - Ramas: `main` (estable), `develop` (integración), `feature/<nombre>` (una por tarea/fase)
 - Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`)
 - Una etiqueta por versión (`v0.1-beta`, `v0.2`…)
+
+## Convenciones de commits y PRs
+
+- Todos los commits y PRs se proponen a alex para revisión **antes** de hacerse — incluida la forma en que se divide un cambio grande en varias piezas.
+- Los commits y PRs van siempre bajo la autoría de alex, nunca de Claude.
+- Commits y PRs **cortos y descriptivos**. Evitar cambios enormes de una sola vez (tipo "+1000/-50 add feature"); dividir en piezas pequeñas y lógicas.
+- Motivo: el proyecto se publicará como open source y se quiere evitar que parezca "vibecodeado".
 
 ## Plan de fases
 
 Ver el detalle completo en [`docs/04-plan-de-fases.md`](docs/04-plan-de-fases.md). Resumen:
 
 **Bloque 1 — Beta v0.1 (objetivo: mediados de diciembre 2026):**
-- Fase 0 🟢 Preparación y aprender Flutter/Dart (sep–oct)
+- Fase 0 🟢 Preparación y aprender el framework del cliente (sep–oct)
 - Fase 1 🟢 Métricas del sistema (oct)
 - Fase 2 🔴 Seguridad: login, TLS, Argon2, tokens de sesión (nov)
 - Fase 3 🟢🟡 Energía y procesos (nov–dic)
@@ -65,7 +75,7 @@ Ver el detalle completo en [`docs/04-plan-de-fases.md`](docs/04-plan-de-fases.md
 **Nunca se recortan:** login/TLS (fase 2), instalación del servicio (fase 4), CRUD de acciones rápidas (fase 5) y la terminal (fase 6).
 
 ## Decisiones abiertas
-- ¿El centro acepta Flutter? — **ya resuelto: sí, confirmado con el tutor (2026-09-26).**
+- **Lenguaje/framework del cliente Android:** Flutter (planteado originalmente, aceptado por el tutor) vs. Kotlin nativo — **en revisión activa por alex**, ver nota al principio del documento.
 - ¿El agente en Python cuenta como parte del proyecto? — preguntar al tutor.
 - Registro de usuario in-app (código de un solo uso + formulario) vs. creación de usuario solo por CLI — pendiente de resolver antes de la fase 7.
 
