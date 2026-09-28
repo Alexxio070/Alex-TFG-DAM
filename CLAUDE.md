@@ -48,9 +48,16 @@ TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Andr
 ## Convenciones de commits y PRs
 
 - Todos los commits y PRs se proponen a alex para revisión **antes** de hacerse — incluida la forma en que se divide un cambio grande en varias piezas.
-- Los commits y PRs van siempre bajo la autoría de alex, nunca de Claude.
+- Los commits y PRs van siempre bajo la autoría de alex, nunca de Claude (salvo que alex especifique lo contrario para un commit concreto).
 - Commits y PRs **cortos y descriptivos**. Evitar cambios enormes de una sola vez (tipo "+1000/-50 add feature"); dividir en piezas pequeñas y lógicas.
 - Motivo: el proyecto se publicará como open source y se quiere evitar que parezca "vibecodeado".
+
+## Uso de IA, librerías y código de terceros
+
+- **Usar librerías/paquetes como infraestructura normal está permitido**, incluso para una funcionalidad diferenciadora/core (p. ej. `xterm.dart` desde pub.dev para la terminal). No hay que reimplementar nada desde cero solo por evitar "usar código ajeno".
+- **Lo que sí hay que evitar:** copiar y pegar un fragmento de código concreto encontrado online para resolver el problema exacto de turno, sin entenderlo ni adaptarlo al resto del proyecto.
+- El proyecto puede estar generado o asistido por IA, siempre que **alex entienda lo que hace cada parte**. El criterio real no es "cuánto código escribió alex a mano", sino que el resultado sea un proyecto limpio, organizado, legible, escalable, con commits/PRs pequeños y coherentes, que parezca escrito por una persona real y que alex pueda defender.
+- Ese entendimiento tiene que aguantar bajo presión en la defensa del TFG: alex debe poder explicar cualquier parte del código, o hacer un cambio pequeño en directo, no solo tener una comprensión superficial.
 
 ## Plan de fases
 
