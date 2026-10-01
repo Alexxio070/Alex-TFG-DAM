@@ -6,6 +6,17 @@ TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Andr
 
 **Alcance de este repo:** aquí vive únicamente el trabajo del PROYECTO (el entregable que se presenta al tribunal). El aprendizaje personal de las tecnologías (hilos "APRENDIZAJE:") se lleva en el chat del proyecto de claude.ai, no en este repositorio — no aplican aquí las instrucciones de estilo docente de esos hilos.
 
+## Regla de confirmación previa (sin automatismos)
+
+Regla fundamental de alex, aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
+
+1. **Antes de generar o crear nada**, explicar primero cómo se ha entendido la petición del usuario.
+2. Después, explicar el **plan de acción**: qué se va a hacer, cómo se va a estructurar, qué se va a usar y **por qué esa opción y no otra**.
+3. **Esperar confirmación explícita del usuario antes de ejecutar ninguna acción.** Ninguna decisión es automática.
+4. **No crear/generar nada** que el usuario no haya pedido explícitamente — ceñirse literalmente a lo pedido, ni más ni menos.
+5. **No tocar el repositorio salvo que el usuario lo especifique.**
+6. Si se crea algo sin que el usuario lo pidiera explícitamente, borrarlo en cuanto se detecte.
+
 ## Módulos previstos
 - Terminal remota (PTY)
 - Monitorización de sistema en vivo (psutil)
