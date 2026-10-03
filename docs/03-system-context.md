@@ -9,9 +9,13 @@
 * **Design rule:** only features that make sense remotely. Features only useful in front of the PC are out of scope (see section 10).
 * **Reference environment:** Android 10+, KDE Plasma 6, systemd, Python 3.11+. Most features are desktop-agnostic.
 * **Developer context:** the developer is learning Flutter/Dart from scratch. Prefer simple, readable, well-commented code over clever abstractions. Explain non-obvious Flutter/Android concepts.
-* **Pending decisions:**
-  * Flutter must be confirmed by the tutor. Fallback: Kotlin + Jetpack Compose.
-  * In-app user registration vs. CLI-only user creation is under review. Current design: CLI creates the user.
+* **Decisions:**
+  * Flutter: **accepted by the tutor (2026-09-26)**. The Kotlin + Jetpack Compose fallback is no longer needed.
+  * The Python agent is a core part of the project (without it the app is useless).
+  * Phase order (2026-10-02): iroh moved to phase 2 (November) because it is the most critical part.
+  * Pending review: in-app user registration vs. CLI-only user creation (decide before phase 9). Current design: CLI creates the user.
+  * Pending review: exact date of the February milestone and official thesis deadline; foreground service type (phase 8); whether the school network lets HTTPS with WebSocket out to the iroh relays.
+* **Test phone:** Android 15.
 
 ## 2. MANDATORY PROJECT REQUIREMENTS (must be satisfied)
 * Layered architecture; Git with branches and meaningful commits; installation manual.
@@ -24,7 +28,7 @@
 
 ## 3. ARCHITECTURE
 * **Client:** Flutter (Dart), Android only. **MVVM**: Views → ViewModels (`provider`) → Repositories → network services. Every repository has a real implementation and a **fake implementation** with mock data. A small Kotlin module (platform channel) handles the iroh tunnel and the foreground service.
-* **Host agent:** Python 3.11+, FastAPI + Uvicorn (asyncio), running as a **systemd user service** (never root, never sudo). Layers: API routes (Pydantic validation) → services (business logic) → repositories (SQLite) → models.
+* **Host agent:** Python 3.11+ (minimum: `websockets` requires ≥ 3.11; 3.11 is supported until 2027-10), FastAPI + Uvicorn (asyncio) + `websockets` package for WebSocket support, running as a **systemd user service** (never root, never sudo). Layers: API routes (Pydantic validation) → services (business logic) → repositories (SQLite) → models.
 * **Transport:**
   * REST (HTTP/JSON) for one-off actions and CRUD.
   * WebSocket channels: `/ws/terminal` (PTY bytes), `/ws/metrics` (live metrics), `/ws/events` (notifications).
@@ -32,10 +36,15 @@
 * **LAN:** direct TLS connection; discovery via mDNS (`zeroconf` on the agent, `bonsoir` in Flutter); QR pairing (`mobile_scanner`).
 * **WAN — "local tunnel" design (dumbpipe pattern):**
   * Agent: iroh endpoint (Python binding) that forwards incoming streams to its own local FastAPI port.
-  * Phone: Kotlin module (official iroh Kotlin binding) opens a local port on `127.0.0.1` and forwards connections to the PC through iroh.
+  * Phone (current design, pending review at the start of phase 2): Kotlin module (official iroh Kotlin binding, which must be built from source with Rust + NDK for Android) opens a local port on `127.0.0.1` and forwards connections to the PC through iroh.
   * Flutter connects to `127.0.0.1:<port>` with **exactly the same HTTP/WebSocket code as LAN**. App-level TLS and login run inside the tunnel unchanged.
   * Platform channel surface: `openTunnel(pcId) -> localPort`, `closeTunnel()`. Nothing else.
-  * Default: n0 public relays; custom relays configurable. Fallback plan: LAN-only.
+  * Alternative under review: the community `iroh_flutter` plugin on pub.dev (1.0.3, builds the Rust core via cargokit). Both options need Rust + Android NDK.
+  * Identity: an endpoint gets a new random identity on every start unless its `SecretKey` is persisted; the agent must store it and load it on launch.
+  * Connection flow: the connection starts through a relay (used to exchange addresses), then iroh tries to upgrade it to a direct path via NAT traversal; if that fails it stays on the relay.
+  * Network needs: no inbound ports; outbound TCP 443 (HTTPS with WebSocket) to the relays is enough. Outbound UDP is optional: if blocked, all traffic stays on the relay (docs.iroh.computer, "Configuring networks").
+  * Default: n0 public relays (rate-limited, no SLA, officially "development and hobby use only"; enough for the thesis); custom relays configurable. Fallback plan: LAN-only. WebRTC only as a backup if iroh causes real problems.
+  * Versions (checked 2026-10-02): iroh core 1.3.0; Python and Kotlin bindings (iroh-ffi) 1.1.0. The published Kotlin artifact does not include Android: for Android (ARM only: aarch64, armv7) it must be built from source with Rust + NDK (docs.iroh.computer/languages/kotlin). Test iroh on a physical phone, not on an x86_64 emulator. The Python binding only ships glibc wheels (manylinux_2_28).
   * Verify exact iroh binding APIs against their docs before coding.
 
 ## 4. MODULES
@@ -51,6 +60,7 @@
 
 ### C. Power & session
 * `dbus-fast` → `org.freedesktop.login1`: PowerOff, Reboot, Suspend, Hibernate (only if `CanHibernate` says yes), lock session.
+* Lock: call `Session.Lock()` (or `Manager.LockSession(id)`) on the user's own graphical session; the session owner needs no authorization. Do NOT use `LockSessions()`: its polkit default is `auth_admin_keep` even for active sessions.
 * Always confirm destructive actions. Handle polkit denials with a clear message.
 
 ### D. Processes
@@ -61,6 +71,7 @@
 ### E. Quick actions (CRUD)
 * Entities: `grupo` 1:N `accion_rapida` 1:N `ejecucion`. Full CRUD on `grupo` and `accion_rapida`; `ejecucion` is history (created on run, read, filter, delete).
 * Execution: `asyncio.create_subprocess_shell` in the action's working directory, with timeout (SIGTERM → SIGKILL), **one concurrent run per action**, output truncated to a max size, statuses `running | success | error | timeout | cancelled`.
+* The returned PID is the shell's, not the command's: spawn with `start_new_session=True` and signal the whole process group with `os.killpg`, otherwise the shell's children survive a timeout or cancel.
 * Business rules:
   * action name unique within its group;
   * deleting a group asks to move its actions to "no group" (`grupo_id = NULL`) or delete them;
@@ -89,6 +100,10 @@
   * active flag.
 * Notification history (`notificacion`): search, filters, mark as read, delete. Origin: manual, rule or action.
 * Delivered over `/ws/events`. On the phone, a foreground service keeps the connection alive and shows local notifications (`flutter_local_notifications`). **No Firebase, no external server.** Works in LAN too.
+* Android requirements:
+  * request `POST_NOTIFICATIONS` at runtime (Android 13+);
+  * declare `foregroundServiceType` (mandatory since Android 14). Do NOT use `dataSync`: since Android 15 it is stopped after 6 h per 24 h. Candidate: `connectedDevice` (pending review, to be confirmed in phase 8); it requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` in the manifest plus at least one of `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` or `CHANGE_WIFI_MULTICAST_STATE`;
+  * Android 17: apps with `targetSdk` ≥ 37 must request `ACCESS_LOCAL_NETWORK` for LAN connections and mDNS. Flutter 3.47 defaults to `targetSdk` 36, so it does not apply yet (test phone: Android 15). Pending review: whether connections to `127.0.0.1` (USB and iroh tunnel) count as local network for that permission.
 
 ## 5. DATABASE (SQLite, `~/.local/share/companion/companion.db`, created by `agent/schema.sql`)
 | Table | Main columns | Relations |
@@ -102,7 +117,7 @@
 | regla_alerta | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario |
 | notificacion | id, usuario_id, origen, regla_id (nullable, ON DELETE SET NULL), ejecucion_id (nullable, ON DELETE SET NULL), titulo, mensaje, fecha, leida | N:1 usuario, regla_alerta, ejecucion |
 
-* Enable `PRAGMA foreign_keys = ON`. Parameterized SQL only. One repository class per table. No ORM.
+* Enable `PRAGMA foreign_keys = ON` **on every connection** (SQLite disables it by default, and without it `ON DELETE CASCADE` / `SET NULL` are ignored). Parameterized SQL only. One repository class per table. No ORM.
 * SQLite treats NULLs as distinct in UNIQUE constraints: enforce name uniqueness for "no group" actions in the service layer.
 * Editable config in TOML: `~/.config/companion/config.toml` (read with `tomllib`).
 
@@ -143,7 +158,7 @@ Login (+ first-connection fingerprint check) · Connection setup (manual address
 `companion setup` · `serve` · `install-service` · `uninstall-service` · `status` · `passwd` · `logout-all` · `show-pairing` · `notify "<msg>"`
 
 ## 8. DEPLOYMENT
-* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak).
+* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). Compiled dependencies (iroh, cryptography, argon2) require glibc ≥ 2.28; musl distros (Alpine) are not supported.
 * systemd unit `~/.config/systemd/user/companion.service`: `ExecStart=%h/.local/bin/companion serve`, `Restart=on-failure`, `WantedBy=default.target`.
 * Remote reboot requires `loginctl enable-linger $USER` (documented in README). Without an active session, power actions may need a polkit rule.
 * App: APK published in GitHub releases.
@@ -171,24 +186,26 @@ Login (+ first-connection fingerprint check) · Connection setup (manual address
 * KDE ricing (themes, wallpapers, color schemes) and support for other desktops/WMs.
 * iOS and multiple devices.
 * 2FA/TOTP and Wake-on-LAN.
-* Firebase/FCM, WebRTC/STUN/TURN, Tailscale/WireGuard, PyInstaller.
+* Firebase/FCM, Tailscale/WireGuard, PyInstaller.
+* WebRTC/STUN/TURN: not planned; kept only as a backup if iroh causes real problems (decision 2026-09-27).
 * Terminal themes (custom palettes) are optional ("if time allows").
 
 See 06-ideas-de-futuro.md.
 
 ## 11. PHASES (summary)
-* Phase 0: setup (tutor questions, test environment, Git repo) + learn Flutter.
-* **Beta v0.1 (mid-December):**
-  * Phase 1: metrics;
-  * Phase 2: security (CLI setup, login, TLS pinning, sessions);
-  * Phase 3: power + processes;
+* Phase 0: setup (test environment, Git repo) + learn Flutter.
+* **Beta v0.1 (Christmas):**
+  * Phase 1: metrics (end of October);
+  * Phase 2: iroh remote access (November): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics;
+  * Phase 3: security (CLI setup, login, TLS pinning, sessions), also checked through the tunnel;
   * Phase 4: pipx install + systemd service.
-* Early January: iroh proof of concept (from 4G and from the school network).
+* **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs.
 * Post-beta:
-  * Phase 5: quick actions CRUD (mandatory requirement);
-  * Phase 6: terminal (v0.2);
-  * Phase 7: mDNS + QR pairing + registration (pending) + file browsing/download;
-  * Phase 8: iroh remote access;
-  * Phase 9: notifications + alert rules CRUD;
-  * Phase 10: file upload + polish.
+  * Phase 5: terminal (v0.2) (January – early February);
+  * Phase 6: power + processes (February);
+  * Phase 7: quick actions CRUD (mandatory requirement) (March);
+  * Phase 8: notifications + alert rules CRUD + foreground service (April);
+  * Phase 9: mDNS + QR pairing + registration (pending review) + file browsing/download (April – May);
+  * Phase 10: file upload + polish (May).
+* Thesis report: May (official deadline pending review). Defense: first week of June 2027.
 * If time allows: terminal themes.

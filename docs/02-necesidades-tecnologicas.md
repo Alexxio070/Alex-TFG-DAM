@@ -9,7 +9,7 @@ Cada bloque sigue el mismo esquema:
 - **Elección:** la opción concreta.
 - **Alternativas descartadas:** qué más se consideró y por qué no.
 
-> **Pendiente:** la normativa del proyecto cita "Android Studio, Kotlin, Java" para apps Android. El uso de Flutter debe confirmarse con el tutor antes de empezar. Si no se acepta, el plan B es **Kotlin + Jetpack Compose** (ver 1.1); el agente en Python y el resto de decisiones no cambian.
+> **Resuelto (26/09/2026):** la normativa del proyecto cita "Android Studio, Kotlin, Java" para apps Android, pero el tutor ha aceptado Flutter. El plan B (Kotlin + Jetpack Compose, ver 1.1) ya no es necesario.
 
 ---
 
@@ -24,13 +24,14 @@ Cada bloque sigue el mismo esquema:
   - Tecnología no vista en el grado, lo que aporta valor académico.
   - Permite escribir código nativo Kotlin donde haga falta mediante *platform channels* (ver 4.2).
 - **Alternativas descartadas:**
-  - *Kotlin + Jetpack Compose (nativo Android) — plan B si el centro no acepta Flutter:* ventajas reales (binding oficial de iroh, acceso directo a Android, documentación oficial de Google), pero no tiene un emulador de terminal equivalente a xterm.dart. Las librerías de Termux funcionan, pero usan el sistema de vistas antiguo y están pensadas para terminales locales, lo que exigiría adaptarlas. Además, se ve parcialmente en el grado.
-  - *React Native:* ecosistema de terminal menos maduro y una capa extra (puente JavaScript) sin ventaja clara para este proyecto.
+  - *Kotlin + Jetpack Compose (nativo Android) — era el plan B si el centro no aceptaba Flutter:* ventajas reales (binding oficial de iroh, acceso directo a Android, documentación oficial de Google), pero no tiene un emulador de terminal equivalente a xterm.dart. Las librerías de Termux funcionan, pero usan el sistema de vistas antiguo y están pensadas para terminales locales, lo que exigiría adaptarlas. Además, se ve parcialmente en el grado.
+  - *React Native:* ecosistema de terminal menos maduro y un lenguaje más (JavaScript/TypeScript) sin ventaja clara para este proyecto. *(Desde la versión 0.76 ya no usa el antiguo "puente" JavaScript, que la nueva arquitectura sustituyó por JSI.)*
 
 ### 1.2 Mostrar una terminal en el móvil
 - **Necesidad:** interpretar el flujo de bytes de una shell remota (colores, cursor, secuencias de control) y dibujarlo en pantalla.
 - **Tipo de tecnología:** librería de emulación de terminal (VT100/xterm).
 - **Elección:** **xterm.dart** (licencia MIT). Soporta True Color, caracteres anchos y emojis, temas en tiempo de ejecución y teclados de móvil. Incluye ejemplos de terminal y de cliente SSH en unas 100 líneas.
+  - **Estado del paquete:** estable, pero sin versiones nuevas desde la 4.0.0 (febrero de 2024). Se fija esa versión y se comprueba que funciona con la versión de Flutter usada en el proyecto.
 - **Alternativas descartadas:**
   - *WebView con xterm.js:* funciona, pero mezcla una web dentro de la app y complica la integración con el teclado.
   - *Librerías de Termux en Kotlin:* ver 1.1.
@@ -91,6 +92,7 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** lanzar comandos guardados en segundo plano sin bloquear el agente, con tiempo máximo, captura de la salida y posibilidad de cancelarlos.
 - **Tipo de tecnología:** ejecución asíncrona de procesos.
 - **Elección:** **`asyncio.create_subprocess_shell`** (biblioteca estándar). Se integra con el resto del agente asíncrono, permite leer la salida mientras se ejecuta y cortar el proceso (SIGTERM → SIGKILL) si supera el tiempo máximo, reutilizando la lógica del gestor de procesos.
+  - **Importante:** el proceso que devuelve es la shell (`/bin/sh`), no el comando, así que `terminate()` y `kill()` solo matarían la shell y sus procesos hijos podrían seguir vivos. Por eso el comando se lanza con `start_new_session=True` (su propio grupo de procesos) y las señales se envían a todo el grupo con `os.killpg`.
 - **Alternativas descartadas:**
   - *`subprocess.run`:* bloquea el agente mientras dura el comando.
   - *Colas de tareas (Celery, RQ):* requieren un broker externo; excesivo para ejecuciones de un solo usuario.
@@ -98,7 +100,7 @@ Cada bloque sigue el mismo esquema:
 ### 2.6 Interfaz de línea de comandos (CLI)
 - **Necesidad:** `companion setup`, `serve`, `install-service`, `passwd`, `logout-all`, `notify`, `show-pairing`…
 - **Tipo de tecnología:** framework de CLI.
-- **Elección:** **Typer** (construido sobre Click). Define comandos con funciones y tipos de Python y genera la ayuda automáticamente.
+- **Elección:** **Typer** (basado en Click, que va integrado dentro de Typer desde la versión 0.26). Define comandos con funciones y tipos de Python y genera la ayuda automáticamente.
 - **Alternativas descartadas:** *argparse* (estándar, pero más verboso), *Click* directamente (Typer lo simplifica).
 
 ---
@@ -108,7 +110,7 @@ Cada bloque sigue el mismo esquema:
 ### 3.1 Protocolo de comunicación entre app y agente
 - **Necesidad:** peticiones puntuales (login, apagar, listar archivos) y flujos continuos (terminal, métricas, avisos).
 - **Tipo de tecnología:** API HTTP + canal bidireccional persistente.
-- **Elección:** **REST (HTTP/JSON)** para lo puntual y **WebSocket** para lo continuo. Ambos los ofrece FastAPI de forma nativa.
+- **Elección:** **REST (HTTP/JSON)** para lo puntual y **WebSocket** para lo continuo. Ambos los ofrece FastAPI de forma nativa; para WebSocket hay que instalar además el paquete `websockets`.
 - **Alternativas descartadas:**
   - *gRPC:* potente, pero añade generación de código y complejidad innecesaria.
   - *MQTT:* requiere un broker intermedio.
@@ -118,14 +120,16 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** mDNS / DNS-SD (Zeroconf).
 - **Elección:** **zeroconf** (Python) para anunciar el servicio y **bonsoir** (Flutter) para encontrarlo. Es el mismo estándar que usan impresoras y Chromecast.
 - **Alternativas descartadas:** *broadcast UDP propio:* reinventar un estándar existente.
+- **Nota sobre Android 17:** las apps con `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para usar mDNS y conectar con equipos de la red local. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica (y el móvil de pruebas usa Android 15). *Pendiente de revisión:* comprobar si las conexiones a `127.0.0.1` (USB y túnel iroh) cuentan como red local a efectos de ese permiso.
 
 ### 3.3 Acceso desde fuera de casa
 - **Necesidad:** conectar desde 4G/5G u otra red sin abrir puertos del router, sin VPN y sin instalar nada más en el móvil.
 - **Tipo de tecnología:** librería P2P con travesía de NAT y relé de respaldo.
-- **Elección:** **iroh (1.0).** Identifica cada equipo por su clave pública, intenta conexión directa atravesando NAT y, si falla, usa relés cifrados. Ofrece bindings oficiales para Python (agente) y Kotlin (Android) y relés públicos gratuitos. Licencia MIT/Apache-2.0.
+- **Elección:** **iroh (1.x).** Identifica cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después iroh intenta convertirla en directa atravesando el NAT; si no lo consigue, sigue por el relé. Ofrece bindings oficiales para Python (agente) y Kotlin y relés públicos gratuitos (según iroh, solo para desarrollo y uso personal, con límite de tráfico; suficientes para el TFG). Licencia MIT/Apache-2.0.
+  - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El paquete de Kotlin publicado en Maven no incluye Android: para Android (solo arquitecturas ARM, aarch64 y armv7) hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin), y no funciona en el emulador x86_64; el de Python solo tiene paquetes para Linux con glibc.
 - **Alternativas descartadas:**
   - *Tailscale / WireGuard:* obliga a instalar y configurar una app VPN en el móvil.
-  - *WebRTC con STUN/TURN propios:* exige programar la señalización y alojar y pagar servidores.
+  - *WebRTC con STUN/TURN propios:* exige programar la señalización y alojar y pagar servidores. Queda como **respaldo** solo si iroh da problemas reales (decisión del 27/09/2026).
   - *Relé propio:* exige programar el cifrado de extremo a extremo y mantener un servidor indefinidamente.
   - *Cloudflare Tunnel:* requiere cuenta y dominio, y el cifrado TLS termina en Cloudflare.
   - *Abrir puertos del router:* contradice el requisito de configuración mínima y expone el agente a Internet.
@@ -137,14 +141,18 @@ Cada bloque sigue el mismo esquema:
 ### 4.1 Mantener la conexión en segundo plano
 - **Necesidad:** recibir notificaciones del PC y mantener el túnel aunque la app esté minimizada.
 - **Tipo de tecnología:** servicio en primer plano de Android (*foreground service*) + notificaciones locales.
-- **Elección:** **servicio en primer plano** (el mismo que mantiene el túnel iroh) y `flutter_local_notifications`. La implementación concreta (servicio en Kotlin o paquete de Flutter para servicios en primer plano) se decide en la fase correspondiente.
+- **Elección:** **servicio en primer plano** (el mismo que mantiene el túnel iroh) y `flutter_local_notifications`. La implementación concreta (servicio en Kotlin o paquete de Flutter para servicios en primer plano) se decide en la fase 8.
+  - **Requisitos de Android:** pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución (Android 13+) y declarar el tipo del servicio (obligatorio desde Android 14). No se usará `dataSync`, que desde Android 15 se detiene tras 6 horas cada 24. Candidato: `connectedDevice`, que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE`. *Pendiente de revisión:* se confirma en la fase 8.
 - **Alternativas descartadas:** *Firebase Cloud Messaging:* requiere cuenta de Firebase y un servidor intermediario que envíe los avisos.
 
 ### 4.2 Usar iroh desde Flutter
-- **Necesidad:** llamar a la librería iroh, que tiene binding oficial para Kotlin pero no para Flutter en Android.
+- **Necesidad:** llamar a la librería iroh desde la app. iroh no tiene binding oficial para Flutter.
 - **Tipo de tecnología:** puente entre Flutter y código nativo.
-- **Elección:** **platform channels (MethodChannel)** con un módulo Kotlin mínimo (abrir y cerrar túnel). Es el mecanismo estándar y documentado de Flutter.
-- **Alternativas descartadas:** *flutter_rust_bridge con el núcleo Rust de iroh:* más potente, pero obliga a instalar Rust y el NDK de Android y compilar código nativo.
+- **Elección (pendiente de revisión, se decide al empezar la fase 2):**
+  - *Opción A, diseño actual:* **platform channels (MethodChannel)** con un módulo Kotlin mínimo (abrir y cerrar túnel) sobre el binding oficial de Kotlin. Es el mecanismo estándar de Flutter, pero el binding publicado no incluye Android: hay que compilar iroh-ffi desde el código fuente con Rust y el NDK.
+  - *Opción B:* plugin **`iroh_flutter`** de pub.dev (1.0.3, 07/08/2026, comunitario, no de n0), que compila el núcleo Rust automáticamente con cargokit y expone la API de iroh en Dart.
+  - Las dos opciones necesitan Rust y el NDK instalados, así que esa ya no es una razón para descartar la vía Rust. Hay que elegir con la prueba de concepto: cuál compila y funciona antes en el móvil físico.
+- **Otra alternativa:** *flutter_rust_bridge con el núcleo Rust de iroh, escrito a mano:* más trabajo que la opción B.
 
 ---
 
@@ -185,7 +193,7 @@ Cada bloque sigue el mismo esquema:
 
 ### 6.3 Configuración
 - **Necesidad:** ajustes editables a mano (puertos, relés, umbrales por defecto).
-- **Elección:** fichero **TOML** en `~/.config/companion/config.toml` (lectura con `tomllib`, estándar desde Python 3.11).
+- **Elección:** fichero **TOML** en `~/.config/companion/config.toml` (lectura con `tomllib`, estándar desde Python 3.11). `tomllib` solo lee TOML; si `companion setup` tiene que escribir el fichero, hace falta el paquete `tomli-w`.
 - **Alternativas descartadas:** *guardarlo en la BD:* menos cómodo de editar y de documentar.
 
 ---
@@ -201,11 +209,11 @@ Cada bloque sigue el mismo esquema:
 ### 7.2 Instalar el agente
 - **Necesidad:** instalación sencilla en cualquier distribución.
 - **Tipo de tecnología:** gestor de paquetes de aplicaciones Python.
-- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución, así que no hay problemas de compatibilidad con glibc.
+- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. Las dependencias compiladas (iroh, cryptography, argon2) requieren glibc 2.28 o superior, así que no es compatible con distribuciones basadas en musl (como Alpine).
 - **Alternativas descartadas:**
   - *PyInstaller:* el binario queda ligado a la glibc de la máquina de compilación.
   - *`pip install` directo:* bloqueado en distribuciones modernas fuera de entornos virtuales.
-  - *Flatpak / Snap:* su aislamiento impide el acceso al PTY y a D-Bus que necesita el agente.
+  - *Flatpak / Snap:* para acceder al PTY del sistema y a D-Bus habría que desactivar su aislamiento, lo que anula su ventaja.
   - *Paquetes nativos (.deb, AUR…):* uno por distribución; trabajo futuro.
 
 ### 7.3 Distribuir la app
@@ -241,6 +249,6 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** conexión directa entre dispositivos sin red externa.
 - **Elección:**
   - **`adb reverse`** por USB (método principal): la app se conecta a `127.0.0.1` y llega al agente del portátil por el cable;
-  - **emulador de Android Studio** (`10.0.2.2` apunta al anfitrión);
+  - **emulador de Android Studio** (`10.0.2.2` apunta al anfitrión; no sirve para probar iroh, ver 3.3);
   - **punto de acceso del móvil** para probar como LAN real.
 - **Alternativas descartadas:** *usar la red del centro:* no garantizada; *máquina virtual accesible por red:* mismo problema de red.

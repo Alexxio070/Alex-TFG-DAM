@@ -64,7 +64,7 @@ Sustituye a la idea original de portapapeles compartido.
 
 ### iOS 🔴
 - Flutter permite compilar para iOS con la misma base de código.
-- Requiere Mac con Xcode y cuenta de desarrollador de Apple de pago.
+- Requiere Mac con Xcode. Para probar en un iPhone propio basta un Apple ID gratuito (los perfiles caducan cada 7 días); la cuenta de desarrollador de pago solo es necesaria para distribuir la app.
 - iOS es muy restrictivo con las conexiones en segundo plano, lo que afecta a las notificaciones.
 
 ### Multi-dispositivo 🟡
@@ -124,7 +124,7 @@ Sustituye a la idea original de portapapeles compartido.
 - GPU (uso y VRAM, NVIDIA y AMD), red (tráfico por interfaz), estado de servicios systemd, contenedores Docker/Podman.
 
 ### Alertas más completas 🟢🟡
-*(Las reglas de alerta básicas con CRUD desde la app ya forman parte del TFG, fase 9.)*
+*(Las reglas de alerta básicas con CRUD desde la app ya forman parte del TFG, fase 8.)*
 - Silenciar alertas por horario ("no molestar").
 - Alertas cuando un servicio systemd falla.
 - Reglas combinadas (por ejemplo, CPU alta **y** temperatura alta).
@@ -140,7 +140,7 @@ Sustituye a la idea original de portapapeles compartido.
 - Widget en la pantalla de inicio con el estado del PC y botones rápidos.
 
 ### Acciones rápidas avanzadas 🟡
-*(Las acciones rápidas con grupos, ejecuciones e historial ya forman parte del TFG, fase 5.)*
+*(Las acciones rápidas con grupos, ejecuciones e historial ya forman parte del TFG, fase 7.)*
 - Parámetros al ejecutar (por ejemplo, pedir un nombre de rama antes de lanzar `git checkout`).
 - Programar ejecuciones (a una hora o de forma periódica, con temporizadores de systemd).
 - Encadenar acciones (ejecutar B solo si A termina bien).

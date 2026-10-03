@@ -8,11 +8,11 @@
 
 ---
 
-## 0. Decisiones pendientes
+## 0. Decisiones
 
 | Decisión | Estado |
 |---|---|
-| Aceptación de Flutter por el centro (la normativa cita "Android Studio, Kotlin, Java") | Consultar al tutor antes de empezar. Plan B: Kotlin + Jetpack Compose (ver 02-necesidades-tecnologicas.md) |
+| Aceptación de Flutter por el centro (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter. El plan B (Kotlin + Jetpack Compose) ya no es necesario |
 | Registro de usuario desde la app frente a creación por CLI | Pendiente de revisión (ver 5.1) |
 
 ---
@@ -72,7 +72,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 
 ### Módulo C — Energía y sesión
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
-- Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado.
+- Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado. Se usa `Session.Lock()` (o `LockSession(id)`) sobre la sesión del propio usuario, que no pide autorización; `LockSessions()` bloquea todas las sesiones y polkit exige permisos de administrador.
 - Todas las acciones destructivas piden confirmación en la app.
 
 ### Módulo D — Gestión de procesos
@@ -88,7 +88,7 @@ Comandos guardados, organizados en grupos, que se ejecutan con un toque desde el
 **Funciones:**
 - **CRUD completo de grupos y de acciones:** crear, consultar, editar y borrar.
 - **Ejecución en segundo plano** en el PC:
-  - con tiempo máximo (al superarlo se corta con SIGTERM → SIGKILL);
+  - con tiempo máximo (al superarlo se corta con SIGTERM → SIGKILL). El comando se lanza en su propio grupo de procesos y la señal se envía a todo el grupo, porque la shell que lo ejecuta puede tener procesos hijos que, si no, seguirían vivos;
   - con una sola ejecución simultánea por acción;
   - con la salida recortada a un tamaño máximo.
 - **Historial de ejecuciones** con estado (en curso, éxito, error, cortada por tiempo, cancelada), código de salida y salida del comando. Filtros por acción, estado y fechas; borrado individual o completo.
@@ -145,6 +145,9 @@ DELETE /ejecuciones?accion=            (limpiar historial)
 - **Reglas de alerta (CRUD completo desde la app):** métrica (CPU, RAM, temperatura, disco), operador, umbral, duración sostenida, tiempo mínimo entre avisos y activa/inactiva. Ejemplo: "CPU > 90 % durante 2 minutos".
 - **Historial de notificaciones** con búsqueda, filtros, marcar como leída y borrar.
 - En el móvil, un **servicio en primer plano** mantiene la conexión abierta y muestra los avisos como notificaciones de Android. No se usa Firebase ni ningún servidor externo.
+- **Requisitos de Android:**
+  - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
+  - desde Android 14 hay que declarar el tipo del servicio en primer plano. No se usará `dataSync`, porque desde Android 15 el sistema lo detiene tras 6 horas cada 24. Candidato: `connectedDevice` (dispositivo externo conectado por red), que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE`. *Pendiente de revisión:* se confirma en la fase 8.
 
 **API del agente:**
 ```
@@ -179,8 +182,8 @@ WS     /ws/events                      (avisos en tiempo real)
             |                                      |
    [ Red local (LAN) ]                  [ Fuera de casa (WAN) ]
    Conexión directa TLS                 Túnel iroh (QUIC cifrado):
-   Descubrimiento mDNS                  conexión directa por hole
-                                        punching o relé si falla
+   Descubrimiento mDNS                  empieza por un relé y pasa a
+                                        directa si el NAT lo permite
             |                                      |
             +------------------+-------------------+
                                |
@@ -220,10 +223,12 @@ WS     /ws/events                      (avisos en tiempo real)
 Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **túnel transparente**, siguiendo el patrón de la herramienta *dumbpipe* del proyecto iroh:
 
 1. **En el PC,** el agente crea un punto de conexión iroh que reenvía todo lo que recibe a su propio servidor FastAPI local.
-2. **En el móvil,** un pequeño módulo en Kotlin (binding oficial de iroh) abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh.
+2. **En el móvil,** un pequeño módulo en Kotlin (binding oficial de iroh, que para Android hay que compilar desde el código fuente con Rust y el NDK) abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh.
 3. **La parte Flutter** se conecta a `127.0.0.1:puerto` con el mismo código HTTP/WebSocket que en LAN. El TLS y el login siguen funcionando dentro del túnel.
 
-iroh identifica a cada equipo por su clave pública. Primero intenta una conexión directa (atravesando NAT) y, si no es posible, usa servidores relé cifrados. Por defecto se usan los relés públicos gratuitos del proyecto; opcionalmente pueden configurarse relés propios.
+iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un servidor relé cifrado, que los dos equipos usan para intercambiar sus direcciones; después iroh intenta convertirla en directa atravesando el NAT y, si no lo consigue, sigue por el relé. Por defecto se usan los relés públicos gratuitos del proyecto (según iroh, solo para desarrollo y uso personal, con límite de tráfico y sin garantía de disponibilidad; suficientes para el TFG); opcionalmente pueden configurarse relés propios. Por defecto cada arranque genera una identidad nueva, así que el agente debe guardar su clave secreta (`SecretKey`) y cargarla al arrancar para conservar el mismo identificador.
+
+*Pendiente de revisión (se decide al empezar la fase 2):* cómo usar iroh desde Flutter. El binding de Kotlin publicado en Maven no incluye Android: hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). La alternativa es el plugin `iroh_flutter` de pub.dev (comunitario, no de n0), que compila el núcleo Rust automáticamente; también necesita Rust y el NDK instalados.
 
 El puente entre Flutter y Kotlin se limita a dos operaciones: *abrir túnel (identificador del PC) → puerto local* y *cerrar túnel*.
 
@@ -356,7 +361,7 @@ pipx install linux-system-companion   # instala el agente en un entorno aislado
 companion setup                       # crea credenciales y muestra los datos de conexión
 companion install-service             # instala y activa el servicio systemd de usuario
 ```
-Se usa **pipx** porque las distribuciones actuales bloquean `pip install` fuera de entornos virtuales. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python de la propia distribución, lo que evita problemas de compatibilidad con glibc.
+Se usa **pipx** porque las distribuciones actuales bloquean `pip install` fuera de entornos virtuales. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python de la propia distribución. Las dependencias compiladas (iroh, cryptography, argon2) se instalan como paquetes precompilados que requieren **glibc 2.28 o superior**, así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
 
 ### 8.2 Servicio systemd
 `companion install-service` crea `~/.config/systemd/user/companion.service`:
@@ -409,10 +414,10 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 | Método | Uso |
 |---|---|
 | **USB + `adb reverse tcp:8443 tcp:8443`** | Método principal: la app se conecta a `127.0.0.1:8443` y llega al agente del portátil por el cable |
-| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión |
+| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No sirve para probar iroh: el binding de Kotlin para Android solo admite arquitecturas ARM (aarch64 y armv7) y hay que compilarlo desde el código fuente |
 | **Punto de acceso del móvil** | Red privada propia para probar como LAN real, incluido mDNS |
 | **Repositorios simulados** | Desarrollar pantallas sin el agente |
-| **iroh** (desde la fase 8) | Probar el acceso al PC de casa desde otras redes |
+| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. No necesita abrir puertos de entrada, solo salida HTTPS (TCP 443) hacia los relés |
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
@@ -430,7 +435,8 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 - **Apagado o reinicio con otras sesiones abiertas:** polkit puede pedir autorización adicional.
 - **Procesos:** solo se pueden finalizar los del propio usuario.
 - **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra un icono permanente en la barra de estado, que es el comportamiento estándar de Android.
-- **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar. Se puede configurar un relé propio.
+- **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso personal (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
+- **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica; cuando se suba a 37 habrá que pedir este permiso en la pantalla de conexión. El móvil de pruebas usa Android 15, donde no se exige. *Pendiente de revisión:* comprobar si las conexiones a `127.0.0.1` (USB y túnel iroh) cuentan como red local a efectos de ese permiso.
 
 ---
 
@@ -441,7 +447,7 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 | KDE Connect | No (requiere VPN) | No | Muy limitada | Parcial | Sí | Sí (notificaciones del escritorio) |
 | Clientes SSH (Termius, ConnectBot) | No (requiere IP accesible o VPN) | Sí | No | Solo vía comandos | Sí | No |
 | Cockpit | No (requiere exponerlo o VPN) | Sí (web) | Sí | Sí | No (web) | No |
-| RustDesk | Sí (servidor de encuentro/relé) | No (escritorio remoto) | No | No | Sí | No |
+| RustDesk | Sí (servidor de encuentro/relé) | Sí (desde la versión 1.4.1; su función principal es el escritorio remoto) | No | No | Sí | No |
 | **Linux System Companion** | **Sí (iroh)** | **Sí** | **Sí** | **Sí** | **Sí** | **Sí** |
 
 *Tabla orientativa; revisar cada entrada en la redacción final. Detalle de proyectos y licencias en 05-referencias-y-proyectos.md.*
@@ -458,7 +464,7 @@ El proyecto incluye varias funcionalidades no vistas en clase, entre ellas algun
 - **Terminal remota con pseudoterminal (PTY):** ejecución interactiva de la shell real del usuario.
 - **Seguridad avanzada:** TLS con *certificate pinning*, hash Argon2 y límite de intentos.
 - **Integración con el sistema operativo:** D-Bus (systemd-logind) y servicios de usuario de systemd.
-- **Flutter** como framework de desarrollo *(pendiente de confirmar con el tutor)*.
+- **Flutter** como framework de desarrollo (aceptado por el tutor).
 
 ---
 

@@ -37,12 +37,12 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 
 | Decisión | Elegido | Motivo | Descartado |
 |---|---|---|---|
-| Framework móvil | **Flutter** | Se valora usar tecnología no vista en clase; xterm.dart resuelve la terminal (la pieza más difícil); *hot reload* ayuda a aprender | Kotlin + Compose: más fácil para iroh (binding oficial), pero sin emulador de terminal equivalente. **Queda como plan B** si el centro no acepta Flutter |
+| Framework móvil | **Flutter** (aceptado por el tutor el 26/09/2026) | Se valora usar tecnología no vista en clase; xterm.dart resuelve la terminal (la pieza más difícil); *hot reload* ayuda a aprender | Kotlin + Compose: más fácil para iroh (binding oficial), pero sin emulador de terminal equivalente. Era el plan B; ya no es necesario |
 | Agente PC | Python 3.11 + FastAPI | Mejores librerías de sistema; asíncrono | Go, Rust (curva), Flask (síncrono) |
-| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **última fase técnica** | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), WebRTC con STUN/TURN (servidores propios), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel |
-| Puente Flutter ↔ iroh | Platform channel mínimo en Kotlin: `openTunnel` / `closeTunnel` | Flutter no sabe que iroh existe; usa el mismo código que en LAN | flutter_rust_bridge (exige compilar Rust y el NDK) |
+| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (noviembre)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
+| Puente Flutter ↔ iroh | Platform channel mínimo en Kotlin: `openTunnel` / `closeTunnel` (*pendiente de revisión*) | Flutter no sabe que iroh existe; usa el mismo código que en LAN | El binding de Kotlin publicado no incluye Android y hay que compilarlo con Rust y el NDK igualmente, así que el plugin `iroh_flutter` (pub.dev) vuelve a ser candidato. Se decide al empezar la fase 2 |
 | Tokens | Opacos, con hash en SQLite | Revocables al instante (`logout-all`) | JWT (no revocables; innecesarios con un solo dispositivo) |
-| BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa | SQLAlchemy (excesivo), MySQL, Firebase |
+| BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
 | Instalación del agente | **pipx** | Usa el Python de la distro; evita problemas de glibc (me recomendaron alejarme de glibc) | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
 | Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` (propuesta inicial, se cambió) |
 | CLI | Typer | Sencillo | argparse |
@@ -50,7 +50,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 
 ### 3.2 Seguridad
 - **Login con credenciales creadas por CLI** (`companion setup`). Prefiero CLI antes que TUI.
-- **Registro desde la app:** **pendiente de revisión**. La alternativa es un código de un solo uso generado por la CLI y un formulario de registro en la app. Colocado provisionalmente en la fase 7.
+- **Registro desde la app:** **pendiente de revisión**. La alternativa es un código de un solo uso generado por la CLI y un formulario de registro en la app. Colocado provisionalmente en la fase 9.
 - **TLS autofirmado con certificate pinning.** En la beta la huella se compara a ojo; más tarde, por QR.
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.** Multi-dispositivo como idea futura.
@@ -75,7 +75,8 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - **BD de 3–4 tablas:** ahora son 8 tablas, con `schema.sql` y repositorios.
 - **Diseño de BD, casos de uso, pruebas y capturas en la memoria:** añadidos a la documentación y al plan.
 - **Elemento diferenciador:** cubierto de sobra (cámara/QR, servicio en segundo plano con notificaciones, P2P, PTY).
-- **Riesgo abierto:** la normativa cita "Android Studio, Kotlin, Java" y **Flutter no aparece**. Hay que preguntar al tutor por escrito antes de empezar.
+- **Flutter:** la normativa cita "Android Studio, Kotlin, Java" y Flutter no aparece, pero **el tutor lo aceptó (26/09/2026)**. Riesgo cerrado.
+- **Agente en Python:** es parte fundamental del proyecto; sin él la app no funciona (02/10/2026).
 
 ---
 
@@ -101,32 +102,34 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 ## 5. Planificación (resumen; detalle en 04)
 
-**Criterios:**
-- lo obligatorio y lo de más impacto en la nota, primero;
-- fases difíciles intercaladas con fáciles para no dejar lo importante al final;
-- lo de menor impacto, al final como "si da tiempo";
-- beta funcional a **mediados de diciembre**.
+**Calendario (02/10/2026):**
+- **Beta v0.1 en Navidad:** funcional y bien estructurada, como base mínima sobre la que seguir añadiendo funciones.
+- **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento (o el explorador de archivos). *Fecha exacta pendiente de revisión.*
+- **Defensa:** primera semana de junio de 2027. *Fecha oficial de entrega de la memoria pendiente de revisión.*
 
-**Beta v0.1:**
+**Criterios:**
+- lo más arriesgado primero: iroh justo después de las métricas, para descubrir pronto si da problemas;
+- después, lo obligatorio y lo de más impacto en la nota;
+- fases difíciles intercaladas con fáciles para no dejar lo importante al final;
+- lo de menor impacto, al final como "si da tiempo".
+
+**Beta v0.1 (Navidad):**
 - Fase 0: preparación y aprender Flutter.
 - Fase 1: métricas.
-- Fase 2: seguridad.
-- Fase 3: energía y procesos.
+- Fase 2: conexión remota con iroh (noviembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
+- Fase 3: seguridad (también comprobada a través del túnel).
 - Fase 4: instalación con pipx y servicio.
 - **La beta NO necesita cumplir todos los mínimos de DAM.** El CRUD se sacó de la beta a propósito.
 
 **Después de la beta:**
-- Prueba de concepto de iroh (enero, 2–3 días, también desde la red del centro).
-- Fase 5: CRUD de acciones rápidas (va primera por ser obligatoria).
-- Fase 6: terminal.
-- Fase 7: mDNS, QR, registro (pendiente) y archivos.
-- Fase 8: iroh.
-- Fase 9: notificaciones y reglas.
+- Fase 5: terminal (enero – principios de febrero), para el hito de febrero.
+- Fase 6: energía y procesos.
+- Fase 7: CRUD de acciones rápidas (requisito obligatorio).
+- Fase 8: notificaciones, reglas y servicio en primer plano.
+- Fase 9: mDNS, QR, registro (pendiente de revisión) y archivos.
 - Fase 10: subida de archivos y pulido.
 
-**Orden de recorte si voy con retraso:** subida de archivos → reglas de alerta → mDNS → iroh (plan B). **Nunca se recortan:** CRUD, terminal, login y TLS.
-
-**Fecha de entrega real:** desconocida todavía. Las fechas del plan suponen mayo; hay que ajustarlas cuando la sepa.
+**Orden de recorte si voy con retraso:** subida de archivos → reglas de alerta → mDNS → hibernar y ordenación de procesos. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
 
 ---
 
@@ -138,13 +141,20 @@ La red del centro está muy blindada y probablemente el móvil no pueda llegar a
 - punto de acceso del móvil para probar como LAN real;
 - repositorios simulados en la app.
 
+Fuera de casa, iroh no necesita abrir puertos de entrada: basta con que salga HTTPS (TCP 443 con WebSocket) hacia los relés, y si el UDP está bloqueado todo va por el relé. *Pendiente de revisión:* confirmar con el centro que deja salir ese tráfico.
+
 Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 
 ---
 
 ## 7. Forma de trabajar con Claude
 
-- **Proyecto de Claude:** subir los documentos 01–07 al conocimiento del proyecto. Opcionalmente, conectar el repositorio de GitHub mediante la integración oficial, seleccionando solo archivos de referencia (`schema.sql`, modelos, rutas de la API). **Sincronizar manualmente con "Sync"** antes de cada sesión, porque no es automático.
+- **Proyecto de Claude (organización actual):**
+  - los documentos 01–07 están en la carpeta "Documentacion TFG" del proyecto y son el contexto base de todos los hilos;
+  - el repositorio de GitHub (Alexxio070/Alex-TFG-DAM) está conectado y tiene una copia de estos documentos en `docs/`;
+  - el trabajo se organiza en hilos con prefijo **PROYECTO:** (desarrollo del TFG), **APRENDIZAJE:** (unidades de estudio) y **PREGUNTAS:** (dudas sueltas);
+  - el hilo "Proyecto: Trabajo del repositorio" es el único que hace commits y PRs en el repo.
+- **Regla de confirmación previa (01/10/2026):** antes de generar o crear nada, Claude explica cómo ha entendido la petición y su plan (qué, cómo y por qué), y espera mi confirmación explícita. Nunca toca el repositorio salvo que yo lo pida.
 - **No usar el conocimiento del proyecto como repositorio manual** del código: se queda desactualizado. El repositorio real es Git/GitHub.
 - **Reparto de herramientas:**
   - chat o proyecto para planificar, entender conceptos y redactar la memoria;
@@ -158,7 +168,7 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 
 - Cuando termine el TFG, **la app se publicará como open source**.
 - Preocupación: a mucha gente le echan para atrás las apps "vibecodeadas".
-- **Commits:** en Claude Code, desactivar la firma con `"attribution": {"commit": "", "pr": ""}` en `settings.json`, o hacer yo los commits. Los commits antiguos con firma se pueden limpiar con `git filter-repo` **después de la evaluación**.
+- **Commits:** en Claude Code, desactivar la firma con `"attribution": false` en `settings.json` (o, por partes, `"attribution": {"commit": "", "pr": "", "sessionUrl": false}`; `sessionUrl` quita el enlace a la sesión que se añade en las sesiones en la nube), o hacer yo los commits. Los commits antiguos con firma se pueden limpiar con `git filter-repo` **después de la evaluación**.
 - **Lo que genera confianza de verdad:**
   - commits pequeños y concretos;
   - tests y CI;
@@ -166,24 +176,24 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
   - código coherente que sé mantener;
   - responder a issues con criterio.
 - Postura recomendada: declarar el uso de IA de forma breve ("asistido por IA, revisado y mantenido por el autor") en vez de ocultarlo.
-- **Para el TFG:** revisar la política del centro sobre IA y, si está permitida, declararla en la memoria.
+- **Para el TFG (aclarado con el tutor, 28/09/2026):** usar librerías como infraestructura está permitido (por ejemplo, `xterm.dart`), incluso para la funcionalidad estrella. Lo que hay que evitar es copiar fragmentos concretos de código de internet sin entenderlos ni integrarlos. El proyecto puede estar asistido por IA siempre que yo entienda lo que hace y pueda defenderlo ante el tribunal (explicar cualquier parte o hacer un cambio en directo). Declararlo en la memoria.
 
 ---
 
 ## 9. Pendientes inmediatos
 
-1. **Preguntar al tutor por escrito:**
-   - ¿se acepta Flutter?
-   - ¿cuenta el agente en Python como parte del proyecto?
-   - ¿qué política hay sobre el uso de IA?
-2. Averiguar la **fecha de entrega** y ajustar el plan.
-3. Decidir sobre el **registro desde la app** (antes de la fase 7).
-4. Revisar las **licencias** marcadas como "verificar" en el documento 05 antes de reutilizar código.
+1. ~~Preguntar al tutor por escrito~~ **Resuelto:** Flutter aceptado (26/09/2026), el agente en Python es parte fundamental del proyecto (02/10/2026) y la política de IA está aclarada (28/09/2026, ver sección 8).
+2. Averiguar la **fecha oficial de entrega de la memoria** y la fecha exacta del hito de febrero, y ajustar el plan. *Pendiente de revisión.*
+3. Decidir sobre el **registro desde la app** (antes de la fase 9). *Pendiente de revisión.*
+4. ~~Revisar las licencias marcadas como "verificar" en el documento 05~~ **Resuelto (02/10/2026):** licencias comprobadas; iroh-ssh-android es GPL-3.0 e iroh-android-native no declara licencia, así que de ninguno de los dos se puede copiar código.
+5. Preguntar en el centro cómo está montada la red: si deja salir HTTPS con WebSocket hacia los relés de iroh o si hay un proxy que inspeccione el tráfico. *Pendiente de revisión* (antes de la prueba en red restrictiva de la fase 2).
+6. Confirmar el tipo del servicio en primer plano (`connectedDevice` como candidato). *Pendiente de revisión* (fase 8).
+7. Elegir cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter`. *Pendiente de revisión* (al empezar la fase 2).
 
 ---
 
 ## 10. Qué NO está en estos documentos
 
 - **La normativa oficial de requisitos mínimos del proyecto de DAM.** Aquí solo está resumida (03, sección 2) y cruzada con el plan (04, tabla final). **Súbela también al proyecto** tal cual la da el centro.
-- **Los tres documentos originales generados con otra IA.** Están obsoletos y sustituidos por los 01–03; no hace falta conservarlos.
+- **Los tres documentos originales generados con otra IA.** Están obsoletos y sustituidos por los 01–06; no hace falta conservarlos.
 - **Explicaciones didácticas** que se dieron en la conversación (qué es un platform channel, cómo funciona un PTY, etc.). Son conocimiento general que se puede volver a preguntar.
