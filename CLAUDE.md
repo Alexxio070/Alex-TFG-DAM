@@ -2,8 +2,6 @@
 
 TFG de DAM (Desarrollo de Aplicaciones Multiplataforma) de alex. Es una app Android + un agente Python en el PC Linux del usuario para administrar ese PC en remoto desde el móvil (LAN o WAN), sin configurar router ni VPN.
 
-> ⚠️ **Stack cliente en revisión (2026-09-27):** el cliente está planteado en Flutter/Dart, pero alex encontró una serie de contras y está evaluando pasar todo el proyecto a Kotlin nativo. Todas las referencias a Flutter/Dart/MVVM+provider/xterm.dart en este documento son **provisionales**, no una decisión cerrada. No asumas Flutter al generar código del cliente sin confirmar primero.
-
 **Alcance de este repo:** aquí vive únicamente el trabajo del PROYECTO (el entregable que se presenta al tribunal). El aprendizaje personal de las tecnologías (hilos "APRENDIZAJE:") se lleva en el chat del proyecto de claude.ai, no en este repositorio — no aplican aquí las instrucciones de estilo docente de esos hilos.
 
 ## Regla de confirmación previa (sin automatismos)
@@ -28,10 +26,10 @@ Regla fundamental de alex, aplica a cualquier sesión de Claude/Claude Code que 
 
 ## Stack
 
-**Cliente (Android) — 🔶 en revisión, ver nota al principio:**
-- Planteado en Flutter/Dart, arquitectura MVVM + provider
+**Cliente (Android) — confirmado:**
+- Flutter/Dart, arquitectura MVVM + provider
 - xterm.dart para la terminal remota
-- Alternativa que se está evaluando: Kotlin nativo (Jetpack Compose) para todo el proyecto
+- Componentes nativos del SO que lo requieran (servicio en primer plano, etc.) se envuelven con *platform channel* a Kotlin; el stack multilenguaje es normal cuando se justifica, no exclusivo de pasar todo a Kotlin
 
 **Agente (PC Linux) — confirmado:**
 - Python 3.11+, FastAPI + Uvicorn, asyncio
@@ -50,7 +48,7 @@ Regla fundamental de alex, aplica a cualquier sesión de Claude/Claude Code que 
 
 ## Estructura del repo
 
-- `app/`: cliente Android (lenguaje pendiente de confirmar — ver nota sobre Flutter/Kotlin)
+- `app/`: cliente Flutter
 - `agent/`: agente Python (incluye `schema.sql`)
 - Ramas: `main` (estable), `develop` (integración), `feature/<nombre>` (una por tarea/fase)
 - Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`)
@@ -72,30 +70,32 @@ Regla fundamental de alex, aplica a cualquier sesión de Claude/Claude Code que 
 
 ## Plan de fases
 
-Ver el detalle completo en [`docs/04-plan-de-fases.md`](docs/04-plan-de-fases.md). Resumen:
+Ver el detalle completo en [`docs/04-plan-de-fases.md`](docs/04-plan-de-fases.md). Resumen (reordenado tras la auditoría de octubre 2026 — iroh se adelanta por ser lo más arriesgado):
 
-**Bloque 1 — Beta v0.1 (objetivo: mediados de diciembre 2026):**
-- Fase 0 🟢 Preparación y aprender el framework del cliente (sep–oct)
+**Bloque 1 — Beta v0.1 (objetivo: Navidad 2026):**
+- Fase 0 🟢 Preparación y aprender Flutter (sep–oct)
 - Fase 1 🟢 Métricas del sistema (oct)
-- Fase 2 🔴 Seguridad: login, TLS, Argon2, tokens de sesión (nov)
-- Fase 3 🟢🟡 Energía y procesos (nov–dic)
+- Fase 2 🔴 Conexión remota con iroh — PoC + integración + matriz de pruebas (nov)
+- Fase 3 🔴 Seguridad: login, TLS, Argon2, tokens de sesión (nov)
 - Fase 4 🟡 Instalación y servicio systemd (dic)
 
-**Bloque 2 — Núcleo del TFG (enero–mayo 2026):**
-- PoC de iroh 🔴 (2–3 días, principios de enero)
-- Fase 5 🟡 CRUD de acciones rápidas — cubre el requisito mínimo de CRUD de 2 entidades relacionadas (ene)
-- Fase 6 🔴 Terminal remota vía WebSocket + PTY — función estrella del proyecto (feb)
-- Fase 7 🟢🟡 Descubrimiento (mDNS), emparejamiento por QR y archivos (mar)
-- Fase 8 🔴 Acceso remoto vía iroh (mar–abr)
-- Fase 9 🟡 Notificaciones y reglas de alerta (abr–may)
+**Bloque 2 — Núcleo del TFG (enero–mayo 2027):**
+- Fase 5 🔴 Terminal remota vía WebSocket + PTY (v0.2) — función estrella del proyecto (ene)
+- Fase 6 🟢🟡 Energía y procesos (feb)
+- Fase 7 🟡 CRUD de acciones rápidas — cubre el requisito mínimo de CRUD de 2 entidades relacionadas (mar)
+- Fase 8 🟡🔴 Notificaciones, reglas de alerta y servicio en primer plano (abr)
+- Fase 9 🟢🟡 Descubrimiento (mDNS), emparejamiento por QR y archivos (abr–may)
 - Fase 10 🟢 Subida de archivos y pulido final (may)
 
-**Nunca se recortan:** login/TLS (fase 2), instalación del servicio (fase 4), CRUD de acciones rápidas (fase 5) y la terminal (fase 6).
+**Defensa:** primera semana de junio de 2027 (fecha oficial pendiente de confirmar).
+
+**Nunca se recortan:** conexión iroh (fase 2, plan B = modo LAN si falla), login/TLS (fase 3), instalación del servicio (fase 4), terminal (fase 5) y CRUD de acciones rápidas (fase 7).
 
 ## Decisiones abiertas
-- **Lenguaje/framework del cliente Android:** Flutter (planteado originalmente, aceptado por el tutor) vs. Kotlin nativo — **en revisión activa por alex**, ver nota al principio del documento.
-- ¿El agente en Python cuenta como parte del proyecto? — preguntar al tutor.
-- Registro de usuario in-app (código de un solo uso + formulario) vs. creación de usuario solo por CLI — pendiente de resolver antes de la fase 7.
+- **Binding de iroh en Android:** el publicado en Maven no incluye Android (hay que compilarlo con Rust + NDK); alternativa, el plugin `iroh_flutter` de pub.dev. Se decide al empezar la fase 2.
+- Registro de usuario in-app (código de un solo uso + formulario) vs. creación de usuario solo por CLI — pendiente de resolver antes de la fase 9.
+
+**Ya resueltas:** Flutter como framework del cliente (el tutor lo aceptó 26/09; alex evaluó pasar a Kotlin nativo y decidió quedarse en Flutter, 03/10); el agente en Python es parte fundamental del proyecto (no hace falta preguntarlo).
 
 ## Documentación completa
 
