@@ -1,0 +1,37 @@
+# Flutter / Dart (app/)
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/build/
+app/android/local.properties
+app/android/key.properties
+app/ios/Flutter/.last_build_id
+*.jks
+*.keystore
+
+# Python (agent/)
+agent/__pycache__/
+agent/**/__pycache__/
+*.pyc
+agent/.venv/
+agent/venv/
+agent/*.egg-info/
+agent/.pytest_cache/
+
+# Bases de datos locales y secretos (nunca al repo)
+*.db
+*.sqlite3
+agent/*.pem
+agent/*.crt
+agent/*.key
+.env
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.iml
+
+# Sistema
+.DS_Store
