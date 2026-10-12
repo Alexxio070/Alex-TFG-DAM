@@ -21,7 +21,7 @@
 * Layered architecture; Git with branches and meaningful commits; installation manual.
 * Usable GUI, smooth navigation, **form validation**.
 * User authentication (login; registration pending review).
-* **Full CRUD on at least two related entities**: `grupo` ↔ `accion_rapida` (plus `regla_alerta`).
+* **Full CRUD on at least two related entities**: `grupo` ↔ `accion_rapida` (plus `regla_alerta` and `nota`).
 * Business logic (search, filtering, calculations) and proper error handling / user feedback.
 * Database with ≥3–4 related tables, accessed through structured classes (repositories), with a creation script (`agent/schema.sql`).
 * An extra feature not covered in class (camera/QR, background service + notifications, P2P, PTY terminal).
@@ -85,9 +85,10 @@
 * Search/sort: by name, group, most used, last run.
 * Optional per action: "confirm before running", "notify when finished".
 
-### F. Files
-* Browse the filesystem, download PC → phone, upload phone → PC (default: user's XDG download dir).
-* OS permissions are the security boundary. On `PermissionError`, the app shows: "root operations must be done from the terminal". The agent never elevates privileges. Normalize and validate every path.
+### F. Shared space (notes)
+* A space shared between phone and PC to pass **text notes and links** from one side to the other. Full CRUD from the app (create, edit, delete, search); on the PC via CLI `companion note add "text"` / `companion note list`.
+* No live sync: the app fetches notes when the shared-space screen opens and on pull-to-refresh (the app is meant for use away from the PC). Does NOT use `/ws/events`. Concurrent edits: last write wins.
+* Images: **still being considered** (not in confirmed scope). File browsing/transfer is OUT of scope (future idea).
 
 ### G. Notifications & alert rules
 * CLI `companion notify "message"` talks to the agent through a Unix socket at `$XDG_RUNTIME_DIR/companion.sock` (mode `0600`). Usable from scripts or Claude Code hooks.
@@ -116,6 +117,7 @@
 | ejecucion | id, accion_id, inicio, fin, estado, codigo_salida, salida | N:1 accion_rapida (ON DELETE CASCADE) |
 | regla_alerta | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario |
 | notificacion | id, usuario_id, origen, regla_id (nullable, ON DELETE SET NULL), ejecucion_id (nullable, ON DELETE SET NULL), titulo, mensaje, fecha, leida | N:1 usuario, regla_alerta, ejecucion |
+| nota | id, usuario_id, tipo (texto/enlace), contenido, origen (móvil/PC), creado_en, actualizado_en | N:1 usuario |
 
 * Enable `PRAGMA foreign_keys = ON` **on every connection** (SQLite disables it by default, and without it `ON DELETE CASCADE` / `SET NULL` are ignored). Parameterized SQL only. One repository class per table. No ORM.
 * SQLite treats NULLs as distinct in UNIQUE constraints: enforce name uniqueness for "no group" actions in the service layer.
@@ -133,7 +135,7 @@ PUT    /acciones/{id}               DELETE /acciones/{id}
 POST   /acciones/{id}/ejecutar      POST   /ejecuciones/{id}/cancelar
 GET    /ejecuciones?accion=&estado=&desde=&hasta=   GET /ejecuciones/{id}
 DELETE /ejecuciones/{id}            DELETE /ejecuciones?accion=
-GET    /files?path=                 GET    /files/download?path=      POST /files/upload
+GET    /notas?q=                    POST   /notas        PUT /notas/{id}    DELETE /notas/{id}
 GET    /reglas  POST /reglas  PUT /reglas/{id}  DELETE /reglas/{id}
 GET    /notificaciones?origen=&leida=&q=&desde=&hasta=   PATCH /notificaciones/{id}   DELETE /notificaciones/{id}
 WS     /ws/terminal                 WS     /ws/events
@@ -141,7 +143,7 @@ WS     /ws/terminal                 WS     /ws/events
 Route names are a starting proposal; keep them consistent once implemented and update this file.
 
 ## 5c. APP SCREENS
-Login (+ first-connection fingerprint check) · Connection setup (manual address; later mDNS list + QR scan) · Dashboard/metrics · Power · Processes · Quick actions list → group form → action form → action detail (stats, Run, history) → execution detail · Terminal · File browser · Alert rules list/form · Notification history · Settings (logout, server data).
+Login (+ first-connection fingerprint check) · Connection setup (manual address; later mDNS list + QR scan) · Dashboard/metrics · Power · Processes · Quick actions list → group form → action form → action detail (stats, Run, history) → execution detail · Terminal · Shared space (notes list/form) · Alert rules list/form · Notification history · Settings (logout, server data).
 
 ## 6. SECURITY
 * `companion setup`:
@@ -182,7 +184,9 @@ Login (+ first-connection fingerprint check) · Connection setup (manual address
   * peripheral battery (UPower);
   * opening URLs on the PC (xdg-open);
   * phone → desktop notifications;
-  * shared clipboard / shared notes.
+  * shared clipboard (the shared notes space IS in scope, module F).
+* File browsing, download and upload (future idea).
+* Images in the shared space: still being considered, do not implement unless the docs change.
 * KDE ricing (themes, wallpapers, color schemes) and support for other desktops/WMs.
 * iOS and multiple devices.
 * 2FA/TOTP and Wake-on-LAN.
@@ -205,7 +209,7 @@ See 06-ideas-de-futuro.md.
   * Phase 6: power + processes (February);
   * Phase 7: quick actions CRUD (mandatory requirement) (March);
   * Phase 8: notifications + alert rules CRUD + foreground service (April);
-  * Phase 9: mDNS + QR pairing + registration (pending review) + file browsing/download (April – May);
-  * Phase 10: file upload + polish (May).
+  * Phase 9: mDNS + QR pairing + registration (pending review) + shared space for notes and links (April – May);
+  * Phase 10: polish (May).
 * Thesis report: May (official deadline pending review). Defense: first week of June 2027.
 * If time allows: terminal themes.

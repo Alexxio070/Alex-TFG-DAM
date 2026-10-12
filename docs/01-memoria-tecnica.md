@@ -33,7 +33,7 @@ Las funciones principales son:
 - la gestión de procesos;
 - el control de energía y sesión;
 - las acciones rápidas (comandos guardados y organizados en grupos, con historial de ejecuciones);
-- la transferencia de archivos;
+- un espacio compartido entre el móvil y el PC para pasar notas de texto y enlaces de un lado a otro;
 - las notificaciones del PC al móvil con reglas de alerta configurables.
 
 La filosofía de diseño es: **solo se incluyen funciones que tienen sentido estando lejos del equipo**. Lo que únicamente es útil delante del PC (control multimedia, portapapeles, personalización del escritorio…) queda fuera del alcance y se recoge en *06-ideas-de-futuro.md*.
@@ -50,7 +50,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - **Clientes SSH móviles** (Termius, ConnectBot…) ofrecen terminal, pero requieren que el PC sea accesible desde Internet (abrir puertos, IP pública o VPN) y no incluyen monitorización, gestión de energía ni notificaciones de eventos.
 - **Cockpit** ofrece administración web completa, pero no es una app móvil y exponerlo fuera de casa requiere configuración de red.
 
-**Valor diferencial:** una única app que combina terminal real, monitorización, procesos, energía, acciones rápidas, archivos y avisos, y que funciona desde cualquier sitio con una configuración mínima.
+**Valor diferencial:** una única app que combina terminal real, monitorización, procesos, energía, acciones rápidas, espacio compartido y avisos, y que funciona desde cualquier sitio con una configuración mínima.
 
 > KDE Connect es una herramienta para cuando estás cerca del PC; Linux System Companion es una herramienta para cuando no lo estás.
 
@@ -132,10 +132,20 @@ GET    /ejecuciones/{id}               DELETE /ejecuciones/{id}
 DELETE /ejecuciones?accion=            (limpiar historial)
 ```
 
-### Módulo F — Archivos
-- Navegación por el sistema de archivos del PC.
-- **Descarga** de archivos del PC al móvil y **subida** del móvil al PC (por defecto, a la carpeta de descargas del usuario).
-- Los permisos los aplica el sistema operativo. Si una operación requiere permisos de administrador, la app indica que **las operaciones como root deben hacerse desde la terminal** (el agente nunca usa `sudo`).
+### Módulo F — Espacio compartido
+- Un **espacio común entre el móvil y el PC** donde dejar **notas de texto y enlaces**, accesible desde los dos lados, para pasar información de uno a otro. Ejemplos: guardar un enlace en el móvil para abrirlo luego en el PC, o dejar desde el PC un texto o un comando para consultarlo fuera de casa.
+- **CRUD completo desde la app:** crear, editar, borrar y buscar notas.
+- **En el PC:** desde la CLI (`companion note add "texto"`, `companion note list`).
+- La app pide las notas al agente al abrir la pantalla del espacio compartido y al deslizar hacia abajo para recargar; no hace falta actualización al momento, porque es una app pensada para usarla lejos del PC.
+- Si los dos lados editan la misma nota a la vez, se guarda el último cambio.
+- *Imágenes en el espacio compartido: **aún pensándolo**.* No forman parte del alcance confirmado.
+- El explorador y la transferencia de archivos quedan fuera del alcance (ver *06-ideas-de-futuro.md*).
+
+**API del agente:**
+```
+GET    /notas?q=                       POST   /notas
+PUT    /notas/{id}                     DELETE /notas/{id}
+```
 
 ### Módulo G — Notificaciones y reglas de alerta
 - **Avisos manuales:** el comando `companion notify "mensaje"` envía una notificación al móvil desde cualquier script o programa. Ejemplos:
@@ -211,11 +221,11 @@ WS     /ws/events                      (avisos en tiempo real)
 **Agente:**
 - **Rutas de la API:** reciben peticiones, validan datos de entrada (Pydantic) y devuelven respuestas.
 - **Servicios:** lógica de negocio (ejecución de acciones, evaluación de reglas de alerta, gestión de sesiones…).
-- **Repositorios:** único punto de acceso a SQLite (`UsuarioRepository`, `GrupoRepository`, `AccionRepository`, `EjecucionRepository`, `ReglaAlertaRepository`, `NotificacionRepository`…).
+- **Repositorios:** único punto de acceso a SQLite (`UsuarioRepository`, `GrupoRepository`, `AccionRepository`, `EjecucionRepository`, `ReglaAlertaRepository`, `NotificacionRepository`, `NotaRepository`…).
 - **Modelos:** clases de datos que representan cada entidad.
 
 ### 4.3 Comunicación
-- **REST (HTTP/JSON):** peticiones puntuales, como login, energía, procesos, archivos y el CRUD de grupos, acciones, reglas y notificaciones.
+- **REST (HTTP/JSON):** peticiones puntuales, como login, energía, procesos y el CRUD de grupos, acciones, notas, reglas y notificaciones.
 - **WebSocket:** canales continuos para la terminal, las métricas en vivo y los eventos o notificaciones.
 - En la beta las métricas se obtienen por consulta periódica REST (cada 1–2 s) por simplicidad.
 
@@ -299,7 +309,7 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
                          └──────────────┘
 ```
 
-*(`accion_rapida` también referencia a `usuario` para las acciones "Sin grupo".)*
+*(`accion_rapida` también referencia a `usuario` para las acciones "Sin grupo". La tabla `nota` cuelga de `usuario` con relación 1:N; no se dibuja para no complicar el diagrama.)*
 
 ### 6.2 Tablas
 
@@ -313,8 +323,9 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
 | **ejecucion** | id, accion_id, inicio, fin, estado, codigo_salida, salida | N:1 accion_rapida (borrado en cascada) |
 | **regla_alerta** | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario · 1:N notificacion |
 | **notificacion** | id, usuario_id, origen (manual / regla / acción), regla_id (nulo), ejecucion_id (nulo), titulo, mensaje, fecha, leida | N:1 usuario · N:1 regla_alerta · N:1 ejecucion |
+| **nota** | id, usuario_id, tipo (texto / enlace), contenido, origen (móvil / PC), creado_en, actualizado_en | N:1 usuario |
 
-**Entidades con CRUD completo desde la app:** grupo, accion_rapida y regla_alerta.
+**Entidades con CRUD completo desde la app:** grupo, accion_rapida, regla_alerta y nota.
 **Entidades de historial:** ejecucion y notificacion (creación automática, consulta, filtrado, marcado y borrado).
 
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
@@ -342,7 +353,7 @@ La configuración editable a mano (puertos, relés, umbrales por defecto) se gua
 | Ejecutar una acción rápida y ver su salida | Usuario | E |
 | Consultar historial y estadísticas de ejecuciones | Usuario | E |
 | Usar la terminal remota | Usuario | A |
-| Explorar, descargar y subir archivos | Usuario | F |
+| Gestionar notas del espacio compartido (crear, editar, borrar, buscar) | Usuario (en el móvil o en el PC) | F |
 | Gestionar reglas de alerta | Usuario | G |
 | Consultar y gestionar notificaciones | Usuario | G |
 | Enviar una notificación (`companion notify`) | Programa del PC | G |

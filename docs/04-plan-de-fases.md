@@ -25,6 +25,7 @@
 | Orden de las fases | **Resuelta (02/10/2026):** iroh pasa a la fase 2 (noviembre) por ser la parte más crítica | — |
 | Registro de usuario en la app (código de un solo uso + formulario) frente a creación por CLI | **Pendiente de revisión** | Antes de la fase 9 |
 | Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
+| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
 | ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
 | Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
@@ -217,7 +218,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ### 🎯 Hito de febrero
 > La app se conecta al agente Python del PC a través de iroh y ofrece la terminal y las gráficas de rendimiento.
 
-*Pendiente de revisión: fecha exacta de la presentación.* Si alguna parte no está lista, el explorador de archivos (fase 9) puede sustituir a las gráficas; en ese caso, adelantar la parte de archivos de la fase 9.
+*Pendiente de revisión: fecha exacta de la presentación.* Las gráficas ya están hechas desde la fase 1; lo que hay que asegurar para el hito es la terminal a través de iroh.
 
 ---
 
@@ -301,27 +302,28 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
 
 ---
 
-### Fase 9 — Descubrimiento, emparejamiento y archivos 🟢🟡
+### Fase 9 — Descubrimiento, emparejamiento y espacio compartido 🟡
 **Duración:** ~3 semanas (finales de abril – mediados de mayo)
 
 **Objetivos:**
 - **mDNS:** el agente se anuncia (zeroconf) y la app lo encuentra sin escribir la dirección (bonsoir). Se prueba con el punto de acceso del móvil.
 - **QR:** `companion show-pairing` muestra un QR en la terminal con la dirección, la huella y el identificador iroh; la app lo escanea (`mobile_scanner`) y rellena los datos automáticamente. *Cubre el elemento diferenciador "uso de sensores/cámara".*
 - **Registro en la app** *(pendiente de revisión: registro en la app o creación por CLI)*: `companion setup` genera un código de un solo uso y la app muestra un formulario de registro (código, usuario, contraseña con confirmación y validación de robustez).
-- **Archivos:**
-  - navegar por el sistema de archivos del PC;
-  - descargar archivos al móvil;
-  - aviso cuando algo requiere root.
+- **Espacio compartido** (notas de texto y enlaces entre el móvil y el PC):
+  - **BD:** tabla `nota` en `schema.sql`, con su repositorio;
+  - **Agente:** CRUD de notas (`/notas`) y comandos `companion note add "texto"` y `companion note list`;
+  - **App:** lista de notas con buscador, formulario de crear y editar (contenido obligatorio; si es un enlace, URL válida) y borrado con confirmación;
+  - la app pide las notas al abrir la pantalla y al deslizar hacia abajo para recargar (sin actualización al momento); si los dos lados editan la misma nota, se guarda el último cambio;
+  - *imágenes: **aún pensándolo**, fuera del alcance confirmado.*
 
-**Terminada cuando:** una instalación nueva se empareja escaneando un QR y puedes bajarte un archivo del PC.
+**Terminada cuando:** una instalación nueva se empareja escaneando un QR, y una nota guardada desde el móvil aparece en el PC al consultarla (y al revés).
 
 ---
 
-### Fase 10 — Subida de archivos y pulido 🟢
+### Fase 10 — Pulido 🟢
 **Duración:** ~2 semanas (mayo)
 
 **Objetivos:**
-- Subir archivos del móvil al PC (por defecto, a la carpeta de descargas del usuario).
 - Revisión general:
   - mensajes de error comprensibles;
   - estados de carga;
@@ -338,10 +340,9 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
 
 Recortar en este orden (lo primero es lo que menos se pierde):
 
-1. **Subida de archivos** (fase 10): la descarga ya cubre el caso principal.
-2. **Reglas de alerta con CRUD** (fase 8): mantener solo `companion notify`.
-3. **mDNS** (fase 9): el QR ya evita escribir la dirección.
-4. **Hibernar y ordenación de procesos** (fase 6): dejar el listado y el botón de finalizar.
+1. **Reglas de alerta con CRUD** (fase 8): mantener solo `companion notify`.
+2. **mDNS** (fase 9): el QR ya evita escribir la dirección.
+3. **Hibernar y ordenación de procesos** (fase 6): dejar el listado y el botón de finalizar.
 
 **Nunca se recortan:** conexión por iroh (o el plan B ya documentado), terminal (función estrella), CRUD de acciones rápidas (requisito mínimo) y pulido mínimo de errores.
 
@@ -400,8 +401,8 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 | 6 | Energía y procesos | 🟢🟡 | Feb |
 | 7 | CRUD de acciones rápidas | 🟡 | Mar |
 | 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
-| 9 | mDNS, QR, registro (pendiente) y archivos | 🟢🟡 | Abr – May |
-| 10 | Subida y pulido | 🟢 | May |
+| 9 | mDNS, QR, registro (pendiente) y espacio compartido | 🟡 | Abr – May |
+| 10 | Pulido | 🟢 | May |
 | Memoria | Redacción final | | May (entrega pendiente de revisión) |
 | **Defensa** | | | **Primera semana de junio** |
 | Extra | Temas de terminal | 🟢 | Si da tiempo |
@@ -414,9 +415,9 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 | Capas, Git, manual de instalación | Tareas transversales · Fase 4 |
 | Interfaz, navegación, validaciones | Fases 1 y 3 · formularios de las fases 7, 8 y 9 |
 | Registro / login | Login: fase 3 · Registro: fase 9 *(pendiente de revisión)* |
-| CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) |
+| CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) y la fase 9 (nota) |
 | Lógica de negocio | Filtros de procesos (fase 6), estadísticas y reglas (fase 7), umbrales (fase 8) |
 | Gestión de errores | Todas las fases · revisión en la fase 10 |
-| BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fases 3 y 7 (6 tablas) · fase 8 (8 tablas) |
+| BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fases 3 y 7 (6 tablas) · fase 8 (8 tablas) · fase 9 (9 tablas) |
 | Documentación completa | Material por fase · redacción final |
 | Elemento diferenciador | P2P con iroh (fase 2), terminal remota (fase 5), servicios en segundo plano y notificaciones (fase 8), cámara/QR (fase 9) |

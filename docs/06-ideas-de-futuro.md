@@ -35,16 +35,26 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ---
 
-## 2. Notas compartidas 🟡🔴
+## 2. Archivos y ampliaciones del espacio compartido
 
-Sustituye a la idea original de portapapeles compartido.
+*(El espacio compartido de notas de texto y enlaces entre el móvil y el PC sí forma parte del TFG, fase 9, desde el 12/10/2026. Aquí queda lo que se dejó fuera.)*
 
-- Un **espacio común entre PC y móvil** donde dejar texto, enlaces, archivos e imágenes, accesible desde ambos lados.
-- A diferencia de un portapapeles, **tiene sentido tanto de cerca como de lejos**: guardar un enlace en el móvil para abrirlo luego en el PC, o dejar un archivo en el PC para recogerlo desde fuera.
-- **En el PC:** acceso desde la CLI (`companion note add "texto"`, `companion note add archivo.pdf`) y opcionalmente desde el escritorio.
-- **En el móvil:** pantalla de notas, y la opción "Compartir con…" de Android para enviar cualquier cosa desde otras apps.
-- **Posibles extras:** fijar notas, caducidad automática, búsqueda, copiar al portapapeles del sistema de un toque.
-- **Retos:** sincronización cuando ambos lados modifican a la vez, almacenamiento de archivos grandes y previsualización de imágenes.
+### Explorador y transferencia de archivos 🟡
+- Navegar por el sistema de archivos del PC desde el móvil, descargar archivos al móvil y subirlos al PC (por ejemplo, a la carpeta de descargas del usuario).
+- Los permisos los aplica el sistema operativo; si algo requiere root, la app avisa de que hay que usar la terminal (el agente nunca usa `sudo`).
+- Hay que normalizar y validar cada ruta para evitar accesos fuera de lo permitido.
+- Referencia: LocalSend (transferencia de archivos en Flutter).
+
+### Imágenes en el espacio compartido 🟡 *(aún pensándolo)*
+- Subir imágenes desde el móvil y verlas en el PC (y al revés), con un tamaño máximo.
+- **Retos:** almacenamiento en el agente, previsualización y límites de tamaño.
+- Si se decide incluirlas en el TFG, irían en la fase 9 junto al resto del espacio compartido.
+
+### Otras ampliaciones del espacio compartido 🟢🟡
+- Opción "Compartir con…" de Android para enviar texto o enlaces al espacio compartido desde otras apps.
+- Fijar notas, caducidad automática y copiar al portapapeles del sistema de un toque.
+- Fusión de cambios cuando los dos lados editan la misma nota (en el TFG se guarda el último cambio).
+- Actualización al momento de las notas por el canal de eventos (en el TFG se actualizan al abrir la pantalla o al recargar).
 
 ---
 
@@ -85,7 +95,7 @@ Sustituye a la idea original de portapapeles compartido.
 
 ### Integración con la shell (*shell integration*) 🟡
 - Saber en qué carpeta está la terminal, dónde empieza y termina cada comando y si terminó bien o mal (secuencias OSC 7 y OSC 133).
-- Permitiría, por ejemplo, abrir el explorador de archivos en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `companion notify`.
+- Permitiría, por ejemplo, abrir el explorador de archivos (si se llega a hacer, ver sección 2) en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `companion notify`.
 - Requiere configuración específica por shell.
 
 ### Varias sesiones y persistencia 🟡

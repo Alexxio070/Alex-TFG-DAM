@@ -54,7 +54,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 - **TLS autofirmado con certificate pinning.** En la beta la huella se compara a ojo; más tarde, por QR.
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.** Multi-dispositivo como idea futura.
-- **El agente nunca usa root ni sudo.** Para operaciones de root sobre archivos, la app avisa de que hay que usar la terminal.
+- **El agente nunca usa root ni sudo.** Para operaciones de root, la app avisa de que hay que usar la terminal.
 
 ### 3.3 Terminal
 - Se lanza `$SHELL -l` de forma genérica. **No hay que programar soporte por shell**: el PTY funciona igual con Bash, Zsh y Fish. **Shell probada oficialmente: Zsh.**
@@ -69,10 +69,16 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
   - servicio en primer plano en Android que reutiliza el del túnel iroh.
 - **Sin Firebase.** Funciona también en LAN, sin iroh.
 
-### 3.5 Requisitos mínimos de DAM
+### 3.5 Espacio compartido (dentro del TFG, decidido el 12/10/2026)
+- **Sustituye al explorador y la transferencia de archivos**, que pasan a ideas de futuro (06).
+- Un espacio común entre el móvil y el PC donde dejar **notas de texto y enlaces** para pasar información de un lado a otro. CRUD desde la app y `companion note add` en el PC; la app pide las notas al abrir la pantalla y al recargar (sin actualización al momento: es una app para usar lejos del PC). Si los dos lados editan la misma nota, gana el último cambio.
+- **Imágenes: aún pensándolo.** Fuera del alcance confirmado hasta que se decida.
+- Va en la fase 9, después del CRUD (fase 7), cuyo patrón reutiliza.
+
+### 3.6 Requisitos mínimos de DAM
 Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo se resolvieron:
-- **CRUD de 2 entidades relacionadas:** no existía. Se añadieron las **acciones rápidas**: `grupo` 1:N `accion_rapida` 1:N `ejecucion`, con CRUD completo de grupos y acciones. Refuerzo con `regla_alerta` 1:N `notificacion`.
-- **BD de 3–4 tablas:** ahora son 8 tablas, con `schema.sql` y repositorios.
+- **CRUD de 2 entidades relacionadas:** no existía. Se añadieron las **acciones rápidas**: `grupo` 1:N `accion_rapida` 1:N `ejecucion`, con CRUD completo de grupos y acciones. Refuerzo con `regla_alerta` 1:N `notificacion` y con `nota` (espacio compartido).
+- **BD de 3–4 tablas:** ahora son 9 tablas, con `schema.sql` y repositorios.
 - **Diseño de BD, casos de uso, pruebas y capturas en la memoria:** añadidos a la documentación y al plan.
 - **Elemento diferenciador:** cubierto de sobra (cámara/QR, servicio en segundo plano con notificaciones, P2P, PTY).
 - **Flutter:** la normativa cita "Android Studio, Kotlin, Java" y Flutter no aparece, pero **el tutor lo aceptó (26/09/2026)**. Riesgo cerrado.
@@ -89,7 +95,8 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - abrir URLs en el PC;
 - notificaciones del móvil al escritorio;
 - ricing de KDE y personalización en general;
-- portapapeles compartido. Se reconvierte en idea futura de **notas compartidas**: texto, enlaces, archivos e imágenes entre PC y móvil.
+- portapapeles compartido. Se reconvirtió en **espacio compartido** de notas de texto y enlaces, que el 12/10/2026 pasó a formar parte del TFG (ver 3.5).
+- explorador y transferencia de archivos (12/10/2026): sustituido por el espacio compartido; queda como idea de futuro.
 
 **Descartado por complejidad o por chocar con otros requisitos:**
 - Wake-on-LAN;
@@ -104,7 +111,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 **Calendario (02/10/2026):**
 - **Beta v0.1 en Navidad:** funcional y bien estructurada, como base mínima sobre la que seguir añadiendo funciones.
-- **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento (o el explorador de archivos). *Fecha exacta pendiente de revisión.*
+- **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento. *Fecha exacta pendiente de revisión.*
 - **Defensa:** primera semana de junio de 2027. *Fecha oficial de entrega de la memoria pendiente de revisión.*
 
 **Criterios:**
@@ -126,10 +133,10 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - Fase 6: energía y procesos.
 - Fase 7: CRUD de acciones rápidas (requisito obligatorio).
 - Fase 8: notificaciones, reglas y servicio en primer plano.
-- Fase 9: mDNS, QR, registro (pendiente de revisión) y archivos.
-- Fase 10: subida de archivos y pulido.
+- Fase 9: mDNS, QR, registro (pendiente de revisión) y espacio compartido (notas de texto y enlaces; imágenes aún pensándolo).
+- Fase 10: pulido.
 
-**Orden de recorte si voy con retraso:** subida de archivos → reglas de alerta → mDNS → hibernar y ordenación de procesos. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
+**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
 
 ---
 
@@ -189,6 +196,7 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 5. Preguntar en el centro cómo está montada la red: si deja salir HTTPS con WebSocket hacia los relés de iroh o si hay un proxy que inspeccione el tráfico. *Pendiente de revisión* (antes de la prueba en red restrictiva de la fase 2).
 6. Confirmar el tipo del servicio en primer plano (`connectedDevice` como candidato). *Pendiente de revisión* (fase 8).
 7. Elegir cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter`. *Pendiente de revisión* (al empezar la fase 2).
+8. Decidir si las **imágenes** entran en el espacio compartido. *Aún pensándolo* (antes de la fase 9).
 
 ---
 

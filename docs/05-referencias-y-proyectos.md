@@ -33,7 +33,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
   - transferencia de archivos;
   - organización de un proyecto Flutter real y grande.
 
-  Útil en las fases 3, 9 y 10.
+  Útil sobre todo en la fase 3 (HTTPS con certificados autofirmados) y como ejemplo de organización durante todo el proyecto. Su parte de transferencia de archivos queda para las ideas de futuro.
 - **Uso:** inspiración y posible reutilización de fragmentos.
 - **Licencia:** Apache-2.0.
 - **Repositorio:** github.com/localsend/localsend
@@ -163,6 +163,6 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 | 6 (Energía y procesos) | psutil, Cockpit |
 | 7 (CRUD de acciones rápidas) | terminado (procesos en segundo plano), documentación de asyncio y sqlite3 |
 | 8 (Notificaciones, reglas de alerta y servicio en primer plano) | iroh-ssh-android (servicio en primer plano), KDE Connect |
-| 9 (mDNS, QR, registro y archivos) | LocalSend |
-| 10 (Subida y pulido) | LocalSend |
+| 9 (mDNS, QR, registro y espacio compartido) | LocalSend (descubrimiento en red local), KDE Connect (emparejamiento) |
+| 10 (Pulido) | LocalSend (organización de un proyecto Flutter grande) |
 | Memoria | KDE Connect, Cockpit, RustDesk, clientes SSH |

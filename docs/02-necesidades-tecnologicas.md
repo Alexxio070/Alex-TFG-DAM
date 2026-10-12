@@ -108,7 +108,7 @@ Cada bloque sigue el mismo esquema:
 ## 3. Comunicación
 
 ### 3.1 Protocolo de comunicación entre app y agente
-- **Necesidad:** peticiones puntuales (login, apagar, listar archivos) y flujos continuos (terminal, métricas, avisos).
+- **Necesidad:** peticiones puntuales (login, apagar, guardar una nota) y flujos continuos (terminal, métricas, avisos).
 - **Tipo de tecnología:** API HTTP + canal bidireccional persistente.
 - **Elección:** **REST (HTTP/JSON)** para lo puntual y **WebSocket** para lo continuo. Ambos los ofrece FastAPI de forma nativa; para WebSocket hay que instalar además el paquete `websockets`.
 - **Alternativas descartadas:**
