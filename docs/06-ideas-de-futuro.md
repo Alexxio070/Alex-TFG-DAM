@@ -114,7 +114,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Segunda capa opcional para quien la quiera, sin hacerla obligatoria.
 
 ### Modo sin sesión mejorado 🟡
-- Con *linger*, ofrecer desde la CLI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
+- Con *linger*, ofrecer desde la TUI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
 
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.

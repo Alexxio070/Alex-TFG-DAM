@@ -45,7 +45,7 @@ Cada bloque sigue el mismo esquema:
 | Gráficas | `fl_chart` | Gráficas de CPU y RAM en vivo |
 | Guardar token y huella de forma segura | `flutter_secure_storage` | Usa el Keystore de Android |
 | Descubrir el PC en la red local | `bonsoir` | Cliente mDNS/DNS-SD |
-| Escanear QR | `mobile_scanner` | Emparejamiento rápido |
+| Escanear QR | `mobile_scanner` | Registro y emparejamiento con el QR de la TUI |
 | Notificaciones locales | `flutter_local_notifications` | Mostrar avisos del PC |
 | Gestión de estado (ViewModels del patrón MVVM) | `provider` | Sencillo para empezar; Riverpod como alternativa si crece |
 
@@ -97,11 +97,19 @@ Cada bloque sigue el mismo esquema:
   - *`subprocess.run`:* bloquea el agente mientras dura el comando.
   - *Colas de tareas (Celery, RQ):* requieren un broker externo; excesivo para ejecuciones de un solo usuario.
 
-### 2.6 Interfaz de línea de comandos (CLI)
-- **Necesidad:** `companion setup`, `serve`, `install-service`, `passwd`, `logout-all`, `notify`, `show-pairing`…
-- **Tipo de tecnología:** framework de CLI.
-- **Elección:** **Typer** (basado en Click, que va integrado dentro de Typer desde la versión 0.26). Define comandos con funciones y tipos de Python y genera la ayuda automáticamente.
-- **Alternativas descartadas:** *argparse* (estándar, pero más verboso), *Click* directamente (Typer lo simplifica).
+### 2.6 Interfaz del agente en el PC (TUI y comandos)
+- **Necesidad:** manejar el agente desde el PC: configuración inicial y QR de registro, QR de emparejamiento, instalar o quitar el servicio, estado, cambiar la contraseña, cerrar todas las sesiones, notas del espacio compartido y exportaciones de la base de datos. Además, dos comandos que no puede lanzar una persona desde una interfaz: `companion serve` (lo arranca systemd) y `companion notify "mensaje"` (scripts y *hooks*).
+- **Tipo de tecnología:** framework de interfaz de texto (TUI) y framework de CLI.
+- **Elección (decidida el 12/10/2026):**
+  - **Textual** para la TUI: al escribir `companion` se abre una interfaz con botones. Es un framework de Python para aplicaciones de terminal (licencia MIT), con widgets como `Button` y una API de *workers* para tareas largas o de red sin bloquear la interfaz.
+  - **Typer** solo para `companion serve` y `companion notify` (basado en Click, que va integrado dentro de Typer desde la versión 0.26).
+  - **qrcode** para dibujar el QR en la terminal (licencia BSD; `print_ascii()` lo genera con caracteres de texto).
+- **Alternativas descartadas:**
+  - *Solo CLI con Typer:* era el diseño anterior; alex prefiere botones para no tener que recordar comandos.
+  - *curses* (estándar de Python): de bajo nivel, hay que dibujar a mano cada elemento.
+  - *urwid:* librería de interfaces de terminal más antigua y con menos componentes listos para usar.
+  - *segno* en lugar de qrcode: también válida; qrcode es suficiente.
+- *Versiones a verificar al empezar la fase.*
 
 ---
 
@@ -161,13 +169,13 @@ Cada bloque sigue el mismo esquema:
 ### 5.1 Cifrado del tráfico
 - **Necesidad:** que nadie pueda leer ni modificar el tráfico, incluida la terminal.
 - **Tipo de tecnología:** TLS con certificado autofirmado y fijado (*certificate pinning*).
-- **Elección:** **TLS 1.3** con un certificado generado por `companion setup` (librería `cryptography`). La app guarda su huella en la primera conexión. Dentro del túnel iroh (que ya cifra con QUIC) se mantiene el mismo TLS, así que la seguridad no depende del modo de conexión.
+- **Elección:** **TLS 1.3** con un certificado generado desde la TUI en la configuración inicial (librería `cryptography`). La app guarda su huella al escanear el QR. Dentro del túnel iroh (que ya cifra con QUIC) se mantiene el mismo TLS, así que la seguridad no depende del modo de conexión.
 - **Alternativas descartadas:** *certificados de una autoridad pública (Let's Encrypt):* requieren dominio público; no aplica a un PC doméstico.
 
 ### 5.2 Autenticación
 - **Necesidad:** que solo el propietario pueda usar el agente.
 - **Tipo de tecnología:** contraseña con hash + tokens de sesión.
-- **Elección:** **contraseña con Argon2** (`argon2-cffi`) y **tokens de sesión opacos** (aleatorios) guardados con hash en SQLite. Se pueden revocar al instante (`companion logout-all`).
+- **Elección:** **contraseña con Argon2** (`argon2-cffi`) y **tokens de sesión opacos** (aleatorios) guardados con hash en SQLite. Se pueden revocar al instante (botón «Cerrar todas las sesiones» de la TUI).
 - **Alternativas descartadas:**
   - *JWT:* no se pueden revocar hasta que caducan; con un único dispositivo no aportan nada frente a tokens opacos.
   - *2FA (TOTP):* descartado para mantener la configuración mínima; se compensa con límite de intentos y contraseña robusta.
@@ -177,7 +185,7 @@ Cada bloque sigue el mismo esquema:
 ## 6. Persistencia
 
 ### 6.1 Base de datos
-- **Necesidad:** guardar de forma persistente y relacionada los usuarios, sesiones, intentos de login, grupos, acciones rápidas, ejecuciones, reglas de alerta y notificaciones (8 tablas; diseño en 01-memoria-tecnica.md, sección 6).
+- **Necesidad:** guardar de forma persistente y relacionada los usuarios, sesiones, intentos de login, grupos, acciones rápidas, ejecuciones, reglas de alerta, notificaciones y notas (9 tablas; diseño en 01-memoria-tecnica.md, sección 6).
 - **Tipo de tecnología:** base de datos relacional embebida.
 - **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/companion/companion.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada.
 - **Alternativas descartadas:**
@@ -189,11 +197,11 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** que el resto del agente no dependa de cómo se guardan los datos y que el acceso esté organizado en clases.
 - **Tipo de tecnología:** patrón repositorio.
 - **Elección:** **una clase repositorio por entidad** (`UsuarioRepository`, `GrupoRepository`, `AccionRepository`…) con consultas SQL parametrizadas. Los servicios de negocio solo usan los repositorios.
-- **Alternativas descartadas:** *ORM (SQLAlchemy):* añade otra herramienta que aprender; con 8 tablas sencillas, SQL directo en repositorios es más claro y más fácil de explicar en la memoria.
+- **Alternativas descartadas:** *ORM (SQLAlchemy):* añade otra herramienta que aprender; con 9 tablas sencillas, SQL directo en repositorios es más claro y más fácil de explicar en la memoria.
 
 ### 6.3 Configuración
 - **Necesidad:** ajustes editables a mano (puertos, relés, umbrales por defecto).
-- **Elección:** fichero **TOML** en `~/.config/companion/config.toml` (lectura con `tomllib`, estándar desde Python 3.11). `tomllib` solo lee TOML; si `companion setup` tiene que escribir el fichero, hace falta el paquete `tomli-w`.
+- **Elección:** fichero **TOML** en `~/.config/companion/config.toml` (lectura con `tomllib`, estándar desde Python 3.11). `tomllib` solo lee TOML; si la TUI tiene que escribir el fichero, hace falta el paquete `tomli-w`.
 - **Alternativas descartadas:** *guardarlo en la BD:* menos cómodo de editar y de documentar.
 
 ---

@@ -2,13 +2,15 @@
 
 ## Criterios de planificación
 
-1. **Primero lo más arriesgado.** La conexión entre el móvil y el PC con iroh es la parte más crítica y con más incertidumbre, así que va justo después de las métricas (fase 2). Si da problemas, se descubre en noviembre, con tiempo para aplicar el plan B.
+1. **Primero lo más arriesgado.** La conexión entre el móvil y el PC con iroh es la parte más crítica y con más incertidumbre, así que va justo después de la interfaz y las métricas (fase 2). Si da problemas, se descubre en noviembre, con tiempo para aplicar el plan B.
 2. **Después, lo obligatorio y lo que más pesa en la nota.** Los requisitos mínimos del proyecto se completan entre la beta y marzo; las funciones de menor impacto, al final.
 3. **Fases difíciles intercaladas con fáciles.** Así no se acumula todo lo complejo al final y cada fase difícil va seguida de un respiro.
 4. **Cada fase termina con algo que funciona.** Nunca se empieza una fase dejando la anterior a medias.
-5. **Una beta funcional y bien estructurada en Navidad.** Pocas funciones (métricas, conexión por iroh, login e instalación), pero completas y sólidas, como base sobre la que seguir añadiendo funciones. La beta **no** necesita cumplir todos los requisitos mínimos.
+5. **Una beta mínima en Navidad (decidido el 12/10/2026).** La interfaz definitiva, con *placeholders* en lo que aún no está hecho, las métricas y la conexión por iroh. Sin usuarios ni login: el agente solo expone métricas de solo lectura. Es la base sobre la que seguir añadiendo funciones y **no** necesita cumplir los requisitos mínimos.
 6. **Hito de febrero:** una versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento.
 7. **Se parte de cero en desarrollo móvil.** Las estimaciones incluyen tiempo de aprendizaje y asumen dedicación a tiempo parcial, compaginada con clases.
+
+**⚠️ Calendario apretado (12/10/2026):** al llevar la seguridad y la instalación después de la beta, el bloque 2 empieza unas 4 semanas más tarde que en el plan anterior. La terminal termina a finales de febrero (si el hito es a principios de febrero, no llegaría) y las fases 8–10 se solapan con la redacción de la memoria en mayo. Si hay retraso, aplicar el orden de recortes.
 
 *Fechas orientativas desde finales de septiembre de 2026. La defensa es la primera semana de junio de 2027. **Pendiente de revisión:** la fecha exacta del hito de febrero y la fecha oficial de entrega de la memoria; ajustar el plan cuando se conozcan, junto con el calendario de exámenes.*
 
@@ -22,8 +24,10 @@
 |---|---|---|
 | ¿El centro acepta Flutter? (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter | — |
 | ¿El agente en Python cuenta como parte del proyecto? | **Resuelta (02/10/2026):** es parte fundamental del proyecto; sin él la app no funciona | — |
-| Orden de las fases | **Resuelta (02/10/2026):** iroh pasa a la fase 2 (noviembre) por ser la parte más crítica | — |
-| Registro de usuario en la app (código de un solo uso + formulario) frente a creación por CLI | **Pendiente de revisión** | Antes de la fase 9 |
+| Orden de las fases | **Resuelta (02/10/2026 y 12/10/2026):** iroh en la fase 2 por ser la parte más crítica. El 12/10 la interfaz definitiva pasa a la fase 1 y la beta se queda sin login; la seguridad va en enero, antes de la terminal | — |
+| Herramienta del agente en el PC | **Resuelta (12/10/2026):** TUI con botones (Textual) al escribir `companion`; solo `companion serve` y `companion notify` quedan como comandos de terminal | — |
+| Cómo se crea el usuario | **Resuelta (12/10/2026):** la TUI muestra un QR; la app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña | — |
+| En qué fase va el registro por QR | **Resuelta (12/10/2026):** fase 9. Hasta entonces, el usuario se crea desde la TUI (fase 3) | — |
 | Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
 | Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
@@ -86,25 +90,26 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 
 ---
 
-### Fase 1 — Métricas 🟢
-**Duración:** ~2 semanas (mediados – finales de octubre)
+### Fase 1 — Interfaz y métricas 🟡
+**Duración:** ~5 semanas (mediados de octubre – mediados de noviembre)
 
 **Objetivos:**
-- **Agente:** endpoint REST con CPU (total y por núcleo), RAM, swap, discos, temperaturas, carga y tiempo encendido (psutil). Estructura en capas desde el principio.
-- **App:**
+- **App, interfaz definitiva:** todas las pantallas con su diseño final y la navegación entre ellas (conexión, métricas, energía, procesos, acciones rápidas, terminal, espacio compartido, reglas de alerta, notificaciones, ajustes y login). Lo que aún no está implementado muestra *placeholders* o datos inventados del repositorio simulado.
+- **App, métricas reales:**
   - pantalla para indicar la dirección del agente (por defecto `127.0.0.1:8443`, para el modo USB);
   - pantalla de métricas que se actualiza cada 1–2 s;
   - gráfica de CPU y RAM (`fl_chart`);
   - estructura MVVM con repositorio real y repositorio simulado.
+- **Agente:** endpoint REST con CPU (total y por núcleo), RAM, swap, discos, temperaturas, carga y tiempo encendido (psutil). Estructura en capas desde el principio. Se arranca a mano (el servicio llega en la fase 5).
 
-**Terminada cuando:** ves en el móvil el estado del portátil en vivo, con gráficas.
+**Terminada cuando:** recorres en el móvil todas las pantallas definitivas y la de métricas muestra el estado del portátil en vivo, con gráficas.
 
-**Si vas con retraso:** muestra cifras sin gráficas y añádelas más adelante (las gráficas forman parte del hito de febrero).
+**Si vas con retraso:** *placeholders* más simples (título y "próximamente") y cifras sin gráficas; las gráficas se completan para el hito de febrero.
 
 ---
 
 ### Fase 2 — Conexión remota con iroh 🔴
-**Duración:** ~4 semanas (noviembre)
+**Duración:** ~6 semanas (mediados de noviembre – Navidad)
 
 **Por qué va aquí:** es la parte más crítica y con más incertidumbre del proyecto. Hacerla pronto deja margen para resolver problemas o aplicar el plan B sin poner en riesgo la beta ni el hito de febrero.
 
@@ -122,10 +127,12 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
    2. Móvil con datos móviles (4G/5G) y PC en casa: empieza por el relé y debe intentar pasar a directa.
    3. Bloquear el UDP saliente en el cortafuegos del PC para simular una red restrictiva: todo el tráfico debe ir por el relé y seguir funcionando.
    4. Cambiar de Wi-Fi a datos móviles en mitad del uso: comprobar la reconexión.
-   5. Reiniciar el agente y el PC: el identificador iroh debe ser el mismo (la parte de arranque automático se completa en la fase 4).
+   5. Reiniciar el agente y el PC: el identificador iroh debe ser el mismo (la parte de arranque automático se completa en la fase 5).
 4. **Prueba en red restrictiva:** cuando todo funcione en casa, repetir la conexión desde el centro o una Wi-Fi pública.
 
-**⚠️ Seguridad entre las fases 2 y 3:** hasta que exista el login, cualquiera que conozca el identificador iroh puede llegar al agente. Mientras tanto, el agente solo expone las métricas (solo lectura), el identificador no se comparte y el agente se arranca solo para probar.
+**⚠️ Seguridad hasta la fase 3 (incluida la beta):** hasta que exista el login, cualquiera que conozca el identificador iroh puede llegar al agente. Mientras tanto, el agente solo expone las métricas (solo lectura), el identificador no se comparte y el agente se arranca a mano solo para probar.
+
+**Al terminar:** generar el APK y publicarlo como release `v0.1-beta`.
 
 **Terminada cuando:** las métricas de la fase 1 se ven en el móvil desde datos móviles contra el PC de casa, y la matriz de pruebas está documentada.
 
@@ -133,68 +140,53 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 
 ---
 
-### Fase 3 — Seguridad 🔴
-**Duración:** ~3 semanas (finales de noviembre – mediados de diciembre)
-
-**Objetivos:**
-- **CLI con Typer:**
-  - `companion setup`: crear usuario y contraseña con validación de contraseña robusta y Argon2, y generar el certificado TLS autofirmado;
-  - `companion show-pairing`: mostrar la dirección, la huella del certificado y el identificador iroh.
-- **Base de datos:** primeras tablas (`usuario`, `sesion`, `intento_login`) en `schema.sql`, con sus repositorios.
-- **Agente:**
-  - HTTPS;
-  - login que devuelve un token de sesión aleatorio (guardado con hash);
-  - todas las rutas protegidas;
-  - límite de intentos con esperas crecientes;
-  - `companion logout-all` y `companion passwd`.
-- **App:**
-  - pantalla de login con validaciones (campos obligatorios, mensajes de error claros);
-  - en la primera conexión, mostrar la huella del certificado para compararla con la CLI y guardarla (*certificate pinning*);
-  - token en `flutter_secure_storage`.
-- Comprobar que todo funciona igual por USB y a través del túnel iroh.
-
-**Terminada cuando:** sin login no se puede hacer nada (tampoco por iroh), un certificado distinto es rechazado y `logout-all` expulsa al móvil.
-
-**Lo que no se recorta:** el login y el TLS.
-
----
-
-### Fase 4 — Instalación y servicio 🟡
-**Duración:** ~1 semana + 1 semana de margen (mediados – finales de diciembre)
-
-**Objetivos:**
-- Empaquetar el agente para instalarlo con `pipx install`.
-- `companion install-service` / `uninstall-service` / `status`: servicio systemd de usuario (`default.target`, `Restart=on-failure`), con el punto de conexión iroh activo desde el arranque.
-- README con:
-  - instalación en tres comandos;
-  - uso básico;
-  - cómo probar por USB y por iroh;
-  - **nota sobre reinicio remoto:** `loginctl enable-linger $USER` y sus limitaciones.
-- Generar el APK y publicarlo como release `v0.1-beta`.
-- Semana de margen: corregir errores, probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio del PC) y hacer capturas para la memoria.
-
-**Terminada cuando:** en un equipo limpio, con tres comandos y el APK, todo funciona, también por iroh, y sobrevive a un reinicio.
-
----
-
 ### ✅ Qué es la beta v0.1 (Navidad)
-> Una app Android que se conecta al PC de casa desde cualquier red a través de iroh, con login seguro, y muestra el estado del sistema en vivo con gráficas, más un agente que se instala con un comando y arranca solo.
+> Una app Android con la interfaz definitiva (lo que aún no está hecho muestra *placeholders*) que se conecta al PC de casa desde cualquier red a través de iroh y muestra las métricas en vivo con gráficas. Sin login: el agente solo expone métricas de solo lectura y se arranca a mano.
 
 **Recortes posibles si vas con retraso, en este orden:**
 1. Gráficas (dejar solo cifras y completarlas para el hito de febrero).
 2. Prueba en red restrictiva (dejarla para enero).
+3. *Placeholders* detallados (dejar pantallas con título y "próximamente").
 
-**Nunca se recorta:** login, TLS e instalación del servicio. Si iroh no funciona, se aplica el plan B de la fase 2.
+**Nunca se recorta:** la interfaz navegable y la conexión por iroh. Si iroh no funciona, se aplica el plan B de la fase 2.
 
-**Requisitos mínimos del proyecto que ya cumple la beta:** interfaz y navegación, login, gestión de errores, BD con tablas relacionadas, Git, capas y manual de instalación.
-**Pendientes después de la beta:** lógica de negocio (fases 6 y 7), CRUD de dos entidades y BD de 3–4 tablas con contenido gestionado por el usuario (fase 7).
+**Requisitos mínimos del proyecto que ya cumple la beta:** interfaz y navegación, Git y capas.
+**Pendientes después de la beta:** login y BD (fase 3), manual de instalación (fase 5), lógica de negocio (fases 6 y 7), CRUD de dos entidades y BD de 3–4 tablas con contenido gestionado por el usuario (fase 7).
 
 ---
 
 ## BLOQUE 2: Núcleo del TFG (enero – mayo)
 
-### Fase 5 — Terminal (v0.2) 🔴
-**Duración:** ~5 semanas (enero – principios de febrero)
+### Fase 3 — Seguridad 🔴
+**Duración:** ~2 semanas (primera quincena de enero)
+
+**Por qué va aquí:** la terminal (fase 4) da acceso a tu shell, así que no puede exponerse por iroh sin login.
+
+**Objetivos:**
+- **TUI mínima con Textual** (al escribir `companion` se abre la interfaz con botones) y **Typer** solo para `companion serve`:
+  - botón de configuración inicial: generar el certificado TLS autofirmado y crear el usuario y la contraseña (validación de robustez y Argon2). Es la vía hasta la fase 9, cuando llega el registro por QR;
+  - mostrar como texto la dirección, la huella del certificado y el identificador iroh;
+  - botones «Cambiar contraseña» y «Cerrar todas las sesiones».
+- **Base de datos:** primeras tablas (`usuario`, `sesion`, `intento_login`) en `schema.sql`, con sus repositorios.
+- **Agente:**
+  - HTTPS;
+  - login que devuelve un token de sesión aleatorio (guardado con hash);
+  - todas las rutas protegidas;
+  - límite de intentos con esperas crecientes.
+- **App:**
+  - la pantalla de login (ya diseñada en la fase 1) con validaciones (campos obligatorios, mensajes de error claros);
+  - en la primera conexión, mostrar la huella del certificado para compararla con la de la TUI y guardarla (*certificate pinning*);
+  - token en `flutter_secure_storage`.
+- Comprobar que todo funciona igual por USB y a través del túnel iroh.
+
+**Terminada cuando:** sin login no se puede hacer nada (tampoco por iroh), un certificado distinto es rechazado y «Cerrar todas las sesiones» expulsa al móvil.
+
+**Lo que no se recorta:** el login y el TLS.
+
+---
+
+### Fase 4 — Terminal (v0.2) 🔴
+**Duración:** ~5 semanas (mediados de enero – finales de febrero)
 
 **Objetivos:**
 - **Agente:**
@@ -218,12 +210,29 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ### 🎯 Hito de febrero
 > La app se conecta al agente Python del PC a través de iroh y ofrece la terminal y las gráficas de rendimiento.
 
-*Pendiente de revisión: fecha exacta de la presentación.* Las gráficas ya están hechas desde la fase 1; lo que hay que asegurar para el hito es la terminal a través de iroh.
+*Pendiente de revisión: fecha exacta de la presentación.* Las gráficas ya están hechas desde la fase 1; para el hito hay que tener el login (fase 3) y la terminal a través de iroh (fase 4). La terminal termina a finales de febrero: si el hito es antes, hay que ajustar.
+
+---
+
+### Fase 5 — Instalación y servicio 🟡
+**Duración:** ~1 semana (principios de marzo)
+
+**Objetivos:**
+- Empaquetar el agente para instalarlo con `pipx install`.
+- Botones de la TUI «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario que ejecuta `companion serve` (`default.target`, `Restart=on-failure`), con el punto de conexión iroh activo desde el arranque.
+- README con:
+  - instalación (`pipx install` y la TUI);
+  - uso básico;
+  - cómo probar por USB y por iroh;
+  - **nota sobre reinicio remoto:** `loginctl enable-linger $USER` y sus limitaciones.
+- Probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio del PC) y hacer capturas para la memoria.
+
+**Terminada cuando:** en un equipo limpio, con `pipx install`, la TUI y el APK, todo funciona, también por iroh, y sobrevive a un reinicio.
 
 ---
 
 ### Fase 6 — Energía y procesos 🟢🟡
-**Duración:** ~2 semanas (febrero)
+**Duración:** ~2 semanas (marzo)
 
 **Objetivos:**
 - **Agente:**
@@ -242,7 +251,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ---
 
 ### Fase 7 — CRUD de acciones rápidas 🟡
-**Duración:** ~3 semanas (marzo)
+**Duración:** ~3 semanas (finales de marzo – mediados de abril)
 
 **Por qué es importante:** completa los requisitos mínimos obligatorios (CRUD de dos entidades relacionadas y BD de 3–4 tablas).
 
@@ -271,16 +280,19 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
   - ficha de acción con estadísticas y botón "Ejecutar";
   - historial y detalle de ejecución con la salida del comando.
 - Validación doble: en la app (respuesta inmediata) y en el agente (seguridad real).
-- Opcional: mostrar la salida de las ejecuciones con xterm.dart (fase 5) para conservar los colores.
+- Opcional: mostrar la salida de las ejecuciones con xterm.dart (fase 4) para conservar los colores.
+- **Exportaciones desde la TUI** (detalle en *01-memoria-tecnica.md*, 6.3), al escritorio del usuario (`XDG_DESKTOP_DIR`, o la carpeta personal si no existe):
+  - «Exportar datos»: un JSON `companion-datos-AAAAMMDD-HHMM.json` con una sección por tabla, sin `sesion`, `intento_login` ni el hash de la contraseña;
+  - «Exportar estructura»: carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, leídos de `sqlite_schema`.
 
-**Terminada cuando:** puedes crear el grupo "Proyecto", añadirle la acción "Actualizar repo", ejecutarla desde el móvil, ver su salida, consultar su historial y estadísticas, editarla y borrarla.
+**Terminada cuando:** puedes crear el grupo "Proyecto", añadirle la acción "Actualizar repo", ejecutarla desde el móvil, ver su salida, consultar su historial y estadísticas, editarla y borrarla, y los dos botones de exportación dejan sus archivos en el escritorio.
 
 **Nunca se recorta:** es requisito mínimo.
 
 ---
 
 ### Fase 8 — Notificaciones, reglas de alerta y servicio en primer plano 🟡🔴
-**Duración:** ~3 semanas (abril)
+**Duración:** ~3 semanas (finales de abril – mediados de mayo)
 
 **Objetivos:**
 - **Agente:**
@@ -303,25 +315,28 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
 ---
 
 ### Fase 9 — Descubrimiento, emparejamiento y espacio compartido 🟡
-**Duración:** ~3 semanas (finales de abril – mediados de mayo)
+**Duración:** ~3 semanas (mayo)
 
 **Objetivos:**
 - **mDNS:** el agente se anuncia (zeroconf) y la app lo encuentra sin escribir la dirección (bonsoir). Se prueba con el punto de acceso del móvil.
-- **QR:** `companion show-pairing` muestra un QR en la terminal con la dirección, la huella y el identificador iroh; la app lo escanea (`mobile_scanner`) y rellena los datos automáticamente. *Cubre el elemento diferenciador "uso de sensores/cámara".*
-- **Registro en la app** *(pendiente de revisión: registro en la app o creación por CLI)*: `companion setup` genera un código de un solo uso y la app muestra un formulario de registro (código, usuario, contraseña con confirmación y validación de robustez).
+- **QR de emparejamiento:** botón de la TUI que muestra el QR (dirección, huella e identificador iroh) para emparejar otro móvil o la app reinstalada; la app lo escanea (`mobile_scanner`), rellena los datos y pide el login. *Cubre el elemento diferenciador "uso de sensores/cámara".*
+- **Registro por QR** (sustituye a la creación del usuario desde la TUI de la fase 3):
+  - la TUI muestra un QR (`qrcode`) con la dirección, la huella del certificado, el identificador iroh y un código de registro de un solo uso con caducidad corta;
+  - la app lo escanea (`mobile_scanner`), guarda la huella, muestra "Emparejado, se necesita crear autenticación" y abre el diálogo de usuario y contraseña (con confirmación y validación de robustez);
+  - el agente guarda la contraseña con Argon2 y cierra el modo registro tras la primera cuenta.
 - **Espacio compartido** (notas de texto y enlaces entre el móvil y el PC):
   - **BD:** tabla `nota` en `schema.sql`, con su repositorio;
-  - **Agente:** CRUD de notas (`/notas`) y comandos `companion note add "texto"` y `companion note list`;
+  - **Agente:** CRUD de notas (`/notas`) y botones de la TUI para añadir y ver notas;
   - **App:** lista de notas con buscador, formulario de crear y editar (contenido obligatorio; si es un enlace, URL válida) y borrado con confirmación;
   - la app pide las notas al abrir la pantalla y al deslizar hacia abajo para recargar (sin actualización al momento); si los dos lados editan la misma nota, se guarda el último cambio;
   - *imágenes: **aún pensándolo**, fuera del alcance confirmado.*
 
-**Terminada cuando:** una instalación nueva se empareja escaneando un QR, y una nota guardada desde el móvil aparece en el PC al consultarla (y al revés).
+**Terminada cuando:** una instalación nueva se empareja y crea la cuenta escaneando un QR, y una nota guardada desde el móvil aparece en el PC al consultarla (y al revés).
 
 ---
 
 ### Fase 10 — Pulido 🟢
-**Duración:** ~2 semanas (mayo)
+**Duración:** ~1–2 semanas (finales de mayo)
 
 **Objetivos:**
 - Revisión general:
@@ -343,6 +358,7 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 1. **Reglas de alerta con CRUD** (fase 8): mantener solo `companion notify`.
 2. **mDNS** (fase 9): el QR ya evita escribir la dirección.
 3. **Hibernar y ordenación de procesos** (fase 6): dejar el listado y el botón de finalizar.
+4. **Registro por QR** (fase 9): mantener la creación del usuario desde la TUI.
 
 **Nunca se recortan:** conexión por iroh (o el plan B ya documentado), terminal (función estrella), CRUD de acciones rápidas (requisito mínimo) y pulido mínimo de errores.
 
@@ -391,17 +407,17 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 | Fase | Contenido | Dificultad | Fechas orientativas |
 |---|---|---|---|
 | 0 | Preparación, entorno de pruebas y Flutter | 🟢 | Sep – Oct |
-| 1 | Métricas | 🟢 | Oct |
-| 2 | Conexión remota con iroh (prueba de concepto, integración y pruebas) | 🔴 | Nov |
-| 3 | Seguridad | 🔴 | Nov – Dic |
-| 4 | Instalación y servicio | 🟡 | Dic |
-| **Beta v0.1** | | | **Navidad** |
-| 5 | Terminal (v0.2) | 🔴 | Ene – Feb |
+| 1 | Interfaz definitiva (con *placeholders*) y métricas | 🟡 | Oct – Nov |
+| 2 | Conexión remota con iroh (prueba de concepto, integración y pruebas) | 🔴 | Nov – Dic |
+| **Beta v0.1** | Interfaz + métricas por iroh, sin login | | **Navidad** |
+| 3 | Seguridad (TUI mínima y login) | 🔴 | Ene |
+| 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
 | **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
-| 6 | Energía y procesos | 🟢🟡 | Feb |
-| 7 | CRUD de acciones rápidas | 🟡 | Mar |
-| 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
-| 9 | mDNS, QR, registro (pendiente) y espacio compartido | 🟡 | Abr – May |
+| 5 | Instalación y servicio | 🟡 | Mar |
+| 6 | Energía y procesos | 🟢🟡 | Mar |
+| 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
+| 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr – May |
+| 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | May |
 | 10 | Pulido | 🟢 | May |
 | Memoria | Redacción final | | May (entrega pendiente de revisión) |
 | **Defensa** | | | **Primera semana de junio** |
@@ -412,12 +428,12 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 | Requisito | Dónde se cubre |
 |---|---|
 | App Android | Todo el proyecto (Flutter, aceptado por el tutor) |
-| Capas, Git, manual de instalación | Tareas transversales · Fase 4 |
-| Interfaz, navegación, validaciones | Fases 1 y 3 · formularios de las fases 7, 8 y 9 |
-| Registro / login | Login: fase 3 · Registro: fase 9 *(pendiente de revisión)* |
+| Capas, Git, manual de instalación | Tareas transversales · Fase 5 |
+| Interfaz, navegación, validaciones | Fase 1 (interfaz definitiva) · fase 3 (login) · formularios de las fases 7, 8 y 9 |
+| Registro / login | Login: fase 3 (usuario creado desde la TUI) · Registro por QR: fase 9 |
 | CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) y la fase 9 (nota) |
 | Lógica de negocio | Filtros de procesos (fase 6), estadísticas y reglas (fase 7), umbrales (fase 8) |
 | Gestión de errores | Todas las fases · revisión en la fase 10 |
-| BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fases 3 y 7 (6 tablas) · fase 8 (8 tablas) · fase 9 (9 tablas) |
+| BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fase 3 (3 tablas) · fase 7 (6 tablas) · fase 8 (8 tablas) · fase 9 (9 tablas) |
 | Documentación completa | Material por fase · redacción final |
-| Elemento diferenciador | P2P con iroh (fase 2), terminal remota (fase 5), servicios en segundo plano y notificaciones (fase 8), cámara/QR (fase 9) |
+| Elemento diferenciador | P2P con iroh (fase 2), terminal remota (fase 4), servicios en segundo plano y notificaciones (fase 8), cámara/QR (fase 9) |

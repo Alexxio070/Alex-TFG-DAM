@@ -13,7 +13,8 @@
 | Decisión | Estado |
 |---|---|
 | Aceptación de Flutter por el centro (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter. El plan B (Kotlin + Jetpack Compose) ya no es necesario |
-| Registro de usuario desde la app frente a creación por CLI | Pendiente de revisión (ver 5.1) |
+| Herramienta del PC: TUI con botones (Textual) en lugar de CLI | **Resuelta (12/10/2026):** al escribir `companion` se abre la TUI; solo `companion serve` y `companion notify` quedan como comandos de terminal (ver 8.1) |
+| Registro del usuario | **Resuelto (12/10/2026):** QR en la TUI y cuenta creada desde la app (ver 5.1). Se implementa en la fase 9; hasta entonces, el usuario se crea desde la TUI |
 
 ---
 
@@ -38,7 +39,7 @@ Las funciones principales son:
 
 La filosofía de diseño es: **solo se incluyen funciones que tienen sentido estando lejos del equipo**. Lo que únicamente es útil delante del PC (control multimedia, portapapeles, personalización del escritorio…) queda fuera del alcance y se recoge en *06-ideas-de-futuro.md*.
 
-El desarrollo es incremental. Una primera **beta (v0.1)** ofrece un conjunto reducido de funciones completamente operativas, y las versiones posteriores amplían el sistema sobre esa base. La planificación está en *04-plan-de-fases.md*.
+El desarrollo es incremental. Una primera **beta (v0.1)** ofrece la interfaz definitiva (con *placeholders* en lo que aún no está hecho), las métricas y la conexión por iroh, y las versiones posteriores amplían el sistema sobre esa base. La planificación está en *04-plan-de-fases.md*.
 
 ---
 
@@ -135,7 +136,7 @@ DELETE /ejecuciones?accion=            (limpiar historial)
 ### Módulo F — Espacio compartido
 - Un **espacio común entre el móvil y el PC** donde dejar **notas de texto y enlaces**, accesible desde los dos lados, para pasar información de uno a otro. Ejemplos: guardar un enlace en el móvil para abrirlo luego en el PC, o dejar desde el PC un texto o un comando para consultarlo fuera de casa.
 - **CRUD completo desde la app:** crear, editar, borrar y buscar notas.
-- **En el PC:** desde la CLI (`companion note add "texto"`, `companion note list`).
+- **En el PC:** desde la TUI (`companion`), con botones para añadir y ver notas.
 - La app pide las notas al agente al abrir la pantalla del espacio compartido y al deslizar hacia abajo para recargar; no hace falta actualización al momento, porque es una app pensada para usarla lejos del PC.
 - Si los dos lados editan la misma nota a la vez, se guarda el último cambio.
 - *Imágenes en el espacio compartido: **aún pensándolo**.* No forman parte del alcance confirmado.
@@ -171,7 +172,7 @@ WS     /ws/events                      (avisos en tiempo real)
 
 ### Módulo H — Conectividad
 - **En red local:** conexión directa, con autodescubrimiento del PC por **mDNS**.
-- **Emparejamiento por QR:** la app escanea con la cámara el código que muestra la CLI.
+- **Emparejamiento por QR:** la app escanea con la cámara el código que muestra la TUI del agente (ver 5.1).
 - **Desde fuera de casa:** túnel P2P cifrado con **iroh** (ver 4.3).
 - El resto de la app no distingue entre ambos modos: usa exactamente el mismo código de comunicación.
 
@@ -200,7 +201,7 @@ WS     /ws/events                      (avisos en tiempo real)
 +------------------------------------------------------------------+
 |                       AGENTE PC (Python)                         |
 |   Rutas API (FastAPI) → Servicios → Repositorios → SQLite        |
-|   PTY · psutil · dbus-fast · iroh · CLI "companion"              |
+|   PTY · psutil · dbus-fast · iroh · TUI "companion"              |
 |   Socket Unix local para "companion notify"                      |
 +------------------------------------------------------------------+
                                |
@@ -248,20 +249,21 @@ El puente entre Flutter y Kotlin se limita a dos operaciones: *abrir túnel (ide
 
 ## 5. Seguridad
 
-### 5.1 Configuración inicial y emparejamiento
-El usuario ejecuta `companion setup` en el PC. Este comando:
-- crea el usuario y una contraseña robusta, que se guarda con hash **Argon2**;
+### 5.1 Configuración inicial, registro y emparejamiento
+El usuario escribe `companion` en el PC y se abre la **TUI** (interfaz de texto con botones, ver 8.1). El botón de configuración inicial:
 - genera un certificado TLS autofirmado propio del equipo;
-- muestra los datos de conexión: dirección, huella del certificado y, cuando exista, el identificador iroh. Los muestra como texto y como código QR en la propia terminal.
+- abre el **modo registro** y muestra en la terminal un **código QR** con la dirección, la huella del certificado, el identificador iroh (cuando exista) y un **código de registro de un solo uso** con caducidad corta.
 
-**Alternativa pendiente de revisión — registro desde la app:** `companion setup` solo generaría el certificado y un **código de emparejamiento de un solo uso**. La app mostraría un formulario de registro con el código, el nombre de usuario y la contraseña (con confirmación y validación de robustez).
+La app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
 
-En la primera conexión, la app guarda la huella del certificado (**certificate pinning**) y solo confía en ese certificado a partir de entonces. En la beta la huella se confirma comparándola visualmente con la CLI; después se añade el escaneo del QR.
+A partir de entonces la app solo confía en ese certificado. Para emparejar otro móvil o la app reinstalada, la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
+
+**Planificación (12/10/2026):** el registro por QR se implementa en la fase 9. Hasta entonces (fase 3), el botón de configuración inicial de la TUI crea directamente el usuario y la contraseña, y la huella del certificado se compara a ojo con la que muestra la TUI en la primera conexión. La beta no tiene login: el agente solo expone métricas de solo lectura.
 
 ### 5.2 Autenticación
 - Login con usuario y contraseña; el agente devuelve un **token de sesión** aleatorio que se guarda con hash en SQLite.
 - El token se guarda en el móvil en almacenamiento cifrado (Android Keystore).
-- **Revocación:** `companion logout-all` invalida todas las sesiones; cambiar la contraseña con `companion passwd` también.
+- **Revocación:** el botón «Cerrar todas las sesiones» de la TUI invalida todas las sesiones; cambiar la contraseña desde la TUI también.
 - **Límite de intentos:** tras varios fallos seguidos, el agente impone esperas crecientes.
 
 ### 5.3 Principio de mínimo privilegio
@@ -274,7 +276,8 @@ En la primera conexión, la app guarda la huella del certificado (**certificate 
 |---|---|---|
 | Alguien en la misma Wi-Fi intercepta el tráfico o suplanta al PC | Robo de credenciales, acceso a la shell | TLS con certificado fijado en la primera conexión |
 | Ataque de fuerza bruta a la contraseña | Acceso completo como el usuario | Contraseña robusta obligatoria, Argon2, límite de intentos con esperas crecientes |
-| Robo o pérdida del móvil | Acceso con la sesión guardada | Token en almacenamiento cifrado; revocación con `companion logout-all`. Riesgo residual aceptado: si el móvil está desbloqueado, la app es accesible (mitigación futura: desbloqueo biométrico) |
+| Robo o pérdida del móvil | Acceso con la sesión guardada | Token en almacenamiento cifrado; revocación desde la TUI (cerrar todas las sesiones). Riesgo residual aceptado: si el móvil está desbloqueado, la app es accesible (mitigación futura: desbloqueo biométrico) |
+| Alguien usa el QR de registro antes que el usuario | Crear la cuenta en su lugar | Código de un solo uso con caducidad corta; el QR solo se muestra en la pantalla del PC; el modo registro se cierra tras la primera cuenta |
 | Acceso desde Internet a través de iroh | Conexiones no autorizadas | El túnel solo da acceso al servidor de la aplicación, que sigue exigiendo TLS con huella fijada y login |
 | Acciones rápidas con comandos maliciosos | Ejecución de comandos arbitrarios | Solo las crea y ejecuta un usuario autenticado, con sus propios permisos; no amplía lo que ya permite la terminal |
 | Otro usuario local del PC | Uso del agente ajeno | Datos en `~/.config` y `~/.local/share` con permisos del usuario; socket Unix `0600` |
@@ -330,6 +333,11 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
 
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
 
+### 6.3 Exportación desde la TUI
+La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, que en un sistema en español suele ser `~/Escritorio` y se lee de `~/.config/user-dirs.dirs`); si no está definido, en la carpeta personal. La fecha y la hora en el nombre evitan sobrescribir exportaciones anteriores.
+- **Exportar datos:** un único archivo JSON, `companion-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
+- **Exportar estructura:** una carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
+
 ---
 
 ## 7. Casos de uso
@@ -341,9 +349,9 @@ La configuración editable a mano (puertos, relés, umbrales por defecto) se gua
 
 | Caso de uso | Actor | Módulo |
 |---|---|---|
-| Configurar el agente (`companion setup`) | Usuario (en el PC) | Seguridad |
-| Registrarse desde la app *(pendiente de revisión)* | Usuario | Seguridad |
-| Emparejar el móvil (huella / QR) | Usuario | Conectividad |
+| Configurar el agente desde la TUI | Usuario (en el PC) | Seguridad |
+| Escanear el QR de registro y crear la cuenta en la app | Usuario | Seguridad |
+| Emparejar el móvil (QR) | Usuario | Conectividad |
 | Iniciar y cerrar sesión | Usuario | Seguridad |
 | Consultar métricas del sistema | Usuario | B |
 | Apagar, reiniciar, suspender o bloquear | Usuario | C |
@@ -358,6 +366,7 @@ La configuración editable a mano (puertos, relés, umbrales por defecto) se gua
 | Consultar y gestionar notificaciones | Usuario | G |
 | Enviar una notificación (`companion notify`) | Programa del PC | G |
 | Generar una alerta por umbral | Sistema | G |
+| Exportar los datos o la estructura de la base de datos | Usuario (en el PC) | Base de datos |
 | Recibir una notificación en el móvil | Usuario | G |
 
 El diagrama de casos de uso y la descripción detallada de los principales se incluyen en la memoria final.
@@ -369,13 +378,23 @@ El diagrama de casos de uso y la descripción detallada de los principales se in
 ### 8.1 Agente en el PC
 ```bash
 pipx install linux-system-companion   # instala el agente en un entorno aislado
-companion setup                       # crea credenciales y muestra los datos de conexión
-companion install-service             # instala y activa el servicio systemd de usuario
+companion                             # abre la TUI: configuración inicial, QR de registro, servicio…
 ```
+Escribir `companion` abre una **TUI** hecha con **Textual**, con botones para:
+- configuración inicial y QR de registro (ver 5.1);
+- mostrar el QR de emparejamiento;
+- instalar o quitar el servicio systemd de usuario;
+- ver el estado del agente;
+- cambiar la contraseña y cerrar todas las sesiones;
+- añadir y ver notas del espacio compartido;
+- exportar los datos y exportar la estructura de la base de datos (ver 6.3).
+
+Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
+
 Se usa **pipx** porque las distribuciones actuales bloquean `pip install` fuera de entornos virtuales. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python de la propia distribución. Las dependencias compiladas (iroh, cryptography, argon2) se instalan como paquetes precompilados que requieren **glibc 2.28 o superior**, así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
 
 ### 8.2 Servicio systemd
-`companion install-service` crea `~/.config/systemd/user/companion.service`:
+El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
 
 ```ini
 [Unit]
@@ -469,7 +488,7 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 
 El proyecto incluye varias funcionalidades no vistas en clase, entre ellas algunas que la normativa cita expresamente como ejemplo:
 
-- **Uso de la cámara:** emparejamiento escaneando un código QR.
+- **Uso de la cámara:** registro y emparejamiento escaneando el código QR que muestra la TUI.
 - **Servicios en segundo plano y notificaciones:** servicio en primer plano que mantiene la conexión y muestra avisos del PC.
 - **Comunicación P2P con travesía de NAT (iroh):** acceso remoto sin configurar el router.
 - **Terminal remota con pseudoterminal (PTY):** ejecución interactiva de la shell real del usuario.
