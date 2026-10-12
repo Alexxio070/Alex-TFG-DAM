@@ -5,13 +5,16 @@ import 'app.dart';
 import 'data/fake/fake_macro_repository.dart';
 import 'data/fake/fake_metrics_repository.dart';
 import 'data/fake/fake_pairing_repository.dart';
+import 'data/fake/fake_terminal_repository.dart';
 import 'data/repositories/macro_repository.dart';
 import 'data/repositories/metrics_repository.dart';
 import 'data/repositories/pairing_repository.dart';
+import 'data/repositories/terminal_repository.dart';
 import 'features/home/home_viewmodel.dart';
 import 'features/metrics/metrics_viewmodel.dart';
 import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_viewmodel.dart';
+import 'features/terminal/terminal_viewmodel.dart';
 
 void main() {
   runApp(
@@ -20,6 +23,7 @@ void main() {
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
+        Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
         ChangeNotifierProvider(
           create: (context) => ShellViewModel(context.read<PairingRepository>()),
@@ -29,6 +33,9 @@ void main() {
         ),
         ChangeNotifierProvider(
           create: (context) => MetricsViewModel(context.read<MetricsRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TerminalViewModel(context.read<TerminalRepository>()),
         ),
       ],
       child: const TfgApp(),

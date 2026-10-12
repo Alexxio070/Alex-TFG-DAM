@@ -5,19 +5,24 @@ import 'package:tfg/app.dart';
 import 'package:tfg/data/fake/fake_macro_repository.dart';
 import 'package:tfg/data/fake/fake_metrics_repository.dart';
 import 'package:tfg/data/fake/fake_pairing_repository.dart';
+import 'package:tfg/data/fake/fake_terminal_repository.dart';
 import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
 import 'package:tfg/data/repositories/pairing_repository.dart';
+import 'package:tfg/data/repositories/terminal_repository.dart';
 import 'package:tfg/features/home/home_viewmodel.dart';
 import 'package:tfg/features/metrics/metrics_viewmodel.dart';
 import 'package:tfg/features/settings/settings_viewmodel.dart';
 import 'package:tfg/features/shell/shell_viewmodel.dart';
+import 'package:tfg/features/terminal/terminal_viewmodel.dart';
+import 'package:xterm/xterm.dart';
 
 Widget _app() => MultiProvider(
       providers: [
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
+        Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
         ChangeNotifierProvider(
           create: (context) => ShellViewModel(context.read<PairingRepository>()),
@@ -27,6 +32,9 @@ Widget _app() => MultiProvider(
         ),
         ChangeNotifierProvider(
           create: (context) => MetricsViewModel(context.read<MetricsRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TerminalViewModel(context.read<TerminalRepository>()),
         ),
       ],
       child: const TfgApp(),
@@ -199,6 +207,84 @@ void main() {
       expect(find.text('Escala 86–212 °F'), findsOneWidget);
       expect(find.textContaining('GiB'), findsWidgets);
       await closeApp(tester);
+    });
+  });
+
+  group('Terminal', () {
+    Future<TerminalViewModel> openTerminal(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Terminal'));
+      await _pumpFor(tester, 600);
+      return Provider.of<TerminalViewModel>(
+        tester.element(find.byType(TfgApp)),
+        listen: false,
+      );
+    }
+
+    String screen(TerminalViewModel vm) => vm.terminal.buffer.getText();
+
+    testWidgets('muestra el mensaje de conexión y el prompt', (tester) async {
+      final vm = await openTerminal(tester);
+
+      expect(screen(vm), contains('Conectado a pc mediante el agente.'));
+      expect(screen(vm), contains(r'usuario@pc:~$'));
+    });
+
+    testWidgets('ejecuta un comando y muestra su salida', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('whoami\r');
+      await _pumpFor(tester, 200);
+
+      expect(screen(vm), contains('whoami'));
+      expect(screen(vm), contains('usuario\n'));
+    });
+
+    testWidgets('un comando desconocido da error', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('foo\r');
+      await _pumpFor(tester, 200);
+
+      expect(screen(vm), contains('bash: foo: orden no encontrada'));
+    });
+
+    testWidgets('la flecha arriba recupera el comando anterior', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('echo hola\r');
+      await _pumpFor(tester, 200);
+      vm.pressKey(TerminalKey.arrowUp);
+      await _pumpFor(tester, 200);
+
+      expect(screen(vm).trimRight().split('\n').last, endsWith('echo hola'));
+    });
+
+    testWidgets('CTRL + c cancela la línea', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('sleep 10');
+      vm.toggleCtrl();
+      expect(vm.ctrl, isTrue);
+      vm.terminal.textInput('c');
+      await _pumpFor(tester, 200);
+
+      expect(vm.ctrl, isFalse);
+      expect(screen(vm), contains('^C'));
+    });
+
+    testWidgets('clear limpia la pantalla', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('clear\r');
+      await _pumpFor(tester, 200);
+
+      expect(screen(vm), isNot(contains('Conectado a pc')));
     });
   });
 }
