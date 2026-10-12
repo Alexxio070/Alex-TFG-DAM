@@ -53,7 +53,7 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 
 ## Repo, commits y PRs
 
-- `app/`: cliente Flutter. `agent/`: agente Python (incluye `schema.sql`).
+- `App-movil/`: cliente Flutter. `agent/`: agente Python (incluye `schema.sql`; se crea con el agente).
 - Ramas: `main` (estable), `develop` (integración), `feature/<nombre>` (una por tarea/fase). Una etiqueta por versión (`v0.1-beta`, `v0.2`…).
 - Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`), cortos y descriptivos. Nada de cambios enormes de una vez: dividir en piezas pequeñas y lógicas.
 - Todo commit y PR se propone a alex **antes** de hacerse, incluida la forma de dividir un cambio grande.
@@ -65,7 +65,7 @@ Usar librerías/paquetes como infraestructura normal está permitido, incluso pa
 
 ## Documentación
 
-Toda la documentación técnica está en [`docs/`](docs/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
+La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/), y la interfaz (prototipo v1, especificación de Notas v2 y xterm.dart), en [`doc/ui/`](doc/ui/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
 - `01-memoria-tecnica.md`
 - `02-necesidades-tecnologicas.md`
 - `03-system-context.md`
@@ -73,3 +73,4 @@ Toda la documentación técnica está en [`docs/`](docs/). El plan de fases y el
 - `05-referencias-y-proyectos.md`
 - `06-ideas-de-futuro.md`
 - `07-resumen-decisiones-y-contexto.md`
+- `08-historial-de-cambios.md`
