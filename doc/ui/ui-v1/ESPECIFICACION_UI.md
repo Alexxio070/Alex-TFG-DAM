@@ -1,4 +1,7 @@
-# Especificación de UI — App Android (Flutter)
+# Especificación de UI v1 — App Android (Flutter)
+
+> **Estado: v1 (prototipo inicial). La pantalla de Notas de esta versión (§6) queda DESCARTADA** y la sustituye la definitiva de [`../ui-v2/ESPECIFICACION_NOTAS.md`](../ui-v2/ESPECIFICACION_NOTAS.md).
+> El resto de secciones (drawer, tema, Inicio, Métricas, Terminal y Ajustes) siguen vigentes como referencia visual y de comportamiento. La pantalla «Opciones» de este documento se llama ahora **«Ajustes»**. Esta carpeta se conserva como histórico de diseño.
 
 Documento de traspaso para implementar en Flutter la interfaz diseñada en el prototipo `prototipo.dc.html`.
 El prototipo es **la fuente de verdad** para colores, medidas, textos y comportamiento; este documento lo resume y explica qué es simulado.
@@ -16,7 +19,7 @@ El prototipo es **la fuente de verdad** para colores, medidas, textos y comporta
 - **Drawer desde la izquierda**, ancho 280 dp, con scrim negro al 45 %.
   - Cabecera (64 dp): botón X para cerrar + nombre de la sección activa.
   - Opciones una debajo de otra (alto 48, radio 12): **Inicio, Métricas, Terminal, Notas**. La activa va con fondo del color de acento y texto blanco.
-  - Pie: botón engranaje (abre **Opciones**) a la izquierda y **estado de conexión** a la derecha (punto verde + "Conectado" / punto gris + "Sin emparejar").
+  - Pie: botón engranaje (abre **Ajustes**) a la izquierda y **estado de conexión** a la derecha (punto verde + "Conectado" / punto gris + "Sin emparejar").
 - Al elegir una sección se cierra el drawer.
 
 ## 2. Tema y colores
@@ -38,7 +41,7 @@ Tokens (claro / oscuro):
 | seg-on (segmento activo) | #FFFFFF | #3A3F47 |
 
 - Rojo destructivo: **#B42318**. Verde conectado: **#1F9D55** (texto #146C43 claro / #5BD38C oscuro).
-- **Colores de acento** (elegibles en Opciones), por defecto el primero:
+- **Colores de acento** (elegibles en Ajustes), por defecto el primero:
   Verde azulado #0F6B63 · Azul #3346C7 · Frambuesa #B4235A · Naranja #C2410C · Violeta #6D28D9 · Grafito #3F4652.
 - Tipografía: **Plus Jakarta Sans** (UI) y **JetBrains Mono** (terminal, comandos).
 - La terminal y su teclado son siempre oscuros, independientemente del tema.
@@ -100,16 +103,18 @@ Lista con scroll de tarjetas a ancho completo (radio 20, padding 16, separación
 - Prompt `usuario@pc:~$` (usuario #7EE787, `~` #79C0FF). Errores en #FF7B72. Cursor de bloque parpadeante.
 - **Tocar en cualquier parte abre el teclado.** En la app real: teclado del sistema + **fila de teclas extra estilo Termux** encima: `ESC TAB CTRL ALT - / ↑ ↓` y botón para ocultar teclado. (El teclado QWERTY del prototipo es solo una simulación visual.)
 - ↑/↓ recorren el historial. CTRL+C cancela la línea (`^C`), CTRL+L limpia.
-- Tamaño de fuente configurable en Opciones (10–22, por defecto 13).
+- Tamaño de fuente configurable en Ajustes (10–22, por defecto 13).
 - En el prototipo las respuestas son simuladas; en la app real la entrada/salida va al PC.
 
-## 6. Notas
+## 6. Notas — DESCARTADO en v1
+
+> **Idea descartada.** Un único campo de texto compartido no cubre el espacio compartido definido en la memoria técnica (notas de texto y enlaces con CRUD, búsqueda y recarga). Ver la pantalla definitiva en [`../ui-v2/ESPECIFICACION_NOTAS.md`](../ui-v2/ESPECIFICACION_NOTAS.md). Lo que sigue se conserva solo como histórico.
 
 - Un único campo de texto multilínea a pantalla completa, **compartido con el PC** en ambos sentidos.
 - Barra de estado superior (40 dp): punto + "Sincronizado con el PC" / "Sincronizando…" (ámbar #D97706) / "Sin emparejar · no se sincroniza"; a la derecha, número de caracteres.
 - Usar el **TextField nativo** para heredar selección y menú contextual de Android (pegar, copiar, cortar, seleccionar todo, buscar). No implementar menús propios.
 
-## 7. Opciones (engranaje del drawer)
+## 7. Ajustes, antes «Opciones» (engranaje del drawer)
 
 | Grupo | Ajuste | Valores | Efecto |
 |---|---|---|---|
@@ -133,3 +138,22 @@ Controles: segmentados (fondo `line`, segmento activo `seg-on`), interruptores 5
 
 - Áreas táctiles ≥ 44 dp. Todos los botones de icono con descripción accesible.
 - Animaciones: drawer 280 ms, recolocación de botones 220 ms, interruptores 150 ms.
+
+## 10. Notas de implementación en Flutter
+
+Diferencias entre este documento y la app Flutter actual (`App-movil/`). El prototipo HTML no se ha modificado.
+
+| Tema | Prototipo / especificación | Implementación |
+|---|---|---|
+| Pantalla de Notas | Campo único compartido (§6) | Sustituida por la lista de `ui-v2` |
+| Opciones | «Opciones» | Se llama «Ajustes» |
+| Tamaño de los botones de Inicio | Fijo, 166 dp | Se adapta al ancho del móvil (166 dp a 390 dp de ancho) |
+| Aviso «No caben más botones» | Muestra una línea `$` vacía | No muestra la línea del comando |
+| Vibración al ejecutar | Sí (15 ms) | `HapticFeedback.lightImpact()` |
+| Valor de la temperatura | Color fijo `#16181D` (ilegible en oscuro) | Color `ink` del tema; rojo con «Alta» si pasa el límite |
+| Teclado de la terminal | Teclado QWERTY simulado | Teclado del sistema con la fila de teclas extra de §5 |
+| Cursor de la terminal | Bloque parpadeante | Bloque **sin parpadeo** (limitación de `xterm.dart` 4.0.0) |
+| Terminal | Texto simulado | `xterm.dart` con shell simulado detrás de `TerminalRepository` |
+| Feedback táctil | Sin onda | Onda estándar de Android en botones y filas |
+| Gráficas de Métricas | Trazados SVG | `CustomPainter` con la misma cuadrícula y escala |
+| Fuentes | Plus Jakarta Sans y JetBrains Mono | Mismas, como assets locales (JetBrains Mono no es Nerd Font; ver `08`) |
