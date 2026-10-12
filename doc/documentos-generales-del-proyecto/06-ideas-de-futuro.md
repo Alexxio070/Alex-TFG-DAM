@@ -52,7 +52,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Otras ampliaciones del espacio compartido 🟢🟡
 - Opción "Compartir con…" de Android para enviar texto o enlaces al espacio compartido desde otras apps.
-- Fijar notas, caducidad automática y copiar al portapapeles del sistema de un toque.
+- Fijar notas y caducidad automática. *(Copiar una nota al portapapeles de un toque ya está en el TFG.)*
 - Fusión de cambios cuando los dos lados editan la misma nota (en el TFG se guarda el último cambio).
 - Actualización al momento de las notas por el canal de eventos (en el TFG se actualizan al abrir la pantalla o al recargar).
 
