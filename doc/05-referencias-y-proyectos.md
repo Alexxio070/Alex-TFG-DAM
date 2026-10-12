@@ -20,7 +20,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### xterm.dart
 - **Qué es:** emulador de terminal para Flutter, para móvil y escritorio.
-- **Te aporta:** es directamente la pieza de la terminal en la app (fase 5). Incluye un ejemplo de terminal en ~100 líneas y un cliente SSH en ~100 líneas con `dartssh2`, que es casi el Módulo A del lado móvil.
+- **Te aporta:** es directamente la pieza de la terminal en la app (fase 4). Incluye un ejemplo de terminal en ~100 líneas y un cliente SSH en ~100 líneas con `dartssh2`, que es casi el Módulo A del lado móvil.
 - **Uso:** dependencia directa y código de ejemplo reutilizable.
 - **Licencia:** MIT.
 - **Repositorio:** github.com/TerminalStudio/xterm.dart
@@ -33,14 +33,14 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
   - transferencia de archivos;
   - organización de un proyecto Flutter real y grande.
 
-  Útil en las fases 3, 9 y 10.
+  Útil sobre todo en la fase 3 (HTTPS con certificados autofirmados) y como ejemplo de organización durante todo el proyecto. Su parte de transferencia de archivos queda para las ideas de futuro.
 - **Uso:** inspiración y posible reutilización de fragmentos.
 - **Licencia:** Apache-2.0.
 - **Repositorio:** github.com/localsend/localsend
 
 ### iroh-ssh-android
 - **Qué es:** cliente SSH para Android construido con Flutter que conecta a través de iroh (vía flutter_rust_bridge), con sesiones en un servicio en primer plano para sobrevivir en segundo plano.
-- **Te aporta:** **el caso más parecido a tu proyecto**: Flutter + iroh + terminal remota + servicio en segundo plano en Android. Referencia clave para la fase 2 (prueba de concepto e integración de iroh, noviembre) y la fase 8 (servicio en primer plano).
+- **Te aporta:** **el caso más parecido a tu proyecto**: Flutter + iroh + terminal remota + servicio en segundo plano en Android. Referencia clave para la fase 2 (prueba de concepto e integración de iroh, noviembre – diciembre) y la fase 8 (servicio en primer plano).
 - **Uso:** solo inspiración (usa flutter_rust_bridge; la arquitectura del servicio y la terminal es aplicable sea cual sea la vía elegida para iroh).
 - **Licencia:** GPL-3.0. **No copiar código.**
 - **Repositorio:** github.com/futpib/iroh-ssh-android
@@ -64,14 +64,14 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### terminado
 - **Qué es:** el backend de las terminales de Jupyter: PTY servido por WebSocket (Tornado).
-- **Te aporta:** implementación probada de PTY + WebSocket en Python: gestión de sesiones, redimensionado y cierre limpio (fase 5). También útil para la ejecución de acciones rápidas en segundo plano (fase 7).
+- **Te aporta:** implementación probada de PTY + WebSocket en Python: gestión de sesiones, redimensionado y cierre limpio (fase 4). También útil para la ejecución de acciones rápidas en segundo plano (fase 7).
 - **Uso:** inspiración y posible reutilización de lógica (adaptada de Tornado a FastAPI).
 - **Licencia:** BSD-2-Clause.
 - **Repositorio:** github.com/jupyter/terminado
 
 ### pyxtermjs
 - **Qué es:** proyecto mínimo que conecta una shell en un PTY de Python con xterm.js en el navegador. Usa Flask + flask-socketio (no FastAPI), así que la parte del servidor hay que adaptarla.
-- **Te aporta:** el ejemplo **más corto y legible** para entender cómo funciona un PTY por WebSocket. Ideal para leer antes de empezar la fase 5.
+- **Te aporta:** el ejemplo **más corto y legible** para entender cómo funciona un PTY por WebSocket. Ideal para leer antes de empezar la fase 4.
 - **Uso:** inspiración.
 - **Licencia:** MIT.
 - **Repositorio:** github.com/cs01/pyxtermjs
@@ -137,7 +137,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### Clientes SSH móviles (Termius, ConnectBot, JuiceSSH)
 - **Qué son:** clientes SSH para Android.
-- **Te aportan:** referencia de diseño de la barra de teclas especiales y de la experiencia de terminal en pantalla táctil (fase 5).
+- **Te aportan:** referencia de diseño de la barra de teclas especiales y de la experiencia de terminal en pantalla táctil (fase 4).
 - **Uso:** inspiración de interfaz. ConnectBot es de código abierto (Apache-2.0); Termius y JuiceSSH son privativos.
 
 ---
@@ -155,14 +155,14 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 | Fase | Referencias principales |
 |---|---|
 | 0 (Preparación y Flutter) | Tutorial oficial de Flutter, documentación de adb y del emulador |
-| 1 (Métricas) | psutil, Glances |
+| 1 (Interfaz y métricas) | psutil, Glances |
 | 2 (Conexión remota con iroh) | iroh, iroh-ffi, dumbpipe, iroh-ssh-android, iroh-android-native |
 | 3 (Seguridad) | LocalSend (HTTPS con certificados autofirmados en Flutter) |
-| 4 (Instalación y servicio) | Documentación de pipx y systemd |
-| 5 (Terminal) | xterm.dart, pyxtermjs, terminado, ConnectBot |
+| 4 (Terminal) | xterm.dart, pyxtermjs, terminado, ConnectBot |
+| 5 (Instalación y servicio) | Documentación de pipx y systemd |
 | 6 (Energía y procesos) | psutil, Cockpit |
 | 7 (CRUD de acciones rápidas) | terminado (procesos en segundo plano), documentación de asyncio y sqlite3 |
 | 8 (Notificaciones, reglas de alerta y servicio en primer plano) | iroh-ssh-android (servicio en primer plano), KDE Connect |
-| 9 (mDNS, QR, registro y archivos) | LocalSend |
-| 10 (Subida y pulido) | LocalSend |
+| 9 (mDNS, QR, registro y espacio compartido) | LocalSend (descubrimiento en red local), KDE Connect (emparejamiento) |
+| 10 (Pulido) | LocalSend (organización de un proyecto Flutter grande) |
 | Memoria | KDE Connect, Cockpit, RustDesk, clientes SSH |

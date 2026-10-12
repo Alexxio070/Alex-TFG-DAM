@@ -5,23 +5,24 @@
 ## 1. PROJECT IDENTITY & SCOPE
 * **Project Name:** Linux System Companion (final project of a Spanish vocational degree in multiplatform app development, DAM).
 * **Type:** Android app (Flutter) + host agent (Python) running on the user's Linux PC.
-* **Core Objective:** Administer a Linux PC from a phone **when you are NOT in front of it**, from the home LAN or from anywhere (4G/5G), with minimal setup: install the agent, run `companion setup`, install the app, log in. No router configuration, no VPN app on the phone.
+* **Core Objective:** Administer a Linux PC from a phone **when you are NOT in front of it**, from the home LAN or from anywhere (4G/5G), with minimal setup: install the agent, run `companion` (TUI) and start the initial setup, scan the QR with the app, create the account. No router configuration, no VPN app on the phone.
 * **Design rule:** only features that make sense remotely. Features only useful in front of the PC are out of scope (see section 10).
 * **Reference environment:** Android 10+, KDE Plasma 6, systemd, Python 3.11+. Most features are desktop-agnostic.
 * **Developer context:** the developer is learning Flutter/Dart from scratch. Prefer simple, readable, well-commented code over clever abstractions. Explain non-obvious Flutter/Android concepts.
 * **Decisions:**
   * Flutter: **accepted by the tutor (2026-09-26)**. The Kotlin + Jetpack Compose fallback is no longer needed.
   * The Python agent is a core part of the project (without it the app is useless).
-  * Phase order (2026-10-02): iroh moved to phase 2 (November) because it is the most critical part.
-  * Pending review: in-app user registration vs. CLI-only user creation (decide before phase 9). Current design: CLI creates the user.
+  * Phase order (2026-10-02, revised 2026-10-12): definitive UI with placeholders + metrics first (phase 1), iroh in phase 2 (mid-November – Christmas). Beta has NO login (agent exposes read-only metrics only); security in January (phase 3), before the terminal (phase 4).
+  * PC side (2026-10-12): `companion` opens a **TUI (Textual) with buttons**; only `companion serve` and `companion notify` remain terminal commands (Typer). See section 7.
+  * Registration (2026-10-12): QR shown in the TUI → app scans it → "Paired, authentication must be created" → username/password dialog in the app. Implemented in phase 9; until then (phase 3) the TUI setup button creates the user directly.
   * Pending review: exact date of the February milestone and official thesis deadline; foreground service type (phase 8); whether the school network lets HTTPS with WebSocket out to the iroh relays.
 * **Test phone:** Android 15.
 
 ## 2. MANDATORY PROJECT REQUIREMENTS (must be satisfied)
 * Layered architecture; Git with branches and meaningful commits; installation manual.
 * Usable GUI, smooth navigation, **form validation**.
-* User authentication (login; registration pending review).
-* **Full CRUD on at least two related entities**: `grupo` ↔ `accion_rapida` (plus `regla_alerta`).
+* User authentication (login + in-app registration after scanning the TUI QR).
+* **Full CRUD on at least two related entities**: `grupo` ↔ `accion_rapida` (plus `regla_alerta` and `nota`).
 * Business logic (search, filtering, calculations) and proper error handling / user feedback.
 * Database with ≥3–4 related tables, accessed through structured classes (repositories), with a creation script (`agent/schema.sql`).
 * An extra feature not covered in class (camera/QR, background service + notifications, P2P, PTY terminal).
@@ -85,12 +86,13 @@
 * Search/sort: by name, group, most used, last run.
 * Optional per action: "confirm before running", "notify when finished".
 
-### F. Files
-* Browse the filesystem, download PC → phone, upload phone → PC (default: user's XDG download dir).
-* OS permissions are the security boundary. On `PermissionError`, the app shows: "root operations must be done from the terminal". The agent never elevates privileges. Normalize and validate every path.
+### F. Shared space (notes)
+* A space shared between phone and PC to pass **text notes and links** from one side to the other. Full CRUD from the app (create, edit, delete, search); on the PC via TUI buttons (add / view notes).
+* No live sync: the app fetches notes when the shared-space screen opens and on pull-to-refresh (the app is meant for use away from the PC). Does NOT use `/ws/events`. Concurrent edits: last write wins.
+* Images: **still being considered** (not in confirmed scope). File browsing/transfer is OUT of scope (future idea).
 
 ### G. Notifications & alert rules
-* CLI `companion notify "message"` talks to the agent through a Unix socket at `$XDG_RUNTIME_DIR/companion.sock` (mode `0600`). Usable from scripts or Claude Code hooks.
+* Terminal command `companion notify "message"` talks to the agent through a Unix socket at `$XDG_RUNTIME_DIR/companion.sock` (mode `0600`). Usable from scripts or Claude Code hooks.
 * Alert rules (`regla_alerta`), full CRUD from the app:
   * metric: cpu, ram, temp, disk;
   * operator;
@@ -116,6 +118,7 @@
 | ejecucion | id, accion_id, inicio, fin, estado, codigo_salida, salida | N:1 accion_rapida (ON DELETE CASCADE) |
 | regla_alerta | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario |
 | notificacion | id, usuario_id, origen, regla_id (nullable, ON DELETE SET NULL), ejecucion_id (nullable, ON DELETE SET NULL), titulo, mensaje, fecha, leida | N:1 usuario, regla_alerta, ejecucion |
+| nota | id, usuario_id, tipo (texto/enlace), contenido, origen (móvil/PC), creado_en, actualizado_en | N:1 usuario |
 
 * Enable `PRAGMA foreign_keys = ON` **on every connection** (SQLite disables it by default, and without it `ON DELETE CASCADE` / `SET NULL` are ignored). Parameterized SQL only. One repository class per table. No ORM.
 * SQLite treats NULLs as distinct in UNIQUE constraints: enforce name uniqueness for "no group" actions in the service layer.
@@ -133,7 +136,7 @@ PUT    /acciones/{id}               DELETE /acciones/{id}
 POST   /acciones/{id}/ejecutar      POST   /ejecuciones/{id}/cancelar
 GET    /ejecuciones?accion=&estado=&desde=&hasta=   GET /ejecuciones/{id}
 DELETE /ejecuciones/{id}            DELETE /ejecuciones?accion=
-GET    /files?path=                 GET    /files/download?path=      POST /files/upload
+GET    /notas?q=                    POST   /notas        PUT /notas/{id}    DELETE /notas/{id}
 GET    /reglas  POST /reglas  PUT /reglas/{id}  DELETE /reglas/{id}
 GET    /notificaciones?origen=&leida=&q=&desde=&hasta=   PATCH /notificaciones/{id}   DELETE /notificaciones/{id}
 WS     /ws/terminal                 WS     /ws/events
@@ -141,21 +144,26 @@ WS     /ws/terminal                 WS     /ws/events
 Route names are a starting proposal; keep them consistent once implemented and update this file.
 
 ## 5c. APP SCREENS
-Login (+ first-connection fingerprint check) · Connection setup (manual address; later mDNS list + QR scan) · Dashboard/metrics · Power · Processes · Quick actions list → group form → action form → action detail (stats, Run, history) → execution detail · Terminal · File browser · Alert rules list/form · Notification history · Settings (logout, server data).
+QR scan (registration / pairing) → create account dialog · Login · Connection setup (QR; manual address as fallback; later mDNS list) · Dashboard/metrics · Power · Processes · Quick actions list → group form → action form → action detail (stats, Run, history) → execution detail · Terminal · Shared space (notes list/form) · Alert rules list/form · Notification history · Settings (logout, server data).
 
 ## 6. SECURITY
-* `companion setup`:
-  * creates user + strong password (Argon2 via `argon2-cffi`);
+* Initial setup (TUI button):
   * generates a self-signed TLS certificate (`cryptography`);
-  * prints connection data (address, cert fingerprint, iroh id when available) as text and terminal QR.
-* *(Under review: setup generates a one-time pairing code instead, and the app shows a registration form.)*
-* **Certificate pinning:** the app stores the fingerprint on first connection (beta: visual comparison like SSH; later: QR scan) and trusts only that certificate.
-* **Sessions:** random opaque tokens, stored hashed; the phone stores its token in `flutter_secure_storage`. `companion logout-all` and `companion passwd` revoke all sessions.
+  * opens **registration mode** and shows a terminal QR (`qrcode`) with address, cert fingerprint, iroh id (when available) and a **one-time registration code with short expiry**.
+* App scans the QR (`mobile_scanner`), pins the fingerprint, shows "Emparejado, se necesita crear autenticación", then a username/password dialog (confirmation + strength validation). Agent checks the code, stores the password with Argon2 (`argon2-cffi`) and **closes registration mode after the first account**. Expired/used codes are rejected.
+* Re-pairing (new phone / reinstall): TUI button shows the pairing QR without a registration code; the app then asks for login.
+* Planning: QR registration in phase 9. Phase 3: TUI setup creates the user directly; fingerprint compared visually on first connection.
+* **Certificate pinning:** the fingerprint comes from the QR; the app trusts only that certificate.
+* **Sessions:** random opaque tokens, stored hashed; the phone stores its token in `flutter_secure_storage`. TUI buttons "log out all sessions" and "change password" revoke all sessions.
 * **Rate limiting:** increasing delays after consecutive failed logins (`intento_login`).
 * **No 2FA** (deliberate). **No JWT** (opaque tokens are revocable).
 
-## 7. CLI (Typer)
-`companion setup` · `serve` · `install-service` · `uninstall-service` · `status` · `passwd` · `logout-all` · `show-pairing` · `notify "<msg>"`
+## 7. PC INTERFACE (TUI + commands)
+* `companion` (no arguments) opens a **Textual** TUI with buttons: initial setup + registration QR · show pairing QR · install / remove service · status · change password · log out all sessions · add / view shared-space notes · export data · export structure.
+* Terminal commands (Typer), only: `companion serve` (started by systemd) · `companion notify "<msg>"` (scripts, hooks).
+* Exports (phase 7), saved to `XDG_DESKTOP_DIR` (read from `~/.config/user-dirs.dirs`, e.g. `~/Escritorio`), falling back to `$HOME`; timestamp in the name avoids overwriting:
+  * data: one JSON file `companion-datos-YYYYMMDD-HHMM.json`, one section per table; excludes `sesion`, `intento_login` and the password hash;
+  * structure: folder `companion-estructura-YYYYMMDD-HHMM/` with `tablas.sql`, `indices.sql`, `vistas.sql`, `triggers.sql`, read from `sqlite_schema` (auto-indexes have no SQL and are skipped). Joins are not stored (relations = foreign keys in `tablas.sql`). Empty files get an explanatory comment (no views/triggers in the current design).
 
 ## 8. DEPLOYMENT
 * Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). Compiled dependencies (iroh, cryptography, argon2) require glibc ≥ 2.28; musl distros (Alpine) are not supported.
@@ -182,7 +190,9 @@ Login (+ first-connection fingerprint check) · Connection setup (manual address
   * peripheral battery (UPower);
   * opening URLs on the PC (xdg-open);
   * phone → desktop notifications;
-  * shared clipboard / shared notes.
+  * shared clipboard (the shared notes space IS in scope, module F).
+* File browsing, download and upload (future idea).
+* Images in the shared space: still being considered, do not implement unless the docs change.
 * KDE ricing (themes, wallpapers, color schemes) and support for other desktops/WMs.
 * iOS and multiple devices.
 * 2FA/TOTP and Wake-on-LAN.
@@ -194,18 +204,18 @@ See 06-ideas-de-futuro.md.
 
 ## 11. PHASES (summary)
 * Phase 0: setup (test environment, Git repo) + learn Flutter.
-* **Beta v0.1 (Christmas):**
-  * Phase 1: metrics (end of October);
-  * Phase 2: iroh remote access (November): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics;
-  * Phase 3: security (CLI setup, login, TLS pinning, sessions), also checked through the tunnel;
-  * Phase 4: pipx install + systemd service.
-* **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs.
-* Post-beta:
-  * Phase 5: terminal (v0.2) (January – early February);
-  * Phase 6: power + processes (February);
-  * Phase 7: quick actions CRUD (mandatory requirement) (March);
-  * Phase 8: notifications + alert rules CRUD + foreground service (April);
-  * Phase 9: mDNS + QR pairing + registration (pending review) + file browsing/download (April – May);
-  * Phase 10: file upload + polish (May).
+* **Beta v0.1 (Christmas): definitive UI with placeholders + metrics over iroh, no login.**
+  * Phase 1: definitive UI (all screens, navigation, placeholders / fake repositories) + real metrics with graphs (mid-October – mid-November);
+  * Phase 2: iroh remote access (mid-November – Christmas): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics and is started by hand.
+* Post-beta (tight schedule: block 2 starts ~4 weeks later than the previous plan):
+  * Phase 3: security (minimal TUI that creates the user, login, TLS pinning, sessions), also checked through the tunnel (first half of January);
+  * Phase 4: terminal (v0.2) (mid-January – end of February);
+* **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs. If it is early February, the terminal will not be ready.
+  * Phase 5: pipx install + systemd service, installed from the TUI (early March);
+  * Phase 6: power + processes (March);
+  * Phase 7: quick actions CRUD (mandatory requirement) + TUI export buttons (late March – mid-April);
+  * Phase 8: notifications + alert rules CRUD + foreground service (late April – mid-May);
+  * Phase 9: mDNS + QR pairing + QR registration + shared space for notes and links (May);
+  * Phase 10: polish (end of May).
 * Thesis report: May (official deadline pending review). Defense: first week of June 2027.
 * If time allows: terminal themes.

@@ -27,7 +27,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 - **Nunca configurar el router.**
 - Flujo deseado: instalar agente → configurar credenciales → instalar app → iniciar sesión → conectar desde cualquier parte.
 
-**Filosofía de desarrollo:** la primera versión (beta) debe tener **pocas funciones, pero todas funcionando**: una base sólida sobre la que ampliar. Esto debe reflejarse en toda la documentación.
+**Filosofía de desarrollo:** la primera versión (beta) debe tener **pocas funciones, pero todas funcionando**: una base sólida sobre la que ampliar. Desde el 12/10/2026 la beta es mínima: la interfaz definitiva con *placeholders*, las métricas y la conexión por iroh, sin login.
 
 ---
 
@@ -39,22 +39,22 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 |---|---|---|---|
 | Framework móvil | **Flutter** (aceptado por el tutor el 26/09/2026) | Se valora usar tecnología no vista en clase; xterm.dart resuelve la terminal (la pieza más difícil); *hot reload* ayuda a aprender | Kotlin + Compose: más fácil para iroh (binding oficial), pero sin emulador de terminal equivalente. Era el plan B; ya no es necesario |
 | Agente PC | Python 3.11 + FastAPI | Mejores librerías de sistema; asíncrono | Go, Rust (curva), Flask (síncrono) |
-| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (noviembre)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
+| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (mediados de noviembre – Navidad)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
 | Puente Flutter ↔ iroh | Platform channel mínimo en Kotlin: `openTunnel` / `closeTunnel` (*pendiente de revisión*) | Flutter no sabe que iroh existe; usa el mismo código que en LAN | El binding de Kotlin publicado no incluye Android y hay que compilarlo con Rust y el NDK igualmente, así que el plugin `iroh_flutter` (pub.dev) vuelve a ser candidato. Se decide al empezar la fase 2 |
-| Tokens | Opacos, con hash en SQLite | Revocables al instante (`logout-all`) | JWT (no revocables; innecesarios con un solo dispositivo) |
+| Tokens | Opacos, con hash en SQLite | Revocables al instante (botón «Cerrar todas las sesiones») | JWT (no revocables; innecesarios con un solo dispositivo) |
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
 | Instalación del agente | **pipx** | Usa el Python de la distro; evita problemas de glibc (me recomendaron alejarme de glibc) | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
 | Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` (propuesta inicial, se cambió) |
-| CLI | Typer | Sencillo | argparse |
+| Herramienta del PC | **TUI con botones (Textual)** al escribir `companion` (12/10/2026); **Typer** solo para `companion serve` y `companion notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid |
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
-- **Login con credenciales creadas por CLI** (`companion setup`). Prefiero CLI antes que TUI.
-- **Registro desde la app:** **pendiente de revisión**. La alternativa es un código de un solo uso generado por la CLI y un formulario de registro en la app. Colocado provisionalmente en la fase 9.
-- **TLS autofirmado con certificate pinning.** En la beta la huella se compara a ojo; más tarde, por QR.
+- **TUI en lugar de CLI (12/10/2026):** al escribir `companion` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones). Antes prefería CLI; cambié de opinión.
+- **Registro por QR (12/10/2026):** la TUI muestra un QR con la dirección, la huella, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña. El modo registro se cierra tras la primera cuenta. **Va en la fase 9 (12/10/2026);** hasta entonces el usuario se crea desde la TUI.
+- **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, se compara a ojo con la que muestra la TUI).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.** Multi-dispositivo como idea futura.
-- **El agente nunca usa root ni sudo.** Para operaciones de root sobre archivos, la app avisa de que hay que usar la terminal.
+- **El agente nunca usa root ni sudo.** Para operaciones de root, la app avisa de que hay que usar la terminal.
 
 ### 3.3 Terminal
 - Se lanza `$SHELL -l` de forma genérica. **No hay que programar soporte por shell**: el PTY funciona igual con Bash, Zsh y Fish. **Shell probada oficialmente: Zsh.**
@@ -69,14 +69,25 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
   - servicio en primer plano en Android que reutiliza el del túnel iroh.
 - **Sin Firebase.** Funciona también en LAN, sin iroh.
 
-### 3.5 Requisitos mínimos de DAM
+### 3.5 Espacio compartido (dentro del TFG, decidido el 12/10/2026)
+- **Sustituye al explorador y la transferencia de archivos**, que pasan a ideas de futuro (06).
+- Un espacio común entre el móvil y el PC donde dejar **notas de texto y enlaces** para pasar información de un lado a otro. CRUD desde la app y botones de la TUI en el PC; la app pide las notas al abrir la pantalla y al recargar (sin actualización al momento: es una app para usar lejos del PC). Si los dos lados editan la misma nota, gana el último cambio.
+- **Imágenes: aún pensándolo.** Fuera del alcance confirmado hasta que se decida.
+- Va en la fase 9, después del CRUD (fase 7), cuyo patrón reutiliza.
+
+### 3.6 Requisitos mínimos de DAM
 Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo se resolvieron:
-- **CRUD de 2 entidades relacionadas:** no existía. Se añadieron las **acciones rápidas**: `grupo` 1:N `accion_rapida` 1:N `ejecucion`, con CRUD completo de grupos y acciones. Refuerzo con `regla_alerta` 1:N `notificacion`.
-- **BD de 3–4 tablas:** ahora son 8 tablas, con `schema.sql` y repositorios.
+- **CRUD de 2 entidades relacionadas:** no existía. Se añadieron las **acciones rápidas**: `grupo` 1:N `accion_rapida` 1:N `ejecucion`, con CRUD completo de grupos y acciones. Refuerzo con `regla_alerta` 1:N `notificacion` y con `nota` (espacio compartido).
+- **BD de 3–4 tablas:** ahora son 9 tablas, con `schema.sql` y repositorios.
 - **Diseño de BD, casos de uso, pruebas y capturas en la memoria:** añadidos a la documentación y al plan.
 - **Elemento diferenciador:** cubierto de sobra (cámara/QR, servicio en segundo plano con notificaciones, P2P, PTY).
 - **Flutter:** la normativa cita "Android Studio, Kotlin, Java" y Flutter no aparece, pero **el tutor lo aceptó (26/09/2026)**. Riesgo cerrado.
 - **Agente en Python:** es parte fundamental del proyecto; sin él la app no funciona (02/10/2026).
+
+### 3.7 Exportar la base de datos (12/10/2026)
+- Dos botones en la TUI (fase 7), con los archivos en el escritorio (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`; si no existe, la carpeta personal) y la fecha y la hora en el nombre.
+- **Datos:** un JSON `companion-datos-AAAAMMDD-HHMM.json` con una sección por tabla, sin `sesion`, `intento_login` ni el hash de la contraseña. Descartados CSV (un archivo por tabla, pierde tipos) y SQL con `INSERT` (mezcla datos y estructura).
+- **Estructura:** carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, leídos de `sqlite_schema`. Los *joins* no se guardan en la BD: las relaciones son las claves foráneas de `tablas.sql`. El diseño no tiene vistas ni triggers, así que esos archivos llevan un comentario que lo explica.
 
 ---
 
@@ -89,7 +100,8 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - abrir URLs en el PC;
 - notificaciones del móvil al escritorio;
 - ricing de KDE y personalización en general;
-- portapapeles compartido. Se reconvierte en idea futura de **notas compartidas**: texto, enlaces, archivos e imágenes entre PC y móvil.
+- portapapeles compartido. Se reconvirtió en **espacio compartido** de notas de texto y enlaces, que el 12/10/2026 pasó a formar parte del TFG (ver 3.5).
+- explorador y transferencia de archivos (12/10/2026): sustituido por el espacio compartido; queda como idea de futuro.
 
 **Descartado por complejidad o por chocar con otros requisitos:**
 - Wake-on-LAN;
@@ -102,9 +114,10 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 ## 5. Planificación (resumen; detalle en 04)
 
-**Calendario (02/10/2026):**
-- **Beta v0.1 en Navidad:** funcional y bien estructurada, como base mínima sobre la que seguir añadiendo funciones.
-- **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento (o el explorador de archivos). *Fecha exacta pendiente de revisión.*
+**Calendario (02/10/2026, revisado el 12/10/2026):**
+- **Beta v0.1 en Navidad:** mínima: interfaz definitiva con *placeholders*, métricas y conexión por iroh, sin login.
+- **Calendario apretado:** la seguridad y la instalación pasan detrás de la beta, así que la terminal termina a finales de febrero y las fases 8–10 coinciden con la redacción de la memoria en mayo.
+- **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento. *Fecha exacta pendiente de revisión.*
 - **Defensa:** primera semana de junio de 2027. *Fecha oficial de entrega de la memoria pendiente de revisión.*
 
 **Criterios:**
@@ -115,21 +128,22 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 **Beta v0.1 (Navidad):**
 - Fase 0: preparación y aprender Flutter.
-- Fase 1: métricas.
-- Fase 2: conexión remota con iroh (noviembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
-- Fase 3: seguridad (también comprobada a través del túnel).
-- Fase 4: instalación con pipx y servicio.
-- **La beta NO necesita cumplir todos los mínimos de DAM.** El CRUD se sacó de la beta a propósito.
+- Fase 1: interfaz definitiva con *placeholders* y métricas (mediados de octubre – mediados de noviembre).
+- Fase 2: conexión remota con iroh (mediados de noviembre – Navidad): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
+- **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
+- **La beta NO necesita cumplir los mínimos de DAM.**
 
 **Después de la beta:**
-- Fase 5: terminal (enero – principios de febrero), para el hito de febrero.
+- Fase 3: seguridad (enero): TUI mínima que crea el usuario y login. Va antes de la terminal porque esta da acceso a la shell.
+- Fase 4: terminal (mediados de enero – finales de febrero), para el hito de febrero.
+- Fase 5: instalación con pipx y servicio (instalado desde la TUI).
 - Fase 6: energía y procesos.
-- Fase 7: CRUD de acciones rápidas (requisito obligatorio).
+- Fase 7: CRUD de acciones rápidas (requisito obligatorio) y botones de exportación de la TUI.
 - Fase 8: notificaciones, reglas y servicio en primer plano.
-- Fase 9: mDNS, QR, registro (pendiente de revisión) y archivos.
-- Fase 10: subida de archivos y pulido.
+- Fase 9: mDNS, QR de emparejamiento, registro por QR y espacio compartido (notas de texto y enlaces; imágenes aún pensándolo).
+- Fase 10: pulido.
 
-**Orden de recorte si voy con retraso:** subida de archivos → reglas de alerta → mDNS → hibernar y ordenación de procesos. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
+**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
 
 ---
 
@@ -184,11 +198,12 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 
 1. ~~Preguntar al tutor por escrito~~ **Resuelto:** Flutter aceptado (26/09/2026), el agente en Python es parte fundamental del proyecto (02/10/2026) y la política de IA está aclarada (28/09/2026, ver sección 8).
 2. Averiguar la **fecha oficial de entrega de la memoria** y la fecha exacta del hito de febrero, y ajustar el plan. *Pendiente de revisión.*
-3. Decidir sobre el **registro desde la app** (antes de la fase 9). *Pendiente de revisión.*
+3. ~~Decidir cómo se crea el usuario~~ **Resuelto (12/10/2026):** registro por QR desde la TUI y la app, en la fase 9.
 4. ~~Revisar las licencias marcadas como "verificar" en el documento 05~~ **Resuelto (02/10/2026):** licencias comprobadas; iroh-ssh-android es GPL-3.0 e iroh-android-native no declara licencia, así que de ninguno de los dos se puede copiar código.
 5. Preguntar en el centro cómo está montada la red: si deja salir HTTPS con WebSocket hacia los relés de iroh o si hay un proxy que inspeccione el tráfico. *Pendiente de revisión* (antes de la prueba en red restrictiva de la fase 2).
 6. Confirmar el tipo del servicio en primer plano (`connectedDevice` como candidato). *Pendiente de revisión* (fase 8).
 7. Elegir cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter`. *Pendiente de revisión* (al empezar la fase 2).
+8. Decidir si las **imágenes** entran en el espacio compartido. *Aún pensándolo* (antes de la fase 9).
 
 ---
 

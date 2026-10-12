@@ -65,7 +65,7 @@ Usar librerías/paquetes como infraestructura normal está permitido, incluso pa
 
 ## Documentación
 
-Toda la documentación técnica está en [`docs/`](docs/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
+Toda la documentación técnica está en [`doc/`](doc/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
 - `01-memoria-tecnica.md`
 - `02-necesidades-tecnologicas.md`
 - `03-system-context.md`
