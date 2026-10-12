@@ -4,10 +4,18 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 
 class AppTopBar extends StatelessWidget {
-  const AppTopBar({super.key, required this.title, required this.onMenu});
+  const AppTopBar({
+    super.key,
+    required this.title,
+    required this.onMenu,
+    this.icon = AppIcon.menu,
+    this.iconLabel = 'Abrir menú',
+  });
 
   final String title;
   final VoidCallback onMenu;
+  final AppIcon icon;
+  final String iconLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +31,14 @@ class AppTopBar extends StatelessWidget {
         children: [
           Semantics(
             button: true,
-            label: 'Abrir menú',
+            label: iconLabel,
             child: InkWell(
               onTap: onMenu,
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
                 width: 44,
                 height: 44,
-                child: Center(child: AppIconView(AppIcon.menu, color: t.ink, size: 24)),
+                child: Center(child: AppIconView(icon, color: t.ink, size: 24)),
               ),
             ),
           ),

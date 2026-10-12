@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:tfg/app.dart';
 import 'package:tfg/data/fake/fake_macro_repository.dart';
 import 'package:tfg/data/fake/fake_metrics_repository.dart';
+import 'package:tfg/data/fake/fake_notes_repository.dart';
 import 'package:tfg/data/fake/fake_pairing_repository.dart';
 import 'package:tfg/data/fake/fake_terminal_repository.dart';
 import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
+import 'package:tfg/data/repositories/notes_repository.dart';
 import 'package:tfg/data/repositories/pairing_repository.dart';
 import 'package:tfg/data/repositories/terminal_repository.dart';
 import 'package:tfg/features/home/home_viewmodel.dart';
 import 'package:tfg/features/metrics/metrics_viewmodel.dart';
+import 'package:tfg/features/notes/note_form_view.dart';
+import 'package:tfg/features/notes/notes_viewmodel.dart';
 import 'package:tfg/features/settings/settings_viewmodel.dart';
 import 'package:tfg/features/shell/shell_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_viewmodel.dart';
@@ -22,6 +27,7 @@ Widget _app() => MultiProvider(
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
+        Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
         ChangeNotifierProvider(
@@ -32,6 +38,12 @@ Widget _app() => MultiProvider(
         ),
         ChangeNotifierProvider(
           create: (context) => MetricsViewModel(context.read<MetricsRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NotesViewModel(
+            context.read<NotesRepository>(),
+            context.read<PairingRepository>(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => TerminalViewModel(context.read<TerminalRepository>()),
@@ -207,6 +219,121 @@ void main() {
       expect(find.text('Escala 86–212 °F'), findsOneWidget);
       expect(find.textContaining('GiB'), findsWidgets);
       await closeApp(tester);
+    });
+  });
+
+  group('Notas', () {
+    Future<void> openNotes(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Notas'));
+      await _pumpFor(tester, 600);
+    }
+
+    Finder note(String text) => find.textContaining(text, findRichText: true);
+    Finder formField() => find.descendant(
+          of: find.byType(NoteFormView),
+          matching: find.byType(TextField),
+        );
+
+    testWidgets('lista las notas de ejemplo con su origen', (tester) async {
+      await openNotes(tester);
+
+      expect(note('docs.flutter.dev'), findsOneWidget);
+      expect(note('systemctl restart nginx'), findsOneWidget);
+      expect(find.textContaining('Desde el PC'), findsOneWidget);
+      expect(find.textContaining('Desde el móvil'), findsNWidgets(2));
+    });
+
+    testWidgets('crea una nota y la muestra en la lista', (tester) async {
+      await openNotes(tester);
+
+      await tester.tap(find.bySemanticsLabel('Nueva nota'));
+      await _pumpFor(tester, 500);
+      expect(find.text('Nueva nota'), findsOneWidget);
+
+      await tester.enterText(formField(), 'Comprar cable HDMI');
+      await tester.pump();
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 600);
+
+      expect(note('Comprar cable HDMI'), findsOneWidget);
+    });
+
+    testWidgets('no permite guardar una nota vacía', (tester) async {
+      await openNotes(tester);
+
+      await tester.tap(find.bySemanticsLabel('Nueva nota'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 300);
+
+      expect(find.text('Nueva nota'), findsOneWidget);
+    });
+
+    testWidgets('edita una nota existente', (tester) async {
+      await openNotes(tester);
+
+      await tester.tap(find.bySemanticsLabel('Editar nota').first);
+      await _pumpFor(tester, 500);
+      expect(find.text('Editar nota'), findsOneWidget);
+
+      await tester.enterText(formField(), 'texto cambiado');
+      await tester.pump();
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 600);
+
+      expect(note('texto cambiado'), findsOneWidget);
+    });
+
+    testWidgets('elimina una nota tras confirmar', (tester) async {
+      await openNotes(tester);
+
+      await tester.tap(find.bySemanticsLabel('Editar nota').first);
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Eliminar'));
+      await _pumpFor(tester, 200);
+      expect(find.text('¿Eliminar esta nota?'), findsOneWidget);
+
+      await tester.tap(find.text('Eliminar').last);
+      await _pumpFor(tester, 600);
+
+      expect(note('docs.flutter.dev'), findsNothing);
+    });
+
+    testWidgets('filtra al buscar', (tester) async {
+      await openNotes(tester);
+
+      await tester.enterText(find.byType(TextField), 'nginx');
+      await _pumpFor(tester, 500);
+
+      expect(note('systemctl restart nginx'), findsOneWidget);
+      expect(note('docs.flutter.dev'), findsNothing);
+    });
+
+    testWidgets('avisa cuando la búsqueda no tiene resultados', (tester) async {
+      await openNotes(tester);
+
+      await tester.enterText(find.byType(TextField), 'zzz');
+      await _pumpFor(tester, 500);
+
+      expect(find.text('Sin resultados para «zzz»'), findsOneWidget);
+    });
+
+    testWidgets('copiar muestra el aviso', (tester) async {
+      tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
+      await openNotes(tester);
+
+      await tester.tap(find.bySemanticsLabel('Copiar nota').first);
+      await _pumpFor(tester, 200);
+
+      expect(find.text('Copiado'), findsOneWidget);
+      await _pumpFor(tester, 2500);
     });
   });
 
