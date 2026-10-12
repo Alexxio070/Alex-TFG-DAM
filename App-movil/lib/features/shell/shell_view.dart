@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../home/home_view.dart';
+import '../metrics/metrics_view.dart';
 import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
@@ -73,6 +74,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                   Expanded(
                     child: switch (vm.active) {
                       Section.home => const HomeView(),
+                      Section.metrics => const MetricsView(),
                       _ => _SectionBody(section: vm.active),
                     },
                   ),
