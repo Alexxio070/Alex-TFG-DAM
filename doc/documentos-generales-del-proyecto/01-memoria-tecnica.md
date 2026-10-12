@@ -3,8 +3,8 @@
 **Título del proyecto:** Linux System Companion — Administración remota de tu PC Linux desde el móvil
 **Tipo:** Proyecto final de DAM — aplicación móvil Android con backend propio
 **Plataformas:** Android (cliente) — GNU/Linux con systemd (agente)
-**Entorno de referencia (probado):** Android 10+ · KDE Plasma 6 · systemd · Python 3.11+
-**Estado:** Propuesta / Memoria de diseño
+**Entorno de referencia:** Android 10+ (probado en Android 15) · KDE Plasma 6 · systemd · Python 3.11+
+**Estado:** Memoria de diseño; implementación en curso (interfaz de la app con datos simulados)
 
 ---
 
@@ -64,7 +64,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - La app muestra la terminal con **xterm.dart**, que interpreta las secuencias ANSI, incluido color de 24 bits (True Color).
 - Barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`).
 - **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY, sin código específico. **La shell probada oficialmente es Zsh.**
-- **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. La app incluye una Nerd Font para que los iconos de prompts como Starship se vean bien.
+- **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. La app incluirá una Nerd Font (fase 4) para que los iconos de prompts como Starship se vean bien.
 
 ### Módulo B — Monitorización del sistema
 - Uso de CPU (global y por núcleo), RAM, swap, discos, temperaturas, carga del sistema y tiempo encendido.
@@ -173,7 +173,7 @@ PUT    /notas/{id}                     DELETE /notas/{id}
 - En el móvil, un **servicio en primer plano** mantiene la conexión abierta y muestra los avisos como notificaciones de Android. No se usa Firebase ni ningún servidor externo.
 - **Requisitos de Android:**
   - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
-  - desde Android 14 hay que declarar el tipo del servicio en primer plano. No se usará `dataSync`, porque desde Android 15 el sistema lo detiene tras 6 horas cada 24. Candidato: `connectedDevice` (dispositivo externo conectado por red), que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE`. *Pendiente de revisión:* se confirma en la fase 8.
+  - desde Android 14 hay que declarar el tipo del servicio en primer plano. No se usará `dataSync`, porque desde Android 15 el sistema lo detiene tras 6 horas cada 24. Candidato: `connectedDevice` (dispositivo externo conectado por red), que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE` (u otra de las alternativas de NFC, infrarrojos, Bluetooth, UWB o USB). *Pendiente de revisión:* se confirma en la fase 8.
 
 **API del agente:**
 ```
@@ -191,6 +191,13 @@ WS     /ws/events                      (avisos en tiempo real)
 - **Desde fuera de casa:** túnel P2P cifrado con **iroh** (ver 4.3).
 - El resto de la app no distingue entre ambos modos: usa exactamente el mismo código de comunicación.
 
+### Navegación y pantallas de la app
+La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
+
+- **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
+- **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
+- **Aún sin ubicación decidida:** energía (Módulo C), procesos (Módulo D), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
+
 ---
 
 ## 4. Arquitectura
@@ -203,7 +210,7 @@ WS     /ws/events                      (avisos en tiempo real)
 |   Vistas → ViewModels (provider) → Repositorios → Servicios red  |
 |   xterm.dart · HTTP/REST · WebSocket · notificaciones locales    |
 |------------------------------------------------------------------|
-|  Kotlin (platform channel): túnel iroh + servicio en 1er plano   |
+|  Kotlin (platform channel): túnel iroh + servicio 1er plano (*)  |
 +------------------------------------------------------------------+
             |                                      |
    [ Red local (LAN) ]                  [ Fuera de casa (WAN) ]
@@ -226,6 +233,8 @@ WS     /ws/events                      (avisos en tiempo real)
 +------------------------------------------------------------------+
 ```
 
+*(\*) Diseño actual, pendiente de revisión:* la vía para usar iroh desde Flutter se decide al empezar la fase 2 (ver 4.4) y la implementación del servicio en primer plano, en la fase 8.
+
 ### 4.2 Arquitectura en capas
 
 **App (patrón MVVM):**
@@ -243,16 +252,16 @@ WS     /ws/events                      (avisos en tiempo real)
 ### 4.3 Comunicación
 - **REST (HTTP/JSON):** peticiones puntuales, como login, energía, procesos y el CRUD de grupos, acciones, notas, reglas y notificaciones.
 - **WebSocket:** canales continuos para la terminal, las métricas en vivo y los eventos o notificaciones.
-- En la beta las métricas se obtienen por consulta periódica REST (cada 1–2 s) por simplicidad.
+- En la beta las métricas se obtienen por consulta periódica REST (cada 1 s) por simplicidad.
 
 ### 4.4 Diseño del acceso remoto: túnel local
 Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **túnel transparente**, siguiendo el patrón de la herramienta *dumbpipe* del proyecto iroh:
 
 1. **En el PC,** el agente crea un punto de conexión iroh que reenvía todo lo que recibe a su propio servidor FastAPI local.
 2. **En el móvil,** un pequeño módulo en Kotlin (binding oficial de iroh, que para Android hay que compilar desde el código fuente con Rust y el NDK) abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh.
-3. **La parte Flutter** se conecta a `127.0.0.1:puerto` con el mismo código HTTP/WebSocket que en LAN. El TLS y el login siguen funcionando dentro del túnel.
+3. **La parte Flutter** se conecta a `127.0.0.1:puerto` con el mismo código HTTP/WebSocket que en LAN. El TLS y el login (desde la fase 3) siguen funcionando dentro del túnel.
 
-iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un servidor relé cifrado, que los dos equipos usan para intercambiar sus direcciones; después iroh intenta convertirla en directa atravesando el NAT y, si no lo consigue, sigue por el relé. Por defecto se usan los relés públicos gratuitos del proyecto (según iroh, solo para desarrollo y uso personal, con límite de tráfico y sin garantía de disponibilidad; suficientes para el TFG); opcionalmente pueden configurarse relés propios. Por defecto cada arranque genera una identidad nueva, así que el agente debe guardar su clave secreta (`SecretKey`) y cargarla al arrancar para conservar el mismo identificador.
+iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un servidor relé cifrado, que los dos equipos usan para intercambiar sus direcciones; después iroh intenta convertirla en directa atravesando el NAT y, si no lo consigue, sigue por el relé. Por defecto se usan los relés públicos gratuitos del proyecto (según iroh, solo para desarrollo y uso aficionado, con límite de tráfico y sin garantía de disponibilidad; suficientes para el TFG); opcionalmente pueden configurarse relés propios. Por defecto cada arranque genera una identidad nueva, así que el agente debe guardar su clave secreta (`SecretKey`) y cargarla al arrancar para conservar el mismo identificador.
 
 *Pendiente de revisión (se decide al empezar la fase 2):* cómo usar iroh desde Flutter. El binding de Kotlin publicado en Maven no incluye Android: hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). La alternativa es el plugin `iroh_flutter` de pub.dev (comunitario, no de n0), que compila el núcleo Rust automáticamente; también necesita Rust y el NDK instalados.
 
@@ -293,9 +302,10 @@ A partir de entonces la app solo confía en ese certificado. Para emparejar otro
 | Ataque de fuerza bruta a la contraseña | Acceso completo como el usuario | Contraseña robusta obligatoria, Argon2, límite de intentos con esperas crecientes |
 | Robo o pérdida del móvil | Acceso con la sesión guardada | Token en almacenamiento cifrado; revocación desde la TUI (cerrar todas las sesiones). Riesgo residual aceptado: si el móvil está desbloqueado, la app es accesible (mitigación futura: desbloqueo biométrico) |
 | Alguien usa el QR de registro antes que el usuario | Crear la cuenta en su lugar | Código de un solo uso con caducidad corta; el QR solo se muestra en la pantalla del PC; el modo registro se cierra tras la primera cuenta |
-| Acceso desde Internet a través de iroh | Conexiones no autorizadas | El túnel solo da acceso al servidor de la aplicación, que sigue exigiendo TLS con huella fijada y login |
+| Acceso desde Internet a través de iroh | Conexiones no autorizadas | El túnel solo da acceso al servidor de la aplicación, que sigue exigiendo TLS con huella fijada y login (desde la fase 3) |
+| Acceso al agente durante la beta (hasta la fase 3, sin TLS de aplicación ni login) | Cualquiera que conozca el identificador iroh llega al agente | El agente solo expone métricas de solo lectura, el identificador no se comparte y el agente se arranca a mano solo para probar |
 | Acciones rápidas con comandos maliciosos | Ejecución de comandos arbitrarios | Solo las crea y ejecuta un usuario autenticado, con sus propios permisos; no amplía lo que ya permite la terminal |
-| Otro usuario local del PC | Uso del agente ajeno | Datos en `~/.config` y `~/.local/share` con permisos del usuario; socket Unix `0600` |
+| Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/companion` y `~/.local/share/companion` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600` |
 | Escalada de privilegios mediante la app | Control de root | El agente no tiene más permisos que el usuario; nunca eleva privilegios |
 
 **Decisión documentada:** se descartó el 2FA (TOTP) para mantener la configuración mínima. Se compensa con contraseña robusta obligatoria, límite de intentos y revocación de sesiones.
@@ -304,7 +314,7 @@ A partir de entonces la app solo confía en ese certificado. Para emparejar otro
 
 ## 6. Diseño de la base de datos
 
-Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`). Se crea con el script `agent/schema.sql` y se accede exclusivamente a través de la capa de repositorios.
+Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`). Se crea con el script `agent/schema.sql` y se accede exclusivamente a través de la capa de repositorios. SQLite tiene las claves foráneas desactivadas por defecto, así que cada conexión ejecuta `PRAGMA foreign_keys = ON`; sin ello no se aplican los borrados en cascada.
 
 ### 6.1 Diagrama entidad-relación (simplificado)
 
@@ -349,12 +359,13 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
 - `grupo.color`: color de la carpeta, uno de los seis de la paleta de la app;
 - `accion_rapida.icono`: icono del botón (`volume`, `lock`, `moon` o `bolt`, por defecto `bolt`);
 - `orden`: posición. En `grupo` y en las `accion_rapida` sin grupo comparten una misma secuencia (el primer nivel de la cuadrícula); en las acciones con grupo es la posición dentro de la carpeta.
+
 **Entidades de historial:** ejecucion y notificacion (creación automática, consulta, filtrado, marcado y borrado).
 
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
 
 ### 6.3 Exportación desde la TUI
-La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, que en un sistema en español suele ser `~/Escritorio` y se lee de `~/.config/user-dirs.dirs`); si no está definido, en la carpeta personal. La fecha y la hora en el nombre evitan sobrescribir exportaciones anteriores.
+La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, que en un sistema en español suele ser `~/Escritorio` y se lee de `$XDG_CONFIG_HOME/user-dirs.dirs`, por defecto `~/.config/user-dirs.dirs`); si no está definido, en la carpeta personal. La fecha y la hora en el nombre evitan sobrescribir exportaciones anteriores.
 - **Exportar datos:** un único archivo JSON, `companion-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
 - **Exportar estructura:** una carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
 
@@ -411,7 +422,7 @@ Escribir `companion` abre una **TUI** hecha con **Textual**, con botones para:
 
 Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
 
-Se usa **pipx** porque las distribuciones actuales bloquean `pip install` fuera de entornos virtuales. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python de la propia distribución. Las dependencias compiladas (iroh, cryptography, argon2) se instalan como paquetes precompilados que requieren **glibc 2.28 o superior**, así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
+Se usa **pipx** porque muchas distribuciones actuales (Debian 12+, Ubuntu 23.04+, Arch…) bloquean `pip install` fuera de entornos virtuales, siguiendo PEP 668. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python con el que se ejecuta, que normalmente es el de la propia distribución. El binding de Python de iroh solo se publica como paquete precompilado para Linux con **glibc 2.28 o superior** (x86_64 y aarch64), así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
 
 ### 8.2 Servicio systemd
 El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
@@ -464,10 +475,10 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 | Método | Uso |
 |---|---|
 | **USB + `adb reverse tcp:8443 tcp:8443`** | Método principal: la app se conecta a `127.0.0.1:8443` y llega al agente del portátil por el cable |
-| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No sirve para probar iroh: el binding de Kotlin para Android solo admite arquitecturas ARM (aarch64 y armv7) y hay que compilarlo desde el código fuente |
+| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No se usa para probar iroh: el binding de Kotlin para Android solo se soporta oficialmente en arquitecturas ARM (aarch64 y armv7) y hay que compilarlo desde el código fuente. *Pendiente de revisión:* si se elige `iroh_flutter`, comprobar si funciona en el emulador |
 | **Punto de acceso del móvil** | Red privada propia para probar como LAN real, incluido mDNS |
 | **Repositorios simulados** | Desarrollar pantallas sin el agente |
-| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. No necesita abrir puertos de entrada, solo salida HTTPS (TCP 443) hacia los relés |
+| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. No necesita abrir puertos de entrada. Basta con salida TCP 443 hacia los relés (HTTPS con WebSocket) y hacia `dns.iroh.link`, además de DNS normal; el UDP saliente es opcional. Un proxy que inspeccione el TLS impide conectar con los relés |
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
@@ -482,11 +493,11 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 - **Distribución:** cualquier distribución con systemd, Python 3.11+ y D-Bus. El entorno de pruebas oficial es KDE Plasma 6. El bloqueo de sesión depende de que el escritorio responda a la señal de logind (Plasma lo hace).
 - **Temperaturas:** dependen de los sensores que exponga el kernel en `/sys/class/hwmon`. Las GPU NVIDIA con controlador propietario no aparecen ahí; su soporte (vía `nvidia-smi`) es opcional.
 - **Hibernación:** muchas instalaciones no la tienen configurada. La app la ofrece solo si logind indica que está disponible.
-- **Apagado o reinicio con otras sesiones abiertas:** polkit puede pedir autorización adicional.
+- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política.
 - **Procesos:** solo se pueden finalizar los del propio usuario.
-- **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra un icono permanente en la barra de estado, que es el comportamiento estándar de Android.
-- **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso personal (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
-- **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica; cuando se suba a 37 habrá que pedir este permiso en la pantalla de conexión. El móvil de pruebas usa Android 15, donde no se exige. *Pendiente de revisión:* comprobar si las conexiones a `127.0.0.1` (USB y túnel iroh) cuentan como red local a efectos de ese permiso.
+- **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra una notificación persistente, que es el comportamiento estándar de Android. Desde Android 14 el usuario puede descartarla, y sin el permiso `POST_NOTIFICATIONS` solo aparece en el gestor de tareas.
+- **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso aficionado (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
+- **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica; cuando se suba a 37 habrá que pedir este permiso en la pantalla de conexión. El móvil de pruebas usa Android 15, donde no se exige. Las conexiones a `127.0.0.1` (USB y túnel iroh) previsiblemente no se ven afectadas, porque la definición oficial de red local no incluye el *loopback*. *Pendiente de confirmar.*
 
 ---
 

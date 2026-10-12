@@ -16,7 +16,7 @@ El prototipo es **la fuente de verdad** para colores, medidas, textos y comporta
 
 - Pantalla de referencia: **390 × 844** dp.
 - **AppBar** blanca (64 dp), borde inferior 1 dp. A la izquierda: botón de menú (icono hamburguesa, 44×44) y, a su lado, el **nombre de la sección activa** (18 sp, peso 700).
-- **Drawer desde la izquierda**, ancho 280 dp, con scrim negro al 45 %.
+- **Drawer desde la izquierda**, ancho 280 dp, con scrim #16181D (color `ink` claro) al 45 %.
   - Cabecera (64 dp): botón X para cerrar + nombre de la sección activa.
   - Opciones una debajo de otra (alto 48, radio 12): **Inicio, Métricas, Terminal, Notas**. La activa va con fondo del color de acento y texto blanco.
   - Pie: botón engranaje (abre **Ajustes**) a la izquierda y **estado de conexión** a la derecha (punto verde + "Conectado" / punto gris + "Sin emparejar").
@@ -112,7 +112,7 @@ Lista con scroll de tarjetas a ancho completo (radio 20, padding 16, separación
 
 - Un único campo de texto multilínea a pantalla completa, **compartido con el PC** en ambos sentidos.
 - Barra de estado superior (40 dp): punto + "Sincronizado con el PC" / "Sincronizando…" (ámbar #D97706) / "Sin emparejar · no se sincroniza"; a la derecha, número de caracteres.
-- Usar el **TextField nativo** para heredar selección y menú contextual de Android (pegar, copiar, cortar, seleccionar todo, buscar). No implementar menús propios.
+- Usar el **TextField de Flutter** para heredar la selección y el menú de texto con el aspecto de Android (pegar, copiar, cortar, seleccionar todo, compartir). No es el menú nativo: Flutter lo dibuja él mismo, y la opción «buscar» solo existe en iOS. No implementar menús propios.
 
 ## 7. Ajustes, antes «Opciones» (engranaje del drawer)
 

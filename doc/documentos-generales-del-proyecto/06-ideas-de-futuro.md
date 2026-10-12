@@ -15,7 +15,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 ### Control multimedia 🟢
 - Play/pausa, pista anterior y siguiente, volumen general, título, artista y carátula de lo que suena.
 - Funciona con cualquier reproductor compatible con **MPRIS2** (Spotify, VLC, navegadores…) a través de D-Bus.
-- Nota técnica: la carátula suele venir como ruta de archivo local, así que el agente tendría que servirla por HTTP.
+- Nota técnica: la especificación da la carátula como una URL (`mpris:artUrl`), que puede ser un archivo local (`file://`) o una dirección http(s). Si es local, el agente tendría que servirla por HTTP.
 
 ### Mezclador de volumen por aplicación 🟡
 - Ajustar el volumen de cada aplicación por separado (por ejemplo, bajar la música sin tocar la llamada).
@@ -74,7 +74,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### iOS 🔴
 - Flutter permite compilar para iOS con la misma base de código.
-- Requiere Mac con Xcode. Para probar en un iPhone propio basta un Apple ID gratuito (los perfiles caducan cada 7 días); la cuenta de desarrollador de pago solo es necesaria para distribuir la app.
+- Requiere Mac con Xcode. Para probar en un iPhone propio basta un Apple ID gratuito, con límites: los perfiles caducan a los 7 días (hay que recompilar y reinstalar), como máximo 3 apps por dispositivo y 3 dispositivos. La cuenta de desarrollador de pago es necesaria para distribuir la app y para las capacidades avanzadas.
 - iOS es muy restrictivo con las conexiones en segundo plano, lo que afecta a las notificaciones.
 
 ### Multi-dispositivo 🟡
@@ -83,6 +83,9 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Publicación en tiendas 🟢🟡
 - Google Play (cuenta de desarrollador y revisión) y F-Droid.
+- En Google Play, las cuentas personales nuevas deben hacer antes una prueba cerrada con al menos 12 testers durante 14 días seguidos.
+- Verificación de desarrolladores de Android: en 2027 se extiende a todo el mundo y a todas las apps instaladas en dispositivos Android certificados, también las que se distribuyen fuera de Google Play. Para publicar en F-Droid o repartir el APK de las releases habrá que registrar al desarrollador y la app (Android Developer Console). Para estudiantes existe una cuenta de distribución limitada: hasta 20 dispositivos, sin documento de identidad ni tasa de registro.
+- *Pendiente de revisión: cómo afecta a la distribución del APK del TFG.*
 - Paquetes nativos del agente: AUR, `.deb`, `.rpm`.
 
 ---
@@ -118,10 +121,10 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
-- Solo funciona desde la misma red, salvo que otro dispositivo encendido (router, Raspberry Pi) reenvíe el paquete. Requiere activarlo en la BIOS.
+- Solo funciona desde la misma red, salvo que otro dispositivo encendido (router, Raspberry Pi) reenvíe el paquete. Requiere activarlo en la BIOS y también en la tarjeta de red desde el sistema (por ejemplo, `WakeOnLan=magic` en systemd.link).
 
 ### Relé iroh propio 🟡
-- Guía y configuración para usar un relé propio en lugar de los públicos, para quien quiera independencia total o más ancho de banda.
+- Guía y configuración para usar un relé propio en lugar de los públicos, para quien quiera independencia total o más ancho de banda. La documentación de iroh indica que los relés públicos son para desarrollo y pruebas, no para producción.
 
 ---
 

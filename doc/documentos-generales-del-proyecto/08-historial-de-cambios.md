@@ -21,6 +21,12 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/10/2026 | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
 | 12/10/2026 | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
 | 12/10/2026 | Revisión de coherencia entre documentación e implementación | Aplicado |
+| 12/10/2026 | Herramienta del PC: de CLI con Typer a TUI con botones (Textual) | Aplicado en la documentación |
+| 12/10/2026 | Registro del usuario: de CLI o código de un solo uso a QR en la TUI y cuenta creada en la app | Aplicado en la documentación |
+| 12/10/2026 | Exportación de datos y de estructura de la BD desde la TUI | Aplicado en la documentación |
+| 12/10/2026 | Replanificación: interfaz primero y beta sin login | Aplicado en la documentación |
+| 12/10/2026 | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
+| 12/10/2026 | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
 
 ---
 
@@ -52,7 +58,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 - **Qué es ahora:** la terminal usa **`xterm.dart` 4.0.0** desde el principio, con el shell simulado detrás de `TerminalRepository`.
 - **Por qué:** `xterm.dart` es la elección confirmada en `CLAUDE.md` y en el documento 02; un widget propio no soportaría colores ANSI, programas a pantalla completa ni el redimensionado del PTY, y habría que rehacerlo después.
 - **Efectos conocidos:** el cursor **no parpadea** (la v1 lo especificaba parpadeante) y la **Nerd Font** sigue pendiente (se usa JetBrains Mono).
-- **Afecta a:** `ESTRUCTURA_FLUTTER.md` (decisión obsoleta, ver «Pendiente de aplicar»), `ui/XTERM_DART.md` (nuevo). Código: `App-movil/lib/features/terminal/`.
+- **Afecta a:** `ESTRUCTURA_FLUTTER.md` (actualizado en la revisión de coherencia), `ui/XTERM_DART.md` (nuevo). Código: `App-movil/lib/features/terminal/`.
 - **Estado:** aplicado.
 
 ### 12/10/2026 — Gráficas: de `fl_chart` a `CustomPainter`
@@ -131,6 +137,63 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 | `CLAUDE.md`, `01`–`04` | `app/` → `App-movil/` |
 
 **Sin cambios, por no ser incoherencia sino plan:** la Nerd Font sigue siendo un objetivo de la fase 4 (hoy se usa JetBrains Mono); `agent/` se crea con el agente.
+
+### 12/10/2026 — Herramienta del PC: de CLI a TUI
+
+- **Qué era:** una CLI con Typer y un comando por tarea (`companion setup`, `show-pairing`, `install-service`, `uninstall-service`, `status`, `passwd`, `logout-all`, `note add`, `note list`, `notify`). El autor prefería CLI antes que TUI.
+- **Qué es ahora:** al escribir `companion` se abre una **TUI con Textual** con botones para todo (configuración inicial, QR, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones). Solo `companion serve` (lo arranca systemd) y `companion notify "mensaje"` (scripts y *hooks*) siguen siendo comandos de terminal con Typer. El QR se dibuja con `qrcode`.
+- **Por qué:** botones en lugar de comandos que recordar.
+- **Afecta a:** `01` (5.1, 8.1, 8.2), `02` (2.6), `03` (sección 7), `04` (fases 3, 5, 7 y 9), `07` (3.1 y 3.2), plan de estudios.
+- **Estado:** aplicado en la documentación.
+
+### 12/10/2026 — Registro del usuario por QR
+
+- **Qué era:** `companion setup` creaba el usuario desde la CLI; como alternativa pendiente de revisión, un código de un solo uso y un formulario de registro en la app.
+- **Qué es ahora:** la TUI muestra un QR con la dirección, la huella del certificado, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra «Emparejado, se necesita crear autenticación» y abre un diálogo de usuario y contraseña. El modo registro se cierra con la primera cuenta. Se implementa en la **fase 9**; hasta entonces el botón de configuración inicial de la TUI crea el usuario directamente.
+- **Por qué:** decisión del autor; además la huella llega en el QR y no hay que compararla a ojo.
+- **Afecta a:** `01` (0, 5.1, 5.4, 7), `03`, `04` (fases 3 y 9), `07` (3.2 y 9).
+- **Estado:** aplicado en la documentación.
+
+### 12/10/2026 — Exportación de la base de datos desde la TUI
+
+- **Qué era:** no existía.
+- **Qué es ahora:** dos botones en la TUI (fase 7) que guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, o la carpeta personal) un JSON con los datos (sin `sesion`, `intento_login` ni el hash de la contraseña) y una carpeta con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql` leídos de `sqlite_schema`.
+- **Por qué:** petición del autor. Se descartaron CSV (un archivo por tabla, pierde tipos) y SQL con `INSERT` (mezcla datos y estructura) para los datos.
+- **Afecta a:** `01` (6.3), `03`, `04` (fase 7), `07` (3.7), plan de estudios (Unidad 9).
+- **Estado:** aplicado en la documentación.
+
+### 12/10/2026 — Replanificación: interfaz primero y beta sin login
+
+- **Qué era:** fase 1 métricas, fase 2 iroh (noviembre), fase 3 seguridad y fase 4 instalación antes de Navidad; terminal en la fase 5. La beta incluía login e instalación.
+- **Qué es ahora:** fase 1 interfaz definitiva con *placeholders* y métricas (mediados de octubre – mediados de noviembre); fase 2 iroh (hasta Navidad); **beta sin login** (solo métricas de solo lectura, agente arrancado a mano); fase 3 seguridad con una TUI mínima (enero); fase 4 terminal (hasta finales de febrero); fase 5 instalación; fases 6–10 en el mismo orden, ajustadas para terminar a finales de mayo. En el plan de estudios se intercambian las Unidades 6 (ahora terminal) y 7 (ahora empaquetado).
+- **Por qué:** el autor quiere empezar por la interfaz y una beta mínima. La seguridad va antes de la terminal porque esta da acceso a la shell.
+- **Efectos conocidos:** calendario apretado; si el hito de febrero es a principios de mes, la terminal no llegaría.
+- **Afecta a:** `01`, `03`, `04`, `05`, `07`, plan de estudios.
+- **Estado:** aplicado en la documentación.
+
+### 12/10/2026 — Auditoría de la documentación frente a fuentes oficiales
+
+- **Qué se hizo:** revisión de los 13 documentos (01–08, `ESTRUCTURA_FLUTTER.md`, `ui/` y el plan de estudios) contra documentación oficial y registros de paquetes. Sin datos inventados; correcciones aplicadas.
+- **Correcciones principales:**
+  - el límite de glibc ≥ 2.28 lo impone solo el binding de Python de iroh (cryptography y argon2 tienen paquetes para musl);
+  - el emulador x86_64 no está soportado oficialmente por iroh, pero no está demostrado que no funcione;
+  - copiar y pegar en `xterm.dart` hay que programarlo en el móvil; `url_launcher` necesita el modo de aplicación externa; `SelectableText` no recorta con «…»; el menú de selección lo dibuja Flutter;
+  - el plan de estudios enseña `CustomPainter` en lugar de `fl_chart`;
+  - el modelo de amenazas recoge la beta sin login y los permisos de archivos del agente;
+  - la memoria técnica (01) gana un apartado «Navegación y pantallas de la app»; energía, procesos, reglas, notificaciones, login, conexión y escaneo del QR quedan con ubicación pendiente de revisión;
+  - requisitos completos de `connectedDevice`, `dataSync` solo con targetSdk ≥ 35, `PRAGMA foreign_keys` en cada conexión, requisitos de red de iroh (`dns.iroh.link`, DNS);
+  - verificación de desarrolladores de Android (2027) en las ideas de futuro;
+  - fechas de las fases 8–10 ajustadas para terminar a finales de mayo; referencias rotas y contradicciones entre documentos.
+- **Afecta a:** todos los documentos citados.
+- **Estado:** aplicado.
+
+### 12/10/2026 — Cronograma adelantado: la interfaz ya está hecha
+
+- **Qué era:** la fase 1 incluía hacer la interfaz definitiva y las métricas (~5 semanas, hasta mediados de noviembre); iroh hasta Navidad; seguridad en enero; terminal hasta finales de febrero; fases 8–10 apretadas en mayo.
+- **Qué es ahora:** la interfaz definitiva, con *placeholders* y datos simulados, ya está terminada. La fase 1 solo crea el agente y conecta las métricas reales (hasta principios de noviembre). Todo se adelanta unas 3 semanas: iroh hasta mediados de diciembre, beta entre mediados de diciembre y Navidad, seguridad de mediados de diciembre a principios de enero, terminal hasta mediados de febrero; las fases 9 y 10 recuperan 3 y 2 semanas. La Unidad 3 del plan de estudios deja la parte de interfaz y se centra en el agente de métricas.
+- **Por qué:** el autor terminó la interfaz antes de lo previsto.
+- **Afecta a:** `03` (sección 11), `04`, `07` (sección 5), plan de estudios (Unidades 2 y 3).
+- **Estado:** aplicado en la documentación.
 
 ---
 

@@ -12,7 +12,7 @@
 * **Decisions:**
   * Flutter: **accepted by the tutor (2026-09-26)**. The Kotlin + Jetpack Compose fallback is no longer needed.
   * The Python agent is a core part of the project (without it the app is useless).
-  * Phase order (2026-10-02, revised 2026-10-12): definitive UI with placeholders + metrics first (phase 1), iroh in phase 2 (mid-November – Christmas). Beta has NO login (agent exposes read-only metrics only); security in January (phase 3), before the terminal (phase 4).
+  * Phase order (2026-10-02, revised 2026-10-12): definitive UI with placeholders and fake data is ALREADY DONE (2026-10-12); phase 1 creates the agent + real metrics, iroh in phase 2 (early November – mid-December). Beta has NO login (agent exposes read-only metrics only); security in January (phase 3), before the terminal (phase 4).
   * PC side (2026-10-12): `companion` opens a **TUI (Textual) with buttons**; only `companion serve` and `companion notify` remain terminal commands (Typer). See section 7.
   * Registration (2026-10-12): QR shown in the TUI → app scans it → "Paired, authentication must be created" → username/password dialog in the app. Implemented in phase 9; until then (phase 3) the TUI setup button creates the user directly.
   * Pending review: exact date of the February milestone and official thesis deadline; foreground service type (phase 8); whether the school network lets HTTPS with WebSocket out to the iroh relays.
@@ -45,7 +45,7 @@
   * Connection flow: the connection starts through a relay (used to exchange addresses), then iroh tries to upgrade it to a direct path via NAT traversal; if that fails it stays on the relay.
   * Network needs: no inbound ports; outbound TCP 443 (HTTPS with WebSocket) to the relays is enough. Outbound UDP is optional: if blocked, all traffic stays on the relay (docs.iroh.computer, "Configuring networks").
   * Default: n0 public relays (rate-limited, no SLA, officially "development and hobby use only"; enough for the thesis); custom relays configurable. Fallback plan: LAN-only. WebRTC only as a backup if iroh causes real problems.
-  * Versions (checked 2026-10-02): iroh core 1.3.0; Python and Kotlin bindings (iroh-ffi) 1.1.0. The published Kotlin artifact does not include Android: for Android (ARM only: aarch64, armv7) it must be built from source with Rust + NDK (docs.iroh.computer/languages/kotlin). Test iroh on a physical phone, not on an x86_64 emulator. The Python binding only ships glibc wheels (manylinux_2_28).
+  * Versions (checked 2026-10-02): iroh core 1.3.0; Python and Kotlin bindings (iroh-ffi) 1.1.0. The published Kotlin artifact does not include Android: for Android it must be built from source with Rust + NDK (docs.iroh.computer/languages/kotlin). Officially ARM only (aarch64, armv7); x86_64 can be compiled but is not supported, so iroh is tested on the physical phone. The Python binding only ships Linux manylinux_2_28 wheels (glibc ≥ 2.28, x86_64 and aarch64); there is no musl (Alpine) build.
   * Verify exact iroh binding APIs against their docs before coding.
 
 ## 4. MODULES
@@ -85,7 +85,6 @@
   * timeout 1–3600 s;
   * working directory must exist and be accessible (agent-side).
 * Stats per action: run count, success rate, average duration, last run.
-* Search/sort: by name, group, most used, last run.
 * Optional per action: "confirm before running", "notify when finished".
 
 ### F. Shared space (notes)
@@ -106,7 +105,7 @@
 * Delivered over `/ws/events`. On the phone, a foreground service keeps the connection alive and shows local notifications (`flutter_local_notifications`). **No Firebase, no external server.** Works in LAN too.
 * Android requirements:
   * request `POST_NOTIFICATIONS` at runtime (Android 13+);
-  * declare `foregroundServiceType` (mandatory since Android 14). Do NOT use `dataSync`: since Android 15 it is stopped after 6 h per 24 h. Candidate: `connectedDevice` (pending review, to be confirmed in phase 8); it requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` in the manifest plus at least one of `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` or `CHANGE_WIFI_MULTICAST_STATE`;
+  * declare `foregroundServiceType` (mandatory since Android 14). Do NOT use `dataSync`: for apps targeting Android 15+ (`targetSdk` ≥ 35) it is stopped after 6 h per 24 h in the background. Candidate: `connectedDevice` (pending review, to be confirmed in phase 8); it requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` in the manifest plus at least one of `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` or `CHANGE_WIFI_MULTICAST_STATE` (or `NFC` / `TRANSMIT_IR`, or the Bluetooth, UWB or USB alternatives);
   * Android 17: apps with `targetSdk` ≥ 37 must request `ACCESS_LOCAL_NETWORK` for LAN connections and mDNS. Flutter 3.47 defaults to `targetSdk` 36, so it does not apply yet (test phone: Android 15). Pending review: whether connections to `127.0.0.1` (USB and iroh tunnel) count as local network for that permission.
 
 ## 5. DATABASE (SQLite, `~/.local/share/companion/companion.db`, created by `agent/schema.sql`)
@@ -171,7 +170,7 @@ QR scan (registration / pairing) → create account dialog · Login · Connectio
   * structure: folder `companion-estructura-YYYYMMDD-HHMM/` with `tablas.sql`, `indices.sql`, `vistas.sql`, `triggers.sql`, read from `sqlite_schema` (auto-indexes have no SQL and are skipped). Joins are not stored (relations = foreign keys in `tablas.sql`). Empty files get an explanatory comment (no views/triggers in the current design).
 
 ## 8. DEPLOYMENT
-* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). Compiled dependencies (iroh, cryptography, argon2) require glibc ≥ 2.28; musl distros (Alpine) are not supported.
+* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). The iroh Python binding only ships Linux manylinux_2_28 wheels (glibc ≥ 2.28, x86_64 and aarch64); there is no musl (Alpine) build.
 * systemd unit `~/.config/systemd/user/companion.service`: `ExecStart=%h/.local/bin/companion serve`, `Restart=on-failure`, `WantedBy=default.target`.
 * Remote reboot requires `loginctl enable-linger $USER` (documented in README). Without an active session, power actions may need a polkit rule.
 * App: APK published in GitHub releases.
@@ -209,18 +208,19 @@ See 06-ideas-de-futuro.md.
 
 ## 11. PHASES (summary)
 * Phase 0: setup (test environment, Git repo) + learn Flutter.
-* **Beta v0.1 (Christmas): definitive UI with placeholders + metrics over iroh, no login.**
-  * Phase 1: definitive UI (all screens, navigation, placeholders / fake repositories) + real metrics with graphs (mid-October – mid-November);
-  * Phase 2: iroh remote access (mid-November – Christmas): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics and is started by hand.
-* Post-beta (tight schedule: block 2 starts ~4 weeks later than the previous plan):
-  * Phase 3: security (minimal TUI that creates the user, login, TLS pinning, sessions), also checked through the tunnel (first half of January);
-  * Phase 4: terminal (v0.2) (mid-January – end of February);
-* **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs. If it is early February, the terminal will not be ready.
-  * Phase 5: pipx install + systemd service, installed from the TUI (early March);
-  * Phase 6: power + processes (March);
-  * Phase 7: quick actions CRUD (mandatory requirement) + TUI export buttons (late March – mid-April);
-  * Phase 8: notifications + alert rules CRUD + foreground service (late April – mid-May);
-  * Phase 9: mDNS + QR pairing + QR registration + shared space for notes and links (May);
-  * Phase 10: polish (end of May).
+* **Beta v0.1 (mid-December – Christmas): definitive UI with placeholders + metrics over iroh, no login.**
+  * Done before phase 1: definitive UI (all screens, navigation, placeholders / fake repositories).
+  * Phase 1: create the agent (`agent/`, layered) + metrics endpoint; app switches the metrics screen to the real repository (mid-October – early November);
+  * Phase 2: iroh remote access (early November – mid-December): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics and is started by hand.
+* Post-beta:
+  * Phase 3: security (minimal TUI that creates the user, login, TLS pinning, sessions), also checked through the tunnel (mid-December – early January);
+  * Phase 4: terminal (v0.2) (January – mid-February);
+* **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs. The terminal ends in mid-February; if the milestone is earlier, adjust.
+  * Phase 5: pipx install + systemd service, installed from the TUI (end of February);
+  * Phase 6: power + processes (early – mid-March);
+  * Phase 7: quick actions CRUD (mandatory requirement) + TUI export buttons (mid-March – early April);
+  * Phase 8: notifications + alert rules CRUD + foreground service (April);
+  * Phase 9: mDNS + QR pairing + QR registration + shared space for notes and links (late April – mid-May);
+  * Phase 10: polish (May).
 * Thesis report: May (official deadline pending review). Defense: first week of June 2027.
 * If time allows: terminal themes.

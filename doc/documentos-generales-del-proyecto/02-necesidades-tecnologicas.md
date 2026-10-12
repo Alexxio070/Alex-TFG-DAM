@@ -24,8 +24,8 @@ Cada bloque sigue el mismo esquema:
   - Tecnología no vista en el grado, lo que aporta valor académico.
   - Permite escribir código nativo Kotlin donde haga falta mediante *platform channels* (ver 4.2).
 - **Alternativas descartadas:**
-  - *Kotlin + Jetpack Compose (nativo Android) — era el plan B si el centro no aceptaba Flutter:* ventajas reales (binding oficial de iroh, acceso directo a Android, documentación oficial de Google), pero no tiene un emulador de terminal equivalente a xterm.dart. Las librerías de Termux funcionan, pero usan el sistema de vistas antiguo y están pensadas para terminales locales, lo que exigiría adaptarlas. Además, se ve parcialmente en el grado.
-  - *React Native:* ecosistema de terminal menos maduro y un lenguaje más (JavaScript/TypeScript) sin ventaja clara para este proyecto. *(Desde la versión 0.76 ya no usa el antiguo "puente" JavaScript, que la nueva arquitectura sustituyó por JSI.)*
+  - *Kotlin + Jetpack Compose (nativo Android) — era el plan B si el centro no aceptaba Flutter:* ventajas reales (binding oficial de iroh, aunque para Android hay que compilarlo igualmente; acceso directo a Android, documentación oficial de Google), pero no tiene un emulador de terminal equivalente a xterm.dart. Las librerías de Termux funcionan, pero usan el sistema de vistas antiguo y están pensadas para terminales locales, lo que exigiría adaptarlas. Además, se ve parcialmente en el grado.
+  - *React Native:* ecosistema de terminal menos maduro y un lenguaje más (JavaScript/TypeScript) sin ventaja clara para este proyecto. *(Desde la versión 0.76 la nueva arquitectura basada en JSI es la predeterminada, y desde la 0.82 es la única; sustituye al antiguo "puente" JavaScript.)*
 
 ### 1.2 Mostrar una terminal en el móvil
 - **Necesidad:** interpretar el flujo de bytes de una shell remota (colores, cursor, secuencias de control) y dibujarlo en pantalla.
@@ -108,7 +108,7 @@ Cada bloque sigue el mismo esquema:
   - **Typer** solo para `companion serve` y `companion notify` (basado en Click, que va integrado dentro de Typer desde la versión 0.26).
   - **qrcode** para dibujar el QR en la terminal (licencia BSD; `print_ascii()` lo genera con caracteres de texto).
 - **Alternativas descartadas:**
-  - *Solo CLI con Typer:* era el diseño anterior; alex prefiere botones para no tener que recordar comandos.
+  - *Solo CLI con Typer:* era el diseño anterior; el autor prefiere botones para no tener que recordar comandos.
   - *curses* (estándar de Python): de bajo nivel, hay que dibujar a mano cada elemento.
   - *urwid:* librería de interfaces de terminal más antigua y con menos componentes listos para usar.
   - *segno* en lugar de qrcode: también válida; qrcode es suficiente.
@@ -137,7 +137,7 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** conectar desde 4G/5G u otra red sin abrir puertos del router, sin VPN y sin instalar nada más en el móvil.
 - **Tipo de tecnología:** librería P2P con travesía de NAT y relé de respaldo.
 - **Elección:** **iroh (1.x).** Identifica cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después iroh intenta convertirla en directa atravesando el NAT; si no lo consigue, sigue por el relé. Ofrece bindings oficiales para Python (agente) y Kotlin y relés públicos gratuitos (según iroh, solo para desarrollo y uso personal, con límite de tráfico; suficientes para el TFG). Licencia MIT/Apache-2.0.
-  - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El paquete de Kotlin publicado en Maven no incluye Android: para Android (solo arquitecturas ARM, aarch64 y armv7) hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin), y no funciona en el emulador x86_64; el de Python solo tiene paquetes para Linux con glibc.
+  - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El paquete de Kotlin publicado en Maven no incluye Android: para Android hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). Oficialmente solo se soportan aarch64 y armv7; x86_64 se puede compilar pero no está soportado, así que la prueba de concepto se hace en el móvil físico. El de Python, en Linux, solo tiene paquetes `manylinux_2_28` (glibc 2.28 o superior, x86_64 y aarch64): no hay versión para musl ni para ARM de 32 bits.
 - **Alternativas descartadas:**
   - *Tailscale / WireGuard:* obliga a instalar y configurar una app VPN en el móvil.
   - *WebRTC con STUN/TURN propios:* exige programar la señalización y alojar y pagar servidores. Queda como **respaldo** solo si iroh da problemas reales (decisión del 27/09/2026).
@@ -153,7 +153,7 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** recibir notificaciones del PC y mantener el túnel aunque la app esté minimizada.
 - **Tipo de tecnología:** servicio en primer plano de Android (*foreground service*) + notificaciones locales.
 - **Elección:** **servicio en primer plano** (el mismo que mantiene el túnel iroh) y `flutter_local_notifications`. La implementación concreta (servicio en Kotlin o paquete de Flutter para servicios en primer plano) se decide en la fase 8.
-  - **Requisitos de Android:** pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución (Android 13+) y declarar el tipo del servicio (obligatorio desde Android 14). No se usará `dataSync`, que desde Android 15 se detiene tras 6 horas cada 24. Candidato: `connectedDevice`, que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE`. *Pendiente de revisión:* se confirma en la fase 8.
+  - **Requisitos de Android:** pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución (Android 13+) y declarar el tipo del servicio (obligatorio para apps con `targetSdk` 34 o superior). No se usará `dataSync`, que en apps con `targetSdk` 35 o superior se detiene tras 6 horas cada 24. Candidato: `connectedDevice`, que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y cumplir alguna de las condiciones de Android; para una conexión por red basta con declarar uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE` (las demás alternativas son de NFC, infrarrojos, Bluetooth, UWB o USB). *Pendiente de revisión:* se confirma en la fase 8.
 - **Alternativas descartadas:** *Firebase Cloud Messaging:* requiere cuenta de Firebase y un servidor intermediario que envíe los avisos.
 
 ### 4.2 Usar iroh desde Flutter
@@ -190,7 +190,7 @@ Cada bloque sigue el mismo esquema:
 ### 6.1 Base de datos
 - **Necesidad:** guardar de forma persistente y relacionada los usuarios, sesiones, intentos de login, grupos, acciones rápidas, ejecuciones, reglas de alerta, notificaciones y notas (9 tablas; diseño en 01-memoria-tecnica.md, sección 6).
 - **Tipo de tecnología:** base de datos relacional embebida.
-- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/companion/companion.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada.
+- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/companion/companion.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada. SQLite trae las claves foráneas desactivadas por defecto, así que el agente ejecuta `PRAGMA foreign_keys = ON` en cada conexión; sin eso no se aplican ni las claves foráneas ni el `ON DELETE CASCADE`.
 - **Alternativas descartadas:**
   - *MySQL / PostgreSQL:* requieren un servidor aparte; excesivo para un agente de un solo usuario y contrario a la instalación mínima.
   - *Firebase:* los datos saldrían del PC a un servicio externo, en contra del diseño sin servidores de terceros.
@@ -220,7 +220,7 @@ Cada bloque sigue el mismo esquema:
 ### 7.2 Instalar el agente
 - **Necesidad:** instalación sencilla en cualquier distribución.
 - **Tipo de tecnología:** gestor de paquetes de aplicaciones Python.
-- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. Las dependencias compiladas (iroh, cryptography, argon2) requieren glibc 2.28 o superior, así que no es compatible con distribuciones basadas en musl (como Alpine).
+- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. El binding de iroh solo publica paquetes para Linux `manylinux_2_28` (glibc 2.28 o superior) y no publica código fuente, así que el agente no es compatible con distribuciones basadas en musl (como Alpine). Las otras dependencias compiladas (cryptography, argon2) sí tienen paquetes para musl.
 - **Alternativas descartadas:**
   - *PyInstaller:* el binario queda ligado a la glibc de la máquina de compilación.
   - *`pip install` directo:* bloqueado en distribuciones modernas fuera de entornos virtuales.

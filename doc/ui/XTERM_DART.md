@@ -68,9 +68,9 @@ CTRL y ALT pegajosos: el `ViewModel` intercepta el siguiente carácter en `onOut
 
 - **Terminal real, no una lista de líneas:** colores ANSI, cursor, borrado de línea y pantalla, y líneas que se parten, todo interpretado.
 - **Programas a pantalla completa** (`vim`, `nano`, `htop`, `less`) gracias al buffer alternativo.
-- **Selección, copiar y pegar**, historial con scroll y caracteres anchos o unicode, incluidos.
+- **Selección** (mantener pulsado), historial con scroll y caracteres anchos o unicode, incluidos. **Copiar y pegar** solo vienen con atajos de teclado físico (Ctrl+Shift+C y Ctrl+V); el paquete no muestra menú de copiar/pegar en el móvil, así que hay que programarlo con `TerminalController` (selección) y `Clipboard` (como hace el ejemplo oficial del paquete).
 - **Teclado correcto:** `keyInput` genera las secuencias que espera el shell (flechas, Ctrl, Alt, Esc).
-- **Tamaño dinámico:** el widget calcula filas y columnas y avisa con `onResize`, necesario para un PTY.
+- **Tamaño dinámico:** `TerminalView` (con `autoResize`, activo por defecto) calcula filas y columnas y redimensiona el `Terminal`, que avisa con `Terminal.onResize(columnas, filas, anchoPx, altoPx)`, necesario para un PTY.
 - **Cambiar el origen de datos no toca la pantalla:** la UI solo ve `Terminal`; el repositorio puede ser el simulado o el WebSocket del agente.
 
 ## Límites y pendientes
@@ -78,4 +78,4 @@ CTRL y ALT pegajosos: el `ViewModel` intercepta el siguiente carácter en `onOut
 - El cursor **no parpadea** en esta versión.
 - La memoria técnica pide una **Nerd Font** para los iconos de prompts como Starship; hoy se usa JetBrains Mono, que no lo es.
 - `onResize` aún no se envía al agente (se conectará con el PTY real).
-- Es una dependencia de terceros; su estado de mantenimiento no se ha verificado.
+- Es una dependencia de terceros. Estado consultado el 12/10/2026: la 4.0.0 (27/02/2024) es la última versión en pub.dev y el paquete no está marcado como discontinuado; requiere Flutter ≥ 3.19. El repositorio no está archivado y su último push es del 19/06/2025.

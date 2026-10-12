@@ -25,7 +25,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 - En el móvil, **solo descargar la app**; nada de instalar VPNs ni otras apps.
 - En el PC se aceptan dependencias.
 - **Nunca configurar el router.**
-- Flujo deseado: instalar agente → configurar credenciales → instalar app → iniciar sesión → conectar desde cualquier parte.
+- Flujo deseado: instalar agente → abrir la TUI y hacer la configuración inicial → instalar app → escanear el QR → crear la cuenta → conectar desde cualquier parte. Hasta la fase 9, las credenciales se crean en la TUI.
 
 **Filosofía de desarrollo:** la primera versión (beta) debe tener **pocas funciones, pero todas funcionando**: una base sólida sobre la que ampliar. Desde el 12/10/2026 la beta es mínima: la interfaz definitiva con *placeholders*, las métricas y la conexión por iroh, sin login.
 
@@ -39,17 +39,17 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 |---|---|---|---|
 | Framework móvil | **Flutter** (aceptado por el tutor el 26/09/2026) | Se valora usar tecnología no vista en clase; xterm.dart resuelve la terminal (la pieza más difícil); *hot reload* ayuda a aprender | Kotlin + Compose: más fácil para iroh (binding oficial), pero sin emulador de terminal equivalente. Era el plan B; ya no es necesario |
 | Agente PC | Python 3.11 + FastAPI | Mejores librerías de sistema; asíncrono | Go, Rust (curva), Flask (síncrono) |
-| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (mediados de noviembre – Navidad)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
+| Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (principios de noviembre – mediados de diciembre)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
 | Puente Flutter ↔ iroh | Platform channel mínimo en Kotlin: `openTunnel` / `closeTunnel` (*pendiente de revisión*) | Flutter no sabe que iroh existe; usa el mismo código que en LAN | El binding de Kotlin publicado no incluye Android y hay que compilarlo con Rust y el NDK igualmente, así que el plugin `iroh_flutter` (pub.dev) vuelve a ser candidato. Se decide al empezar la fase 2 |
 | Tokens | Opacos, con hash en SQLite | Revocables al instante (botón «Cerrar todas las sesiones») | JWT (no revocables; innecesarios con un solo dispositivo) |
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
-| Instalación del agente | **pipx** | Usa el Python de la distro; evita problemas de glibc (me recomendaron alejarme de glibc) | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
-| Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` (propuesta inicial, se cambió) |
+| Instalación del agente | **pipx** | Usa el Python de la distro; evita atar el agente a la glibc con la que se compila, aunque iroh exige glibc ≥ 2.28 | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
+| Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` |
 | Herramienta del PC | **TUI con botones (Textual)** al escribir `companion` (12/10/2026); **Typer** solo para `companion serve` y `companion notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid |
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
-- **TUI en lugar de CLI (12/10/2026):** al escribir `companion` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones). Antes prefería CLI; cambié de opinión.
+- **TUI en lugar de CLI (12/10/2026):** al escribir `companion` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones).
 - **Registro por QR (12/10/2026):** la TUI muestra un QR con la dirección, la huella, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña. El modo registro se cierra tras la primera cuenta. **Va en la fase 9 (12/10/2026);** hasta entonces el usuario se crea desde la TUI.
 - **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, se compara a ojo con la que muestra la TUI).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
@@ -117,8 +117,9 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 ## 5. Planificación (resumen; detalle en 04)
 
 **Calendario (02/10/2026, revisado el 12/10/2026):**
-- **Beta v0.1 en Navidad:** mínima: interfaz definitiva con *placeholders*, métricas y conexión por iroh, sin login.
-- **Calendario apretado:** la seguridad y la instalación pasan detrás de la beta, así que la terminal termina a finales de febrero y las fases 8–10 coinciden con la redacción de la memoria en mayo.
+- **Interfaz ya hecha (12/10/2026):** la interfaz definitiva de la app está terminada, con *placeholders* y datos simulados.
+- **Beta v0.1 (mediados de diciembre – Navidad):** mínima: interfaz definitiva, métricas y conexión por iroh, sin login.
+- La seguridad y la instalación van detrás de la beta. La terminal termina a mediados de febrero (si el hito es antes, hay que ajustar) y las fases 9–10 coinciden con la redacción de la memoria en mayo. Si hay retraso, se aplica el orden de recortes.
 - **Hito de febrero:** versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento. *Fecha exacta pendiente de revisión.*
 - **Defensa:** primera semana de junio de 2027. *Fecha oficial de entrega de la memoria pendiente de revisión.*
 
@@ -130,14 +131,15 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 **Beta v0.1 (Navidad):**
 - Fase 0: preparación y aprender Flutter.
-- Fase 1: interfaz definitiva con *placeholders* y métricas (mediados de octubre – mediados de noviembre).
-- Fase 2: conexión remota con iroh (mediados de noviembre – Navidad): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
+- Interfaz definitiva con *placeholders* y datos simulados: ya hecha.
+- Fase 1: crear el agente y conectar las métricas reales (mediados de octubre – principios de noviembre).
+- Fase 2: conexión remota con iroh (principios de noviembre – mediados de diciembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
 - **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
 - **La beta NO necesita cumplir los mínimos de DAM.**
 
 **Después de la beta:**
-- Fase 3: seguridad (enero): TUI mínima que crea el usuario y login. Va antes de la terminal porque esta da acceso a la shell.
-- Fase 4: terminal (mediados de enero – finales de febrero), para el hito de febrero.
+- Fase 3: seguridad (mediados de diciembre – principios de enero): TUI mínima que crea el usuario y login. Va antes de la terminal porque esta da acceso a la shell.
+- Fase 4: terminal (enero – mediados de febrero), para el hito de febrero.
 - Fase 5: instalación con pipx y servicio (instalado desde la TUI).
 - Fase 6: energía y procesos.
 - Fase 7: CRUD de acciones rápidas (requisito obligatorio) y botones de exportación de la TUI.
@@ -145,7 +147,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - Fase 9: mDNS, QR de emparejamiento, registro por QR y espacio compartido (notas de texto y enlaces; imágenes aún pensándolo).
 - Fase 10: pulido.
 
-**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD, login y TLS.
+**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD de acciones rápidas, login y TLS, y pulido mínimo de errores.
 
 ---
 
@@ -167,7 +169,7 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 
 - **Proyecto de Claude (organización actual):**
   - los documentos 01–07 están en la carpeta "Documentacion TFG" del proyecto y son el contexto base de todos los hilos;
-  - el repositorio de GitHub (Alexxio070/Alex-TFG-DAM) está conectado y tiene una copia de estos documentos en `docs/`;
+  - el repositorio de GitHub (Alexxio070/Alex-TFG-DAM) está conectado y tiene una copia de estos documentos en `doc/`;
   - el trabajo se organiza en hilos con prefijo **PROYECTO:** (desarrollo del TFG), **APRENDIZAJE:** (unidades de estudio) y **PREGUNTAS:** (dudas sueltas);
   - el hilo "Proyecto: Trabajo del repositorio" es el único que hace commits y PRs en el repo.
 - **Regla de confirmación previa (01/10/2026):** antes de generar o crear nada, Claude explica cómo ha entendido la petición y su plan (qué, cómo y por qué), y espera mi confirmación explícita. Nunca toca el repositorio salvo que yo lo pida.
