@@ -7,4 +7,10 @@ class FakePairingRepository implements PairingRepository {
 
   @override
   ValueListenable<bool> get paired => _paired;
+
+  @override
+  Future<void> pair() async => _paired.value = true;
+
+  @override
+  Future<void> unpair() async => _paired.value = false;
 }

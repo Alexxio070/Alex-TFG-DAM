@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+
+class TerminalPreview extends StatelessWidget {
+  const TerminalPreview({super.key, required this.fontSize});
+
+  final int fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = fontSize.toDouble();
+    return Semantics(
+      label: 'Vista previa de la terminal',
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D0F12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text.rich(
+          TextSpan(
+            style: TextStyle(
+              fontFamily: 'JetBrainsMono',
+              fontSize: size,
+              height: 1.5,
+              color: const Color(0xFFE6E8EB),
+            ),
+            children: [
+              const TextSpan(text: 'usuario@pc', style: TextStyle(color: Color(0xFF7EE787))),
+              const TextSpan(text: ':'),
+              const TextSpan(text: '~', style: TextStyle(color: Color(0xFF79C0FF))),
+              const TextSpan(text: r'$ ls'),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Container(
+                  width: size * 0.6,
+                  height: size * 1.2,
+                  margin: const EdgeInsets.only(left: 1),
+                  color: const Color(0xFFE6E8EB),
+                ),
+              ),
+            ],
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.clip,
+        ),
+      ),
+    );
+  }
+}

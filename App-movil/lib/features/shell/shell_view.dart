@@ -6,6 +6,7 @@ import '../../core/theme/app_tokens.dart';
 import '../home/home_view.dart';
 import '../metrics/metrics_view.dart';
 import '../notes/notes_view.dart';
+import '../settings/settings_view.dart';
 import '../terminal/terminal_view.dart';
 import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
@@ -79,7 +80,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                       Section.metrics => const MetricsView(),
                       Section.notes => const NotesView(),
                       Section.terminal => const TerminalScreen(),
-                      _ => _SectionBody(section: vm.active),
+                      Section.settings => const SettingsView(),
                     },
                   ),
                 ],
@@ -113,19 +114,6 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SectionBody extends StatelessWidget {
-  const _SectionBody({required this.section});
-
-  final Section section;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(section.label, style: TextStyle(color: context.tokens.muted)),
     );
   }
 }

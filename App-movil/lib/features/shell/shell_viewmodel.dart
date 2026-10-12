@@ -24,6 +24,10 @@ class ShellViewModel extends ChangeNotifier {
   Section get active => _active;
   bool get isPaired => _pairing.paired.value;
 
+  Future<void> pair() => _pairing.pair();
+
+  Future<void> unpair() => _pairing.unpair();
+
   void select(Section section) {
     _active = section;
     notifyListeners();
