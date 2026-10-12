@@ -42,7 +42,10 @@ Cada bloque sigue el mismo esquema:
 |---|---|---|
 | Peticiones HTTP | `http` (o `dio`) | Llamadas REST al agente |
 | WebSocket | `web_socket_channel` | Terminal, métricas y eventos |
-| Gráficas | `fl_chart` | Gráficas de CPU y RAM en vivo |
+| Gráficas | `CustomPainter` (del propio Flutter) | Gráficas de área de CPU, temperatura y RAM en vivo; sin dependencia extra |
+| Terminal | `xterm` | Emulador de terminal (ver 1.2) |
+| Iconos | `flutter_svg` | Iconos del diseño como SVG, con el color del tema |
+| Abrir enlaces | `url_launcher` | Abrir en el navegador los enlaces de las notas |
 | Guardar token y huella de forma segura | `flutter_secure_storage` | Usa el Keystore de Android |
 | Descubrir el PC en la red local | `bonsoir` | Cliente mDNS/DNS-SD |
 | Escanear QR | `mobile_scanner` | Registro y emparejamiento con el QR de la TUI |
@@ -244,7 +247,7 @@ Cada bloque sigue el mismo esquema:
 
 ### 8.2 Control de versiones
 - **Necesidad:** historial del trabajo y uso adecuado de ramas y commits (requisito del proyecto).
-- **Elección:** **Git** con un repositorio (`app/` + `agent/`), ramas `main` / `develop` / `feature/*`, commits convencionales y etiquetas por versión. Alojado en GitHub, que además sirve para publicar el APK en *releases*.
+- **Elección:** **Git** con un repositorio (`App-movil/` + `agent/`), ramas `main` / `develop` / `feature/*`, commits convencionales y etiquetas por versión. Alojado en GitHub, que además sirve para publicar el APK en *releases*.
 - **Alternativas descartadas:** *dos repositorios separados:* complica mantener sincronizadas app y agente.
 
 ### 8.3 Pruebas automáticas
