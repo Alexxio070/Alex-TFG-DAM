@@ -69,7 +69,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 ### Módulo B — Monitorización del sistema
 - Uso de CPU (global y por núcleo), RAM, swap, discos, temperaturas, carga del sistema y tiempo encendido.
 - Datos obtenidos con **psutil** (lee `/proc` y `/sys/class/hwmon`).
-- Gráficas en vivo en la app.
+- Gráficas en vivo en la app. La pantalla de métricas muestra uso de CPU, temperatura de CPU, uso de RAM y uso de disco (con selector de partición, que por defecto es la del sistema), actualizados cada segundo sobre los últimos 60 s. El resto de datos del agente (núcleos, swap, carga y tiempo encendido) queda disponible para ampliar la pantalla.
 
 ### Módulo C — Energía y sesión
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
@@ -86,6 +86,8 @@ Comandos guardados, organizados en grupos, que se ejecutan con un toque desde el
 - grupo "Proyecto" → acción "Actualizar repo" (`cd ~/proyecto && git pull`);
 - grupo "Mantenimiento" → acción "Copia de seguridad" (`~/scripts/backup.sh`).
 
+En la app, las acciones aparecen como una **cuadrícula de botones** en la pantalla de inicio y los grupos son **carpetas** que se abren con un toque. Es una cuadrícula de iconos grandes, pensada para ejecutar con un toque y no para buscar en una lista.
+
 **Funciones:**
 - **CRUD completo de grupos y de acciones:** crear, consultar, editar y borrar.
 - **Ejecución en segundo plano** en el PC:
@@ -94,12 +96,20 @@ Comandos guardados, organizados en grupos, que se ejecutan con un toque desde el
   - con la salida recortada a un tamaño máximo.
 - **Historial de ejecuciones** con estado (en curso, éxito, error, cortada por tiempo, cancelada), código de salida y salida del comando. Filtros por acción, estado y fechas; borrado individual o completo.
 - **Estadísticas por acción:** número de ejecuciones, tasa de éxito, duración media y fecha de la última ejecución.
-- **Búsqueda y ordenación:** por nombre, por grupo, por más usadas o por última ejecución.
+- **Organización por arrastre** en la cuadrícula:
+  - mantener pulsado un botón lo levanta y permite **reordenarlo**;
+  - soltarlo sobre otro botón **crea una carpeta** con los dos;
+  - soltarlo sobre una carpeta lo **añade** a ella;
+  - arrastrarlo a la papelera lo **elimina**;
+  - mantener pulsada una carpeta abre su edición (nombre y color de entre seis).
+- **Orden persistente:** el orden de la cuadrícula y el de cada carpeta se guardan en el agente, de modo que son los mismos en cualquier momento y desde cualquier sesión.
 
 **Reglas de negocio:**
 - el nombre de una acción es único dentro de su grupo;
 - al borrar un grupo con acciones, el usuario elige entre moverlas a "Sin grupo" o borrarlas;
-- al borrar una acción se borra su historial.
+- al borrar una acción se borra su historial;
+- una carpeta solo contiene acciones (no hay carpetas dentro de carpetas);
+- la cuadrícula admite como máximo 40 elementos de primer nivel (carpetas y acciones sin carpeta).
 
 **Validaciones:**
 - nombre obligatorio (1–50 caracteres);
@@ -109,13 +119,15 @@ Comandos guardados, organizados en grupos, que se ejecutan con un toque desde el
 
 Se valida en la app (respuesta inmediata) y en el agente (seguridad real).
 
+**Creación rápida:** desde la cuadrícula, el botón «+» abre un diálogo con solo **nombre, comando y «pedir confirmación»**. El resto de campos (directorio de trabajo, tiempo máximo y «notificar al terminar») toman sus valores por defecto y se editan después desde la ficha de la acción.
+
 **Seguridad:** una acción ejecuta comandos con los permisos del usuario, igual que la terminal. No amplía lo que puede hacer quien ya tiene acceso a la app.
 
 **Pantallas de la app:**
-1. **Lista de acciones**, agrupadas por grupo, con buscador, ordenación y botón "+".
-2. **Formulario de grupo** (crear / editar).
-3. **Formulario de acción** (crear / editar).
-4. **Ficha de la acción:** datos, estadísticas, botón "Ejecutar" e historial reciente.
+1. **Inicio (cuadrícula):** botones de acción y carpetas, ejecución con un toque (con confirmación opcional), reordenado por arrastre, papelera y botón «+». Un aviso inferior muestra el nombre y el comando mientras se ejecuta.
+2. **Carpeta:** diálogo con sus acciones, que también se ejecutan con un toque.
+3. **Edición de carpeta** (nombre y color) y **creación rápida de acción** (nombre, comando y confirmación).
+4. **Ficha de la acción** (pantalla secundaria; el acceso se define en la fase 7): todos sus datos editables, estadísticas, botón "Ejecutar" e historial reciente.
 5. **Historial de ejecuciones** con filtros, y **detalle de ejecución** con estado, duración y salida del comando (opcionalmente mostrada con xterm.dart para conservar los colores).
 
 **API del agente:**
@@ -123,7 +135,8 @@ Se valida en la app (respuesta inmediata) y en el agente (seguridad real).
 GET    /grupos                         POST   /grupos
 PUT    /grupos/{id}                    DELETE /grupos/{id}?modo=mover|borrar
 
-GET    /acciones?grupo=&q=&orden=      POST   /acciones
+GET    /acciones?grupo=                POST   /acciones
+PUT    /orden                          (guarda el orden de la cuadrícula y de cada carpeta)
 GET    /acciones/{id}                  (incluye estadísticas)
 PUT    /acciones/{id}                  DELETE /acciones/{id}
 POST   /acciones/{id}/ejecutar         POST   /ejecuciones/{id}/cancelar
@@ -136,6 +149,8 @@ DELETE /ejecuciones?accion=            (limpiar historial)
 ### Módulo F — Espacio compartido
 - Un **espacio común entre el móvil y el PC** donde dejar **notas de texto y enlaces**, accesible desde los dos lados, para pasar información de uno a otro. Ejemplos: guardar un enlace en el móvil para abrirlo luego en el PC, o dejar desde el PC un texto o un comando para consultarlo fuera de casa.
 - **CRUD completo desde la app:** crear, editar, borrar y buscar notas.
+- **Tipo deducido por el agente:** el usuario solo pega o escribe el contenido. Al guardar, el agente marca la nota como `enlace` si incluye alguna dirección web (`http://`, `https://` o `www.`) en cualquier parte del texto, y como `texto` en caso contrario. La app usa la misma regla solo para mostrar los enlaces como pulsables.
+- **Pantalla:** lista de tarjetas con texto seleccionable y enlaces que se abren al pulsarlos, botones de copiar y editar, y un formulario de un único campo.
 - **En el PC:** desde la TUI (`companion`), con botones para añadir y ver notas.
 - La app pide las notas al agente al abrir la pantalla del espacio compartido y al deslizar hacia abajo para recargar; no hace falta actualización al momento, porque es una app pensada para usarla lejos del PC.
 - Si los dos lados editan la misma nota a la vez, se guarda el último cambio.
@@ -321,14 +336,19 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
 | **usuario** | id, nombre_usuario (único), hash_contrasena, creado_en | — |
 | **sesion** | id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada | N:1 usuario |
 | **intento_login** | id, usuario_id (nulo si el usuario no existe), nombre_usuario, origen, fecha, exito | N:1 usuario |
-| **grupo** | id, usuario_id, nombre, icono, orden, creado_en · único (usuario_id, nombre) | N:1 usuario · 1:N accion_rapida |
-| **accion_rapida** | id, usuario_id, grupo_id (nulo = "Sin grupo"), nombre, comando, directorio, timeout_seg, confirmar, notificar_al_terminar, creado_en, actualizado_en | N:1 usuario · N:1 grupo · 1:N ejecucion |
+| **grupo** | id, usuario_id, nombre, color, orden, creado_en · único (usuario_id, nombre) | N:1 usuario · 1:N accion_rapida |
+| **accion_rapida** | id, usuario_id, grupo_id (nulo = "Sin grupo"), nombre, comando, icono, orden, directorio, timeout_seg, confirmar, notificar_al_terminar, creado_en, actualizado_en | N:1 usuario · N:1 grupo · 1:N ejecucion |
 | **ejecucion** | id, accion_id, inicio, fin, estado, codigo_salida, salida | N:1 accion_rapida (borrado en cascada) |
 | **regla_alerta** | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario · 1:N notificacion |
 | **notificacion** | id, usuario_id, origen (manual / regla / acción), regla_id (nulo), ejecucion_id (nulo), titulo, mensaje, fecha, leida | N:1 usuario · N:1 regla_alerta · N:1 ejecucion |
 | **nota** | id, usuario_id, tipo (texto / enlace), contenido, origen (móvil / PC), creado_en, actualizado_en | N:1 usuario |
 
 **Entidades con CRUD completo desde la app:** grupo, accion_rapida, regla_alerta y nota.
+
+**Campos que sostienen la cuadrícula de inicio:**
+- `grupo.color`: color de la carpeta, uno de los seis de la paleta de la app;
+- `accion_rapida.icono`: icono del botón (`volume`, `lock`, `moon` o `bolt`, por defecto `bolt`);
+- `orden`: posición. En `grupo` y en las `accion_rapida` sin grupo comparten una misma secuencia (el primer nivel de la cuadrícula); en las acciones con grupo es la posición dentro de la carpeta.
 **Entidades de historial:** ejecucion y notificacion (creación automática, consulta, filtrado, marcado y borrado).
 
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
@@ -430,7 +450,7 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 ## 9. Metodología, control de versiones y pruebas
 
 ### 9.1 Control de versiones
-- Un repositorio Git con las carpetas `app/` (Flutter) y `agent/` (Python).
+- Un repositorio Git con las carpetas `App-movil/` (Flutter) y `agent/` (Python).
 - Ramas:
   - `main`: versiones estables;
   - `develop`: integración;

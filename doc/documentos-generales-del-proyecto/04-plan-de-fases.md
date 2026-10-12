@@ -41,7 +41,7 @@
 Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del proyecto.
 
 - **Git:**
-  - un repositorio con las carpetas `app/` (Flutter) y `agent/` (Python);
+  - un repositorio con las carpetas `App-movil/` (Flutter) y `agent/` (Python);
   - ramas `main` (versiones estables), `develop` (integración) y `feature/<nombre>` (una por tarea o fase);
   - commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`);
   - una etiqueta por versión (`v0.1-beta`, `v0.2`…).
@@ -81,7 +81,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Objetivos:**
 - Instalar Flutter y Android Studio.
 - Configurar el **entorno de pruebas**: depuración USB en el móvil, `adb reverse` y emulador.
-- Crear el repositorio Git con la estructura `app/` + `agent/` y las ramas `main`/`develop`.
+- Crear el repositorio Git con la estructura `App-movil/` + `agent/` y las ramas `main`/`develop`.
 - Aprender lo básico de Dart: variables, clases, `async`/`await`, `Future`, `Stream`.
 - Hacer el tutorial oficial de Flutter (widgets, estado, navegación entre pantallas).
 - Crear un agente FastAPI mínimo con un endpoint `/hello` y una app que lo llame por USB y muestre la respuesta.
@@ -98,7 +98,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 - **App, métricas reales:**
   - pantalla para indicar la dirección del agente (por defecto `127.0.0.1:8443`, para el modo USB);
   - pantalla de métricas que se actualiza cada 1–2 s;
-  - gráfica de CPU y RAM (`fl_chart`);
+  - gráfica de CPU y RAM (gráficas de área dibujadas con `CustomPainter`, sin librería);
   - estructura MVVM con repositorio real y repositorio simulado.
 - **Agente:** endpoint REST con CPU (total y por núcleo), RAM, swap, discos, temperaturas, carga y tiempo encendido (psutil). Estructura en capas desde el principio. Se arranca a mano (el servicio llega en la fase 5).
 
@@ -262,10 +262,10 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
 
 **Objetivos:**
 - **BD:**
-  - tablas `grupo`, `accion_rapida` y `ejecucion` en `schema.sql`, con repositorios;
+  - tablas `grupo` (con `color` y `orden`), `accion_rapida` (con `icono` y `orden`) y `ejecucion` en `schema.sql`, con repositorios;
   - diagrama entidad-relación completo para la memoria.
 - **Agente:**
-  - CRUD de grupos y acciones;
+  - CRUD de grupos y acciones, y `PUT /orden` para guardar el orden de la cuadrícula;
   - ejecución en segundo plano con timeout (corta con SIGTERM → SIGKILL a todo el grupo de procesos, con `start_new_session=True` y `os.killpg`);
   - una sola ejecución a la vez por acción;
   - salida recortada a un tamaño máximo;
@@ -273,11 +273,12 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
   - estadísticas por acción: número de ejecuciones, tasa de éxito, duración media y última ejecución.
 - **Reglas de negocio:**
   - al borrar un grupo con acciones, elegir entre moverlas a "Sin grupo" o borrarlas;
-  - nombre único dentro de cada grupo.
+  - nombre único dentro de cada grupo;
+  - una carpeta solo contiene acciones (un único nivel) y la cuadrícula admite hasta 40 elementos.
 - **App:**
-  - lista de acciones agrupadas, con buscador y ordenación;
-  - formularios de crear y editar grupo y acción, con validaciones (nombre obligatorio y sin duplicados, comando obligatorio, timeout entre 1 y 3600 s, directorio existente validado por el agente);
-  - ficha de acción con estadísticas y botón "Ejecutar";
+  - cuadrícula de inicio con acciones y carpetas (ya diseñada en la fase 1 con datos simulados): se conecta al agente para cargar, guardar el orden, crear, editar y borrar;
+  - edición de carpeta (nombre y color) y creación rápida de acción (nombre, comando y confirmación);
+  - ficha de acción editable (directorio, timeout y «notificar al terminar», con validaciones: nombre obligatorio y sin duplicados, comando obligatorio, timeout entre 1 y 3600 s, directorio existente validado por el agente), con estadísticas y botón "Ejecutar"; el acceso a la ficha se define aquí;
   - historial y detalle de ejecución con la salida del comando.
 - Validación doble: en la app (respuesta inmediata) y en el agente (seguridad real).
 - Opcional: mostrar la salida de las ejecuciones con xterm.dart (fase 4) para conservar los colores.
@@ -327,7 +328,7 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
 - **Espacio compartido** (notas de texto y enlaces entre el móvil y el PC):
   - **BD:** tabla `nota` en `schema.sql`, con su repositorio;
   - **Agente:** CRUD de notas (`/notas`) y botones de la TUI para añadir y ver notas;
-  - **App:** lista de notas con buscador, formulario de crear y editar (contenido obligatorio; si es un enlace, URL válida) y borrado con confirmación;
+  - **App:** lista de notas con buscador y recarga al deslizar; tarjetas con texto seleccionable y enlaces pulsables en cualquier parte del texto, con botones de copiar y editar; formulario de un único campo (contenido obligatorio) para crear y editar, y borrado con confirmación. El tipo (texto o enlace) lo deduce el agente al guardar;
   - la app pide las notas al abrir la pantalla y al deslizar hacia abajo para recargar (sin actualización al momento); si los dos lados editan la misma nota, se guarda el último cambio;
   - *imágenes: **aún pensándolo**, fuera del alcance confirmado.*
 

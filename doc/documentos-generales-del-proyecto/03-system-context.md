@@ -71,6 +71,8 @@
 
 ### E. Quick actions (CRUD)
 * Entities: `grupo` 1:N `accion_rapida` 1:N `ejecucion`. Full CRUD on `grupo` and `accion_rapida`; `ejecucion` is history (created on run, read, filter, delete).
+* The app shows actions as a **grid of buttons** (home screen); a `grupo` is a **folder**. There is no search or sort in the list. Order is persisted: `orden` on `grupo` and on ungrouped `accion_rapida` shares one sequence (top level); inside a group it is the position in the folder.
+* Grid rules: folders hold only actions (one level), max 40 top-level items. Quick creation from the grid takes only name, command and `confirmar`; the other fields use defaults and are edited in the action detail.
 * Execution: `asyncio.create_subprocess_shell` in the action's working directory, with timeout (SIGTERM → SIGKILL), **one concurrent run per action**, output truncated to a max size, statuses `running | success | error | timeout | cancelled`.
 * The returned PID is the shell's, not the command's: spawn with `start_new_session=True` and signal the whole process group with `os.killpg`, otherwise the shell's children survive a timeout or cancel.
 * Business rules:
@@ -113,12 +115,14 @@
 | usuario | id, nombre_usuario (unique), hash_contrasena, creado_en | — |
 | sesion | id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada | N:1 usuario |
 | intento_login | id, usuario_id (nullable), nombre_usuario, origen, fecha, exito | N:1 usuario |
-| grupo | id, usuario_id, nombre, icono, orden, creado_en; unique(usuario_id, nombre) | N:1 usuario |
-| accion_rapida | id, usuario_id, grupo_id (nullable), nombre, comando, directorio, timeout_seg, confirmar, notificar_al_terminar, creado_en, actualizado_en | N:1 usuario, N:1 grupo |
+| grupo | id, usuario_id, nombre, color, orden, creado_en; unique(usuario_id, nombre) | N:1 usuario |
+| accion_rapida | id, usuario_id, grupo_id (nullable), nombre, comando, icono, orden, directorio, timeout_seg, confirmar, notificar_al_terminar, creado_en, actualizado_en | N:1 usuario, N:1 grupo |
 | ejecucion | id, accion_id, inicio, fin, estado, codigo_salida, salida | N:1 accion_rapida (ON DELETE CASCADE) |
 | regla_alerta | id, usuario_id, nombre, metrica, operador, umbral, duracion_seg, cooldown_seg, activa, creado_en | N:1 usuario |
 | notificacion | id, usuario_id, origen, regla_id (nullable, ON DELETE SET NULL), ejecucion_id (nullable, ON DELETE SET NULL), titulo, mensaje, fecha, leida | N:1 usuario, regla_alerta, ejecucion |
 | nota | id, usuario_id, tipo (texto/enlace), contenido, origen (móvil/PC), creado_en, actualizado_en | N:1 usuario |
+
+* `nota.tipo` is derived by the agent on save: `enlace` if the content contains an `http://`, `https://` or `www.` address anywhere in the text, `texto` otherwise. The client never sends it.
 
 * Enable `PRAGMA foreign_keys = ON` **on every connection** (SQLite disables it by default, and without it `ON DELETE CASCADE` / `SET NULL` are ignored). Parameterized SQL only. One repository class per table. No ORM.
 * SQLite treats NULLs as distinct in UNIQUE constraints: enforce name uniqueness for "no group" actions in the service layer.
@@ -131,7 +135,8 @@ GET    /metrics                     (beta: polling)      WS /ws/metrics (later)
 POST   /power/{poweroff|reboot|suspend|hibernate|lock}   GET /power/capabilities
 GET    /processes?q=&sort=          POST   /processes/{pid}/terminate   POST /processes/{pid}/kill
 GET    /grupos                      POST   /grupos       PUT /grupos/{id}   DELETE /grupos/{id}?modo=mover|borrar
-GET    /acciones?grupo=&q=&orden=   POST   /acciones     GET /acciones/{id} (with stats)
+GET    /acciones?grupo=             POST   /acciones     GET /acciones/{id} (with stats)
+PUT    /orden                       (persist grid order: top level and each folder)
 PUT    /acciones/{id}               DELETE /acciones/{id}
 POST   /acciones/{id}/ejecutar      POST   /ejecuciones/{id}/cancelar
 GET    /ejecuciones?accion=&estado=&desde=&hasta=   GET /ejecuciones/{id}
@@ -144,7 +149,7 @@ WS     /ws/terminal                 WS     /ws/events
 Route names are a starting proposal; keep them consistent once implemented and update this file.
 
 ## 5c. APP SCREENS
-QR scan (registration / pairing) → create account dialog · Login · Connection setup (QR; manual address as fallback; later mDNS list) · Dashboard/metrics · Power · Processes · Quick actions list → group form → action form → action detail (stats, Run, history) → execution detail · Terminal · Shared space (notes list/form) · Alert rules list/form · Notification history · Settings (logout, server data).
+QR scan (registration / pairing) → create account dialog · Login · Connection setup (QR; manual address as fallback; later mDNS list) · Dashboard/metrics · Power · Processes · Home grid (actions + folders) → folder dialog / folder edit / quick create → action detail (all fields, stats, Run, history) → execution detail · Terminal · Shared space (notes list/form) · Alert rules list/form · Notification history · Settings (units, temperature alert, terminal font size, theme and accent colour, pair/unpair; later: logout, server data).
 
 ## 6. SECURITY
 * Initial setup (TUI button):
@@ -172,7 +177,7 @@ QR scan (registration / pairing) → create account dialog · Login · Connectio
 * App: APK published in GitHub releases.
 
 ## 9. DEV WORKFLOW & TESTING
-* Git monorepo: `app/` + `agent/`. Branches: `main`, `develop`, `feature/*`. Conventional commits. Tags per version (`v0.1-beta`…).
+* Git monorepo: `App-movil/` + `agent/`. Branches: `main`, `develop`, `feature/*`. Conventional commits. Tags per version (`v0.1-beta`…).
 * Tests:
   * `pytest` for the agent (repositories, business rules, auth, alert rules);
   * `flutter_test` for form validation widgets.
