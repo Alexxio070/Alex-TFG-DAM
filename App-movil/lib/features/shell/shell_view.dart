@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../home/home_view.dart';
 import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
@@ -71,6 +72,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                   AppTopBar(title: vm.active.label, onMenu: _controller.forward),
                   Expanded(
                     child: switch (vm.active) {
+                      Section.home => const HomeView(),
                       _ => _SectionBody(section: vm.active),
                     },
                   ),
