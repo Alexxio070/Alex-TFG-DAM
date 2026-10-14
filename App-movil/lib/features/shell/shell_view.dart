@@ -13,6 +13,9 @@ import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
 
 const _scrim = Color.fromRGBO(22, 24, 29, 0.45);
+const _drawerWidth = 280.0;
+const _edgeDragWidth = 24.0;
+const _flingVelocity = 365 / _drawerWidth;
 
 class ShellView extends StatefulWidget {
   const ShellView({super.key});
@@ -37,10 +40,32 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
     curve: const Interval(0, 240 / 280, curve: Curves.ease),
   );
 
+  bool _edgeDragging = false;
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _dragUpdate(DragUpdateDetails details) {
+    _controller.value += (details.primaryDelta ?? 0) / _drawerWidth;
+  }
+
+  void _dragEnd(DragEndDetails details) {
+    final velocity = (details.primaryVelocity ?? 0) / _drawerWidth;
+    if (velocity.abs() > _flingVelocity) {
+      _controller.fling(velocity: velocity);
+    } else if (_controller.value > 0.5) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
+    }
+  }
+
+  void _edgeDragEnd(DragEndDetails details) {
+    setState(() => _edgeDragging = false);
+    _dragEnd(details);
   }
 
   void _select(ShellViewModel vm, Section section) {
@@ -87,27 +112,50 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
               ),
               if (!closed)
                 FadeTransition(
+                  key: const ValueKey('scrim'),
                   opacity: _scrimOpacity,
                   child: Semantics(
                     button: true,
                     label: 'Cerrar menú',
                     child: GestureDetector(
                       onTap: _controller.reverse,
+                      onHorizontalDragUpdate: _dragUpdate,
+                      onHorizontalDragEnd: _dragEnd,
                       child: Container(color: _scrim),
                     ),
                   ),
                 ),
               if (!closed)
                 Align(
+                  key: const ValueKey('drawer'),
                   alignment: Alignment.centerLeft,
                   child: SlideTransition(
                     position: _slide,
-                    child: AppDrawer(
-                      active: vm.active,
-                      paired: vm.isPaired,
-                      onSelect: (s) => _select(vm, s),
-                      onClose: _controller.reverse,
+                    child: GestureDetector(
+                      onHorizontalDragUpdate: _dragUpdate,
+                      onHorizontalDragEnd: _dragEnd,
+                      child: AppDrawer(
+                        active: vm.active,
+                        paired: vm.isPaired,
+                        onSelect: (s) => _select(vm, s),
+                        onClose: _controller.reverse,
+                      ),
                     ),
+                  ),
+                ),
+              if (closed || _edgeDragging)
+                Positioned(
+                  key: const ValueKey('edge'),
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: _edgeDragWidth,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: (_) => setState(() => _edgeDragging = true),
+                    onHorizontalDragUpdate: _dragUpdate,
+                    onHorizontalDragEnd: _edgeDragEnd,
+                    onHorizontalDragCancel: () => setState(() => _edgeDragging = false),
                   ),
                 ),
             ],

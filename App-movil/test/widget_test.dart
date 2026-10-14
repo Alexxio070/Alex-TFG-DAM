@@ -92,6 +92,37 @@ void main() {
     expect(find.text('Ajustes'), findsWidgets);
   });
 
+  testWidgets('el drawer se abre arrastrando desde el borde izquierdo', (tester) async {
+    await tester.pumpWidget(_app());
+    expect(find.text('Conectado'), findsNothing);
+
+    await tester.dragFrom(const Offset(8, 300), const Offset(250, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Conectado'), findsOneWidget);
+  });
+
+  testWidgets('un arrastre corto desde el borde deja el drawer cerrado', (tester) async {
+    await tester.pumpWidget(_app());
+
+    await tester.dragFrom(const Offset(8, 300), const Offset(60, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Conectado'), findsNothing);
+  });
+
+  testWidgets('el drawer se cierra arrastrando hacia la izquierda', (tester) async {
+    await tester.pumpWidget(_app());
+    await tester.tap(find.bySemanticsLabel('Abrir menú'));
+    await tester.pumpAndSettle();
+    expect(find.text('Conectado'), findsOneWidget);
+
+    await tester.dragFrom(const Offset(250, 300), const Offset(-200, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Conectado'), findsNothing);
+  });
+
   group('Inicio', () {
     Future<void> pumpHome(WidgetTester tester) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);
