@@ -65,7 +65,7 @@ Usar librerías/paquetes como infraestructura normal está permitido, incluso pa
 
 ## Documentación
 
-La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/), y la interfaz (prototipo v1, especificación de Notas v2 y xterm.dart), en [`doc/ui/`](doc/ui/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
+La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/), la interfaz (prototipo v1, especificación de Notas v2 y xterm.dart), en [`doc/ui/`](doc/ui/), y la documentación específica del agente de Python, en [`doc/agente/`](doc/agente/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
 - `01-memoria-tecnica.md`
 - `02-necesidades-tecnologicas.md`
 - `03-system-context.md`

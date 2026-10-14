@@ -32,7 +32,7 @@
 * **Host agent:** Python 3.11+ (minimum: `websockets` requires ≥ 3.11; 3.11 is supported until 2027-10), FastAPI + Uvicorn (asyncio) + `websockets` package for WebSocket support, running as a **systemd user service** (never root, never sudo). Layers: API routes (Pydantic validation) → services (business logic) → repositories (SQLite) → models.
 * **Transport:**
   * REST (HTTP/JSON) for one-off actions and CRUD.
-  * WebSocket channels: `/ws/terminal` (PTY bytes), `/ws/metrics` (live metrics), `/ws/events` (notifications).
+  * WebSocket channels: `/ws/terminal/{id}` (session stream), `/ws/metrics` (live metrics), `/ws/events` (notifications).
   * Beta: metrics via REST polling every 1–2 s; WebSocket later.
 * **LAN:** direct TLS connection; discovery via mDNS (`zeroconf` on the agent, `bonsoir` in Flutter); QR pairing (`mobile_scanner`).
 * **WAN — "local tunnel" design (dumbpipe pattern):**
@@ -50,9 +50,15 @@
 
 ## 4. MODULES
 ### A. Terminal
-* Spawn `$SHELL -l` in a PTY using Python stdlib (`pty`/`os.openpty`, `fcntl`, `termios`) integrated with asyncio (`loop.add_reader`).
-* Env: `TERM=xterm-256color`, `COLORTERM=truecolor`. Resize via `TIOCSWINSZ` ioctl on the master fd.
+* **Sessions belong to the agent, not to the connection.** The app asks "open a terminal and run this"; the agent creates a **tmux** session running `$SHELL -l` and the app attaches to stream output and send keys. Closing or cleaning the app, going to background or losing the network does not stop the command; the app re-attaches and receives the missed output (`tmux capture-pane`, to be verified).
+* **PC window:** on creation the agent opens the user's graphical terminal attached to the same tmux session, if a graphical session is available. Terminal chosen from `config.toml` → `$TERMINAL` → `xdg-terminal-exec` → known list.
+* Internal attach client: the agent runs `tmux attach` in a PTY (Python stdlib `pty`/`os.openpty`, `fcntl`, `termios`, asyncio `loop.add_reader`) and bridges it to the WebSocket.
+* Env: `TERM=xterm-256color`, `COLORTERM=truecolor`. Resize via `TIOCSWINSZ` ioctl on the attach PTY; a keepalive detects a vanished phone.
+* Lifecycle: the session ends on `exit`, when the window is closed in the app (`DELETE /terminales/{id}`) or when its PC window is closed. No idle expiry. One session at first; later several **tabs** in the app (one tmux session and one PC window per tab; see `doc/agente/terminal-sesiones-tmux.md`, section 10).
+* No active session → the app shows an **empty terminal** with a generic warning that tapping or typing opens a PC window. The session is created on the user's first tap or keystroke (`POST /terminales`, no initial command); keys are buffered until attached (est. 200 ms–1 s LAN, up to 1.5–2 s WAN relay, unverified). The warning is then replaced by the real prompt. `GET /terminales` on app start restores only this app's own previously-open sessions. Closing the last session returns to the empty terminal with the warning.
+* Without `tmux`: plain PTY bound to the connection (closed on disconnect), with a visible warning in the app.
 * Generic for any shell; **officially tested with Zsh**. No shell-specific code.
+* Details and open points: `doc/agente/terminal-sesiones-tmux.md`.
 * Client: `xterm.dart` + special-keys bar (Ctrl, Alt, Tab, Esc, arrows). Bundle a Nerd Font. Handle UTF-8 sequences split across chunks.
 
 ### B. Monitoring
@@ -144,7 +150,8 @@ DELETE /ejecuciones/{id}            DELETE /ejecuciones?accion=
 GET    /notas?q=                    POST   /notas        PUT /notas/{id}    DELETE /notas/{id}
 GET    /reglas  POST /reglas  PUT /reglas/{id}  DELETE /reglas/{id}
 GET    /notificaciones?origen=&leida=&q=&desde=&hasta=   PATCH /notificaciones/{id}   DELETE /notificaciones/{id}
-WS     /ws/terminal                 WS     /ws/events
+POST   /terminales                  GET    /terminales   DELETE /terminales/{id}
+WS     /ws/terminal/{id}            WS     /ws/events
 ```
 Route names are a starting proposal; keep them consistent once implemented and update this file.
 

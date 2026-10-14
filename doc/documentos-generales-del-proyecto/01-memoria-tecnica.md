@@ -60,11 +60,18 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 ## 3. Módulos funcionales
 
 ### Módulo A — Terminal remota
-- El agente abre un **pseudoterminal (PTY)** y lanza la shell configurada del usuario (`$SHELL`) en modo login (`-l`), así que se cargan sus alias, variables y prompt (Starship, Oh My Zsh…).
+- **La sesión es del agente, no de la conexión.** La app solo pide al agente «abre una terminal y ejecuta esto». El agente crea una sesión de **tmux** con la shell configurada del usuario (`$SHELL`) en modo login (`-l`), así que se cargan sus alias, variables y prompt (Starship, Oh My Zsh…), y la app se engancha para ver la salida en tiempo real y teclear.
+- **Persistencia:** si la app se cierra, pasa a segundo plano, se limpia de recientes o se pierde la cobertura, **la sesión y el comando siguen** en el PC. Al volver, la app se reengancha y recupera la salida que se perdió. Esto permite, por ejemplo, actualizar el sistema desde el móvil sin riesgo de dejarlo a medias.
+- **Ventana en el PC:** al crear la sesión, el agente abre una ventana de la terminal gráfica del usuario (kitty, Konsole…) conectada a la misma sesión, para que al volver al PC se vea lo ocurrido. Sin sesión gráfica, la sesión funciona igual, solo en la app.
+- **Cierre:** la sesión termina con `exit` (o Ctrl+D), al cerrar su ventana en la app o al cerrar su ventana en el PC. No hay caducidad por inactividad.
+- **Sin sesiones activas, terminal vacía con aviso.** Se muestra un mensaje genérico (p. ej. «Toca para abrir una terminal en tu PC»), que avisa de que tocar o escribir abre una ventana en el PC. La sesión se crea al primer toque o tecla, con shell real desde ese momento (prompt, Tab e historial); el mensaje se sustituye por el prompt. Al cerrar la última sesión, vuelve la terminal vacía con el aviso.
+- **Una sola sesión al principio.** Después, si va bien, **varias pestañas** en la app, como las de un navegador: cada pestaña es una terminal independiente con sus propios comandos y su propia ventana en el PC; cerrar una pestaña cierra su terminal en el PC (ver `06-ideas-de-futuro.md` y `../agente/terminal-sesiones-tmux.md`, sección 10).
+- **Requisitos en el PC:** `tmux`, y una terminal gráfica para la ventana. Sin `tmux`, la terminal funciona ligada a la conexión (se corta al desconectar) y la app avisa.
 - La app muestra la terminal con **xterm.dart**, que interpreta las secuencias ANSI, incluido color de 24 bits (True Color).
 - Barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`).
 - **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY, sin código específico. **La shell probada oficialmente es Zsh.**
 - **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. La app incluye una Nerd Font para que los iconos de prompts como Starship se vean bien.
+- Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
 
 ### Módulo B — Monitorización del sistema
 - Uso de CPU (global y por núcleo), RAM, swap, discos, temperaturas, carga del sistema y tiempo encendido.
@@ -410,6 +417,8 @@ Escribir `companion` abre una **TUI** hecha con **Textual**, con botones para:
 - exportar los datos y exportar la estructura de la base de datos (ver 6.3).
 
 Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
+
+**Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
 Se usa **pipx** porque las distribuciones actuales bloquean `pip install` fuera de entornos virtuales. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python de la propia distribución. Las dependencias compiladas (iroh, cryptography, argon2) se instalan como paquetes precompilados que requieren **glibc 2.28 o superior**, así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
 
