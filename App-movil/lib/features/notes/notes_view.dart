@@ -34,6 +34,7 @@ class NotesView extends StatelessWidget {
     final vm = context.watch<NotesViewModel>();
     final t = context.tokens;
     final message = vm.message;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Stack(
       children: [
         Column(
@@ -47,7 +48,7 @@ class NotesView extends StatelessWidget {
         ),
         Positioned(
           right: 20,
-          bottom: 28,
+          bottom: 28 + bottomInset,
           child: Semantics(
             button: true,
             label: 'Nueva nota',
@@ -82,7 +83,12 @@ class NotesView extends StatelessWidget {
           ),
         ),
         if (message != null)
-          Positioned(left: 20, right: 96, bottom: 28, child: AppToast(text: message)),
+          Positioned(
+            left: 20,
+            right: 96,
+            bottom: 28 + bottomInset,
+            child: AppToast(text: message),
+          ),
       ],
     );
   }
@@ -131,7 +137,7 @@ class _NotesList extends StatelessWidget {
       onRefresh: vm.load,
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
+        padding: EdgeInsets.fromLTRB(12, 8, 12, 100 + MediaQuery.paddingOf(context).bottom),
         itemCount: vm.items.length,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (context, index) {

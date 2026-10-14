@@ -20,10 +20,10 @@ const _mergeZone = 52.0;
 const _trashRadius = 52.0;
 
 class _Geometry {
-  _Geometry(Size size)
+  _Geometry(Size size, double bottomInset)
       : tile = (size.width - 2 * _sideMargin - _gap) / _columns,
         gridHeight = size.height * 576 / 780,
-        trash = Offset(size.width / 2, size.height - 72),
+        trash = Offset(size.width / 2, size.height - 72 - bottomInset),
         width = size.width;
 
   final double tile;
@@ -102,7 +102,7 @@ class MacroGrid extends StatefulWidget {
 
 class _MacroGridState extends State<MacroGrid> {
   final _scroll = ScrollController();
-  late _Geometry _geo = _Geometry(Size.zero);
+  late _Geometry _geo = _Geometry(Size.zero, 0);
   _Press? _press;
   _Drag? _drag;
   Timer? _longTimer;
@@ -252,7 +252,7 @@ class _MacroGridState extends State<MacroGrid> {
     final items = widget.items;
     return LayoutBuilder(
       builder: (context, constraints) {
-        _geo = _Geometry(constraints.biggest);
+        _geo = _Geometry(constraints.biggest, MediaQuery.paddingOf(context).bottom);
         final drag = _drag;
         final hit = drag == null ? null : _hit(drag.pos, drag.id);
         final dragged = drag == null ? null : items.where((i) => i.id == drag.id).firstOrNull;

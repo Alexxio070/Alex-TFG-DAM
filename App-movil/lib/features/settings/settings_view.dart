@@ -30,7 +30,7 @@ class SettingsView extends StatelessWidget {
     final accentIndex = kAccentColors.indexOf(s.accent);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+      padding: EdgeInsets.fromLTRB(16, 0, 16, 40 + MediaQuery.paddingOf(context).bottom),
       children: [
         SettingsGroup(
           title: 'Unidades',

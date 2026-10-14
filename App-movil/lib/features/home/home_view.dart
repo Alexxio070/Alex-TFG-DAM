@@ -19,6 +19,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<HomeViewModel>();
     final toast = vm.toast;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Stack(
       children: [
         Positioned.fill(
@@ -38,13 +39,18 @@ class HomeView extends StatelessWidget {
         if (!vm.dragging)
           Positioned(
             right: 20,
-            bottom: 28,
+            bottom: 28 + bottomInset,
             child: _AddButton(
               onTap: () => vm.isFull ? vm.showFullToast() : showNewMacroDialog(context),
             ),
           ),
         if (toast != null && !vm.dragging)
-          Positioned(left: 20, right: 96, bottom: 28, child: RunToast(data: toast)),
+          Positioned(
+            left: 20,
+            right: 96,
+            bottom: 28 + bottomInset,
+            child: RunToast(data: toast),
+          ),
       ],
     );
   }

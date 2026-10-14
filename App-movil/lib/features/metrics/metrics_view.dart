@@ -27,7 +27,7 @@ class MetricsView extends StatelessWidget {
     final tempDisplay = fahrenheit ? tempNow * 9 / 5 + 32 : tempNow;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.paddingOf(context).bottom),
       children: [
         MetricCard(
           title: 'Uso de CPU',

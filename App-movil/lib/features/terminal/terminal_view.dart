@@ -85,7 +85,12 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                 focusNode: _focus,
                 theme: _theme,
                 deleteDetection: true,
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  10,
+                  12,
+                  14 + MediaQuery.paddingOf(context).bottom,
+                ),
                 textStyle: TerminalStyle(
                   fontSize: fontSize.toDouble(),
                   height: 1.5,
