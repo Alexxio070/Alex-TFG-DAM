@@ -21,6 +21,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/10/2026 | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
 | 12/10/2026 | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
 | 12/10/2026 | Revisión de coherencia entre documentación e implementación | Aplicado |
+| 14/10/2026 | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
 
 ---
 
@@ -132,6 +133,25 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 
 **Sin cambios, por no ser incoherencia sino plan:** la Nerd Font sigue siendo un objetivo de la fase 4 (hoy se usa JetBrains Mono); `agent/` se crea con el agente.
 
+### 14/10/2026 — Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux
+
+- **Qué era:** el agente abría un PTY al conectarse el móvil y lo cerraba al desconectar («cierre limpio al desconectar», fase 4). Cerrar la app, limpiarla de recientes o perder la cobertura cortaba el comando en marcha.
+- **Qué es ahora:** la sesión es del agente. La app solo pide «abre una terminal y ejecuta esto» y se engancha para ver la salida; la sesión es una sesión de **tmux**, también visible en una ventana de la terminal gráfica del PC. El comando sigue aunque la app se cierre, y al volver se recupera la salida.
+- **Por qué:** una terminal que se corta al cerrar la app es peligrosa para tareas largas (por ejemplo, actualizar el sistema), y el criterio del proyecto es usarla **sin estar delante del PC**. Además, ver en el PC lo ocurrido al volver.
+- **Decisiones tomadas:**
+  1. **tmux** como mecanismo (menos código: aporta buffer y reenganche) frente a un cliente propio.
+  2. **Cerrar la ventana en el PC termina la sesión**; cerrar la ventana en la app también (la cierra en el PC). `exit` basta; no hay comando `close`.
+  3. **Sin caducidad por inactividad:** la sesión vive hasta que se cierre.
+  4. **Una sola sesión al principio;** después, **varias pestañas** en la app, como las de un navegador (cada una, una terminal independiente con su sesión de tmux y su ventana en el PC).
+  5. **Cliente propio sin tmux:** posibilidad a **muy largo plazo** para eliminar la dependencia.
+  6. **Sin sesiones activas, terminal vacía con aviso:** la sesión no se crea al abrir la pantalla sino al primer toque o tecla, con un mensaje genérico que avisa de que eso abre una ventana en el PC; no hay pestaña principal y se pueden cerrar todas. *(Se pensó primero crearla con la primera orden y se cambió a la primera tecla el mismo día, para tener la shell real, Tab e historial desde el principio, a costa de abrir una ventana en el PC con la primera letra; el aviso y que el toque también dispare la creación se añadieron después.)*
+  7. **`GET /terminales` solo devuelve las pestañas propias** que la app tenía abiertas al cerrarse, no cualquier sesión de tmux del PC.
+- **Consecuencias:** `tmux` pasa a ser una dependencia del sistema en el PC, que `pipx` no instala (comprobación en la TUI, fase 5); sin tmux, la terminal queda ligada a la conexión con aviso. La API pasa de `/ws/terminal` a `/terminales` y `/ws/terminal/{id}`.
+- **Nuevo documento:** `doc/agente/terminal-sesiones-tmux.md` (con la carpeta `doc/agente/`, para la documentación específica del agente).
+- **Afecta a:** `01` (Módulo A y §8.1), `02` (nuevo 2.2.1 y §7.2), `03` (§A y API), `04` (fases 4 y 5), `06`, `07`, `ESTRUCTURA_FLUTTER.md`, `ui/XTERM_DART.md` y `CLAUDE.md`.
+- **No verificado:** todo lo relativo a tmux (comandos, ganchos de cierre, versión mínima, licencia) y a cómo cada emulador ejecuta un comando.
+- **Estado:** decidido y documentado; sin código. La app no cambia hasta que exista el agente.
+
 ---
 
 ## Pendiente
@@ -145,5 +165,11 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Inicio (UI) | Selector de icono para las macros (hoy siempre `bolt`) |
 | Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
 | Terminal | Nerd Font (fase 4) y parpadeo del cursor si se quiere (limitación de `xterm.dart` 4.0.0) |
+| Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
+| Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
+| Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
+| Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
+| Terminal (UI) | Definir qué cuenta como disparador (toque/tecla), el texto del aviso y el indicador de carga; adaptar la pantalla actual, que hoy muestra un prompt simulado desde el arranque |
+| Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar) |
 | Tema oscuro | El acento por defecto tiene poco contraste sobre fondo oscuro; valorar un tono más claro en oscuro |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
