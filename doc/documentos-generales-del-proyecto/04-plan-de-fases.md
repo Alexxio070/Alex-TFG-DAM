@@ -189,19 +189,27 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Duración:** ~5 semanas (mediados de enero – finales de febrero)
 
 **Objetivos:**
+- **Prototipos previos** (antes de implementar; ver `doc/agente/terminal-sesiones-tmux.md`, §9): cierre de la sesión al cerrar la ventana del PC, historial sin duplicados al reenganchar, apertura de la ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente.
 - **Agente:**
-  - WebSocket `/ws/terminal`;
-  - PTY con `$SHELL -l` integrado con asyncio;
-  - redimensionado con `TIOCSWINSZ`;
-  - cierre limpio al desconectar.
+  - sesiones de terminal sobre **tmux** con `$SHELL -l`: crear, listar y cerrar (`/terminales`);
+  - WebSocket `/ws/terminal/{id}` que engancha a una sesión, reenvía su salida y las teclas, y recupera el historial al reenganchar;
+  - ventana en la terminal gráfica del usuario (si hay sesión gráfica) conectada a la misma sesión;
+  - la sesión termina con `exit`, al cerrar su ventana en la app (`DELETE`) o al cerrar su ventana en el PC;
+  - redimensionado con `TIOCSWINSZ` y *keepalive* para detectar un móvil que desaparece;
+  - sin tmux: PTY ligado a la conexión, con aviso.
 - **App:**
-  - xterm.dart conectado al WebSocket;
+  - xterm.dart conectado al WebSocket de la sesión;
+  - reenganche a la sesión al volver a abrir la app;
+  - sin sesiones activas, terminal vacía con aviso de que tocar o escribir abre una ventana en el PC; la sesión se crea al primer toque o tecla y la app guarda las teclas hasta estar enganchada;
+  - al abrir la app, `GET /terminales` restaura solo las pestañas propias que seguían abiertas al cerrarla;
   - barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas);
   - Nerd Font incluida;
   - redimensionado al girar el móvil.
 - Pruebas con Zsh, un prompt tipo Starship y programas a pantalla completa (`htop`, `vim`), por USB y a través de iroh (también por relé, para comprobar que la latencia es usable).
+- Pruebas de persistencia: dejar un comando largo en marcha, cerrar la app, limpiarla de recientes y cortar la red; comprobar que sigue y que se recupera la salida al volver.
+- **Ampliación opcional** (solo si una sesión funciona bien y sin fallos): **varias pestañas** en la app, como las de un navegador. Cada pestaña es una terminal independiente (una sesión de tmux y una ventana del PC); cerrar la pestaña cierra su terminal en el PC. Requiere diseñar la barra de pestañas en `doc/ui/`.
 
-**Terminada cuando:** puedes trabajar con tu shell real desde el móvil, incluidos `htop` y `vim`, desde fuera de casa.
+**Terminada cuando:** puedes trabajar con tu shell real desde el móvil, incluidos `htop` y `vim`, desde fuera de casa, y un comando largo sigue ejecutándose tras cerrar la app y se recupera al volver a abrirla.
 
 **Nunca se recorta:** es la función estrella del proyecto.
 
@@ -219,6 +227,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 
 **Objetivos:**
 - Empaquetar el agente para instalarlo con `pipx install`.
+- Documentar y comprobar las dependencias del sistema: `tmux` y una terminal gráfica para la ventana del PC. La TUI avisa si faltan.
 - Botones de la TUI «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario que ejecuta `companion serve` (`default.target`, `Restart=on-failure`), con el punto de conexión iroh activo desde el arranque.
 - README con:
   - instalación (`pipx install` y la TUI);

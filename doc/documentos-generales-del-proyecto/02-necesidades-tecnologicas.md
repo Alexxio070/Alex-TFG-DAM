@@ -77,6 +77,18 @@ Cada bloque sigue el mismo esquema:
   - *ptyprocess / pexpect:* cómodos, pero pensados para automatizar programas más que para una terminal interactiva asíncrona.
   - *Ejecutar comandos sueltos (subprocess):* no es interactivo, no carga el prompt ni los alias y no permite programas como `htop` o `vim`.
 
+### 2.2.1 Sesiones persistentes de terminal (tmux)
+- **Necesidad:** que un comando lanzado desde la app siga ejecutándose si la app se cierra, se limpia de recientes o se pierde la cobertura, y que el usuario pueda ver la misma terminal en la ventana del PC.
+- **Tipo de tecnología:** multiplexor de terminal.
+- **Elección:** **tmux**, instalado en el PC. Cada terminal es una sesión de tmux; la ventana del PC y la app son clientes de esa sesión. tmux aporta el buffer de salida y el reenganche sin código propio.
+- **Alternativas:**
+  - *Cliente propio en el agente (PTY propio, buffer circular y `companion attach`):* sin dependencias nuevas, pero hay que programar y mantener lo que tmux ya hace. **Aplazada a muy largo plazo** (ver `06-ideas-de-futuro.md`).
+  - *Zellij:* alternativa equivalente, menos extendida; no se elige.
+  - *PTY ligado a la conexión (diseño inicial):* el comando se corta al desconectar. Se mantiene solo como alternativa si falta tmux.
+  - *Abrir una terminal gráfica y leer su salida:* los emuladores no ofrecen una forma genérica de leer su pantalla desde fuera.
+- **Dependencia del sistema:** `tmux` no lo instala `pipx`. La versión mínima necesaria está **por determinar**; no se ha verificado la licencia ni las opciones concretas de tmux.
+- Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
+
 ### 2.3 Métricas del sistema
 - **Necesidad:** leer CPU, RAM, swap, discos, temperaturas, carga y procesos.
 - **Tipo de tecnología:** librería de telemetría del sistema.
@@ -221,6 +233,7 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** instalación sencilla en cualquier distribución.
 - **Tipo de tecnología:** gestor de paquetes de aplicaciones Python.
 - **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. Las dependencias compiladas (iroh, cryptography, argon2) requieren glibc 2.28 o superior, así que no es compatible con distribuciones basadas en musl (como Alpine).
+- **Dependencias del sistema:** `pipx` solo instala paquetes de Python. `tmux` y la terminal gráfica del usuario se instalan con el gestor de la distribución (ver 2.2.1).
 - **Alternativas descartadas:**
   - *PyInstaller:* el binario queda ligado a la glibc de la máquina de compilación.
   - *`pip install` directo:* bloqueado en distribuciones modernas fuera de entornos virtuales.

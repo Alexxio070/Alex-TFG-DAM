@@ -60,6 +60,8 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 - Se lanza `$SHELL -l` de forma genérica. **No hay que programar soporte por shell**: el PTY funciona igual con Bash, Zsh y Fish. **Shell probada oficialmente: Zsh.**
 - La paleta y la fuente las pone el móvil, no la shell. Hay que incluir una Nerd Font.
 - Temas de terminal: "si da tiempo".
+- **Sesiones persistentes con tmux (14/10/2026):** la sesión de terminal es del agente y no de la conexión. La app solo pide «abre una terminal y ejecuta esto» y se engancha para ver la salida; si cierra la app, la limpia de recientes o pierde la red, el comando sigue en el PC y se recupera la salida al volver. El agente abre además una ventana de la terminal gráfica del usuario conectada a la misma sesión. La sesión termina con `exit`, al cerrar su ventana en la app o al cerrar su ventana en el PC; sin caducidad por inactividad. Empieza con una sola sesión. Sin sesiones activas, la app muestra una terminal vacía con un aviso de que tocar o escribir abre una ventana en el PC; la sesión se crea al primer toque o tecla (shell real desde el principio) y se sustituye el aviso por el prompt. Al reabrir la app, solo se restauran sus propias pestañas. Detalle en `../agente/terminal-sesiones-tmux.md`.
+- **tmux como dependencia del PC (14/10/2026):** se acepta (en el PC se aceptan dependencias). Sin tmux, la terminal queda ligada a la conexión, con aviso.
 
 ### 3.4 Notificaciones (dentro del TFG)
 - Quiero recibir en el móvil avisos del PC, por ejemplo cuando **Claude Code termine de trabajar**, cuando un proceso de terminal termine o arranque bien, o si hay **CPU o RAM elevadas**.
@@ -106,6 +108,8 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - **Campo de texto único compartido para Notas (12/10/2026):** era la pantalla del prototipo v1. Se descartó porque no cubría notas de texto y enlaces con CRUD y búsqueda. Lo sustituye la lista de notas de `../ui/ui-v2/`.
 
 **Descartado por complejidad o por chocar con otros requisitos:**
+- Terminal ligada a la conexión del móvil como comportamiento por defecto (14/10/2026): el comando se cortaba al cerrar o limpiar la app. Sustituida por sesiones persistentes con tmux; queda solo como alternativa si falta tmux.
+- Cliente de sesiones propio en lugar de tmux (14/10/2026): **aplazado a muy largo plazo** para eliminar la dependencia; por plazo no entra en el TFG (ver 06).
 - Wake-on-LAN;
 - 2FA;
 - alertas con Firebase;

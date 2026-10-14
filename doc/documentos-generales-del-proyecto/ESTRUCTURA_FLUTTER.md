@@ -83,7 +83,7 @@ Para conectar el agente real basta con escribir la implementación nueva y cambi
 |---|---|
 | `MacroRepository` | cargar y guardar la cuadrícula (macros y carpetas) y ejecutar una macro |
 | `MetricsRepository` | datos de la máquina (RAM total, particiones), historial de 60 s y flujo de muestras |
-| `TerminalRepository` | enviar teclas al shell y recibir su salida |
+| `TerminalRepository` | enviar teclas y recibir la salida de la sesión; con las sesiones del agente (`doc/agente/`), también crear y reenganchar una sesión (pendiente de la fase 4) |
 | `NotesRepository` | listar (con búsqueda), crear, editar y borrar notas |
 | `PairingRepository` | estado de emparejado, emparejar y desemparejar |
 

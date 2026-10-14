@@ -98,9 +98,17 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Permitiría, por ejemplo, abrir el explorador de archivos (si se llega a hacer, ver sección 2) en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `companion notify`.
 - Requiere configuración específica por shell.
 
-### Varias sesiones y persistencia 🟡
-- Varias pestañas de terminal.
-- Sesiones que sobreviven a la desconexión del móvil (integración con tmux o Zellij).
+### Varias terminales: pestañas en la app 🟡
+*(Las sesiones persistentes con tmux ya forman parte del TFG, fase 4. Aquí queda lo que se deja fuera.)*
+- **Pestañas de terminal**, como las de un navegador: cada pestaña es una terminal independiente con sus propios comandos y su propia ventana de kitty en el PC. Cerrar una pestaña cierra su terminal en el PC, para que no se acumulen. Se haría si una sola sesión funciona bien y sin fallos.
+- Diseño y puntos abiertos en `../agente/terminal-sesiones-tmux.md`, sección 10.
+- Zellij como alternativa a tmux.
+
+### Cliente de sesiones propio, sin tmux 🟢 *(muy largo plazo)*
+- Sustituir tmux por un gestor de sesiones propio en el agente: PTY propio por sesión, buffer circular de salida y un cliente (`companion attach`) que ejecuta la ventana del PC.
+- Objetivo: **eliminar la dependencia de tmux** en el PC.
+- Contrapartida: más código y mantenimiento; hay que reimplementar lo que tmux ya ofrece, y las sesiones no sobrevivirían a un reinicio del agente salvo que se diseñe expresamente.
+- Detalle en `../agente/terminal-sesiones-tmux.md`, sección 11.
 
 ---
 

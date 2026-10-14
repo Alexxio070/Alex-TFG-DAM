@@ -78,4 +78,5 @@ CTRL y ALT pegajosos: el `ViewModel` intercepta el siguiente carácter en `onOut
 - El cursor **no parpadea** en esta versión.
 - La memoria técnica pide una **Nerd Font** para los iconos de prompts como Starship; hoy se usa JetBrains Mono, que no lo es.
 - `onResize` aún no se envía al agente (se conectará con el PTY real).
+- Al volver a abrir la app, la salida acumulada en la sesión del agente debe recuperarse y escribirse en el `Terminal`; pendiente con las sesiones persistentes (`../agente/terminal-sesiones-tmux.md`).
 - Es una dependencia de terceros; su estado de mantenimiento no se ha verificado.
