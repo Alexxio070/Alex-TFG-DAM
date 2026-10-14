@@ -28,7 +28,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 ### LocalSend
 - **Qué es:** app Flutter de código abierto para enviar archivos entre dispositivos de la misma red, sin servidores externos. Usa una API REST sobre HTTPS con certificados generados al vuelo en cada dispositivo.
 - **Te aporta:** probablemente **la mejor referencia para la app**:
-  - descubrimiento en red local;
+  - descubrimiento en red local (con multicast UDP propio, no con mDNS/DNS-SD como este proyecto, así que sirve como referencia de la idea, no del mecanismo);
   - HTTPS con certificados autofirmados desde Flutter;
   - transferencia de archivos;
   - organización de un proyecto Flutter real y grande.
@@ -46,9 +46,10 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 - **Repositorio:** github.com/futpib/iroh-ssh-android
 
 ### iroh_flutter / iroh_quic
-- **Qué es:** plugin de Flutter comunitario (no de n0) para iroh 1.0. Compila el núcleo Rust con cargokit y expone la API de iroh en Dart. Versión 1.0.3 (07/08/2026).
+- **Qué es:** paquetes comunitarios (no de n0) para iroh 1.0, construidos sobre el núcleo Rust con flutter_rust_bridge. `iroh_flutter` es el plugin de Flutter: compila el núcleo durante la compilación de la app con cargokit (que instala Rust si falta; en Android necesita el NDK r28 o superior y `minSdk` 24) y expone la API de iroh en Dart. `iroh_quic` es el binding en Dart puro para escritorio, con bibliotecas precompiladas. Versión 1.0.3 (07/08/2026).
 - **Te aporta:** alternativa al módulo Kotlin para la fase 2 *(pendiente de revisión)*.
-- **Uso:** posible dependencia directa si se elige esa vía. Comprobar su licencia antes de usarlo.
+- **Uso:** posible dependencia directa si se elige esa vía.
+- **Licencia:** Apache-2.0.
 - **Repositorio:** github.com/snowpinelabs/iroh_dart · pub.dev/packages/iroh_flutter
 
 ### iroh-android-native
@@ -98,7 +99,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### iroh
 - **Qué es:** librería P2P que conecta dispositivos por clave pública, con travesía de NAT y relés. Versión 1.0 estable publicada el 15 de junio de 2026; a 02/10/2026 el núcleo va por la 1.3.0 (28/09/2026) y los bindings por la 1.1.0 (16/07/2026).
-- **Te aporta:** la base del acceso remoto (fase 2). Bindings oficiales para Python y Kotlin. El paquete de Kotlin publicado no incluye Android: para Android (solo ARM: aarch64 y armv7) hay que compilarlo desde el código fuente con Rust y el NDK.
+- **Te aporta:** la base del acceso remoto (fase 2). Bindings oficiales para Python y Kotlin. El paquete de Kotlin publicado no incluye Android: para Android hay que compilarlo desde el código fuente con Rust y el NDK. Oficialmente solo se soportan aarch64 y armv7; x86_64 se puede compilar pero no está soportado, así que la prueba de concepto se hace en el móvil físico.
 - **Uso:** dependencia directa.
 - **Licencia:** MIT / Apache-2.0.
 - **Repositorios:** github.com/n0-computer/iroh (núcleo) · github.com/n0-computer/iroh-ffi (bindings)
@@ -125,7 +126,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 - **Qué es:** integración entre móvil y escritorio: control multimedia, portapapeles, notificaciones, archivos, batería y comandos predefinidos. Funciona en la red local.
 - **Te aporta:** el principal punto de comparación. Útil para ver cómo organiza su sistema de *plugins* y cómo resuelve el emparejamiento seguro.
 - **Uso:** solo inspiración.
-- **Licencia:** GPL. **No copiar código.**
+- **Licencia:** GPL-2.0 o GPL-3.0. **No copiar código.**
 - **Repositorios:** invent.kde.org/network/kdeconnect-kde (escritorio) · invent.kde.org/network/kdeconnect-android (Android)
 
 ### Cockpit
@@ -163,6 +164,6 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 | 6 (Energía y procesos) | psutil, Cockpit |
 | 7 (CRUD de acciones rápidas) | terminado (procesos en segundo plano), documentación de asyncio y sqlite3 |
 | 8 (Notificaciones, reglas de alerta y servicio en primer plano) | iroh-ssh-android (servicio en primer plano), KDE Connect |
-| 9 (mDNS, QR, registro y espacio compartido) | LocalSend (descubrimiento en red local), KDE Connect (emparejamiento) |
+| 9 (mDNS, QR, registro y espacio compartido) | LocalSend (idea del descubrimiento en red local, aunque no usa mDNS), KDE Connect (emparejamiento) |
 | 10 (Pulido) | LocalSend (organización de un proyecto Flutter grande) |
 | Memoria | KDE Connect, Cockpit, RustDesk, clientes SSH |
