@@ -49,11 +49,10 @@ Sección «Notas» del drawer (mismo nombre y posición que en v1). El título d
 - Botón flotante circular «+» (mismas medidas y posición que en Inicio: 60 dp, 20 dp del borde, 28 dp del fondo), color de acento.
 
 **Tarjeta de nota** (fondo `surface`, borde 1 dp `border`, radio 16, padding 12)
-- Contenido: 13 sp, máximo 3 líneas visibles. `SelectableText` no admite elipsis: con `maxLines: 3` el texto que no cabe se desplaza dentro de esas 3 líneas. Si se quiere cortar con «…», hay que usar `Text.rich` (que sí admite `overflow: TextOverflow.ellipsis`) dentro de un `SelectionArea` para mantener la selección (ver sección 6).
+- Contenido: 13 sp, máximo 3 líneas visibles. `SelectableText` no admite elipsis: con `maxLines: 3` el texto que no cabe se recorta sin indicador al final de esas 3 líneas. Si se quiere cortar con «…», hay que usar `Text.rich` (que sí admite `overflow: TextOverflow.ellipsis`) dentro de un `SelectionArea` para mantener la selección (ver sección 6).
 - **Texto seleccionable, como una burbuja de mensajería.** El contenido es de solo lectura: **mantener pulsado** selecciona texto y muestra el menú de selección de Flutter, que en Android tiene el aspecto del sistema (copiar, seleccionar todo, etc.). No es el menú nativo: Flutter lo dibuja él mismo.
 - Las direcciones web que haya en el contenido, en cualquier posición, van en color de acento y subrayadas. **Pulsar sobre una abre ese enlace** en el navegador del móvil. El resto del texto mantiene el color normal.
-- Pie: origen y fecha relativa a la izquierda, 11 sp `muted` (por ejemplo «Desde el PC · ayer»), y a la derecha dos botones de icono de 44 dp de área táctil: **copiar** (copia el contenido completo y muestra el aviso «Copiado») y **editar** (abre el formulario).
-  - *Recomendación de la guía oficial de Android* ([Copy and paste](https://developer.android.com/develop/ui/views/touch-and-input/copy-paste), consultada el 12/10/2026): desde Android 13 el sistema ya confirma la copia; mostrar «Copiado» solo en Android 12 o anterior.
+- Pie: origen y fecha relativa a la izquierda, 11 sp `muted` (por ejemplo «Desde el PC · ayer»), y a la derecha dos botones de icono de 44 dp de área táctil: **copiar** (copia el contenido completo y muestra el aviso «Copiado», en cualquier versión de Android) y **editar** (abre el formulario).
 - Pulsar en el texto no abre la edición: solo selecciona o abre enlaces. La edición se abre únicamente con el icono de editar.
 
 **Fechas relativas:** «ahora» (menos de 1 min), «hace N min» (menos de 1 h), «hoy», «ayer», día de la semana (menos de 7 días), fecha corta en otro caso.
@@ -65,13 +64,13 @@ Sección «Notas» del drawer (mismo nombre y posición que en v1). El título d
 - Lista vacía: «Aún no hay notas» y debajo «Crea una nota para dejarla también en tu PC.»
 - Búsqueda sin resultados: «Sin resultados para «texto»».
 - Error de carga: aviso inferior (mismo estilo que el de Inicio) «No se pudieron cargar las notas»; se mantiene lo que ya había.
-- Sin emparejar: la lista no se carga y se muestra «Sin emparejar · empareja el móvil para ver tus notas».
+- Sin emparejar: la lista no se carga y se muestra el mismo formato título + cuerpo que la lista vacía: «Sin emparejar» y debajo «Empareja el móvil para ver tus notas.»
 
 ## 4. Formulario de nota
 
 Pantalla completa bajo la AppBar, que muestra una X a la izquierda (cierra sin guardar) y el título «Nueva nota» o «Editar nota».
 
-- **Contenido:** un único campo multilínea, `field`, radio 12, borde 2 dp de acento al enfocar, 14 sp, mínimo 150 dp de alto, con el teclado abierto al entrar en una nota nueva. Usa el `TextField` de Flutter, que ya trae la selección y el menú de texto con el aspecto de Android (pegar, copiar, cortar, seleccionar todo). No hay selector de tipo ni ningún otro campo.
+- **Contenido:** un único campo multilínea, `surface`, radio 12, borde 2 dp de acento al enfocar, 16 sp, mínimo 6 líneas de alto, con el teclado abierto al entrar en una nota nueva. Usa el `TextField` de Flutter, que ya trae la selección y el menú de texto con el aspecto de Android (pegar, copiar, cortar, seleccionar todo). No hay selector de tipo ni ningún otro campo.
 - **Sin acciones de enlace en el formulario.** Es la caja donde se escribe: los enlaces se abren y se copian desde la tarjeta de la lista, igual que en las apps de mensajería (escribir en un sitio, leer en otro).
 - **Guardar:** botón de acento de 48 dp. Deshabilitado mientras el contenido esté vacío.
 - **Eliminar:** solo al editar. Botón con borde `border-strong` y texto rojo `#B42318`. Abre el diálogo «¿Eliminar esta nota?» con «Cancelar» / «Eliminar» (rojo), con el mismo estilo que el de desemparejar. Texto: «También dejará de estar en el PC.»
