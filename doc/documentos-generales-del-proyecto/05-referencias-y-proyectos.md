@@ -98,8 +98,8 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 ## 3. Acceso remoto (iroh)
 
 ### iroh
-- **Qué es:** librería P2P que conecta dispositivos por clave pública, con travesía de NAT y relés. Versión 1.0 estable publicada el 15 de junio de 2026; a 02/10/2026 el núcleo va por la 1.3.0 (28/09/2026) y los bindings por la 1.1.0 (16/07/2026).
-- **Te aporta:** la base del acceso remoto (fase 2). Bindings oficiales para Python y Kotlin. El paquete de Kotlin publicado no incluye Android: para Android hay que compilarlo desde el código fuente con Rust y el NDK. Oficialmente solo se soportan aarch64 y armv7; x86_64 se puede compilar pero no está soportado, así que la prueba de concepto se hace en el móvil físico.
+- **Qué es:** librería P2P que conecta dispositivos por clave pública, con travesía de NAT y relés. Versión 1.0 estable publicada el 15 de junio de 2026.
+- **Te aporta:** la base del acceso remoto (fase 2). Bindings oficiales para Python y Kotlin. Versiones exactas, arquitecturas soportadas y detalle de compilación para Android: `02-necesidades-tecnologicas.md` §3.3.
 - **Uso:** dependencia directa.
 - **Licencia:** MIT / Apache-2.0.
 - **Repositorios:** github.com/n0-computer/iroh (núcleo) · github.com/n0-computer/iroh-ffi (bindings)

@@ -143,7 +143,7 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** mDNS / DNS-SD (Zeroconf).
 - **Elección:** **zeroconf** (Python) para anunciar el servicio y **bonsoir** (Flutter) para encontrarlo. Es el mismo estándar que usan impresoras y Chromecast.
 - **Alternativas descartadas:** *broadcast UDP propio:* reinventar un estándar existente.
-- **Nota sobre Android 17:** las apps con `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para usar mDNS y conectar con equipos de la red local. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica (y el móvil de pruebas usa Android 15). *Pendiente de revisión:* comprobar si las conexiones a `127.0.0.1` (USB y túnel iroh) cuentan como red local a efectos de ese permiso.
+- **Nota sobre Android 17 (`ACCESS_LOCAL_NETWORK`):** detalle y estado en `01-memoria-tecnica.md` §10.
 
 ### 3.3 Acceso desde fuera de casa
 - **Necesidad:** conectar desde 4G/5G u otra red sin abrir puertos del router, sin VPN y sin instalar nada más en el móvil.
@@ -232,7 +232,7 @@ Cada bloque sigue el mismo esquema:
 ### 7.2 Instalar el agente
 - **Necesidad:** instalación sencilla en cualquier distribución.
 - **Tipo de tecnología:** gestor de paquetes de aplicaciones Python.
-- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. El binding de iroh solo publica paquetes para Linux `manylinux_2_28` (glibc 2.28 o superior) y no publica código fuente, así que el agente no es compatible con distribuciones basadas en musl (como Alpine). Las otras dependencias compiladas (cryptography, argon2) sí tienen paquetes para musl.
+- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. El binding de iroh (ver 3.3) solo publica paquetes para Linux `manylinux_2_28` y no publica código fuente, así que el agente no es compatible con distribuciones basadas en musl (como Alpine). Las otras dependencias compiladas (cryptography, argon2) sí tienen paquetes para musl.
 - **Dependencias del sistema:** `pipx` solo instala paquetes de Python. `tmux` y la terminal gráfica del usuario se instalan con el gestor de la distribución (ver 2.2.1).
 - **Alternativas descartadas:**
   - *PyInstaller:* el binario queda ligado a la glibc de la máquina de compilación.

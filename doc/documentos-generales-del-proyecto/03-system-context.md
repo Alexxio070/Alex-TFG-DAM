@@ -33,7 +33,7 @@
 * **Transport:**
   * REST (HTTP/JSON) for one-off actions and CRUD.
   * WebSocket channels: `/ws/terminal/{id}` (session stream), `/ws/metrics` (live metrics), `/ws/events` (notifications).
-  * Beta: metrics via REST polling every 1–2 s; WebSocket later.
+  * Beta: metrics via REST polling every 1 s; WebSocket later.
 * **LAN:** direct TLS connection; discovery via mDNS (`zeroconf` on the agent, `bonsoir` in Flutter); QR pairing (`mobile_scanner`).
 * **WAN — "local tunnel" design (dumbpipe pattern):**
   * Agent: iroh endpoint (Python binding) that forwards incoming streams to its own local FastAPI port.
@@ -45,7 +45,7 @@
   * Connection flow: the connection starts through a relay (used to exchange addresses), then iroh tries to upgrade it to a direct path via NAT traversal; if that fails it stays on the relay.
   * Network needs: no inbound ports; outbound TCP 443 (HTTPS with WebSocket) to the relays is enough. Outbound UDP is optional: if blocked, all traffic stays on the relay (docs.iroh.computer, "Configuring networks").
   * Default: n0 public relays (rate-limited, no SLA, officially "development and hobby use only"; enough for the thesis); custom relays configurable. Fallback plan: LAN-only. WebRTC only as a backup if iroh causes real problems.
-  * Versions (checked 2026-10-02): iroh core 1.3.0; Python and Kotlin bindings (iroh-ffi) 1.1.0. The published Kotlin artifact does not include Android: for Android it must be built from source with Rust + NDK (docs.iroh.computer/languages/kotlin). Officially ARM only (aarch64, armv7); x86_64 can be compiled but is not supported, so iroh is tested on the physical phone. The Python binding only ships Linux manylinux_2_28 wheels (glibc ≥ 2.28, x86_64 and aarch64); there is no musl (Alpine) build.
+  * Versions, supported architectures and glibc/musl constraints: source of truth is `02-necesidades-tecnologicas.md` §3.3 (Spanish).
   * Verify exact iroh binding APIs against their docs before coding.
 
 ## 4. MODULES
@@ -111,8 +111,8 @@
 * Delivered over `/ws/events`. On the phone, a foreground service keeps the connection alive and shows local notifications (`flutter_local_notifications`). **No Firebase, no external server.** Works in LAN too.
 * Android requirements:
   * request `POST_NOTIFICATIONS` at runtime (Android 13+);
-  * declare `foregroundServiceType` (mandatory since Android 14). Do NOT use `dataSync`: for apps targeting Android 15+ (`targetSdk` ≥ 35) it is stopped after 6 h per 24 h in the background. Candidate: `connectedDevice` (pending review, to be confirmed in phase 8); it requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` in the manifest plus at least one of `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` or `CHANGE_WIFI_MULTICAST_STATE` (or `NFC` / `TRANSMIT_IR`, or the Bluetooth, UWB or USB alternatives);
-  * Android 17: apps with `targetSdk` ≥ 37 must request `ACCESS_LOCAL_NETWORK` for LAN connections and mDNS. Flutter 3.47 defaults to `targetSdk` 36, so it does not apply yet (test phone: Android 15). Pending review: whether connections to `127.0.0.1` (USB and iroh tunnel) count as local network for that permission.
+  * `foregroundServiceType` (candidate `connectedDevice`, manifest permissions): source of truth `02-necesidades-tecnologicas.md` §4.1 (Spanish). Pending review, confirmed in phase 8;
+  * `ACCESS_LOCAL_NETWORK` (Android 17, `targetSdk` ≥ 37): source of truth `01-memoria-tecnica.md` §10 (Spanish).
 
 ## 5. DATABASE (SQLite, `~/.local/share/companion/companion.db`, created by `agent/schema.sql`)
 | Table | Main columns | Relations |
@@ -157,6 +157,8 @@ Route names are a starting proposal; keep them consistent once implemented and u
 ## 5c. APP SCREENS
 QR scan (registration / pairing) → create account dialog · Login · Connection setup (QR; manual address as fallback; later mDNS list) · Dashboard/metrics · Power · Processes · Home grid (actions + folders) → folder dialog / folder edit / quick create → action detail (all fields, stats, Run, history) → execution detail · Terminal · Shared space (notes list/form) · Alert rules list/form · Notification history · Settings (units, temperature alert, terminal font size, theme and accent colour, pair/unpair; later: logout, server data).
 
+Listed here as a flat set for reference only. **Power, Processes, Alert rules, Notification history, Login/Connection setup/QR scan have no decided place in the navigation yet** — see `01-memoria-tecnica.md` §3 ("Aún sin ubicación decidida"). Only Home, Metrics, Terminal and Shared space are placed (drawer sections).
+
 ## 6. SECURITY
 * Initial setup (TUI button):
   * generates a self-signed TLS certificate (`cryptography`);
@@ -177,7 +179,7 @@ QR scan (registration / pairing) → create account dialog · Login · Connectio
   * structure: folder `companion-estructura-YYYYMMDD-HHMM/` with `tablas.sql`, `indices.sql`, `vistas.sql`, `triggers.sql`, read from `sqlite_schema` (auto-indexes have no SQL and are skipped). Joins are not stored (relations = foreign keys in `tablas.sql`). Empty files get an explanatory comment (no views/triggers in the current design).
 
 ## 8. DEPLOYMENT
-* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). The iroh Python binding only ships Linux manylinux_2_28 wheels (glibc ≥ 2.28, x86_64 and aarch64); there is no musl (Alpine) build.
+* Install: `pipx install ...` (not PyInstaller, not plain pip, not Flatpak). Compatibility limits (glibc, musl): `02-necesidades-tecnologicas.md` §7.2 (Spanish).
 * systemd unit `~/.config/systemd/user/companion.service`: `ExecStart=%h/.local/bin/companion serve`, `Restart=on-failure`, `WantedBy=default.target`.
 * Remote reboot requires `loginctl enable-linger $USER` (documented in README). Without an active session, power actions may need a polkit rule.
 * App: APK published in GitHub releases.

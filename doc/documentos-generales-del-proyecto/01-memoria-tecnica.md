@@ -180,7 +180,7 @@ PUT    /notas/{id}                     DELETE /notas/{id}
 - En el móvil, un **servicio en primer plano** mantiene la conexión abierta y muestra los avisos como notificaciones de Android. No se usa Firebase ni ningún servidor externo.
 - **Requisitos de Android:**
   - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
-  - desde Android 14 hay que declarar el tipo del servicio en primer plano. No se usará `dataSync`, porque desde Android 15 el sistema lo detiene tras 6 horas cada 24. Candidato: `connectedDevice` (dispositivo externo conectado por red), que exige declarar en el manifiesto el permiso `FOREGROUND_SERVICE_CONNECTED_DEVICE` y al menos uno de `CHANGE_NETWORK_STATE`, `CHANGE_WIFI_STATE` o `CHANGE_WIFI_MULTICAST_STATE` (u otra de las alternativas de NFC, infrarrojos, Bluetooth, UWB o USB). *Pendiente de revisión:* se confirma en la fase 8.
+  - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1. *Pendiente de revisión:* se confirma en la fase 8.
 
 **API del agente:**
 ```
@@ -431,7 +431,7 @@ Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es 
 
 **Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
-Se usa **pipx** porque muchas distribuciones actuales (Debian 12+, Ubuntu 23.04+, Arch…) bloquean `pip install` fuera de entornos virtuales, siguiendo PEP 668. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python con el que se ejecuta, que normalmente es el de la propia distribución. El binding de Python de iroh solo se publica como paquete precompilado para Linux con **glibc 2.28 o superior** (x86_64 y aarch64), así que el agente no es compatible con distribuciones basadas en musl (como Alpine).
+Se usa **pipx** porque muchas distribuciones actuales (Debian 12+, Ubuntu 23.04+, Arch…) bloquean `pip install` fuera de entornos virtuales, siguiendo PEP 668. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python con el que se ejecuta, que normalmente es el de la propia distribución. Límite de compatibilidad por el binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
 
 ### 8.2 Servicio systemd
 El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
@@ -484,10 +484,10 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 | Método | Uso |
 |---|---|
 | **USB + `adb reverse tcp:8443 tcp:8443`** | Método principal: la app se conecta a `127.0.0.1:8443` y llega al agente del portátil por el cable |
-| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No se usa para probar iroh: el binding de Kotlin para Android solo se soporta oficialmente en arquitecturas ARM (aarch64 y armv7) y hay que compilarlo desde el código fuente. *Pendiente de revisión:* si se elige `iroh_flutter`, comprobar si funciona en el emulador |
+| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No se usa para probar iroh (arquitecturas soportadas: ver `02-necesidades-tecnologicas.md` §3.3). *Pendiente de revisión:* si se elige `iroh_flutter`, comprobar si funciona en el emulador |
 | **Punto de acceso del móvil** | Red privada propia para probar como LAN real, incluido mDNS |
 | **Repositorios simulados** | Desarrollar pantallas sin el agente |
-| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. No necesita abrir puertos de entrada. Basta con salida TCP 443 hacia los relés (HTTPS con WebSocket) y hacia `dns.iroh.link`, además de DNS normal; el UDP saliente es opcional. Un proxy que inspeccione el TLS impide conectar con los relés |
+| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. Requisitos de red y versiones: ver `02-necesidades-tecnologicas.md` §3.3 |
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
