@@ -323,6 +323,8 @@ A partir de entonces la app solo confía en ese certificado. Para emparejar otro
 
 Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`). Se crea con el script `agent/schema.sql` y se accede exclusivamente a través de la capa de repositorios. SQLite tiene las claves foráneas desactivadas por defecto, así que cada conexión ejecuta `PRAGMA foreign_keys = ON`; sin ello no se aplican los borrados en cascada.
 
+**Historial de comandos de terminal:** no vive en esta base de datos. Se guarda en un archivo de log aparte, dentro de una carpeta en `~/.cache` (una línea por comando, `ISO-8601<TAB>comando`), para no duplicar el mismo dato en dos sitios. Solo registra lo que la app envía por el WebSocket de la terminal (fase 4) al pulsar Enter; lo escrito directamente en la ventana del PC no pasa por el agente y no se registra. La pantalla «Historial» de la TUI combina este archivo con la tabla `ejecucion` solo al mostrarlos, sin juntarlos en el almacenamiento. Sin límite de tamaño por ahora.
+
 ### 6.1 Diagrama entidad-relación (simplificado)
 
 ```
@@ -418,14 +420,11 @@ El diagrama de casos de uso y la descripción detallada de los principales se in
 pipx install linux-system-companion   # instala el agente en un entorno aislado
 companion                             # abre la TUI: configuración inicial, QR de registro, servicio…
 ```
-Escribir `companion` abre una **TUI** hecha con **Textual**, con botones para:
-- configuración inicial y QR de registro (ver 5.1);
-- mostrar el QR de emparejamiento;
-- instalar o quitar el servicio systemd de usuario;
-- ver el estado del agente;
-- cambiar la contraseña y cerrar todas las sesiones;
-- añadir y ver notas del espacio compartido;
-- exportar los datos y exportar la estructura de la base de datos (ver 6.3).
+Escribir `companion` abre una **TUI** hecha con **Textual**: banner con el nombre de la app, un área de datos (vacía por defecto) y cuatro botones fijos abajo, con colores ANSI de la propia terminal:
+- **Emparejamiento:** con tres subpestañas — **Dispositivo** (QR de emparejamiento, datos del dispositivo conectado, botón «Desemparejar»), **Seguridad** (configuración inicial y QR de registro, ver 5.1; cambiar la contraseña; cerrar todas las sesiones) y **Servicio** (instalar/quitar el servicio systemd de usuario, ver su estado);
+- **Historial:** acciones rápidas ejecutadas y comandos de terminal enviados desde la app (ver 6);
+- **Base de datos:** navegador en vivo de las tablas de `schema.sql`, con los botones «Exportar datos» y «Exportar estructura» (ver 6.3);
+- **Notas:** añadir y ver las notas del espacio compartido (ver Módulo F).
 
 Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
 

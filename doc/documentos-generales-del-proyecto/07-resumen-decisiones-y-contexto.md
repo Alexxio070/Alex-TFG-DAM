@@ -45,11 +45,13 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
 | Instalación del agente | **pipx** | Usa el Python de la distro; evita atar el agente a la glibc con la que se compila, aunque iroh exige glibc ≥ 2.28 | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
 | Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` |
-| Herramienta del PC | **TUI con botones (Textual)** al escribir `companion` (12/10/2026); **Typer** solo para `companion serve` y `companion notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid |
+| Herramienta del PC | **TUI con botones (Textual)** al escribir `companion` (12/10/2026, librería confirmada el 15/10/2026); **Typer** solo para `companion serve` y `companion notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts; Textual es la opción mejor soportada para botones/formularios frente a las alternativas | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid (más bajo nivel que Textual), prompt_toolkit (pensado para línea de comandos/REPL, no pantallas con varios controles), py_cui (sin publicaciones desde 2022, abandonado) |
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
 - **TUI en lugar de CLI (12/10/2026):** al escribir `companion` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones).
+- **Construcción de la TUI adelantada a la fase 1 (15/10/2026, estructura revisada el 15/10/2026):** igual que la interfaz de la app, la TUI se construye entera y de una vez. Estructura fija: banner, área de datos vacía por defecto y cuatro botones — **Emparejamiento** (con tres subpestañas: Dispositivo —QR y datos del dispositivo—, Seguridad —fase 3: configuración inicial, contraseña, cerrar sesiones— y Servicio —fase 5: instalar, quitar, estado—), **Historial** (acciones rápidas de la fase 7 y comandos de terminal desde un archivo de log aparte), **Base de datos** (navegador en vivo de las tablas + exportaciones de la fase 7) y **Notas** (CRUD de notas de la fase 9). Las fases posteriores no añaden botones a la barra: activan contenido dentro de estas cuatro secciones.
+- **Historial de comandos de terminal (15/10/2026):** archivo de log en una carpeta dentro de `~/.cache` (`ISO-8601<TAB>comando`), sin límite de tamaño por ahora; no se duplica en SQLite. Solo registra lo que la app envía por el WebSocket de la terminal al pulsar Enter — el agente no ve lo escrito directamente en la ventana del PC (eso exigiría integración de shell con OSC 133, descartada del TFG, ver `06-ideas-de-futuro.md` §5). La pantalla Historial combina este log con la tabla `ejecucion` solo al mostrarlos.
 - **Registro por QR (12/10/2026):** la TUI muestra un QR con la dirección, la huella, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña. El modo registro se cierra tras la primera cuenta. **Va en la fase 9 (12/10/2026);** hasta entonces el usuario se crea desde la TUI.
 - **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, se compara a ojo con la que muestra la TUI).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
@@ -136,13 +138,13 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 **Beta v0.1 (Navidad):**
 - Fase 0: preparación y aprender Flutter.
 - Interfaz definitiva con *placeholders* y datos simulados: ya hecha.
-- Fase 1: crear el agente y conectar las métricas reales (mediados de octubre – principios de noviembre).
+- Fase 1: crear el agente, conectar las métricas reales y construir la TUI definitiva de `companion` (banner, Emparejamiento, Historial, Base de datos) con las secciones vacías o con lo que ya exista (mediados de octubre – principios de noviembre).
 - Fase 2: conexión remota con iroh (principios de noviembre – mediados de diciembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
 - **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
 - **La beta NO necesita cumplir los mínimos de DAM.**
 
 **Después de la beta:**
-- Fase 3: seguridad (mediados de diciembre – principios de enero): TUI mínima que crea el usuario y login. Va antes de la terminal porque esta da acceso a la shell.
+- Fase 3: seguridad (mediados de diciembre – principios de enero): activa dentro de «Emparejamiento» (ya construida en la fase 1) la configuración inicial que crea el usuario, y login. Va antes de la terminal porque esta da acceso a la shell.
 - Fase 4: terminal (enero – mediados de febrero), para el hito de febrero.
 - Fase 5: instalación con pipx y servicio (instalado desde la TUI).
 - Fase 6: energía y procesos.

@@ -25,7 +25,9 @@
 | ¿El centro acepta Flutter? (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter | — |
 | ¿El agente en Python cuenta como parte del proyecto? | **Resuelta (02/10/2026):** es parte fundamental del proyecto; sin él la app no funciona | — |
 | Orden de las fases | **Resuelta (02/10/2026 y 12/10/2026):** iroh en la fase 2 por ser la parte más crítica. La interfaz definitiva se hace primero (ya terminada el 12/10) y la beta se queda sin login; la seguridad va en enero, antes de la terminal | — |
-| Herramienta del agente en el PC | **Resuelta (12/10/2026):** TUI con botones (Textual) al escribir `companion`; solo `companion serve` y `companion notify` quedan como comandos de terminal | — |
+| Herramienta del agente en el PC | **Resuelta (12/10/2026, librería confirmada el 15/10/2026):** TUI con botones (Textual, tras comparar con urwid, prompt_toolkit y py_cui) al escribir `companion`; solo `companion serve` y `companion notify` quedan como comandos de terminal | — |
+| Estructura de la TUI | **Resuelta (15/10/2026):** interfaz definitiva construida en la fase 1, igual que la interfaz de la app en la fase 0: banner, área de datos (vacía por defecto) y cuatro botones fijos — **Emparejamiento, Historial, Base de datos, Notas** —, cada uno con su pantalla. Emparejamiento aloja también la seguridad (fase 3) y la gestión del servicio (fase 5). Las fases posteriores no añaden botones a la barra: activan contenido ya existente dentro de estas cuatro secciones (Notas se construye vacía en la fase 1 y se rellena en la fase 9) | — |
+| Historial de comandos de terminal | **Resuelta (15/10/2026):** archivo de log aparte (no tabla en SQLite, para no duplicar datos), una línea por comando (`ISO-8601<TAB>comando`) en una carpeta dentro de `~/.cache`, sin límite de tamaño por ahora. Solo registra lo que llega por el WebSocket de la app al pulsar Enter (el agente no ve lo escrito directamente en la ventana del PC; integración de shell con OSC 133 descartada del TFG, ver `06-ideas-de-futuro.md` §5). La pantalla Historial combina este archivo con la tabla `ejecucion` solo al mostrarlos, sin juntarlos en el almacenamiento | — |
 | Cómo se crea el usuario | **Resuelta (12/10/2026):** la TUI muestra un QR; la app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña | — |
 | En qué fase va el registro por QR | **Resuelta (12/10/2026):** fase 9. Hasta entonces, el usuario se crea desde la TUI (fase 3) | — |
 | Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
@@ -101,13 +103,19 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
   - estructura en capas desde el principio: rutas de la API → servicios → repositorios → modelos;
   - endpoint REST con CPU (total y por núcleo), RAM, swap, discos, temperaturas, carga y tiempo encendido (psutil);
   - se arranca a mano (el servicio llega en la fase 5).
+- **TUI del agente (interfaz definitiva, como se hizo con la app en la fase 0):** con **Textual**, al escribir `companion`. Banner ANSI con el nombre de la app, área de datos (marco redondeado, vacía por defecto) y cuatro botones fijos abajo — **Emparejamiento, Historial, Base de datos, Notas** —, cada uno sustituye el contenido del área de datos al pulsarlo; botón activo resaltado; colores ANSI de la terminal (`ansi_color=True`), no la paleta fija de Textual. Contenido de cada sección (con datos reales desde el principio, no de ejemplo):
+  - **Emparejamiento:** con tres subpestañas propias — **Dispositivo** (código QR con `qrcode` y datos del dispositivo emparejado desde `sesion`; sin dispositivo, el botón «Desemparejar» queda deshabilitado), **Seguridad** (configuración inicial con el certificado TLS y el usuario/contraseña, cambiar contraseña, cerrar todas las sesiones — fase 3) y **Servicio** (instalar, quitar, estado — fase 5). Seguridad y Servicio deshabilitadas hasta sus fases;
+  - **Historial:** tabla fecha/hora, origen (`MACRO`/`TERMINAL`), comando — `MACRO` de la tabla `ejecucion` (vacía hasta la fase 7), `TERMINAL` del archivo de log de comandos de terminal (vacío hasta la fase 4), combinados solo al mostrarlos;
+  - **Base de datos:** navegador en vivo de las tablas de `schema.sql` (columnas y filas, con *scroll*) y, debajo, los botones «Exportar datos» / «Exportar estructura» de la fase 7 (deshabilitados hasta esa fase);
+  - **Notas:** vacía hasta la fase 9, que la rellena con el CRUD de notas del espacio compartido.
+  Sin `companion serve` ni `companion notify` todavía (no hace falta sin login ni API protegida).
 - **App:**
   - repositorio real de métricas que llama al agente, junto al simulado que ya existe;
   - pantalla para indicar la dirección del agente (por defecto `127.0.0.1:8443`, para el modo USB);
   - la pantalla de métricas pasa a mostrar datos reales cada 1 s, con sus gráficas (`CustomPainter`).
 - Probar por USB con `adb reverse`.
 
-**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, y el resto de pantallas siguen funcionando con datos simulados.
+**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, el resto de pantallas siguen funcionando con datos simulados, y `companion` abre la TUI definitiva con sus tres secciones (vacías o con solo lo que ya existe en la BD).
 
 **Si vas con retraso:** cifras reales sin gráficas en vivo; las gráficas se completan para el hito de febrero.
 
@@ -167,7 +175,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Por qué va aquí:** la terminal (fase 4) da acceso a tu shell, así que no puede exponerse por iroh sin login.
 
 **Objetivos:**
-- **TUI mínima con Textual** (al escribir `companion` se abre la interfaz con botones) y **Typer** solo para `companion serve`:
+- **Activar dentro de la sección «Emparejamiento» de la TUI** (interfaz definitiva ya construida en la fase 1) los botones de esta fase, y **Typer** solo para `companion serve`:
   - botón de configuración inicial: generar el certificado TLS autofirmado y crear el usuario y la contraseña (validación de robustez y Argon2). Es la vía hasta la fase 9, cuando llega el registro por QR;
   - mostrar como texto la dirección, la huella del certificado y el identificador iroh;
   - botones «Cambiar contraseña» y «Cerrar todas las sesiones».
@@ -232,7 +240,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Objetivos:**
 - Empaquetar el agente para instalarlo con `pipx install`.
 - Documentar y comprobar las dependencias del sistema: `tmux` y una terminal gráfica para la ventana del PC. La TUI avisa si faltan.
-- Botones de la TUI «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario que ejecuta `companion serve` (`default.target`, `Restart=on-failure`), con el punto de conexión iroh activo desde el arranque.
+- Activar dentro de «Emparejamiento» los botones «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario que ejecuta `companion serve` (`default.target`, `Restart=on-failure`), con el punto de conexión iroh activo desde el arranque.
 - README con:
   - instalación (`pipx install` y la TUI);
   - uso básico;
@@ -340,7 +348,7 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
   - el agente guarda la contraseña con Argon2 y cierra el modo registro tras la primera cuenta.
 - **Espacio compartido** (notas de texto y enlaces entre el móvil y el PC):
   - **BD:** tabla `nota` en `schema.sql`, con su repositorio;
-  - **Agente:** CRUD de notas (`/notas`) y botones de la TUI para añadir y ver notas;
+  - **Agente:** CRUD de notas (`/notas`) y activar la sección «Notas» de la TUI para añadir y ver notas;
   - **App:** lista de notas con buscador y recarga al deslizar; tarjetas con texto seleccionable y enlaces pulsables en cualquier parte del texto, con botones de copiar y editar; formulario de un único campo (contenido obligatorio) para crear y editar, y borrado con confirmación. El tipo (texto o enlace) lo deduce el agente al guardar;
   - la app pide las notas al abrir la pantalla y al deslizar hacia abajo para recargar (sin actualización al momento); si los dos lados editan la misma nota, se guarda el último cambio;
   - *imágenes: **aún pensándolo**, fuera del alcance confirmado.*
