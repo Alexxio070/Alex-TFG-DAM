@@ -76,7 +76,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 - Un espacio común entre el móvil y el PC donde dejar **notas de texto y enlaces** para pasar información de un lado a otro. CRUD desde la app y botones de la TUI en el PC; la app pide las notas al abrir la pantalla y al recargar (sin actualización al momento: es una app para usar lejos del PC). Si los dos lados editan la misma nota, gana el último cambio.
 - **Imágenes: aún pensándolo.** Fuera del alcance confirmado hasta que se decida.
 - Va en la fase 9, después del CRUD (fase 7), cuyo patrón reutiliza.
-- **Pantalla de Notas definitiva (12/10/2026):** lista de notas con tarjetas, búsqueda, formulario de crear/editar y borrado, tal como describe el Módulo F. Sustituye al campo de texto único del prototipo v1, que queda descartado. Detalle en `../ui/ui-v2/ESPECIFICACION_NOTAS.md`; el prototipo inicial se conserva como histórico en `../ui/ui-v1/`.
+- **Pantalla de Notas definitiva (12/10/2026):** lista de notas con tarjetas, búsqueda, formulario de crear/editar y borrado, tal como describe el Módulo F. Sustituye al campo de texto único del prototipo v1, que queda descartado. Detalle en `../ui/ui-v2/DESIGN.md`; el prototipo inicial se conserva como histórico en `../ui/ui-v1/`.
 
 ### 3.6 Requisitos mínimos de DAM
 Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo se resolvieron:

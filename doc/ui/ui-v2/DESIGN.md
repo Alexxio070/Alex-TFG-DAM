@@ -1,6 +1,6 @@
 # Especificación de UI v2 — Notas (espacio compartido)
 
-> **Estado: definitiva.** Sustituye a la pantalla de Notas del prototipo v1 (`../ui-v1/ESPECIFICACION_UI.md`, §6), que queda descartada.
+> **Estado: definitiva.** Sustituye a la pantalla de Notas del prototipo v1 (`../ui-v1/DESIGN.md`, §6), que queda descartada.
 > Las demás pantallas (drawer, tema, Inicio, Métricas, Terminal y Ajustes) mantienen el diseño de v1.
 > Origen funcional: Módulo F de `../../documentos-generales-del-proyecto/01-memoria-tecnica.md` y decisión 3.5 de `../../documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`.
 

@@ -2,7 +2,7 @@
 
 Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`).
 
-La interfaz sigue `../ui/ui-v1/ESPECIFICACION_UI.md` y `../ui/ui-v1/prototipo.dc.html`, salvo la pantalla de Notas, que sigue `../ui/ui-v2/ESPECIFICACION_NOTAS.md` (el campo único de v1 está descartado). Las diferencias de implementación están en la sección 10 de la v1 y en `08-historial-de-cambios.md`.
+La interfaz sigue `../ui/ui-v1/DESIGN.md` y `../ui/ui-v1/prototipo.dc.html`, salvo la pantalla de Notas, que sigue `../ui/ui-v2/DESIGN.md` (el campo único de v1 está descartado). Las diferencias de implementación están en la sección 10 de la v1 y en `08-historial-de-cambios.md`.
 
 ## Árbol de carpetas
 
