@@ -104,7 +104,7 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 ## Pendiente (marcado con TODO en el código)
 
-- Desemparejar, Exportar datos y Exportar estructura: solo muestran un aviso hasta sus fases.
+- Desemparejar, Exportar datos y Exportar estructura: deshabilitados hasta sus fases.
 - Dispositivo emparejado y código QR: sin datos hasta la fase 9 (registro/emparejamiento real).
 - Seguridad y Servicio: deshabilitados hasta las fases 3 y 5.
 - Historial y Base de datos: vacíos hasta que existan acciones rápidas (fase 7) o comandos de
