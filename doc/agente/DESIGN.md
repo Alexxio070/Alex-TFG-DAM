@@ -28,8 +28,8 @@ en `../documentos-generales-del-proyecto/01-memoria-tecnica.md` (§6) y `03-syst
 Tres subpestañas propias, que cambian el contenido del mismo marco sin volver al menú principal:
 
 #### Dispositivo
-- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`).
-  Si `qrcode` no está instalada, muestra el texto del emparejamiento.
+- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`,
+  dependencia obligatoria del agente).
 - Derecha: nombre del dispositivo, fecha y hora de conexión, estado de conexión — datos de `sesion`.
 - Debajo de los datos del dispositivo: botón rojo **Desemparejar**.
   Está desactivado si no hay ningún dispositivo emparejado.
