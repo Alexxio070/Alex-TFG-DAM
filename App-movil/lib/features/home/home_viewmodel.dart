@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/painting.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../data/models/home_item.dart';
@@ -42,7 +42,6 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void execute(Macro macro) {
-    HapticFeedback.lightImpact();
     _repository.run(macro);
     _showToast((title: 'Ejecutando «${macro.label}»', command: macro.command), 2200);
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -7,9 +8,14 @@ import 'widgets/confirm_dialog.dart';
 
 void runMacro(BuildContext context, Macro macro) {
   final vm = context.read<HomeViewModel>();
-  if (macro.confirm) {
-    showConfirmDialog(context, macro: macro, onConfirm: () => vm.execute(macro));
-  } else {
+  void execute() {
+    HapticFeedback.lightImpact();
     vm.execute(macro);
+  }
+
+  if (macro.confirm) {
+    showConfirmDialog(context, macro: macro, onConfirm: execute);
+  } else {
+    execute();
   }
 }
