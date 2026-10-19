@@ -101,8 +101,6 @@ class MainScreen(Screen):
 
         with Container(id="data"):
             with ContentSwitcher(id="sections"):
-                with Container(id="home", classes="section"):
-                    pass  # Vacío por defecto: se muestra al pulsar un botón.
                 yield PairingSection(id="pairing", classes="section")
                 yield HistorySection(id="history", classes="section")
                 yield DatabaseSection(id="database", classes="section")
