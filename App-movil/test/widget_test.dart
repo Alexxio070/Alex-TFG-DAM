@@ -9,10 +9,12 @@ import 'package:tfg/data/fake/fake_metrics_repository.dart';
 import 'package:tfg/data/fake/fake_notes_repository.dart';
 import 'package:tfg/data/fake/fake_pairing_repository.dart';
 import 'package:tfg/data/fake/fake_terminal_repository.dart';
+import 'package:tfg/data/fake/in_memory_settings_repository.dart';
 import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
 import 'package:tfg/data/repositories/notes_repository.dart';
 import 'package:tfg/data/repositories/pairing_repository.dart';
+import 'package:tfg/data/repositories/settings_repository.dart';
 import 'package:tfg/data/repositories/terminal_repository.dart';
 import 'package:tfg/features/home/home_viewmodel.dart';
 import 'package:tfg/features/metrics/metrics_viewmodel.dart';
@@ -30,7 +32,10 @@ Widget _app() => MultiProvider(
         Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
-        ChangeNotifierProvider(create: (_) => SettingsViewModel()),
+        Provider<SettingsRepository>(create: (_) => InMemorySettingsRepository()),
+        ChangeNotifierProvider(
+          create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
+        ),
         ChangeNotifierProvider(
           create: (context) => ShellViewModel(context.read<PairingRepository>()),
         ),
@@ -62,6 +67,7 @@ Future<void> _pumpFor(WidgetTester tester, int milliseconds) async {
 void main() {
   testWidgets('arranca en Inicio con el drawer cerrado', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
 
     expect(find.text('Inicio'), findsWidgets);
     expect(find.text('Conectado'), findsNothing);
@@ -69,6 +75,7 @@ void main() {
 
   testWidgets('el drawer cambia de sección y se cierra', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
 
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
@@ -83,6 +90,7 @@ void main() {
 
   testWidgets('el engranaje abre Ajustes', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
 
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
@@ -94,6 +102,7 @@ void main() {
 
   testWidgets('el drawer se abre arrastrando desde el borde izquierdo', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
     expect(find.text('Conectado'), findsNothing);
 
     await tester.dragFrom(const Offset(8, 300), const Offset(250, 0));
@@ -104,6 +113,7 @@ void main() {
 
   testWidgets('un arrastre corto desde el borde deja el drawer cerrado', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
 
     await tester.dragFrom(const Offset(8, 300), const Offset(60, 0));
     await tester.pumpAndSettle();
@@ -113,6 +123,7 @@ void main() {
 
   testWidgets('el drawer se cierra arrastrando hacia la izquierda', (tester) async {
     await tester.pumpWidget(_app());
+    await tester.pump();
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
     expect(find.text('Conectado'), findsOneWidget);
@@ -129,6 +140,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       await tester.pumpAndSettle();
     }
 
@@ -157,6 +169,38 @@ void main() {
       expect(find.text('Reiniciar'), findsOneWidget);
     });
 
+    testWidgets('no deja crear una macro con un nombre repetido', (tester) async {
+      await pumpHome(tester);
+
+      await tester.tap(find.bySemanticsLabel('Añadir macro'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).at(0), 'Silenciar');
+      await tester.enterText(find.byType(TextField).at(1), 'otro comando');
+      await tester.pump();
+
+      expect(find.text('Ya hay un elemento con ese nombre'), findsOneWidget);
+
+      await tester.tap(find.text('Crear'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nueva macro'), findsOneWidget);
+    });
+
+    testWidgets('elige un icono para la macro nueva', (tester) async {
+      await pumpHome(tester);
+
+      await tester.tap(find.bySemanticsLabel('Añadir macro'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).at(0), 'Modo avión');
+      await tester.enterText(find.byType(TextField).at(1), 'nmcli radio all off');
+      await tester.tap(find.bySemanticsLabel('lock'));
+      await tester.pump();
+      await tester.tap(find.text('Crear'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Modo avión'), findsOneWidget);
+    });
+
     testWidgets('arrastrar una macro a la papelera la elimina', (tester) async {
       await pumpHome(tester);
 
@@ -183,6 +227,62 @@ void main() {
       expect(find.text('Carpeta'), findsOneWidget);
       expect(find.text('2 macros'), findsOneWidget);
     });
+
+    Future<void> makeFolder(WidgetTester tester) async {
+      final gesture = await tester.startGesture(const Offset(103, 171));
+      await tester.pump(const Duration(milliseconds: 450));
+      await gesture.moveTo(const Offset(287, 171));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> dragFolderToTrash(WidgetTester tester) async {
+      final gesture = await tester.startGesture(const Offset(103, 171));
+      await tester.pump(const Duration(milliseconds: 450));
+      await gesture.moveTo(const Offset(195, 64 + 708));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('arrastrar una carpeta con macros a la papelera pregunta qué hacer', (
+      tester,
+    ) async {
+      await pumpHome(tester);
+      await makeFolder(tester);
+
+      await dragFolderToTrash(tester);
+
+      expect(find.text('¿Qué hacer con «Carpeta»?'), findsOneWidget);
+      expect(find.text('Tiene 2 macros dentro.'), findsOneWidget);
+    });
+
+    testWidgets('mover a Sin grupo deshace la carpeta y conserva las macros', (tester) async {
+      await pumpHome(tester);
+      await makeFolder(tester);
+
+      await dragFolderToTrash(tester);
+      await tester.tap(find.text('Mover a Sin grupo'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Carpeta'), findsNothing);
+      expect(find.text('Silenciar'), findsOneWidget);
+      expect(find.text('Bloquear'), findsOneWidget);
+    });
+
+    testWidgets('borrar en el diálogo elimina la carpeta y sus macros', (tester) async {
+      await pumpHome(tester);
+      await makeFolder(tester);
+
+      await dragFolderToTrash(tester);
+      await tester.tap(find.text('Borrar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Carpeta'), findsNothing);
+      expect(find.text('Silenciar'), findsNothing);
+      expect(find.text('Bloquear'), findsNothing);
+    });
   });
 
   group('Métricas', () {
@@ -191,6 +291,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       await tester.tap(find.bySemanticsLabel('Abrir menú'));
       await _pumpFor(tester, 500);
       await tester.tap(find.text('Métricas'));
@@ -260,6 +361,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       await tester.tap(find.bySemanticsLabel('Abrir menú'));
       await _pumpFor(tester, 500);
       await tester.tap(find.text('Notas'));
@@ -375,6 +477,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       await tester.tap(find.bySemanticsLabel('Abrir menú'));
       await _pumpFor(tester, 500);
       await tester.tap(find.text('Terminal'));
@@ -455,6 +558,7 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       settings = Provider.of<SettingsViewModel>(
         tester.element(find.byType(TfgApp)),
         listen: false,
@@ -587,6 +691,7 @@ void main() {
       tester.view.viewPadding = const FakeViewPadding(bottom: bar * 3);
       addTearDown(tester.view.reset);
       await tester.pumpWidget(_app());
+      await tester.pump();
       await tester.pumpAndSettle();
     }
 
