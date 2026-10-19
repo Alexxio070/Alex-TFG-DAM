@@ -23,6 +23,7 @@ import 'package:tfg/features/notes/note_form_view.dart';
 import 'package:tfg/features/notes/notes_viewmodel.dart';
 import 'package:tfg/features/settings/settings_viewmodel.dart';
 import 'package:tfg/features/shell/shell_viewmodel.dart';
+import 'package:tfg/features/terminal/terminal_tabs_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_viewmodel.dart';
 import 'package:xterm/xterm.dart';
 
@@ -32,7 +33,7 @@ Widget _app({MetricsRepository? metricsRepository}) => MultiProvider(
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => metricsRepository ?? FakeMetricsRepository()),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
-        Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
+        Provider<TerminalRepository Function()>(create: (_) => FakeTerminalRepository.new),
         Provider<SettingsRepository>(create: (_) => InMemorySettingsRepository()),
         ChangeNotifierProvider(
           create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
@@ -53,7 +54,8 @@ Widget _app({MetricsRepository? metricsRepository}) => MultiProvider(
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => TerminalViewModel(context.read<TerminalRepository>()),
+          create: (context) =>
+              TerminalTabsViewModel(context.read<TerminalRepository Function()>()),
         ),
       ],
       child: const TfgApp(),
@@ -488,6 +490,11 @@ void main() {
   });
 
   group('Terminal', () {
+    TerminalTabsViewModel tabsOf(WidgetTester tester) => Provider.of<TerminalTabsViewModel>(
+          tester.element(find.byType(TfgApp)),
+          listen: false,
+        );
+
     Future<TerminalViewModel> openTerminal(WidgetTester tester) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);
       tester.view.devicePixelRatio = 3;
@@ -500,10 +507,7 @@ void main() {
       await _pumpFor(tester, 600);
       await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
       await _pumpFor(tester, 700);
-      return Provider.of<TerminalViewModel>(
-        tester.element(find.byType(TfgApp)),
-        listen: false,
-      );
+      return tabsOf(tester).active;
     }
 
     String screen(TerminalViewModel vm) => vm.terminal.buffer.getText();
@@ -542,13 +546,10 @@ void main() {
       await _pumpFor(tester, 500);
       await tester.tap(find.text('Terminal'));
       await _pumpFor(tester, 600);
-      final vm = Provider.of<TerminalViewModel>(
-        tester.element(find.byType(TfgApp)),
-        listen: false,
-      );
 
       await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
       await tester.pump();
+      final vm = tabsOf(tester).active;
       vm.terminal.textInput('whoami\r');
       await _pumpFor(tester, 700);
 
@@ -556,13 +557,14 @@ void main() {
       expect(screen(vm), contains('usuario\n'));
     });
 
-    testWidgets('escribir exit cierra la sesión y vuelve al aviso', (tester) async {
+    testWidgets('escribir exit cierra la pestaña y vuelve al aviso', (tester) async {
       final vm = await openTerminal(tester);
 
       vm.terminal.textInput('exit\r');
       await _pumpFor(tester, 200);
 
       expect(vm.state, TerminalSessionState.empty);
+      expect(tabsOf(tester).tabs, isEmpty);
       expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
     });
 
@@ -623,6 +625,65 @@ void main() {
       await _pumpFor(tester, 200);
 
       expect(screen(vm), isNot(contains('Conectado a pc')));
+    });
+
+    testWidgets('el botón + abre una pestaña nueva ya lista', (tester) async {
+      await openTerminal(tester);
+
+      await tester.tap(find.bySemanticsLabel('Nueva pestaña'));
+      await _pumpFor(tester, 700);
+
+      final tabs = tabsOf(tester);
+      expect(tabs.tabs, hasLength(2));
+      expect(tabs.activeIndex, 1);
+      expect(find.text('Terminal 1'), findsOneWidget);
+      expect(find.text('Terminal 2'), findsOneWidget);
+    });
+
+    testWidgets('tocar una pestaña la activa', (tester) async {
+      await openTerminal(tester);
+      await tester.tap(find.bySemanticsLabel('Nueva pestaña'));
+      await _pumpFor(tester, 700);
+
+      await tester.tap(find.text('Terminal 1'));
+      await tester.pump();
+
+      expect(tabsOf(tester).activeIndex, 0);
+    });
+
+    testWidgets('cerrar una pestaña pide confirmación', (tester) async {
+      await openTerminal(tester);
+
+      await tester.tap(find.bySemanticsLabel('Cerrar Terminal 1'));
+      await _pumpFor(tester, 200);
+      expect(find.text('¿Cerrar esta pestaña?'), findsOneWidget);
+
+      await tester.tap(find.text('Cancelar'));
+      await _pumpFor(tester, 200);
+      expect(tabsOf(tester).tabs, hasLength(1));
+
+      await tester.tap(find.bySemanticsLabel('Cerrar Terminal 1'));
+      await _pumpFor(tester, 200);
+      await tester.tap(find.text('Cerrar'));
+      await _pumpFor(tester, 200);
+
+      expect(tabsOf(tester).tabs, isEmpty);
+      expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
+    });
+
+    testWidgets('no deja abrir más de 6 pestañas', (tester) async {
+      await openTerminal(tester);
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(find.bySemanticsLabel('Nueva pestaña'));
+        await _pumpFor(tester, 700);
+      }
+      expect(tabsOf(tester).tabs, hasLength(6));
+
+      await tester.tap(find.bySemanticsLabel('Nueva pestaña'));
+      await tester.pump();
+
+      expect(tabsOf(tester).tabs, hasLength(6));
+      expect(find.text('No caben más pestañas'), findsOneWidget);
     });
   });
 
