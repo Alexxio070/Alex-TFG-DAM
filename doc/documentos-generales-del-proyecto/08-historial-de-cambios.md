@@ -32,6 +32,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 15/10/2026 | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
 | 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
 | 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
+| 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
 
 ---
 
@@ -274,6 +275,20 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `new_macro_dialog.dart`, `home_viewmodel.dart`, `app_tokens.dart`, `app_theme.dart`, `terminal_view.dart`; `doc/ui/XTERM_DART.md`, `doc/ui/ui-v1/DESIGN.md`, `doc/ui/ui-v2/DESIGN.md`, `doc/ui/ui-final/DESIGN.md` (nuevo), `01-memoria-tecnica.md`.
 - **Estado:** aplicado.
 
+### 19/10/2026 — Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa
+
+- **Qué era:**
+  1. Arrastrar una carpeta a la papelera la borraba siempre con todo su contenido, sin preguntar (hueco anotado el 12/10/2026 y en «Pendiente»).
+  2. La vista previa de la terminal en Ajustes seguía en JetBrains Mono, distinta de la fuente real de la terminal (del sistema, decisión del 15/10/2026).
+  3. Los ajustes vivían solo en memoria (`SettingsViewModel`): se perdían al cerrar la app, uno de los tres fallos señalados por el autor tras probar el APK (los otros dos, gesto del drawer y FAB tapado por la barra del sistema, ya se habían corregido antes).
+- **Qué es ahora:**
+  1. Si la carpeta soltada en la papelera tiene macros, se muestra un diálogo «¿Qué hacer con «nombre»?» con tres opciones: mover los macros a Sin grupo, cancelar o borrar carpeta y contenido. Una carpeta vacía se sigue borrando directamente.
+  2. Se quita `fontFamily: 'JetBrainsMono'` de la vista previa; usa la misma fuente por defecto que la terminal real.
+  3. Se añade `shared_preferences` y una `SettingsRepository` (interfaz) con dos implementaciones: `SharedPreferencesSettingsRepository` (real, registrada en `main.dart`) e `InMemorySettingsRepository` (para tests). `SettingsViewModel` carga de forma asíncrona al construirse y guarda tras cada cambio. Mientras carga, la app muestra una pantalla en blanco (placeholder temporal, sin diseñar todavía).
+- **Por qué:** cerraba tres huecos ya documentados como pendientes.
+- **Afecta a:** código: `home_viewmodel.dart`, `home_view.dart`, `folder_trash_dialog.dart` (nuevo), `terminal_preview.dart`, `settings_repository.dart` (nuevo), `data/fake/in_memory_settings_repository.dart` (nuevo), `data/local/shared_preferences_settings_repository.dart` (nuevo), `settings_viewmodel.dart`, `main.dart`, `app.dart`. Documentación: `ui-final/DESIGN.md` (§2, §3, §7, §8, §9), este historial.
+- **Estado:** aplicado en código; pantalla de carga aún placeholder (blanco liso, sin diseño final).
+
 ---
 
 ## Pendiente
@@ -282,7 +297,6 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 
 | Área | Qué falta |
 |---|---|
-| Inicio (UI) | Papelera sobre carpeta: preguntar «mover a Sin grupo» o «borrar» (hoy borra todo el contenido) |
 | Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
 | Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
 | Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
@@ -290,5 +304,5 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
 | Terminal (UI) | Definir qué cuenta como disparador (toque/tecla), el texto del aviso y el indicador de carga; adaptar la pantalla actual, que hoy muestra un prompt simulado desde el arranque |
 | Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar) |
-| Terminal (UI) | La vista previa de la terminal en Ajustes sigue en JetBrains Mono, distinta ya de la fuente real de la terminal (del sistema) |
+| Arranque (UI) | Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso) |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
