@@ -23,8 +23,8 @@ class MetricsView extends StatelessWidget {
     final unit = settings.storageUnit;
     final fahrenheit = settings.tempUnit == TempUnit.fahrenheit;
     final tempNow = history.last.tempC;
-    final hot = settings.tempAlert && tempNow > settings.tempLimit;
-    final tempDisplay = fahrenheit ? tempNow * 9 / 5 + 32 : tempNow;
+    final hot = tempNow != null && settings.tempAlert && tempNow > settings.tempLimit;
+    final tempDisplay = tempNow == null ? null : (fahrenheit ? tempNow * 9 / 5 + 32 : tempNow);
 
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.paddingOf(context).bottom),
@@ -38,27 +38,30 @@ class MetricsView extends StatelessWidget {
           scaleLabel: 'Escala 0–100 %',
         ),
         const SizedBox(height: 16),
-        MetricCard(
-          title: 'Temperatura de CPU',
-          value: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            spacing: 8,
-            children: [
-              if (hot) const _HotBadge(),
-              MetricValue(
-                number: formatNumber(tempDisplay, 0),
-                unit: fahrenheit ? '°F' : '°C',
-                color: hot ? kRed : null,
-              ),
-            ],
+        if (tempDisplay == null)
+          const _UnavailableTempCard()
+        else
+          MetricCard(
+            title: 'Temperatura de CPU',
+            value: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              spacing: 8,
+              children: [
+                if (hot) const _HotBadge(),
+                MetricValue(
+                  number: formatNumber(tempDisplay, 0),
+                  unit: fahrenheit ? '°F' : '°C',
+                  color: hot ? kRed : null,
+                ),
+              ],
+            ),
+            values: [for (final s in history) s.tempC ?? 0],
+            min: 30,
+            max: 100,
+            scaleLabel: fahrenheit ? 'Escala 86–212 °F' : 'Escala 30–100 °C',
           ),
-          values: [for (final s in history) s.tempC],
-          min: 30,
-          max: 100,
-          scaleLabel: fahrenheit ? 'Escala 86–212 °F' : 'Escala 30–100 °C',
-        ),
         const SizedBox(height: 16),
         MetricCard(
           title: 'Uso de RAM',
@@ -80,6 +83,31 @@ class MetricsView extends StatelessWidget {
           onSelect: metrics.selectPartition,
         ),
       ],
+    );
+  }
+}
+
+class _UnavailableTempCard extends StatelessWidget {
+  const _UnavailableTempCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return MetricSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 6,
+        children: [
+          Text(
+            'Temperatura de CPU',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.muted2),
+          ),
+          Text(
+            'No se ha podido mostrar la temperatura',
+            style: TextStyle(fontSize: 13, color: t.muted),
+          ),
+        ],
+      ),
     );
   }
 }

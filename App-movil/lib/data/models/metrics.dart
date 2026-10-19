@@ -2,7 +2,7 @@ class MetricSample {
   const MetricSample({required this.cpu, required this.tempC, required this.ramGb});
 
   final double cpu;
-  final double tempC;
+  final double? tempC;
   final double ramGb;
 }
 
