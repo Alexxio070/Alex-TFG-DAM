@@ -18,5 +18,9 @@ class CompanionApp(App):
         self.push_screen(MainScreen())
 
 
-if __name__ == "__main__":
+def main() -> None:
     CompanionApp().run()
+
+
+if __name__ == "__main__":
+    main()
