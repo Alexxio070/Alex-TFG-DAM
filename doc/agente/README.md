@@ -2,7 +2,7 @@
 
 El **agente** es el programa que corre en el PC Linux del usuario y hace todo el trabajo: abre las terminales, mide el sistema, ejecuta acciones y guarda los datos. La app del móvil es solo el cliente que lo muestra y le manda órdenes.
 
-**Estado:** sin implementar. La carpeta `agent/` del repositorio se crea con el agente (fase 1 del plan). Todo lo que se describe aquí es **diseño**, no comportamiento comprobado.
+**Estado (fase 1 en marcha):** estructura en capas, endpoint `GET /metrics` (psutil) y el esqueleto de la TUI (`companion`, cuatro secciones, la mayoría deshabilitadas) ya están implementados y probados en `agent/` (rama `feature/agent`). El resto — API con autenticación, `schema.sql`, seguridad, instalación — sigue siendo solo **diseño**, sin comportamiento comprobado.
 
 ## Stack (resumen)
 
@@ -41,7 +41,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 
 Cuando haya implementación o decisiones que no quepan en los documentos generales:
 
-- Referencia de la API del agente.
-- Esquema de la base de datos y repositorios.
-- Seguridad: certificados, sesiones y límite de intentos.
-- Instalación, servicio y comprobación de dependencias del sistema.
+- Referencia de la API del agente (de momento solo existe `GET /metrics`, documentada por FastAPI en `/docs`; el resto de rutas son diseño en `03-system-context.md` §5b, sin implementar).
+- Esquema de la base de datos y repositorios (no existe `schema.sql`: las primeras tablas llegan en la fase 3).
+- Seguridad: certificados, sesiones y límite de intentos (sin implementar, fase 3).
+- Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 5).

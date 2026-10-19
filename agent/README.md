@@ -18,7 +18,7 @@ TUI (`companion`, sin empaquetar todavía):
 .venv/bin/python -m companion.tui.app
 ```
 
-Servidor FastAPI (sin rutas todavía: endpoint `/metrics` pendiente):
+Servidor FastAPI (endpoint `GET /metrics`):
 
 ```bash
 .venv/bin/uvicorn companion.main:app --reload --port 8443
@@ -30,6 +30,6 @@ Servidor FastAPI (sin rutas todavía: endpoint `/metrics` pendiente):
 .venv/bin/pytest
 ```
 
-Por ahora solo cubren que la TUI monta y que se puede navegar por sus secciones
-y subpestañas (`tests/test_tui.py`). Faltan los del servicio de métricas, en
-cuanto exista.
+Cubren que la TUI monta y se puede navegar por sus secciones y subpestañas
+(`tests/test_tui.py`), y que `GET /metrics` responde con datos reales
+(`tests/test_metrics.py`).
