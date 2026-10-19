@@ -87,6 +87,12 @@ class MainScreen(Screen):
         background: ansi_blue;
         color: ansi_bright_white;
     }
+
+    Button.-active {
+        background: ansi_blue;
+        border: round ansi_cyan;
+        color: ansi_bright_white;
+    }
     """
 
     def compose(self) -> ComposeResult:
@@ -118,3 +124,5 @@ class MainScreen(Screen):
         if section is None:
             return
         self.query_one("#sections", ContentSwitcher).current = section
+        for button in self.query("#buttons Button"):
+            button.set_class(button is event.button, "-active")
