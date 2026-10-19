@@ -19,7 +19,7 @@ import 'features/metrics/metrics_viewmodel.dart';
 import 'features/notes/notes_viewmodel.dart';
 import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_viewmodel.dart';
-import 'features/terminal/terminal_viewmodel.dart';
+import 'features/terminal/terminal_tabs_viewmodel.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,7 @@ Future<void> main() async {
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => HttpMetricsRepository(savedAddress)),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
-        Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
+        Provider<TerminalRepository Function()>(create: (_) => FakeTerminalRepository.new),
         Provider<SettingsRepository>(create: (_) => settingsRepository),
         ChangeNotifierProvider(
           create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
@@ -54,7 +54,8 @@ Future<void> main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => TerminalViewModel(context.read<TerminalRepository>()),
+          create: (context) =>
+              TerminalTabsViewModel(context.read<TerminalRepository Function()>()),
         ),
       ],
       child: const TfgApp(),

@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 
 import '../settings/settings_viewmodel.dart';
+import 'terminal_tabs_viewmodel.dart';
 import 'terminal_viewmodel.dart';
 import 'widgets/extra_keys_bar.dart';
+import 'widgets/terminal_tabs_bar.dart';
 
 const _background = Color(0xFF0D0F12);
 
@@ -66,26 +68,28 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
   }
 
-  void _trigger(TerminalViewModel vm) {
-    vm.requestSession();
+  void _trigger(TerminalTabsViewModel tabs) {
+    tabs.addTab();
     WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<TerminalViewModel>();
+    final tabs = context.watch<TerminalTabsViewModel>();
     final fontSize = context.select<SettingsViewModel, int>((s) => s.termFont);
     final keyboardOpen = View.of(context).viewInsets.bottom > 0;
-    if (vm.state == TerminalSessionState.empty) {
+    if (tabs.tabs.isEmpty) {
       return ColoredBox(
         color: _background,
-        child: _EmptyState(onTrigger: () => _trigger(vm)),
+        child: _EmptyState(onTrigger: () => _trigger(tabs)),
       );
     }
+    final vm = tabs.active;
     return ColoredBox(
       color: _background,
       child: Column(
         children: [
+          TerminalTabsBar(vm: tabs),
           Expanded(
             child: Stack(
               children: [
@@ -108,6 +112,8 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                   ),
                 ),
                 if (vm.state == TerminalSessionState.creating) const _LoadingOverlay(),
+                if (tabs.showFullToast)
+                  const Align(alignment: Alignment.bottomCenter, child: _FullToast()),
               ],
             ),
           ),
@@ -157,6 +163,38 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.foreground),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FullToast extends StatelessWidget {
+  const _FullToast();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Semantics(
+        liveRegion: true,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF16181D),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(22, 24, 29, 0.25),
+                offset: Offset(0, 8),
+                blurRadius: 24,
+              ),
+            ],
+          ),
+          child: const Text(
+            'No caben más pestañas',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ),
       ),
