@@ -14,7 +14,7 @@ TAB_IDS = {
 class PairingSection(Container):
     """Contenedor con la barra de subpestañas y su propio ContentSwitcher."""
 
-    CSS = """
+    DEFAULT_CSS = """
     PairingSection Horizontal#tabs {
         height: auto;
         margin-bottom: 1;
