@@ -21,6 +21,8 @@ class NoteFormView extends StatefulWidget {
 
 class _NoteFormViewState extends State<NoteFormView> {
   late final _content = TextEditingController(text: widget.note?.content ?? '');
+  bool _saving = false;
+  String? _error;
 
   bool get _editing => widget.note != null;
   bool get _valid => _content.text.trim().isNotEmpty;
@@ -34,8 +36,21 @@ class _NoteFormViewState extends State<NoteFormView> {
   Future<void> _save() async {
     final vm = context.read<NotesViewModel>();
     final navigator = Navigator.of(context);
-    await vm.save(id: widget.note?.id, content: _content.text);
-    navigator.pop();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await vm.save(id: widget.note?.id, content: _content.text);
+      navigator.pop();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = 'No se pudo guardar la nota';
+        });
+      }
+    }
   }
 
   Future<void> _confirmDelete() {
@@ -79,8 +94,12 @@ class _NoteFormViewState extends State<NoteFormView> {
                         fill: kRed,
                         onPressed: () async {
                           Navigator.of(dialogContext).pop();
-                          await vm.delete(id);
-                          navigator.pop();
+                          try {
+                            await vm.delete(id);
+                            navigator.pop();
+                          } catch (_) {
+                            if (mounted) setState(() => _error = 'No se pudo eliminar la nota');
+                          }
                         },
                       ),
                     ),
@@ -134,6 +153,8 @@ class _NoteFormViewState extends State<NoteFormView> {
                       'Si también la editas en el PC, se conserva el último cambio guardado.',
                       style: TextStyle(fontSize: 11, color: t.muted),
                     ),
+                  if (_error != null)
+                    Text(_error!, style: const TextStyle(fontSize: 12, color: kRed)),
                   const SizedBox(height: 4),
                   Row(
                     spacing: 12,
@@ -150,7 +171,7 @@ class _NoteFormViewState extends State<NoteFormView> {
                         child: AppButton(
                           label: 'Guardar',
                           fill: t.accent,
-                          onPressed: _valid ? _save : null,
+                          onPressed: _valid && !_saving ? _save : null,
                         ),
                       ),
                     ],
