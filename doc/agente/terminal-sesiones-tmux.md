@@ -108,7 +108,7 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 - **Historial limitado** por el tamaño del buffer de tmux y por lo que se pida al reenganchar.
 - **Reinicio del agente:** que las sesiones sobrevivan no está garantizado por defecto (ver sección 4).
 - **Dependencia del sistema:** tmux. Ver la evolución a largo plazo (sección 11).
-- **Una ventana del PC por sesión.** Las varias pestañas en la app son una ampliación posterior (sección 10).
+- **Una ventana del PC por sesión.** Con varias pestañas en la app (sección 10, ya implementadas en la app), cada una tiene su propia ventana.
 
 ## 9. Pendientes
 
@@ -128,11 +128,13 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 - **Texto exacto del mensaje genérico** y del aviso de que se abrirá una ventana en el PC.
 - **Indicador de carga** mientras se crea la sesión (spinner, mensaje «Abriendo terminal…») y cuánto tiempo se guardan las teclas si la creación tarda más de lo normal o falla.
 
-### Ampliación posible
-
-- **Varias pestañas** en la app (sección 10). Se haría si una sola sesión funciona bien y sin fallos.
-
 ## 10. Varias terminales: pestañas en la app
+
+**Estado (19/10/2026): implementado en la app.** Diseño final en
+`doc/ui/ui-final/DESIGN.md` §5. Lo que sigue en esta sección es el diseño
+previo a esa implementación; se conserva como referencia del lado del
+agente (la API ya lo soportaba sin cambios, ver "Lo que no cambia en el
+diseño" más abajo).
 
 **La idea:** en la app se pueden abrir varias terminales a la vez, **como las pestañas de un navegador**. Cada pestaña es una terminal independiente, con sus propios comandos en ejecución.
 
@@ -157,22 +159,14 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 
 ### Pendiente de definir
 
-| Tema | Opciones o dudas |
-|---|---|
-| Título de cada pestaña | El comando inicial, el directorio actual o el proceso en primer plano; si se puede renombrar |
-| Identificar cada ventana del PC | Título de la ventana con el nombre o el identificador de la pestaña |
-| Cerrar con un comando en marcha | Pedir confirmación si hay un proceso en primer plano (detección por verificar) |
-| Mínimo de pestañas | **Decidido:** no hay pestaña principal; se pueden cerrar todas y se vuelve a la terminal vacía (ver sección 4) |
-| Límite de pestañas | Número máximo y qué hacer al alcanzarlo |
-| Sesiones creadas desde el PC | No contempladas: de momento solo se crean desde la app |
-| Indicador de actividad | Punto en la pestaña si llega salida estando en segundo plano (mejora posterior) |
-| Recordar la pestaña activa | Preferencia local del móvil |
-| Qué devuelve `GET /terminales` | Solo las sesiones de **esta app** que seguían abiertas al cerrarla, no cualquier sesión de tmux que exista en el PC (ver sección 4) |
-| Cambios en la API | Si hace falta `PATCH /terminales/{id}` para renombrar y que `GET` devuelva título y orden |
+**Resuelto (19/10/2026):** todas las dudas de esta tabla quedaron cerradas al
+implementar las pestañas en la app. Los valores concretos (título de pestaña,
+límite, indicador de actividad, etc.) están en `doc/ui/ui-final/DESIGN.md`
+§5, no se repiten aquí.
 
 ### Impacto en la app y en la interfaz
-- `TerminalRepository` ganaría: listar sesiones, crear y cerrar. `TerminalViewModel` mantendría una lista de pestañas, cada una con su propio `Terminal`.
-- **La interfaz de la barra de pestañas no está especificada** y habría que diseñarla en `doc/ui/` antes de implementarla.
+- `TerminalRepository` gana: listar sesiones, crear y cerrar. `TerminalViewModel` mantiene una lista de pestañas, cada una con su propio `Terminal`.
+- Interfaz de la barra de pestañas especificada e implementada: ver `doc/ui/ui-final/DESIGN.md` §5.
 
 ## 11. Evolución a muy largo plazo: cliente propio, sin tmux
 
