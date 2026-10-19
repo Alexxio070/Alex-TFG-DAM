@@ -1,5 +1,3 @@
-"""Ruta GET /metrics."""
-
 from fastapi import APIRouter
 
 from companion.models.metrics import Metrics

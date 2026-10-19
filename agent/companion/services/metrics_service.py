@@ -1,5 +1,3 @@
-"""Compone la respuesta de métricas a partir del repositorio."""
-
 from companion.models.metrics import Metrics
 from companion.repositories import metrics_repository
 

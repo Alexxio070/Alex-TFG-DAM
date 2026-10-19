@@ -6,8 +6,6 @@ from companion.tui.screens.main_screen import MainScreen
 
 
 class CompanionApp(App):
-    """Punto de entrada: arranca con la pantalla principal."""
-
     TITLE = "Linux System Companion"
 
     def __init__(self) -> None:

@@ -1,5 +1,3 @@
-"""Lee las métricas del sistema con psutil."""
-
 import psutil
 
 from companion.models.metrics import Partition
