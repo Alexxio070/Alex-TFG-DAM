@@ -28,6 +28,10 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/10/2026 | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
 | 12/10/2026 | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
 | 14/10/2026 | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
+| 15/10/2026 | Inicio: validación de nombre de macro y selector de icono | Aplicado en código |
+| 15/10/2026 | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
+| 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
+| 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
 
 ---
 
@@ -257,6 +261,19 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `doc/agente/DESIGN.md` (nuevo), `doc/agente/README.md` (índice).
 - **Estado:** aplicado.
 
+### 15/10/2026 — Inicio, tema y terminal: cinco pendientes resueltos; `ui-final/DESIGN.md` como referencia única
+
+- **Qué se hizo:**
+  1. **Validar nombre de macro:** obligatorio, máximo 50 caracteres, sin repetirse (sin distinguir mayúsculas) con otra macro o carpeta del nivel superior de la cuadrícula. Mensaje de error bajo el campo del diálogo «Nueva macro».
+  2. **Selector de icono de macro:** fila de 4 opciones (volumen, candado, luna, rayo) en el mismo diálogo; por defecto, rayo.
+  3. **Contraste del acento en tema oscuro:** se calculó el contraste real (fórmula WCAG) de los 6 colores contra el fondo oscuro `#111316`; todos estaban entre 1,96 y 3,59. Se aclaró la luminosidad de cada uno (mismo tono y saturación) hasta un contraste de ~4,5:1; nueva tabla `kAccentColorsDark` en `app_tokens.dart`, aplicada solo en tema oscuro.
+  4. **Terminal, fuente del sistema:** se quita `fontFamily: 'JetBrainsMono'` de `TerminalStyle`; sin ese parámetro, `xterm.dart` usa su valor por defecto, `'monospace'`, que en Android resuelve a la fuente del dispositivo (verificado en el código fuente del paquete). Se descarta también la Nerd Font. **Conflicto documentado:** la ventana del PC y la app mostrarán la misma sesión, pero no el mismo aspecto, ya que cada lado usa su propia fuente.
+  5. **Parpadeo del cursor:** se descarta implementarlo; no compensa el esfuerzo de montarlo por fuera de `xterm.dart`.
+  6. **`doc/ui/ui-final/DESIGN.md`** (nuevo): referencia única y actualizada de las 6 pantallas, escrita leyendo el código real, no copiando `ui-v1`/`ui-v2`. Esos dos documentos pasan a histórico, con un aviso al principio que remite a `ui-final`.
+- **Por qué:** los puntos 1–5 cerraban huecos ya anotados en «Pendiente» (más abajo); el 6 evita que la documentación de interfaz quede repartida entre tres versiones sin un único sitio fiable.
+- **Afecta a:** `new_macro_dialog.dart`, `home_viewmodel.dart`, `app_tokens.dart`, `app_theme.dart`, `terminal_view.dart`; `doc/ui/XTERM_DART.md`, `doc/ui/ui-v1/DESIGN.md`, `doc/ui/ui-v2/DESIGN.md`, `doc/ui/ui-final/DESIGN.md` (nuevo), `01-memoria-tecnica.md`.
+- **Estado:** aplicado.
+
 ---
 
 ## Pendiente
@@ -266,15 +283,12 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Área | Qué falta |
 |---|---|
 | Inicio (UI) | Papelera sobre carpeta: preguntar «mover a Sin grupo» o «borrar» (hoy borra todo el contenido) |
-| Inicio (UI) | Validar nombre de macro (1–50 caracteres) y nombres únicos dentro de la carpeta |
-| Inicio (UI) | Selector de icono para las macros (hoy siempre `bolt`) |
 | Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
-| Terminal | Nerd Font (fase 4) y parpadeo del cursor si se quiere (limitación de `xterm.dart` 4.0.0) |
 | Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
 | Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
 | Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
 | Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
 | Terminal (UI) | Definir qué cuenta como disparador (toque/tecla), el texto del aviso y el indicador de carga; adaptar la pantalla actual, que hoy muestra un prompt simulado desde el arranque |
 | Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar) |
-| Tema oscuro | El acento por defecto tiene poco contraste sobre fondo oscuro; valorar un tono más claro en oscuro |
+| Terminal (UI) | La vista previa de la terminal en Ajustes sigue en JetBrains Mono, distinta ya de la fuente real de la terminal (del sistema) |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |

@@ -58,7 +58,7 @@ TerminalView(
   focusNode: _focus,
   theme: _theme,                         // fondo #0D0F12, texto #E6E8EB, ANSI
   deleteDetection: true,                 // borrar con el teclado de Android
-  textStyle: TerminalStyle(fontSize: 13, height: 1.5, fontFamily: 'JetBrainsMono'),
+  textStyle: TerminalStyle(fontSize: 13, height: 1.5), // fontFamily por defecto: 'monospace'
 )
 ```
 
@@ -75,8 +75,9 @@ CTRL y ALT pegajosos: el `ViewModel` intercepta el siguiente carácter en `onOut
 
 ## Límites y pendientes
 
-- El cursor **no parpadea** en esta versión.
-- La memoria técnica pide una **Nerd Font** para los iconos de prompts como Starship; hoy se usa JetBrains Mono, que no lo es.
+- El cursor **no parpadea** en esta versión. Decisión del 15/10/2026: se descarta implementarlo; no compensa el esfuerzo de montar un parpadeo por fuera del paquete.
+- **Fuente de la terminal: la del sistema, no una empaquetada (decisión del 15/10/2026).** No se pasa `fontFamily`, así que `xterm.dart` usa su valor por defecto, `'monospace'`, que en Android resuelve a la fuente monoespaciada del propio dispositivo (verificado en el código fuente del paquete, `lib/src/ui/terminal_text_style.dart`). Se descarta tanto JetBrains Mono como una Nerd Font.
+  - **Conflicto con el espejo de la sesión:** el diseño de la terminal (`../agente/terminal-sesiones-tmux.md`) hace que la app y la ventana del PC muestren la misma sesión de tmux. El *contenido* es idéntico, pero el *aspecto* ya no: la ventana del PC usa la fuente que tenga configurada el usuario ahí (posiblemente una Nerd Font, con los iconos de prompts como Starship), y la app usa la fuente del sistema Android, que normalmente no es una Nerd Font. Los iconos de prompt que se vean bien en el PC pueden salir como cuadros en la app. Es una discrepancia visual aceptada, no un error.
 - `onResize` aún no se envía al agente (se conectará con el PTY real).
 - Al volver a abrir la app, la salida acumulada en la sesión del agente debe recuperarse y escribirse en el `Terminal`; pendiente con las sesiones persistentes (`../agente/terminal-sesiones-tmux.md`).
 - Es una dependencia de terceros. Estado consultado el 12/10/2026: la 4.0.0 (27/02/2024) es la última versión en pub.dev y el paquete no está marcado como discontinuado; requiere Flutter ≥ 3.19. El repositorio no está archivado y su último push es del 19/06/2025.

@@ -70,7 +70,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - La app muestra la terminal con **xterm.dart**, que interpreta las secuencias ANSI, incluido color de 24 bits (True Color).
 - Barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`).
 - **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY, sin código específico. **La shell probada oficialmente es Zsh.**
-- **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. La app incluirá una Nerd Font (fase 4) para que los iconos de prompts como Starship se vean bien.
+- **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. **Decisión del 15/10/2026:** se descarta la Nerd Font; la app usa la fuente monoespaciada del propio sistema Android. Los iconos de prompts como Starship pueden no verse bien en la app aunque se vean bien en la ventana del PC (ver `../ui/XTERM_DART.md`).
 - Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
 
 ### Módulo B — Monitorización del sistema

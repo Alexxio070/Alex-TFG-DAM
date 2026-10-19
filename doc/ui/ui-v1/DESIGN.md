@@ -1,5 +1,7 @@
 # Especificación de UI v1 — App Android (Flutter)
 
+> **Histórico.** Sustituido por [`../ui-final/DESIGN.md`](../ui-final/DESIGN.md), la referencia actual de toda la interfaz. Se conserva como registro de cómo se llegó hasta allí.
+>
 > **Estado: v1 (prototipo inicial). La pantalla de Notas de esta versión (§6) queda DESCARTADA** y la sustituye la definitiva de [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md).
 > El resto de secciones (drawer, tema, Inicio, Métricas, Terminal y Ajustes) siguen vigentes como referencia visual y de comportamiento. La pantalla «Opciones» de este documento se llama ahora **«Ajustes»**. Esta carpeta se conserva como histórico de diseño.
 
