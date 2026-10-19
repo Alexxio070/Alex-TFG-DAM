@@ -104,7 +104,10 @@ class _AreaChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(_AreaChartPainter old) =>
       old.values != values ||
+      old.min != min ||
+      old.max != max ||
       old.lineColor != lineColor ||
+      old.fillColor != fillColor ||
       old.gridColor != gridColor ||
       old.baseColor != baseColor;
 }
