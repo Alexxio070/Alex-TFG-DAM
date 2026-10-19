@@ -18,6 +18,18 @@ const kAccentNames = [
   'Grafito',
 ];
 
+// Misma versión de cada color de kAccentColors, aclarada en luminosidad hasta
+// alcanzar un contraste de ~4,5:1 contra el fondo oscuro (#111316), calculado
+// con la fórmula de contraste WCAG. Solo se usan en tema oscuro.
+const kAccentColorsDark = [
+  Color(0xFF148C81),
+  Color(0xFF6675D8),
+  Color(0xFFDA437D),
+  Color(0xFFDE4A0E),
+  Color(0xFF9462E3),
+  Color(0xFF717E92),
+];
+
 const kRed = Color(0xFFB42318);
 const kGreen = Color(0xFF1F9D55);
 
