@@ -86,6 +86,7 @@ class TerminalViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _state = TerminalSessionState.empty;
     _outputSubscription?.cancel();
     _endedSubscription.cancel();
     super.dispose();
