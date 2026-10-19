@@ -103,6 +103,17 @@ class HomeViewModel extends ChangeNotifier {
     _commit(_items.where((i) => i.id != id).toList());
   }
 
+  void ungroupFolder(String id) {
+    final items = List.of(_items);
+    final index = items.indexWhere((i) => i.id == id);
+    if (index < 0) return;
+    final item = items[index];
+    if (item is! Folder) return;
+    items.removeAt(index);
+    items.insertAll(index, item.children);
+    _commit(items);
+  }
+
   void updateFolder(String id, {required String name, required Color color}) {
     final label = name.trim().isEmpty ? 'Carpeta' : name.trim();
     _commit([

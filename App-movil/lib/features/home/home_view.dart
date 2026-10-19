@@ -8,12 +8,27 @@ import 'home_viewmodel.dart';
 import 'run_macro.dart';
 import 'widgets/folder_dialog.dart';
 import 'widgets/folder_edit_sheet.dart';
+import 'widgets/folder_trash_dialog.dart';
 import 'widgets/macro_grid.dart';
 import 'widgets/new_macro_dialog.dart';
 import 'widgets/run_toast.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
+
+  void _handleDelete(BuildContext context, HomeViewModel vm, String id) {
+    final item = vm.items.where((i) => i.id == id).firstOrNull;
+    if (item is Folder && item.children.isNotEmpty) {
+      showFolderTrashDialog(
+        context,
+        folder: item,
+        onUngroup: () => vm.ungroupFolder(id),
+        onDelete: () => vm.deleteItem(id),
+      );
+    } else {
+      vm.deleteItem(id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +47,7 @@ class HomeView extends StatelessWidget {
             onEditFolder: (folder) => showFolderEditSheet(context, folder),
             onMove: vm.moveItem,
             onMerge: vm.mergeInto,
-            onDelete: vm.deleteItem,
+            onDelete: (id) => _handleDelete(context, vm, id),
             onDraggingChanged: vm.setDragging,
           ),
         ),
