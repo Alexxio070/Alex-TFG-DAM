@@ -14,7 +14,7 @@ TAB_IDS = {
 class PairingSection(Container):
     """Contenedor con la barra de subpestañas y su propio ContentSwitcher."""
 
-    CSS = """
+    DEFAULT_CSS = """
     PairingSection Horizontal#tabs {
         height: auto;
         margin-bottom: 1;
@@ -24,6 +24,12 @@ class PairingSection(Container):
         width: auto;
         min-width: 14;
         margin-right: 1;
+    }
+
+    PairingSection Button.-selected {
+        background: ansi_blue;
+        border: round ansi_cyan;
+        color: ansi_bright_white;
     }
     """
 
@@ -38,11 +44,16 @@ class PairingSection(Container):
             yield SecurityTab(id="security")
             yield ServiceTab(id="service")
 
+    def on_mount(self) -> None:
+        self.query_one("#tab-device", Button).set_class(True, "-selected")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         tab = TAB_IDS.get(event.button.id)
         if tab is None:
             return
         self.query_one("#pairing-tabs", ContentSwitcher).current = tab
+        for button in self.query("#tabs Button"):
+            button.set_class(button is event.button, "-selected")
 
 
 class DeviceTab(Vertical):

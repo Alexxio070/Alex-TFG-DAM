@@ -28,8 +28,8 @@ en `../documentos-generales-del-proyecto/01-memoria-tecnica.md` (§6) y `03-syst
 Tres subpestañas propias, que cambian el contenido del mismo marco sin volver al menú principal:
 
 #### Dispositivo
-- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`).
-  Si `qrcode` no está instalada, muestra el texto del emparejamiento.
+- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`,
+  dependencia obligatoria del agente).
 - Derecha: nombre del dispositivo, fecha y hora de conexión, estado de conexión — datos de `sesion`.
 - Debajo de los datos del dispositivo: botón rojo **Desemparejar**.
   Está desactivado si no hay ningún dispositivo emparejado.
@@ -104,7 +104,7 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 ## Pendiente (marcado con TODO en el código)
 
-- Desemparejar, Exportar datos y Exportar estructura: solo muestran un aviso hasta sus fases.
+- Desemparejar, Exportar datos y Exportar estructura: deshabilitados hasta sus fases.
 - Dispositivo emparejado y código QR: sin datos hasta la fase 9 (registro/emparejamiento real).
 - Seguridad y Servicio: deshabilitados hasta las fases 3 y 5.
 - Historial y Base de datos: vacíos hasta que existan acciones rápidas (fase 7) o comandos de

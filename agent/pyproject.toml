@@ -4,15 +4,19 @@ version = "0.1.0"
 description = "Agente Python del Linux System Companion: API del PC y TUI companion"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi",
-    "uvicorn",
-    "psutil",
-    "textual",
-    "qrcode",
+    "fastapi>=0.146",
+    "uvicorn>=0.54",
+    "psutil>=7.2",
+    "textual>=8.2",
+    "pydantic>=2.14",
+    "qrcode>=8.2",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "httpx"]
+dev = ["pytest>=9.1", "pytest-asyncio>=1.4", "httpx2>=2.14"]
+
+[project.scripts]
+companion = "companion.tui.app:main"
 
 [build-system]
 requires = ["setuptools>=68"]

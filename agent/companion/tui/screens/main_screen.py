@@ -87,6 +87,12 @@ class MainScreen(Screen):
         background: ansi_blue;
         color: ansi_bright_white;
     }
+
+    Button.-selected {
+        background: ansi_blue;
+        border: round ansi_cyan;
+        color: ansi_bright_white;
+    }
     """
 
     def compose(self) -> ComposeResult:
@@ -95,8 +101,6 @@ class MainScreen(Screen):
 
         with Container(id="data"):
             with ContentSwitcher(id="sections"):
-                with Container(id="home", classes="section"):
-                    pass  # Vacío por defecto: se muestra al pulsar un botón.
                 yield PairingSection(id="pairing", classes="section")
                 yield HistorySection(id="history", classes="section")
                 yield DatabaseSection(id="database", classes="section")
@@ -118,3 +122,5 @@ class MainScreen(Screen):
         if section is None:
             return
         self.query_one("#sections", ContentSwitcher).current = section
+        for button in self.query("#buttons Button"):
+            button.set_class(button is event.button, "-selected")

@@ -1,8 +1,8 @@
-"""Lee las métricas del sistema con psutil."""
-
 import psutil
 
-GB = 1024**3
+from companion.models.metrics import Partition
+
+GB = 1000**3
 
 # Nombres de sensor habituales para la temperatura de CPU, por fabricante.
 CPU_TEMP_SENSORS = ("k10temp", "coretemp", "cpu_thermal", "zenpower")
@@ -26,22 +26,35 @@ def read_ram_gb() -> tuple[float, float]:
     return mem.used / GB, mem.total / GB
 
 
-def read_partitions() -> list[dict]:
+def read_partitions() -> list[Partition]:
     partitions = []
     for part in psutil.disk_partitions():
         if not part.device.startswith("/dev/"):
-            continue  # descarta tmpfs, overlay, snap y similares
+            continue  # descarta tmpfs, overlay y similares
+        if part.fstype == "squashfs" or part.device.startswith("/dev/loop"):
+            continue  # descarta los paquetes snap
         try:
             usage = psutil.disk_usage(part.mountpoint)
         except OSError:
             continue  # montaje sin permiso de lectura o no disponible
         partitions.append(
-            {
-                "id": part.mountpoint,
-                "mount": part.mountpoint,
-                "device": part.device,
-                "used_gb": usage.used / GB,
-                "total_gb": usage.total / GB,
-            }
+            Partition(
+                id=part.mountpoint,
+                mount=part.mountpoint,
+                device=part.device,
+                used_gb=usage.used / GB,
+                total_gb=usage.total / GB,
+            )
         )
-    return partitions
+    return _dedupe_by_device(partitions)
+
+
+def _dedupe_by_device(partitions: list[Partition]) -> list[Partition]:
+    """El mismo dispositivo puede montarse en varios puntos (p. ej. subvolúmenes
+    btrfs): se queda uno por dispositivo, el del punto de montaje más corto."""
+    shortest: dict[str, Partition] = {}
+    for partition in partitions:
+        current = shortest.get(partition.device)
+        if current is None or len(partition.mount) < len(current.mount):
+            shortest[partition.device] = partition
+    return list(shortest.values())
