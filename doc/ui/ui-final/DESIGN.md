@@ -78,11 +78,13 @@ Antes de este ajuste, el contraste del acento en oscuro rondaba 2:1–3:1 (hasta
 Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) con 4 tarjetas, separadas 16 dp:
 
 1. **Uso de CPU** — 0–100 %.
-2. **Temperatura de CPU** — escala 30–100 °C u 86–212 °F según el ajuste; si la alerta está activa y se supera el límite, valor en rojo (`kRed`) con la etiqueta «Alta».
+2. **Temperatura de CPU** — escala 30–100 °C u 86–212 °F según el ajuste; si la alerta está activa y se supera el límite, valor en rojo (`kRed`) con la etiqueta «Alta». **Si el agente no encuentra sensor** (`cpu_temp_c: null`), la tarjeta se sustituye por un aviso: «No se ha podido mostrar la temperatura».
 3. **Uso de RAM** — «usado / total», en GB o GiB según el ajuste.
 4. **Uso de disco** (`DiskCard`): barra de progreso, usado/libre y %, con chip de partición (mantener pulsado el chip o la tarjeta 1 s —la tarjeta se encoge a 0,97 con borde de acento— abre el menú de particiones, superpuesto con `OverlayPortal`).
 
 **Tarjeta** (`MetricSurface`): radio 20, borde 1 dp `border`, padding 16. El gráfico de área (`AreaChart`) lo dibuja un `CustomPainter` propio: 110 dp de alto, 3 líneas guía al 25/50/75 % y una línea base, sin librería de gráficos. Pie con «Hace 60 s · escala · Ahora». Actualización cada 1 s (`MetricsViewModel.watch()`).
+
+**Datos:** `HttpMetricsRepository` pide `GET http://<dirección>/metrics` al agente (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
 
 ## 5. Terminal
 
@@ -120,9 +122,13 @@ Lista de grupos (`SettingsGroup`, radio 20, cabecera 13 sp `muted`), cada fila c
 | Terminal | Tamaño de fuente | Stepper 10–22, con vista previa (misma fuente que la terminal real) |
 | Apariencia | Tema | Segmentado Claro / Oscuro |
 | Apariencia | Color de acento | Botón que abre una hoja inferior con los 6 colores |
+| Dispositivo | Modo de conexión | Segmentado Local / iroh (`ConnectionFields`) |
+| Dispositivo | Dirección del agente (modo Local) o identificador (modo iroh) | Campo de texto monoespaciado + botón «Guardar»; en Local valida el formato `host:puerto` |
 | Dispositivo | Emparejar / Desemparejar | Botón; desemparejar pide confirmación |
 
 Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppSegmented`, `AppStepper` (botones 44×44).
+
+**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador a mano — sin conexión real todavía (fase 2). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones de disco, sección 4).
 
 **Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla en blanco de carga (placeholder temporal, sin diseño definitivo; ver sección 9).
 
@@ -131,14 +137,15 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 | Repositorio | Implementación `Fake...` |
 |---|---|
 | `MacroRepository` | 4 macros de ejemplo en memoria; `run()` no hace nada |
-| `MetricsRepository` | CPU/RAM aleatorias con variación acotada; temperatura derivada de la CPU; 3 particiones de ejemplo |
 | `TerminalRepository` | Shell simulado con `help`, `ls`, `pwd`, `whoami`, `uname`, `date`, `echo`, `clear`, historial con ↑/↓ y `Ctrl+C`/`Ctrl+L` |
 | `NotesRepository` | 3 notas de ejemplo en memoria |
 | `PairingRepository` | Emparejado por defecto; `pair()`/`unpair()` cambian un `ValueNotifier` local |
 
-Todos se registran en `main.dart`; para conectar el agente real basta con escribir la implementación nueva y cambiarla ahí.
+Todos se registran en `main.dart`; para conectar el agente real basta con escribir la implementación nueva y cambiarla ahí. `FakeMetricsRepository` (CPU/RAM aleatorias, temperatura derivada de la CPU, 3 particiones de ejemplo) sigue existiendo pero ya no se usa en `main.dart`: solo lo ven los tests.
 
-`SettingsRepository` es distinto: ya tiene, además de la de pruebas (`InMemorySettingsRepository`), una implementación real (`SharedPreferencesSettingsRepository`, persistencia local con `shared_preferences`), registrada en `main.dart`. Es el primer repositorio de la app que no es simulado.
+**Repositorios ya no simulados:**
+- `SettingsRepository`: `SharedPreferencesSettingsRepository` (persistencia local con `shared_preferences`), además de `InMemorySettingsRepository` para los tests.
+- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app; `main.dart` lo construye con la dirección ya guardada en Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`), no contra el agente real en marcha ni por USB.
 
 ## 9. Pendientes conocidos
 
@@ -147,3 +154,4 @@ Lista completa y actualizada en [`../../documentos-generales-del-proyecto/08-his
 - Terminal: pestañas para varias sesiones a la vez; falta especificar la barra de pestañas en `doc/ui/` (ver `doc/agente/terminal-sesiones-tmux.md`, §10).
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión.
 - Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso).
+- Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado).

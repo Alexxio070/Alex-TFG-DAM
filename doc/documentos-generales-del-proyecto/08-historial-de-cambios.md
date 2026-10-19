@@ -34,6 +34,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
 | 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
 | 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
+| 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
 
 ---
 
@@ -306,6 +307,20 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `terminal_repository.dart`, `fake_terminal_repository.dart`, `terminal_viewmodel.dart`, `terminal_view.dart`, `test/widget_test.dart`. Documentación: `ui-final/DESIGN.md` (§5, §9), este historial.
 - **Estado:** aplicado en código, sin verificación visual en emulador.
 
+### 19/10/2026 — Métricas: repositorio HTTP real; Ajustes: dirección del agente y modo de conexión
+
+- **Qué era:** la pantalla de Métricas solo leía `FakeMetricsRepository` (datos inventados); no existía ningún sitio en la app para indicar cómo llegar al agente.
+- **Qué es ahora:**
+  1. **`HttpMetricsRepository`** (nuevo, `data/http/`): pide `GET http://<dirección>/metrics` al agente real (ver `feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos `MetricSample`/`MachineInfo`/`Partition` que ya usaba la app. Registrado en `main.dart` en vez de `FakeMetricsRepository` (que se queda solo para los tests, mismo patrón que el resto de repositorios).
+  2. **Particiones:** se leen de nuevo en cada apertura de la app (`loadInfo()`, una vez al arrancar), no en cada segundo junto con las gráficas — decisión tomada porque nadie va a llenar varios GB de disco en los segundos que dura una sesión de la app.
+  3. **Temperatura sin sensor:** `MetricSample.tempC` pasa a ser anulable; si el agente devuelve `cpu_temp_c: null` (sin sensor `k10temp`/`coretemp`/`cpu_thermal`/`zenpower` reconocido), la tarjeta de temperatura se sustituye por un aviso: **"No se ha podido mostrar la temperatura"**.
+  4. **Ajustes → Dispositivo**, encima del botón Emparejar/Desemparejar: selector **Local / iroh** (`AppSegmented`, no un desplegable nativo — la app no usa ninguno en ningún otro sitio) y un campo de texto con botón «Guardar»: en modo Local, la dirección `host:puerto` (por defecto `127.0.0.1:8443`, validada con una expresión regular simple); en modo iroh, el identificador a mano (sin conexión real todavía, solo se guarda para cuando exista el túnel de la fase 2). Ambos valores persisten a la vez en `SettingsRepository`, junto con el modo activo, para no perder el otro al cambiar de uno a otro.
+  5. **`main.dart`** pasa a ser `async`: antes de `runApp`, carga los ajustes guardados para tener ya la dirección real al construir `HttpMetricsRepository`. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones).
+- **Por qué:** es el trabajo de app de la fase 1 (`04-plan-de-fases.md`): repositorio real de métricas, pantalla de dirección del agente y selector local/iroh adelantado para no rehacer esa pantalla en la fase 2.
+- **Sin verificar en esta sesión:** la prueba completa por USB con `adb reverse` (necesita el agente real arrancado y un móvil o emulador conectado) y la TUI del agente (trabajo en curso en `feature/agent`, otra rama).
+- **Afecta a:** `metrics.dart` (modelo), `metrics_view.dart`, `settings_repository.dart`, `settings_viewmodel.dart`, `shared_preferences_settings_repository.dart`, `connection_fields.dart` (nuevo), `http_metrics_repository.dart` (nuevo), `main.dart`, `pubspec.yaml` (dependencia `http`). Documentación: `ui-final/DESIGN.md` (§4, §7, §8, §9), este historial.
+- **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test` y un test de `HttpMetricsRepository` contra un cliente HTTP simulado (`http/testing.dart`); sin verificación en dispositivo real ni contra el agente en marcha.
+
 ---
 
 ## Pendiente
@@ -320,6 +335,7 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
 | Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
 | Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
+| Fase 1 | Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado) |
 | Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
 | Arranque (UI) | Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso) |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
