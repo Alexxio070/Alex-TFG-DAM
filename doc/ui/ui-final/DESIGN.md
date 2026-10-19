@@ -6,7 +6,7 @@
 
 - Cada pantalla se describe tal como está implementada hoy, no como se planeó. Donde el código y un diseño anterior discrepaban, gana el código, y se anota el porqué.
 - **Qué es simulado:** todos los datos vienen de repositorios `Fake...` en memoria (sección 8). El agente Python no existe todavía.
-- El diseño de la terminal del agente (sesiones con tmux, terminal vacía, pestañas) vive en [`../../agente/terminal-sesiones-tmux.md`](../../agente/terminal-sesiones-tmux.md) y **no está implementado en la app**; la sección 5 describe lo que hay hoy.
+- El diseño de la terminal del agente (sesiones con tmux) vive en [`../../agente/terminal-sesiones-tmux.md`](../../agente/terminal-sesiones-tmux.md) y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que no existe todavía); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
 
 ## 1. Estructura general
 
@@ -88,11 +88,24 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 
 ## 5. Terminal
 
-**Estados** (`TerminalSessionState`): `empty` (sin sesión), `creating` (creándose) y `ready` (prompt real). Aplica el diseño de ciclo de vida de `doc/agente/terminal-sesiones-tmux.md` §4 sobre un `FakeTerminalRepository` (maqueta sin agente: no hay ventana del PC ni medidas reales de latencia).
+**Dos niveles de estado.** `TerminalTabsViewModel` gestiona la lista de pestañas (cada una, un `TerminalViewModel` independiente con su propio `Terminal` de `xterm.dart` y su propio `TerminalRepository`); cada `TerminalViewModel` tiene su ciclo de vida (`TerminalSessionState`: `empty`, `creating`, `ready`). Aplica el diseño de `doc/agente/terminal-sesiones-tmux.md` §4 y §10 sobre un `FakeTerminalRepository` por pestaña (maqueta sin agente: no hay ventana del PC ni medidas reales de latencia).
 
-- **`empty`:** pantalla con el aviso **«Toca para abrir una terminal en tu PC»**, centrado. Dispara la creación de sesión el primer toque sobre esa zona, o la primera tecla que no sea un modificador solo (CTRL, ALT, SHIFT, META).
+**Sin pestañas** (lista vacía): pantalla completa con el aviso **«Toca para abrir una terminal en tu PC»**, centrado, sin barra de pestañas. Dispara la creación de la primera pestaña el primer toque sobre esa zona, o la primera tecla que no sea un modificador solo (CTRL, ALT, SHIFT, META).
+
+**Con una o más pestañas:** barra de pestañas (`TerminalTabsBar`, 44 dp de alto, fondo `#15171A`, borde inferior `#2B2F34`, mismo lenguaje visual que `ExtraKeysBar`) encima de la terminal activa:
+- Cada pestaña es un chip con su título y un icono «×» para cerrarla; la activa se resalta con fondo `#0D0F12`.
+- **Título:** «Terminal 1», «Terminal 2»… (numeración secuencial, no reutilizada, no renombrable en esta versión — no hay nada de qué deducir un nombre, porque una pestaña nueva no empieza con ningún comando).
+- Botón **«+»** al final de la barra: crea una pestaña nueva y **la deja creándose de inmediato** (sin pasar por su propio aviso «Toca para…»: pulsar «+» ya es la acción explícita de abrir una terminal).
+- **Cerrar una pestaña (×) pide confirmación** («¿Cerrar esta pestaña?» / Cancelar / Cerrar) — se cierra igual tanto si hay algo en marcha como si no, porque la maqueta no puede saber si hay un proceso en primer plano (es del agente, «por verificar» en `terminal-sesiones-tmux.md`).
+- **Escribir `exit` o Ctrl+D con la línea vacía cierra esa pestaña sola, sin confirmación** (ya es una acción explícita del usuario, a diferencia de tocar «×»).
+- **Límite: 6 pestañas.** Al llegar al límite, «+» muestra el aviso «No caben más pestañas» (1,6 s), igual que el límite de macros en Inicio.
+- Cerrar la última pestaña (por «×» o por `exit`) vuelve a la pantalla sin pestañas.
+- **Cambiar de pestaña no corta nada:** todas las pestañas siguen su curso (en la maqueta, su shell simulado) estén o no en pantalla; no hay indicador de actividad en segundo plano en esta versión.
+- **No se restaura ninguna pestaña al reabrir la app** (es una maqueta: ninguna sesión sobrevive a cerrarla).
+
+**Dentro de cada pestaña** (`creating`/`ready`):
 - **`creating`:** la terminal real ya está montada y enfocada por debajo (para no perder lo que se teclee con un teclado físico, que se guarda en cola y se envía en orden al quedar lista), pero se superpone un indicador con el texto **«Abriendo terminal…»**. En la maqueta, el retraso es un `Future.delayed` fijo de 600 ms.
-- **`ready`:** `xterm.dart` (`TerminalView`) sobre el `Terminal` del `TerminalViewModel`, con el shell simulado del repositorio. Escribir `exit` o Ctrl+D con la línea vacía cierra la sesión (vuelve a `empty`, con una `Terminal` nueva).
+- **`ready`:** `xterm.dart` (`TerminalView`) sobre el `Terminal` del `TerminalViewModel`, con el shell simulado del repositorio de esa pestaña.
 - **Fuente: la del sistema** (decisión del 15/10/2026). No se pasa `fontFamily`, así que se usa el valor por defecto del paquete, `'monospace'`, que en Android resuelve a la fuente del dispositivo. Se descartan tanto JetBrains Mono como una Nerd Font.
   - **Conflicto con el espejo de la sesión** (cuando exista el agente): la ventana del PC y la app mostrarán el mismo contenido, pero no el mismo aspecto — la ventana del PC usa la fuente que tenga el usuario ahí (posiblemente una Nerd Font, con iconos de prompts como Starship), y la app la fuente del sistema Android. Discrepancia visual aceptada, documentada en `../XTERM_DART.md`.
 - **Cursor sin parpadeo** (decisión del 15/10/2026: se descarta implementarlo).
@@ -130,7 +143,7 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 
 **Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador a mano — sin conexión real todavía (fase 2). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones de disco, sección 4).
 
-**Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla en blanco de carga (placeholder temporal, sin diseño definitivo; ver sección 9).
+**Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Linux System Companion» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
 
 ## 8. Qué es simulado
 
@@ -151,7 +164,5 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 Lista completa y actualizada en [`../../documentos-generales-del-proyecto/08-historial-de-cambios.md`](../../documentos-generales-del-proyecto/08-historial-de-cambios.md), sección «Pendiente». Los más relevantes para esta interfaz:
 
-- Terminal: pestañas para varias sesiones a la vez; falta especificar la barra de pestañas en `doc/ui/` (ver `doc/agente/terminal-sesiones-tmux.md`, §10).
-- Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión.
-- Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso).
+- Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).
 - Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado).

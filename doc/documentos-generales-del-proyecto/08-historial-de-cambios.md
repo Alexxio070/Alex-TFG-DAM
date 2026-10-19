@@ -35,6 +35,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
 | 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
 | 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
+| 19/10/2026 | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
 
 ---
 
@@ -321,6 +322,18 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `metrics.dart` (modelo), `metrics_view.dart`, `settings_repository.dart`, `settings_viewmodel.dart`, `shared_preferences_settings_repository.dart`, `connection_fields.dart` (nuevo), `http_metrics_repository.dart` (nuevo), `main.dart`, `pubspec.yaml` (dependencia `http`). Documentación: `ui-final/DESIGN.md` (§4, §7, §8, §9), este historial.
 - **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test` y un test de `HttpMetricsRepository` contra un cliente HTTP simulado (`http/testing.dart`); sin verificación en dispositivo real ni contra el agente en marcha.
 
+### 19/10/2026 — Terminal: pestañas; Arranque: pantalla de carga con spinner y texto
+
+- **Qué era:** la pantalla de Terminal solo admitía una sesión; cerrar la app a segundo plano y el arranque mostraban una pantalla en blanco liso (placeholder temporal).
+- **Qué es ahora:**
+  1. **Pestañas de Terminal**, aplicando `terminal-sesiones-tmux.md` §10 con las preguntas abiertas del documento resueltas así: título «Terminal N» sin renombrar, sin confirmación al tocar «+» (es una acción explícita), **confirmación obligatoria al cerrar una pestaña con «×»** (decisión de alex, igual se sepa o no si hay algo en marcha, porque la maqueta no puede saberlo), límite de 6 con el mismo aviso de "no caben más" que usa Inicio, sin indicador de actividad ni recordar la pestaña activa (quedan fuera de esta versión), sin restaurar pestañas al reabrir la app (ninguna sesión sobrevive a cerrarla en la maqueta).
+  2. `TerminalTabsViewModel` (nuevo) gestiona la lista de pestañas, cada una un `TerminalViewModel` con su propio `Terminal` y su propio `TerminalRepository` (ahora se inyecta una fábrica, `TerminalRepository Function()`, en vez de una instancia compartida). Escribir `exit`/Ctrl+D en una pestaña la cierra sola, sin el diálogo de confirmación (acción ya explícita).
+  3. Pantalla de carga del arranque: `CircularProgressIndicator` (color de acento) + «Linux System Companion», sobre el fondo del tema, en vez del blanco liso. Sin logo: el proyecto no tiene ningún asset de imagen declarado.
+- **Por qué:** cerraba los dos últimos pendientes de interfaz del plan original (pestañas de Terminal y diseño del placeholder de arranque); las respuestas a las preguntas abiertas de pestañas las dio alex directamente.
+- **Sin verificar en esta sesión:** no se pudo probar visualmente en el emulador (acceso denegado al pedir el permiso de pantalla).
+- **Afecta a:** `terminal_repository.dart`, `fake_terminal_repository.dart` (sin cambios de contrato, solo de quién la instancia), `terminal_tabs_viewmodel.dart` (nuevo), `terminal_viewmodel.dart`, `terminal_view.dart`, `terminal_tabs_bar.dart` (nuevo), `close_tab_dialog.dart` (nuevo), `main.dart`, `app.dart`, `test/widget_test.dart`. Documentación: `ui-final/DESIGN.md` (§5, §7, §9), este historial.
+- **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test`; sin verificación visual.
+
 ---
 
 ## Pendiente
@@ -333,9 +346,7 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
 | Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
 | Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
-| Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
 | Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
 | Fase 1 | Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado) |
 | Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
-| Arranque (UI) | Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso) |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
