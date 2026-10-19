@@ -15,7 +15,15 @@ class TfgApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Linux System Companion',
       theme: buildTheme(dark: settings.dark, accent: settings.accent),
-      home: const ShellView(),
+      home: settings.ready ? const ShellView() : const _LoadingPlaceholder(),
     );
   }
+}
+
+// Placeholder mientras se cargan los ajustes guardados. Por definir más adelante.
+class _LoadingPlaceholder extends StatelessWidget {
+  const _LoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: Colors.white);
 }

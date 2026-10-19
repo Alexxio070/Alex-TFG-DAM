@@ -7,10 +7,12 @@ import 'data/fake/fake_metrics_repository.dart';
 import 'data/fake/fake_notes_repository.dart';
 import 'data/fake/fake_pairing_repository.dart';
 import 'data/fake/fake_terminal_repository.dart';
+import 'data/local/shared_preferences_settings_repository.dart';
 import 'data/repositories/macro_repository.dart';
 import 'data/repositories/metrics_repository.dart';
 import 'data/repositories/notes_repository.dart';
 import 'data/repositories/pairing_repository.dart';
+import 'data/repositories/settings_repository.dart';
 import 'data/repositories/terminal_repository.dart';
 import 'features/home/home_viewmodel.dart';
 import 'features/metrics/metrics_viewmodel.dart';
@@ -28,7 +30,10 @@ void main() {
         Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
-        ChangeNotifierProvider(create: (_) => SettingsViewModel()),
+        Provider<SettingsRepository>(create: (_) => SharedPreferencesSettingsRepository()),
+        ChangeNotifierProvider(
+          create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
+        ),
         ChangeNotifierProvider(
           create: (context) => ShellViewModel(context.read<PairingRepository>()),
         ),

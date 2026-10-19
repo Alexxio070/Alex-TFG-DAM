@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../data/repositories/settings_repository.dart';
 
 enum TempUnit { celsius, fahrenheit }
 
@@ -14,6 +15,13 @@ enum StorageUnit {
 }
 
 class SettingsViewModel extends ChangeNotifier {
+  SettingsViewModel(this._repository) {
+    _load();
+  }
+
+  final SettingsRepository _repository;
+
+  bool _ready = false;
   bool _dark = false;
   Color _accent = kAccentColors.first;
   TempUnit _tempUnit = TempUnit.celsius;
@@ -22,6 +30,7 @@ class SettingsViewModel extends ChangeNotifier {
   int _tempLimit = 85;
   int _termFont = 13;
 
+  bool get ready => _ready;
   bool get dark => _dark;
   Color get accent => _accent;
   TempUnit get tempUnit => _tempUnit;
@@ -29,6 +38,21 @@ class SettingsViewModel extends ChangeNotifier {
   bool get tempAlert => _tempAlert;
   int get tempLimit => _tempLimit;
   int get termFont => _termFont;
+
+  Future<void> _load() async {
+    final saved = await _repository.load();
+    if (saved != null) {
+      _dark = saved.dark;
+      _accent = saved.accent;
+      _tempUnit = saved.tempUnit;
+      _storageUnit = saved.storageUnit;
+      _tempAlert = saved.tempAlert;
+      _tempLimit = saved.tempLimit;
+      _termFont = saved.termFont;
+    }
+    _ready = true;
+    notifyListeners();
+  }
 
   void setDark(bool value) => _update(() => _dark = value);
   void setAccent(Color value) => _update(() => _accent = value);
@@ -41,5 +65,16 @@ class SettingsViewModel extends ChangeNotifier {
   void _update(VoidCallback change) {
     change();
     notifyListeners();
+    _repository.save(
+      SettingsData(
+        dark: _dark,
+        accent: _accent,
+        tempUnit: _tempUnit,
+        storageUnit: _storageUnit,
+        tempAlert: _tempAlert,
+        tempLimit: _tempLimit,
+        termFont: _termFont,
+      ),
+    );
   }
 }
