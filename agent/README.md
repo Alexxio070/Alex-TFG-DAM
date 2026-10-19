@@ -12,10 +12,10 @@ python3 -m venv .venv
 
 ## Arrancar a mano
 
-TUI (`companion`, sin empaquetar todavía):
+TUI:
 
 ```bash
-.venv/bin/python -m companion.tui.app
+.venv/bin/companion
 ```
 
 Servidor FastAPI (endpoint `GET /metrics`):
@@ -24,6 +24,12 @@ Servidor FastAPI (endpoint `GET /metrics`):
 .venv/bin/uvicorn companion.main:app --reload --port 8443
 ```
 
+Por defecto escucha solo en `127.0.0.1:8443`. Para probar desde el móvil por
+USB: `adb reverse tcp:8443 tcp:8443` (o usar el emulador, con `10.0.2.2`).
+
+**No usar `--host 0.0.0.0`** todavía: dejaría `/metrics` y `/docs` abiertos a
+toda la red local sin TLS ni login (llegan en la fase 3).
+
 ## Pruebas
 
 ```bash
@@ -31,5 +37,6 @@ Servidor FastAPI (endpoint `GET /metrics`):
 ```
 
 Cubren que la TUI monta y se puede navegar por sus secciones y subpestañas
-(`tests/test_tui.py`), y que `GET /metrics` responde con datos reales
-(`tests/test_metrics.py`).
+(`tests/test_tui.py`), que `GET /metrics` responde con datos reales
+(`tests/test_metrics.py`) y la lógica del repositorio de métricas con psutil
+simulado (`tests/test_metrics_repository.py`).
