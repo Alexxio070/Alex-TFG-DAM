@@ -101,8 +101,9 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Objetivos:**
 - **Agente (se crea en esta fase, carpeta `agent/`):**
   - estructura en capas desde el principio: rutas de la API → servicios → repositorios → modelos;
-  - endpoint REST con CPU (total y por núcleo), RAM, swap, discos, temperaturas, carga y tiempo encendido (psutil);
+  - endpoint REST con CPU total, RAM, discos y temperatura (psutil), que es lo que consume hoy la pantalla de métricas;
   - se arranca a mano (el servicio llega en la fase 5).
+  - **Ampliación opcional** (si da tiempo, no es requisito de la fase): CPU por núcleo, swap, carga del sistema y tiempo encendido en el endpoint y en la pantalla — psutil ya los puede dar, pero ni el modelo de datos de la app ni la interfaz los muestran hoy.
 - **TUI del agente (interfaz definitiva, como se hizo con la app en la fase 0):** con **Textual**, al escribir `companion`. Banner ANSI con el nombre de la app, área de datos (marco redondeado, vacía por defecto) y cuatro botones fijos abajo — **Emparejamiento, Historial, Base de datos, Notas** —, cada uno sustituye el contenido del área de datos al pulsarlo; botón activo resaltado; colores ANSI de la terminal (`ansi_color=True`), no la paleta fija de Textual. Contenido de cada sección (con datos reales desde el principio, no de ejemplo):
   - **Emparejamiento:** con tres subpestañas propias — **Dispositivo** (código QR con `qrcode` y datos del dispositivo emparejado desde `sesion`; sin dispositivo, el botón «Desemparejar» queda deshabilitado), **Seguridad** (configuración inicial con el certificado TLS y el usuario/contraseña, cambiar contraseña, cerrar todas las sesiones — fase 3) y **Servicio** (instalar, quitar, estado — fase 5). Seguridad y Servicio deshabilitadas hasta sus fases;
   - **Historial:** tabla fecha/hora, origen (`MACRO`/`TERMINAL`), comando — `MACRO` de la tabla `ejecucion` (vacía hasta la fase 7), `TERMINAL` del archivo de log de comandos de terminal (vacío hasta la fase 4), combinados solo al mostrarlos;
@@ -115,7 +116,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
   - la pantalla de métricas pasa a mostrar datos reales cada 1 s, con sus gráficas (`CustomPainter`).
 - Probar por USB con `adb reverse`.
 
-**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, el resto de pantallas siguen funcionando con datos simulados, y `companion` abre la TUI definitiva con sus tres secciones (vacías o con solo lo que ya existe en la BD).
+**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, el resto de pantallas siguen funcionando con datos simulados, y `companion` abre la TUI definitiva con sus cuatro secciones (vacías o con solo lo que ya existe en la BD).
 
 **Si vas con retraso:** cifras reales sin gráficas en vivo; las gráficas se completan para el hito de febrero.
 
