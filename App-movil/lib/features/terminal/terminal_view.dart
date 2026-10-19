@@ -66,37 +66,123 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
   }
 
+  void _trigger(TerminalViewModel vm) {
+    vm.requestSession();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<TerminalViewModel>();
     final fontSize = context.select<SettingsViewModel, int>((s) => s.termFont);
     final keyboardOpen = View.of(context).viewInsets.bottom > 0;
+    if (vm.state == TerminalSessionState.empty) {
+      return ColoredBox(
+        color: _background,
+        child: _EmptyState(onTrigger: () => _trigger(vm)),
+      );
+    }
     return ColoredBox(
       color: _background,
       child: Column(
         children: [
           Expanded(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              removeBottom: true,
-              child: TerminalView(
-                vm.terminal,
-                focusNode: _focus,
-                theme: _theme,
-                deleteDetection: true,
-                padding: EdgeInsets.fromLTRB(
-                  12,
-                  10,
-                  12,
-                  14 + MediaQuery.paddingOf(context).bottom,
+            child: Stack(
+              children: [
+                MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  removeBottom: true,
+                  child: TerminalView(
+                    vm.terminal,
+                    focusNode: _focus,
+                    theme: _theme,
+                    deleteDetection: true,
+                    padding: EdgeInsets.fromLTRB(
+                      12,
+                      10,
+                      12,
+                      14 + MediaQuery.paddingOf(context).bottom,
+                    ),
+                    textStyle: TerminalStyle(fontSize: fontSize.toDouble(), height: 1.5),
+                  ),
                 ),
-                textStyle: TerminalStyle(fontSize: fontSize.toDouble(), height: 1.5),
-              ),
+                if (vm.state == TerminalSessionState.creating) const _LoadingOverlay(),
+              ],
             ),
           ),
-          if (keyboardOpen) ExtraKeysBar(vm: vm, onHide: _hideKeyboard),
+          if (keyboardOpen && vm.state == TerminalSessionState.ready)
+            ExtraKeysBar(vm: vm, onHide: _hideKeyboard),
         ],
+      ),
+    );
+  }
+}
+
+final _modifierKeys = {
+  LogicalKeyboardKey.controlLeft,
+  LogicalKeyboardKey.controlRight,
+  LogicalKeyboardKey.altLeft,
+  LogicalKeyboardKey.altRight,
+  LogicalKeyboardKey.shiftLeft,
+  LogicalKeyboardKey.shiftRight,
+  LogicalKeyboardKey.metaLeft,
+  LogicalKeyboardKey.metaRight,
+};
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.onTrigger});
+
+  final VoidCallback onTrigger;
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent || _modifierKeys.contains(event.logicalKey)) {
+          return KeyEventResult.ignored;
+        }
+        onTrigger();
+        return KeyEventResult.handled;
+      },
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTrigger,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Toca para abrir una terminal en tu PC',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.foreground),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingOverlay extends StatelessWidget {
+  const _LoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: _background,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            CircularProgressIndicator(color: _theme.foreground),
+            Text(
+              'Abriendo terminal…',
+              style: TextStyle(fontSize: 13, color: _theme.brightBlack),
+            ),
+          ],
+        ),
       ),
     );
   }

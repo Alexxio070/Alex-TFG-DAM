@@ -6,20 +6,29 @@ const _prompt = '\x1b[32musuario@pc\x1b[0m:\x1b[34m~\x1b[0m\$ ';
 const _clearScreen = '\x1b[2J\x1b[H';
 
 class FakeTerminalRepository implements TerminalRepository {
-  late final StreamController<String> _output = StreamController<String>.broadcast(
-    onListen: () => scheduleMicrotask(
-      () => _emit(
-        'Conectado a pc mediante el agente.\r\n'
-        'Escribe help para ver los comandos de ejemplo.\r\n\r\n$_prompt',
-      ),
-    ),
-  );
+  final _output = StreamController<String>.broadcast();
+  final _sessionEnded = StreamController<void>.broadcast();
   final _history = <String>[];
   var _line = '';
   var _historyIndex = -1;
 
   @override
   Stream<String> get output => _output.stream;
+
+  @override
+  Stream<void> get sessionEnded => _sessionEnded.stream;
+
+  @override
+  Future<void> createSession() async {
+    _history.clear();
+    _line = '';
+    _historyIndex = -1;
+    await Future.delayed(const Duration(milliseconds: 600));
+    _emit(
+      'Conectado a pc mediante el agente.\r\n'
+      'Escribe help para ver los comandos de ejemplo.\r\n\r\n$_prompt',
+    );
+  }
 
   void _emit(String text) {
     if (!_output.isClosed) _output.add(text);
@@ -30,6 +39,10 @@ class FakeTerminalRepository implements TerminalRepository {
     var i = 0;
     while (i < data.length) {
       final char = data[i];
+      if (char == '\x04' && _line.isEmpty) {
+        _endSession();
+        return;
+      }
       if (char == '\x1b') {
         final sequence = data.substring(i);
         if (sequence.startsWith('\x1b[A') || sequence.startsWith('\x1bOA')) {
@@ -99,6 +112,11 @@ class FakeTerminalRepository implements TerminalRepository {
       _emit('$_clearScreen$_prompt');
       return;
     }
+    if (command == 'exit') {
+      _emit('\r\nexit\r\n');
+      _endSession();
+      return;
+    }
     final parts = command.split(RegExp(r'\s+'));
     final name = parts.first;
     final args = parts.skip(1).join(' ');
@@ -106,7 +124,7 @@ class FakeTerminalRepository implements TerminalRepository {
       '' => <String>[],
       'help' => [
           'Comandos de ejemplo:',
-          '  ls  pwd  whoami  uname -a  date  echo <texto>  clear',
+          '  ls  pwd  whoami  uname -a  date  echo <texto>  clear  exit',
         ],
       'ls' => ['Descargas  Documentos  Escritorio  Imágenes  Música  proyectos'],
       'pwd' => ['/home/usuario'],
@@ -121,6 +139,12 @@ class FakeTerminalRepository implements TerminalRepository {
       _ => ['\x1b[31mbash: $name: orden no encontrada\x1b[0m'],
     };
     _emit('\r\n${lines.map((l) => '$l\r\n').join()}$_prompt');
+  }
+
+  void _endSession() {
+    _line = '';
+    _historyIndex = -1;
+    if (!_sessionEnded.isClosed) _sessionEnded.add(null);
   }
 
   String _now() {
