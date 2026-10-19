@@ -10,6 +10,7 @@ import 'package:tfg/data/fake/fake_notes_repository.dart';
 import 'package:tfg/data/fake/fake_pairing_repository.dart';
 import 'package:tfg/data/fake/fake_terminal_repository.dart';
 import 'package:tfg/data/fake/in_memory_settings_repository.dart';
+import 'package:tfg/data/models/metrics.dart';
 import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
 import 'package:tfg/data/repositories/notes_repository.dart';
@@ -25,11 +26,11 @@ import 'package:tfg/features/shell/shell_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_viewmodel.dart';
 import 'package:xterm/xterm.dart';
 
-Widget _app() => MultiProvider(
+Widget _app({MetricsRepository? metricsRepository}) => MultiProvider(
       providers: [
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
-        Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
+        Provider<MetricsRepository>(create: (_) => metricsRepository ?? FakeMetricsRepository()),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
         Provider<SettingsRepository>(create: (_) => InMemorySettingsRepository()),
@@ -351,6 +352,21 @@ void main() {
 
       expect(find.text('Escala 86–212 °F'), findsOneWidget);
       expect(find.textContaining('GiB'), findsWidgets);
+      await closeApp(tester);
+    });
+
+    testWidgets('avisa cuando no hay sensor de temperatura', (tester) async {
+      tester.view.physicalSize = const Size(700 * 3, 1400 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app(metricsRepository: _NoTempMetricsRepository()));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Métricas'));
+      await _pumpFor(tester, 600);
+
+      expect(find.text('No se ha podido mostrar la temperatura'), findsOneWidget);
       await closeApp(tester);
     });
   });
@@ -715,6 +731,47 @@ void main() {
       expect(find.text('Frambuesa'), findsOneWidget);
     });
 
+    String addressFieldText(WidgetTester tester) =>
+        tester.widget<TextField>(find.byType(TextField)).controller!.text;
+
+    testWidgets('guarda la dirección del agente en modo local', (tester) async {
+      await openSettings(tester);
+      expect(addressFieldText(tester), '127.0.0.1:8443');
+
+      await tester.enterText(find.byType(TextField), '192.168.1.50:8443');
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 200);
+
+      expect(settings.agentAddress, '192.168.1.50:8443');
+      expect(find.text('Formato esperado: host:puerto'), findsNothing);
+    });
+
+    testWidgets('rechaza una dirección con formato inválido', (tester) async {
+      await openSettings(tester);
+
+      await tester.enterText(find.byType(TextField), 'no es una dirección');
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 200);
+
+      expect(find.text('Formato esperado: host:puerto'), findsOneWidget);
+      expect(settings.agentAddress, '127.0.0.1:8443');
+    });
+
+    testWidgets('cambiar a iroh muestra el campo de identificador y lo guarda', (tester) async {
+      await openSettings(tester);
+
+      await tester.tap(find.text('iroh'));
+      await _pumpFor(tester, 200);
+      expect(find.text('127.0.0.1:8443'), findsNothing);
+
+      await tester.enterText(find.byType(TextField), 'nodeid-de-prueba');
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 200);
+
+      expect(settings.connectionMode, ConnectionMode.iroh);
+      expect(settings.irohId, 'nodeid-de-prueba');
+    });
+
     testWidgets('desemparejar pide confirmación y actualiza el estado', (tester) async {
       await openSettings(tester);
 
@@ -788,4 +845,21 @@ void main() {
       expect(find.text('Silenciar'), findsNothing);
     });
   });
+}
+
+class _NoTempMetricsRepository implements MetricsRepository {
+  @override
+  Future<MachineInfo> loadInfo() async => const MachineInfo(
+        ramTotalGb: 16,
+        partitions: [
+          Partition(id: 'root', mount: '/', device: 'nvme0n1p2', usedGb: 64.2, totalGb: 120),
+        ],
+      );
+
+  @override
+  Future<List<MetricSample>> loadHistory() async =>
+      List.generate(60, (_) => const MetricSample(cpu: 10, tempC: null, ramGb: 9));
+
+  @override
+  Stream<MetricSample> watch() => const Stream.empty();
 }
