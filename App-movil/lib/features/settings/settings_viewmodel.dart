@@ -48,18 +48,24 @@ class SettingsViewModel extends ChangeNotifier {
   String get irohId => _irohId;
 
   Future<void> _load() async {
-    final saved = await _repository.load();
-    if (saved != null) {
-      _dark = saved.dark;
-      _accent = saved.accent;
-      _tempUnit = saved.tempUnit;
-      _storageUnit = saved.storageUnit;
-      _tempAlert = saved.tempAlert;
-      _tempLimit = saved.tempLimit;
-      _termFont = saved.termFont;
-      _connectionMode = saved.connectionMode;
-      _agentAddress = saved.agentAddress;
-      _irohId = saved.irohId;
+    try {
+      final saved = await _repository.load();
+      if (saved != null) {
+        _dark = saved.dark;
+        _accent = saved.accent;
+        _tempUnit = saved.tempUnit;
+        _storageUnit = saved.storageUnit;
+        _tempAlert = saved.tempAlert;
+        _tempLimit = saved.tempLimit;
+        _termFont = saved.termFont;
+        _connectionMode = saved.connectionMode;
+        _agentAddress = saved.agentAddress;
+        _irohId = saved.irohId;
+      }
+    } catch (_) {
+      // Ajustes guardados corruptos (p. ej. un índice de enum fuera de
+      // rango): se sigue con los valores por defecto en vez de quedarse
+      // en la pantalla de carga para siempre.
     }
     _ready = true;
     notifyListeners();
