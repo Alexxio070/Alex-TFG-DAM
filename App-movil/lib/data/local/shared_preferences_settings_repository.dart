@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/settings/settings_viewmodel.dart';
+import '../models/settings.dart';
 import '../repositories/settings_repository.dart';
 
 const _keyDark = 'settings_dark';

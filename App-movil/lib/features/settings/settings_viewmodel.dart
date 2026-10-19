@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../data/models/settings.dart';
 import '../../data/repositories/settings_repository.dart';
 
-enum TempUnit { celsius, fahrenheit }
-
-enum ConnectionMode { local, iroh }
-
-enum StorageUnit {
-  gb('GB', 1),
-  gib('GiB', 0.9313);
-
-  const StorageUnit(this.label, this.factor);
-  final String label;
-  final double factor;
-}
+export '../../data/models/settings.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   SettingsViewModel(this._repository) {

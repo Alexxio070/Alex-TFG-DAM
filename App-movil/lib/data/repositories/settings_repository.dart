@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/settings/settings_viewmodel.dart';
+import '../models/settings.dart';
 
 class SettingsData {
   const SettingsData({
