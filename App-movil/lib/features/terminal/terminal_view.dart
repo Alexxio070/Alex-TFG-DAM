@@ -91,11 +91,7 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                   12,
                   14 + MediaQuery.paddingOf(context).bottom,
                 ),
-                textStyle: TerminalStyle(
-                  fontSize: fontSize.toDouble(),
-                  height: 1.5,
-                  fontFamily: 'JetBrainsMono',
-                ),
+                textStyle: TerminalStyle(fontSize: fontSize.toDouble(), height: 1.5),
               ),
             ),
           ),
