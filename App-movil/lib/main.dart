@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'app.dart';
 import 'data/fake/fake_macro_repository.dart';
-import 'data/fake/fake_metrics_repository.dart';
 import 'data/fake/fake_notes_repository.dart';
 import 'data/fake/fake_pairing_repository.dart';
 import 'data/fake/fake_terminal_repository.dart';
+import 'data/http/http_metrics_repository.dart';
 import 'data/local/shared_preferences_settings_repository.dart';
 import 'data/repositories/macro_repository.dart';
 import 'data/repositories/metrics_repository.dart';
@@ -21,16 +21,20 @@ import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_viewmodel.dart';
 import 'features/terminal/terminal_viewmodel.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final settingsRepository = SharedPreferencesSettingsRepository();
+  final savedAddress = (await settingsRepository.load())?.agentAddress ?? '127.0.0.1:8443';
+
   runApp(
     MultiProvider(
       providers: [
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
-        Provider<MetricsRepository>(create: (_) => FakeMetricsRepository()),
+        Provider<MetricsRepository>(create: (_) => HttpMetricsRepository(savedAddress)),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository>(create: (_) => FakeTerminalRepository()),
-        Provider<SettingsRepository>(create: (_) => SharedPreferencesSettingsRepository()),
+        Provider<SettingsRepository>(create: (_) => settingsRepository),
         ChangeNotifierProvider(
           create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
         ),
