@@ -3,4 +3,5 @@ abstract class TerminalRepository {
   Stream<void> get sessionEnded;
   Future<void> createSession();
   void send(String data);
+  Future<void> close();
 }
