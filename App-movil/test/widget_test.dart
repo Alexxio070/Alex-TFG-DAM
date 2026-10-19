@@ -482,6 +482,8 @@ void main() {
       await _pumpFor(tester, 500);
       await tester.tap(find.text('Terminal'));
       await _pumpFor(tester, 600);
+      await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
+      await _pumpFor(tester, 700);
       return Provider.of<TerminalViewModel>(
         tester.element(find.byType(TfgApp)),
         listen: false,
@@ -489,6 +491,64 @@ void main() {
     }
 
     String screen(TerminalViewModel vm) => vm.terminal.buffer.getText();
+
+    testWidgets('empieza vacía con el aviso y pasa al prompt real al tocarla', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Terminal'));
+      await _pumpFor(tester, 600);
+
+      expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
+
+      await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
+      await tester.pump();
+
+      expect(find.text('Abriendo terminal…'), findsOneWidget);
+
+      await _pumpFor(tester, 700);
+
+      expect(find.text('Toca para abrir una terminal en tu PC'), findsNothing);
+      expect(find.text('Abriendo terminal…'), findsNothing);
+    });
+
+    testWidgets('las teclas escritas mientras se crea la sesión no se pierden', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Terminal'));
+      await _pumpFor(tester, 600);
+      final vm = Provider.of<TerminalViewModel>(
+        tester.element(find.byType(TfgApp)),
+        listen: false,
+      );
+
+      await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
+      await tester.pump();
+      vm.terminal.textInput('whoami\r');
+      await _pumpFor(tester, 700);
+
+      expect(screen(vm), contains('whoami'));
+      expect(screen(vm), contains('usuario\n'));
+    });
+
+    testWidgets('escribir exit cierra la sesión y vuelve al aviso', (tester) async {
+      final vm = await openTerminal(tester);
+
+      vm.terminal.textInput('exit\r');
+      await _pumpFor(tester, 200);
+
+      expect(vm.state, TerminalSessionState.empty);
+      expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
+    });
 
     testWidgets('muestra el mensaje de conexión y el prompt', (tester) async {
       final vm = await openTerminal(tester);
