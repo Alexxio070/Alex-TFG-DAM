@@ -2,6 +2,8 @@
 
 import psutil
 
+from companion.models.metrics import Partition
+
 GB = 1000**3
 
 # Nombres de sensor habituales para la temperatura de CPU, por fabricante.
@@ -26,7 +28,7 @@ def read_ram_gb() -> tuple[float, float]:
     return mem.used / GB, mem.total / GB
 
 
-def read_partitions() -> list[dict]:
+def read_partitions() -> list[Partition]:
     partitions = []
     for part in psutil.disk_partitions():
         if not part.device.startswith("/dev/"):
@@ -38,23 +40,23 @@ def read_partitions() -> list[dict]:
         except OSError:
             continue  # montaje sin permiso de lectura o no disponible
         partitions.append(
-            {
-                "id": part.mountpoint,
-                "mount": part.mountpoint,
-                "device": part.device,
-                "used_gb": usage.used / GB,
-                "total_gb": usage.total / GB,
-            }
+            Partition(
+                id=part.mountpoint,
+                mount=part.mountpoint,
+                device=part.device,
+                used_gb=usage.used / GB,
+                total_gb=usage.total / GB,
+            )
         )
     return _dedupe_by_device(partitions)
 
 
-def _dedupe_by_device(partitions: list[dict]) -> list[dict]:
+def _dedupe_by_device(partitions: list[Partition]) -> list[Partition]:
     """El mismo dispositivo puede montarse en varios puntos (p. ej. subvolúmenes
     btrfs): se queda uno por dispositivo, el del punto de montaje más corto."""
-    shortest: dict[str, dict] = {}
+    shortest: dict[str, Partition] = {}
     for partition in partitions:
-        current = shortest.get(partition["device"])
-        if current is None or len(partition["mount"]) < len(current["mount"]):
-            shortest[partition["device"]] = partition
+        current = shortest.get(partition.device)
+        if current is None or len(partition.mount) < len(current.mount):
+            shortest[partition.device] = partition
     return list(shortest.values())
