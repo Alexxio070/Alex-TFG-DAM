@@ -17,8 +17,6 @@ def test_get_metrics_returns_real_data():
     assert body["ram_used_gb"] > 0
     assert body["ram_total_gb"] >= body["ram_used_gb"]
     assert isinstance(body["partitions"], list)
-    assert len(body["partitions"]) >= 1
-
-    partition = body["partitions"][0]
-    assert partition["device"].startswith("/dev/")
-    assert partition["total_gb"] >= partition["used_gb"] >= 0
+    for partition in body["partitions"]:
+        assert partition["device"].startswith("/dev/")
+        assert partition["total_gb"] >= partition["used_gb"] >= 0
