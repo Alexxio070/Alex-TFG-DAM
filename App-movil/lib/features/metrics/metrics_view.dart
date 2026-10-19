@@ -9,8 +9,30 @@ import 'metrics_viewmodel.dart';
 import 'widgets/disk_card.dart';
 import 'widgets/metric_card.dart';
 
-class MetricsView extends StatelessWidget {
+class MetricsView extends StatefulWidget {
   const MetricsView({super.key});
+
+  @override
+  State<MetricsView> createState() => _MetricsViewState();
+}
+
+class _MetricsViewState extends State<MetricsView> {
+  late final MetricsViewModel _vm = context.read<MetricsViewModel>();
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _vm.start();
+    _lifecycle = AppLifecycleListener(onResume: _vm.start, onPause: _vm.stop);
+  }
+
+  @override
+  void dispose() {
+    _vm.stop();
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

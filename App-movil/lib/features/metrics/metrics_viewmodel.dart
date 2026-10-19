@@ -6,9 +6,7 @@ import '../../data/models/metrics.dart';
 import '../../data/repositories/metrics_repository.dart';
 
 class MetricsViewModel extends ChangeNotifier {
-  MetricsViewModel(this._repository) {
-    _start();
-  }
+  MetricsViewModel(this._repository);
 
   final MetricsRepository _repository;
   StreamSubscription<MetricSample>? _subscription;
@@ -16,6 +14,7 @@ class MetricsViewModel extends ChangeNotifier {
   MachineInfo? _info;
   String? _partitionId;
   String? _error;
+  bool _active = false;
 
   List<MetricSample> get history => _history;
   MachineInfo? get info => _info;
@@ -31,25 +30,48 @@ class MetricsViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> _start() async {
+  void start() {
+    if (_active) return;
+    _active = true;
+    _refresh();
+  }
+
+  void stop() {
+    _active = false;
+    _subscription?.cancel();
+    _subscription = null;
+  }
+
+  void retry() {
+    _active = true;
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
     await _subscription?.cancel();
     _error = null;
     try {
-      _info = await _repository.loadInfo();
-      _history = await _repository.loadHistory();
+      final info = await _repository.loadInfo();
+      final history = await _repository.loadHistory();
+      if (!_active) return;
+      _info = info;
+      _history = history;
       notifyListeners();
       _subscription = _repository.watch().listen(
         (sample) {
+          if (!_active) return;
           _history = [..._history.skip(1), sample];
           _error = null;
           notifyListeners();
         },
         onError: (Object error) {
+          if (!_active) return;
           _error = _messageFor(error);
           notifyListeners();
         },
       );
     } catch (error) {
+      if (!_active) return;
       _error = _messageFor(error);
       notifyListeners();
     }
@@ -57,8 +79,6 @@ class MetricsViewModel extends ChangeNotifier {
 
   String _messageFor(Object error) =>
       error is AgentUnavailableException ? error.message : 'No se puede conectar con el agente';
-
-  void retry() => _start();
 
   void selectPartition(String id) {
     _partitionId = id;
