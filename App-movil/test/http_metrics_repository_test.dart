@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:tfg/data/http/http_metrics_repository.dart';
+import 'package:tfg/data/repositories/metrics_repository.dart';
 
 const _body = '''
 {
@@ -99,5 +100,44 @@ void main() {
     await repository.loadInfo();
 
     expect(captured!.url.toString(), 'http://192.168.1.50:9000/metrics');
+  });
+
+  test('un código distinto de 200 lanza AgentUnavailableException', () async {
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      client: MockClient((request) async => http.Response('error interno', 500)),
+    );
+
+    await expectLater(repository.loadInfo(), throwsA(isA<AgentUnavailableException>()));
+  });
+
+  test('un JSON malformado lanza AgentUnavailableException', () async {
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      client: MockClient((request) async => http.Response('no es json', 200)),
+    );
+
+    await expectLater(repository.loadInfo(), throwsA(isA<AgentUnavailableException>()));
+  });
+
+  test('un timeout lanza AgentUnavailableException', () async {
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      client: MockClient((request) async {
+        await Future<void>.delayed(const Duration(seconds: 5));
+        return http.Response(_body, 200);
+      }),
+    );
+
+    await expectLater(repository.loadInfo(), throwsA(isA<AgentUnavailableException>()));
+  }, timeout: const Timeout(Duration(seconds: 10)));
+
+  test('un campo con un tipo inesperado lanza AgentUnavailableException', () async {
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      client: MockClient((request) async => http.Response('{"cpu_percent": "no es un número"}', 200)),
+    );
+
+    await expectLater(repository.loadHistory(), throwsA(isA<AgentUnavailableException>()));
   });
 }
