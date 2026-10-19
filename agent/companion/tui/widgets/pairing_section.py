@@ -25,6 +25,12 @@ class PairingSection(Container):
         min-width: 14;
         margin-right: 1;
     }
+
+    PairingSection Button.-active {
+        background: ansi_blue;
+        border: round ansi_cyan;
+        color: ansi_bright_white;
+    }
     """
 
     def compose(self) -> ComposeResult:
@@ -38,11 +44,16 @@ class PairingSection(Container):
             yield SecurityTab(id="security")
             yield ServiceTab(id="service")
 
+    def on_mount(self) -> None:
+        self.query_one("#tab-device", Button).set_class(True, "-active")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         tab = TAB_IDS.get(event.button.id)
         if tab is None:
             return
         self.query_one("#pairing-tabs", ContentSwitcher).current = tab
+        for button in self.query("#tabs Button"):
+            button.set_class(button is event.button, "-active")
 
 
 class DeviceTab(Vertical):
