@@ -84,7 +84,7 @@ class _DiskCardState extends State<DiskCard> {
     final t = context.tokens;
     final unit = widget.unit;
     final p = widget.selected;
-    final pct = p.usedGb / p.totalGb * 100;
+    final pct = p.totalGb == 0 ? 0.0 : p.usedGb / p.totalGb * 100;
     final label = unit.label;
     return OverlayPortal(
       controller: _menu,
