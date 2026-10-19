@@ -334,6 +334,14 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `terminal_repository.dart`, `fake_terminal_repository.dart` (sin cambios de contrato, solo de quién la instancia), `terminal_tabs_viewmodel.dart` (nuevo), `terminal_viewmodel.dart`, `terminal_view.dart`, `terminal_tabs_bar.dart` (nuevo), `close_tab_dialog.dart` (nuevo), `main.dart`, `app.dart`, `test/widget_test.dart`. Documentación: `ui-final/DESIGN.md` (§5, §7, §9), este historial.
 - **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test`; sin verificación visual.
 
+### 19/10/2026 — Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo
+
+- **Qué era:** `04-plan-de-fases.md` (fase 1, objetivo del agente) pedía un endpoint con CPU por núcleo, swap, carga y tiempo encendido — la lista completa de psutil. El "Terminada cuando" de la fase decía "tres secciones" de la TUI.
+- **Qué es ahora:** el endpoint real que se construyó solo expone lo que la app consume hoy (CPU total, RAM, discos, temperatura); núcleos/swap/carga/uptime quedan como ampliación opcional, no requisito. "Terminada cuando" pasa a "cuatro secciones" (se había añadido Notas y no se actualizó esa frase).
+- **Por qué:** esta reducción de alcance ya se había decidido y aplicado al propio endpoint; solo faltaba corregir el documento, que se quedó con la redacción antigua.
+- **Afecta a:** `04-plan-de-fases.md` (fase 1).
+- **Estado:** aplicado en `main` y `feature/agent`. **Pendiente en `feature/interfaz`:** tiene su propia copia de este archivo, sin esta corrección (no se tocó para no interferir con esa sesión).
+
 ---
 
 ## Pendiente
