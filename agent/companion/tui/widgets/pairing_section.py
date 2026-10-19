@@ -26,7 +26,7 @@ class PairingSection(Container):
         margin-right: 1;
     }
 
-    PairingSection Button.-active {
+    PairingSection Button.-selected {
         background: ansi_blue;
         border: round ansi_cyan;
         color: ansi_bright_white;
@@ -45,7 +45,7 @@ class PairingSection(Container):
             yield ServiceTab(id="service")
 
     def on_mount(self) -> None:
-        self.query_one("#tab-device", Button).set_class(True, "-active")
+        self.query_one("#tab-device", Button).set_class(True, "-selected")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         tab = TAB_IDS.get(event.button.id)
@@ -53,7 +53,7 @@ class PairingSection(Container):
             return
         self.query_one("#pairing-tabs", ContentSwitcher).current = tab
         for button in self.query("#tabs Button"):
-            button.set_class(button is event.button, "-active")
+            button.set_class(button is event.button, "-selected")
 
 
 class DeviceTab(Vertical):

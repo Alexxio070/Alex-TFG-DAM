@@ -88,7 +88,7 @@ class MainScreen(Screen):
         color: ansi_bright_white;
     }
 
-    Button.-active {
+    Button.-selected {
         background: ansi_blue;
         border: round ansi_cyan;
         color: ansi_bright_white;
@@ -123,4 +123,4 @@ class MainScreen(Screen):
             return
         self.query_one("#sections", ContentSwitcher).current = section
         for button in self.query("#buttons Button"):
-            button.set_class(button is event.button, "-active")
+            button.set_class(button is event.button, "-selected")
