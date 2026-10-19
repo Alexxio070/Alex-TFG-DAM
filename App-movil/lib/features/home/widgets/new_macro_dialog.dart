@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/app_switch.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/modal_card.dart';
+import '../../../data/models/home_item.dart';
 import '../home_viewmodel.dart';
+import 'item_tile.dart';
 
 Future<void> showNewMacroDialog(BuildContext context) {
   final vm = context.read<HomeViewModel>();
@@ -27,12 +30,30 @@ class _NewMacroCard extends StatefulWidget {
   State<_NewMacroCard> createState() => _NewMacroCardState();
 }
 
+const _kMaxNameLength = 50;
+
 class _NewMacroCardState extends State<_NewMacroCard> {
   final _name = TextEditingController();
   final _command = TextEditingController();
   bool _confirm = false;
+  MacroKind _kind = MacroKind.bolt;
 
-  bool get _valid => _name.text.trim().isNotEmpty && _command.text.trim().isNotEmpty;
+  String? get _nameError {
+    final name = _name.text.trim();
+    if (name.isEmpty) return null;
+    if (name.length > _kMaxNameLength) {
+      return 'Máximo $_kMaxNameLength caracteres';
+    }
+    final taken = widget.vm.items.any((item) {
+      final label = switch (item) { Macro() => item.label, Folder() => item.name };
+      return label.toLowerCase() == name.toLowerCase();
+    });
+    if (taken) return 'Ya hay un elemento con ese nombre';
+    return null;
+  }
+
+  bool get _valid =>
+      _name.text.trim().isNotEmpty && _nameError == null && _command.text.trim().isNotEmpty;
 
   @override
   void dispose() {
@@ -46,6 +67,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
       name: _name.text.trim(),
       command: _command.text.trim(),
       confirm: _confirm,
+      kind: _kind,
     );
     Navigator.of(context).pop();
   }
@@ -66,6 +88,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
             ),
             _Field(
               label: 'Nombre',
+              error: _nameError,
               child: AppTextField(
                 controller: _name,
                 focusColor: t.accent,
@@ -81,6 +104,20 @@ class _NewMacroCardState extends State<_NewMacroCard> {
                 hint: 'Ej. pactl set-sink-mute @DEFAULT_SINK@ toggle',
                 mono: true,
                 onChanged: (_) => setState(() {}),
+              ),
+            ),
+            _Field(
+              label: 'Icono',
+              child: Row(
+                spacing: 10,
+                children: [
+                  for (final kind in MacroKind.values)
+                    _IconOption(
+                      kind: kind,
+                      selected: kind == _kind,
+                      onTap: () => setState(() => _kind = kind),
+                    ),
+                ],
               ),
             ),
             Row(
@@ -138,27 +175,60 @@ class _NewMacroCardState extends State<_NewMacroCard> {
   }
 }
 
-class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.child});
+class _IconOption extends StatelessWidget {
+  const _IconOption({required this.kind, required this.selected, required this.onTap});
 
-  final String label;
-  final Widget child;
+  final MacroKind kind;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: kind.name,
+      excludeSemantics: true,
+      onTap: onTap,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: t.surface,
+            border: Border.all(color: selected ? t.accent : t.border, width: selected ? 2 : 1),
+          ),
+          child: Center(child: AppIconView(iconFor(kind), color: t.accent, size: 22)),
+        ),
+      ),
+    );
+  }
+}
+
+class _Field extends StatelessWidget {
+  const _Field({required this.label, required this.child, this.error});
+
+  final String label;
+  final Widget child;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 8,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: context.tokens.muted2,
-          ),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2),
         ),
         child,
+        if (error != null)
+          Text(error!, style: const TextStyle(fontSize: 12, color: kRed)),
       ],
     );
   }

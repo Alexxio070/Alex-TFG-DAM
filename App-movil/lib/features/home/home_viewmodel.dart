@@ -52,8 +52,19 @@ class HomeViewModel extends ChangeNotifier {
     _showToast((title: 'No caben más botones', command: ''), 1600);
   }
 
-  void createMacro({required String name, required String command, required bool confirm}) {
-    final macro = Macro(id: 'm$_nextId', label: name, command: command, confirm: confirm);
+  void createMacro({
+    required String name,
+    required String command,
+    required bool confirm,
+    MacroKind kind = MacroKind.bolt,
+  }) {
+    final macro = Macro(
+      id: 'm$_nextId',
+      label: name,
+      command: command,
+      confirm: confirm,
+      kind: kind,
+    );
     _nextId++;
     _commit([..._items, macro]);
   }
