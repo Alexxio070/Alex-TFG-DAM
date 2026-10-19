@@ -19,6 +19,7 @@ class TerminalPreview extends StatelessWidget {
         child: Text.rich(
           TextSpan(
             style: TextStyle(
+              fontFamily: 'monospace',
               fontSize: size,
               height: 1.5,
               color: const Color(0xFFE6E8EB),
