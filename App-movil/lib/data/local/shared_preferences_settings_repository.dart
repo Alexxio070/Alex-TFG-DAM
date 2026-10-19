@@ -11,6 +11,9 @@ const _keyStorageUnit = 'settings_storage_unit';
 const _keyTempAlert = 'settings_temp_alert';
 const _keyTempLimit = 'settings_temp_limit';
 const _keyTermFont = 'settings_term_font';
+const _keyConnectionMode = 'settings_connection_mode';
+const _keyAgentAddress = 'settings_agent_address';
+const _keyIrohId = 'settings_iroh_id';
 
 class SharedPreferencesSettingsRepository implements SettingsRepository {
   @override
@@ -25,6 +28,9 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
       tempAlert: prefs.getBool(_keyTempAlert) ?? true,
       tempLimit: prefs.getInt(_keyTempLimit) ?? 85,
       termFont: prefs.getInt(_keyTermFont) ?? 13,
+      connectionMode: ConnectionMode.values[prefs.getInt(_keyConnectionMode) ?? 0],
+      agentAddress: prefs.getString(_keyAgentAddress) ?? '127.0.0.1:8443',
+      irohId: prefs.getString(_keyIrohId) ?? '',
     );
   }
 
@@ -38,5 +44,8 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     await prefs.setBool(_keyTempAlert, data.tempAlert);
     await prefs.setInt(_keyTempLimit, data.tempLimit);
     await prefs.setInt(_keyTermFont, data.termFont);
+    await prefs.setInt(_keyConnectionMode, data.connectionMode.index);
+    await prefs.setString(_keyAgentAddress, data.agentAddress);
+    await prefs.setString(_keyIrohId, data.irohId);
   }
 }

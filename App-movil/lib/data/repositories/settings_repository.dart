@@ -11,6 +11,9 @@ class SettingsData {
     required this.tempAlert,
     required this.tempLimit,
     required this.termFont,
+    required this.connectionMode,
+    required this.agentAddress,
+    required this.irohId,
   });
 
   final bool dark;
@@ -20,6 +23,9 @@ class SettingsData {
   final bool tempAlert;
   final int tempLimit;
   final int termFont;
+  final ConnectionMode connectionMode;
+  final String agentAddress;
+  final String irohId;
 }
 
 abstract class SettingsRepository {

@@ -12,6 +12,7 @@ import '../../core/widgets/modal_card.dart';
 import '../shell/shell_viewmodel.dart';
 import 'settings_viewmodel.dart';
 import 'widgets/accent_sheet.dart';
+import 'widgets/connection_fields.dart';
 import 'widgets/settings_group.dart';
 import 'widgets/terminal_preview.dart';
 
@@ -137,6 +138,8 @@ class SettingsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 12,
                 children: [
+                  const ConnectionFields(),
+                  Divider(height: 1, color: t.border),
                   Text(
                     shell.isPaired
                         ? 'Este móvil está emparejado con el PC.'
