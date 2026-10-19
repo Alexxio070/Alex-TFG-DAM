@@ -24,19 +24,23 @@ import 'features/terminal/terminal_tabs_viewmodel.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settingsRepository = SharedPreferencesSettingsRepository();
-  final savedAddress = (await settingsRepository.load())?.agentAddress ?? '127.0.0.1:8443';
 
   runApp(
     MultiProvider(
       providers: [
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
-        Provider<MetricsRepository>(create: (_) => HttpMetricsRepository(savedAddress)),
         Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
         Provider<TerminalRepository Function()>(create: (_) => FakeTerminalRepository.new),
         Provider<SettingsRepository>(create: (_) => settingsRepository),
         ChangeNotifierProvider(
           create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
+        ),
+        Provider<MetricsRepository>(
+          create: (context) {
+            final settings = context.read<SettingsViewModel>();
+            return HttpMetricsRepository(() => settings.agentAddress);
+          },
         ),
         ChangeNotifierProvider(
           create: (context) => ShellViewModel(context.read<PairingRepository>()),

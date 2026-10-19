@@ -9,14 +9,14 @@ import '../repositories/metrics_repository.dart';
 class HttpMetricsRepository implements MetricsRepository {
   HttpMetricsRepository(this.address, {http.Client? client}) : _client = client ?? http.Client();
 
-  final String address;
+  final String Function() address;
   final http.Client _client;
 
   Future<Map<String, dynamic>> _fetch() async {
     http.Response response;
     try {
       response = await _client
-          .get(Uri.parse('http://$address/metrics'))
+          .get(Uri.parse('http://${address()}/metrics'))
           .timeout(const Duration(seconds: 3));
     } on TimeoutException {
       throw AgentUnavailableException('El agente no respondió a tiempo');

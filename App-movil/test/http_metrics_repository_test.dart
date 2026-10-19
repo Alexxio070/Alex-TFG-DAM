@@ -28,7 +28,7 @@ const _bodyWithoutTemp = '''
 void main() {
   test('loadInfo parsea las particiones y la RAM total del agente', () async {
     final repository = HttpMetricsRepository(
-      '127.0.0.1:8443',
+      () => '127.0.0.1:8443',
       client: MockClient((request) async {
         expect(request.url.toString(), 'http://127.0.0.1:8443/metrics');
         return http.Response(_body, 200);
@@ -45,7 +45,7 @@ void main() {
 
   test('loadHistory parsea la muestra actual del agente', () async {
     final repository = HttpMetricsRepository(
-      '127.0.0.1:8443',
+      () => '127.0.0.1:8443',
       client: MockClient((request) async => http.Response(_body, 200)),
     );
 
@@ -59,7 +59,7 @@ void main() {
 
   test('una temperatura null en el agente se traduce a tempC null', () async {
     final repository = HttpMetricsRepository(
-      '127.0.0.1:8443',
+      () => '127.0.0.1:8443',
       client: MockClient((request) async => http.Response(_bodyWithoutTemp, 200)),
     );
 
@@ -72,7 +72,7 @@ void main() {
     final bodies = [_body, _bodyWithoutTemp];
     var call = 0;
     final repository = HttpMetricsRepository(
-      '127.0.0.1:8443',
+      () => '127.0.0.1:8443',
       client: MockClient((request) async {
         final body = bodies[call];
         call++;
@@ -89,7 +89,7 @@ void main() {
   test('construye la URL con la dirección guardada en los ajustes', () async {
     http.Request? captured;
     final repository = HttpMetricsRepository(
-      '192.168.1.50:9000',
+      () => '192.168.1.50:9000',
       client: MockClient((request) async {
         captured = request;
         return http.Response(_body, 200);
