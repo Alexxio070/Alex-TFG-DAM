@@ -30,12 +30,15 @@ class TerminalTabsBar extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               itemCount: vm.tabs.length,
-              itemBuilder: (context, index) => _TabChip(
-                label: 'Terminal ${index + 1}',
-                active: index == vm.activeIndex,
-                onTap: () => vm.selectTab(index),
-                onClose: () => showCloseTabDialog(context, onClose: () => vm.closeTab(index)),
-              ),
+              itemBuilder: (context, index) {
+                final tab = vm.tabs[index];
+                return _TabChip(
+                  label: 'Terminal ${index + 1}',
+                  active: index == vm.activeIndex,
+                  onTap: () => vm.selectTab(index),
+                  onClose: () => showCloseTabDialog(context, onClose: () => vm.closeTab(tab)),
+                );
+              },
             ),
           ),
           Semantics(

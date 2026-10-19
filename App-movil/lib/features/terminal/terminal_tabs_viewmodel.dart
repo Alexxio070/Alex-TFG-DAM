@@ -62,8 +62,10 @@ class TerminalTabsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void closeTab(int index) {
-    final vm = _tabs.removeAt(index);
+  void closeTab(TerminalViewModel vm) {
+    final index = _tabs.indexOf(vm);
+    if (index == -1) return;
+    _tabs.removeAt(index);
     vm.dispose();
     if (_activeIndex >= _tabs.length) {
       _activeIndex = _tabs.isEmpty ? 0 : _tabs.length - 1;
