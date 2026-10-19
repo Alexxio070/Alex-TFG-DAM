@@ -11,6 +11,7 @@ import 'package:tfg/data/fake/fake_pairing_repository.dart';
 import 'package:tfg/data/fake/fake_terminal_repository.dart';
 import 'package:tfg/data/fake/in_memory_settings_repository.dart';
 import 'package:tfg/data/models/metrics.dart';
+import 'package:tfg/data/models/note.dart';
 import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
 import 'package:tfg/data/repositories/notes_repository.dart';
@@ -27,12 +28,13 @@ import 'package:tfg/features/terminal/terminal_tabs_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_viewmodel.dart';
 import 'package:xterm/xterm.dart';
 
-Widget _app({MetricsRepository? metricsRepository}) => MultiProvider(
+Widget _app({MetricsRepository? metricsRepository, NotesRepository? notesRepository}) =>
+    MultiProvider(
       providers: [
         Provider<PairingRepository>(create: (_) => FakePairingRepository()),
         Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
         Provider<MetricsRepository>(create: (_) => metricsRepository ?? FakeMetricsRepository()),
-        Provider<NotesRepository>(create: (_) => FakeNotesRepository()),
+        Provider<NotesRepository>(create: (_) => notesRepository ?? FakeNotesRepository()),
         Provider<TerminalRepository Function()>(create: (_) => FakeTerminalRepository.new),
         Provider<SettingsRepository>(create: (_) => InMemorySettingsRepository()),
         ChangeNotifierProvider(
@@ -487,6 +489,60 @@ void main() {
       expect(find.text('Copiado'), findsOneWidget);
       await _pumpFor(tester, 2500);
     });
+
+    testWidgets('un error al guardar avisa y deja reintentar', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      final notes = _FailingNotesRepository();
+      await tester.pumpWidget(_app(notesRepository: notes));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Notas'));
+      await _pumpFor(tester, 600);
+
+      await tester.tap(find.bySemanticsLabel('Nueva nota'));
+      await _pumpFor(tester, 500);
+      await tester.enterText(formField(), 'Comprar cable HDMI');
+      await tester.pump();
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 400);
+
+      expect(find.text('No se pudo guardar la nota'), findsOneWidget);
+      expect(find.text('Nueva nota'), findsOneWidget);
+      expect(notes.createCalls, 1);
+
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 400);
+
+      expect(notes.createCalls, 2);
+    });
+
+    testWidgets('no deja guardar dos veces mientras la primera está en marcha', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      final notes = _FailingNotesRepository();
+      await tester.pumpWidget(_app(notesRepository: notes));
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Notas'));
+      await _pumpFor(tester, 600);
+
+      await tester.tap(find.bySemanticsLabel('Nueva nota'));
+      await _pumpFor(tester, 500);
+      await tester.enterText(formField(), 'Comprar cable HDMI');
+      await tester.pump();
+
+      await tester.tap(find.text('Guardar'));
+      await tester.pump();
+      await tester.tap(find.text('Guardar'));
+      await _pumpFor(tester, 400);
+
+      expect(notes.createCalls, 1);
+    });
   });
 
   group('Terminal', () {
@@ -684,6 +740,55 @@ void main() {
 
       expect(tabsOf(tester).tabs, hasLength(6));
       expect(find.text('No caben más pestañas'), findsOneWidget);
+    });
+
+    testWidgets('cerrar una pestaña mientras se crea la sesión no falla', (tester) async {
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await tester.pump();
+      await tester.tap(find.bySemanticsLabel('Abrir menú'));
+      await _pumpFor(tester, 500);
+      await tester.tap(find.text('Terminal'));
+      await _pumpFor(tester, 600);
+      await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
+      await tester.pump();
+
+      expect(tabsOf(tester).active.state, TerminalSessionState.creating);
+
+      await tester.tap(find.bySemanticsLabel('Cerrar Terminal 1'));
+      await _pumpFor(tester, 200);
+      await tester.tap(find.text('Cerrar'));
+      await _pumpFor(tester, 700);
+
+      expect(tester.takeException(), isNull);
+      expect(tabsOf(tester).tabs, isEmpty);
+    });
+
+    testWidgets('cerrar una pestaña por instancia no cierra la equivocada', (tester) async {
+      await openTerminal(tester);
+      final tabs = tabsOf(tester);
+      final tab1 = tabs.tabs[0];
+
+      tabs.addTab();
+      await _pumpFor(tester, 700);
+      tabs.addTab();
+      await _pumpFor(tester, 700);
+      final tab3 = tabs.tabs[2];
+
+      // Se cierra la pestaña 1 (índice 0): tab3 pasa de índice 2 a 1.
+      tabs.closeTab(tab1);
+      await tester.pump();
+      expect(tabs.tabs, hasLength(2));
+      expect(tabs.tabs.contains(tab3), isTrue);
+
+      // "Cerrar" tab3 por instancia, aunque su índice cambiara mientras tanto.
+      tabs.closeTab(tab3);
+      await tester.pump();
+
+      expect(tabs.tabs.contains(tab3), isFalse);
+      expect(tabs.tabs, hasLength(1));
     });
   });
 
@@ -923,4 +1028,25 @@ class _NoTempMetricsRepository implements MetricsRepository {
 
   @override
   Stream<MetricSample> watch() => const Stream.empty();
+}
+
+class _FailingNotesRepository implements NotesRepository {
+  final _notes = FakeNotesRepository();
+  int createCalls = 0;
+
+  @override
+  Future<List<Note>> list({String query = ''}) => _notes.list(query: query);
+
+  @override
+  Future<void> create(String content) async {
+    createCalls++;
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    throw Exception('fallo simulado');
+  }
+
+  @override
+  Future<void> update(String id, String content) => _notes.update(id, content);
+
+  @override
+  Future<void> delete(String id) => _notes.delete(id);
 }
