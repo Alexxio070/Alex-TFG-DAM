@@ -30,7 +30,9 @@ def read_partitions() -> list[dict]:
     partitions = []
     for part in psutil.disk_partitions():
         if not part.device.startswith("/dev/"):
-            continue  # descarta tmpfs, overlay, snap y similares
+            continue  # descarta tmpfs, overlay y similares
+        if part.fstype == "squashfs" or part.device.startswith("/dev/loop"):
+            continue  # descarta los paquetes snap
         try:
             usage = psutil.disk_usage(part.mountpoint)
         except OSError:
