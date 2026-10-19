@@ -33,6 +33,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
 | 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
 | 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
+| 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
 
 ---
 
@@ -289,6 +290,22 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** código: `home_viewmodel.dart`, `home_view.dart`, `folder_trash_dialog.dart` (nuevo), `terminal_preview.dart`, `settings_repository.dart` (nuevo), `data/fake/in_memory_settings_repository.dart` (nuevo), `data/local/shared_preferences_settings_repository.dart` (nuevo), `settings_viewmodel.dart`, `main.dart`, `app.dart`. Documentación: `ui-final/DESIGN.md` (§2, §3, §7, §8, §9), este historial.
 - **Estado:** aplicado en código; pantalla de carga aún placeholder (blanco liso, sin diseño final).
 
+### 19/10/2026 — Terminal: estado vacío y creación de sesión al primer toque o tecla
+
+- **Qué era:** la pantalla mostraba el banner y el prompt de `FakeTerminalRepository` desde que se abría, sin terminal vacía ni disparador; no había forma de volver a ese estado.
+- **Qué es ahora:** aplicado el diseño de `doc/agente/terminal-sesiones-tmux.md` §4, usando el texto y el criterio de disparador que ya constaban allí como decisión (no una incógnita abierta):
+  1. Sin sesión, la pantalla muestra el aviso **«Toca para abrir una terminal en tu PC»**.
+  2. Dispara la creación el primer toque sobre esa zona, o la primera tecla que no sea un modificador solo (CTRL, ALT, SHIFT, META); el botón de ocultar teclado no cuenta por no estar disponible en este estado.
+  3. Mientras se crea la sesión (en la maqueta, un retraso simulado de 600 ms, ya que no hay agente que medir), se superpone un indicador con el texto **«Abriendo terminal…»**; la terminal real ya está montada y enfocada por debajo, así que lo que se teclee con un teclado físico se guarda y se envía en orden al quedar lista.
+  4. Al quedar lista, aparece el prompt real (shell simulado, con historial y Tab).
+  5. Escribir `exit` o Ctrl+D con la línea vacía cierra la sesión y vuelve al aviso inicial, con una `Terminal` nueva (según el ciclo de vida de `terminal-sesiones-tmux.md` §4).
+- **Simplificaciones de esta maqueta, sin agente real:**
+  - El disparador por tecla física solo abre la sesión; no se reconstruye qué carácter era (un `KeyEvent` crudo no equivale de forma fiable a texto de IME). En un móvil sin teclado físico, el toque es el disparador real.
+  - Durante la creación, el teclado físico sí queda en cola; el teclado en pantalla depende de que el sistema conecte el campo de texto en ese intervalo exacto, sin verificar en el emulador.
+- **Por qué:** cerraba el pendiente de UI de la terminal anotado en «Pendiente» (más abajo) y en `ui-final/DESIGN.md` §9, con los valores que ya estaban documentados.
+- **Afecta a:** `terminal_repository.dart`, `fake_terminal_repository.dart`, `terminal_viewmodel.dart`, `terminal_view.dart`, `test/widget_test.dart`. Documentación: `ui-final/DESIGN.md` (§5, §9), este historial.
+- **Estado:** aplicado en código, sin verificación visual en emulador.
+
 ---
 
 ## Pendiente
@@ -302,7 +319,7 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
 | Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
 | Terminal (pestañas) | Especificar en `doc/ui/` la barra de pestañas y decidir título y límite de pestañas (ver `terminal-sesiones-tmux.md`, §10) |
-| Terminal (UI) | Definir qué cuenta como disparador (toque/tecla), el texto del aviso y el indicador de carga; adaptar la pantalla actual, que hoy muestra un prompt simulado desde el arranque |
-| Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar) |
+| Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
+| Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
 | Arranque (UI) | Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso) |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |

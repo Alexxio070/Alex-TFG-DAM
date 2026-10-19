@@ -86,14 +86,17 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 
 ## 5. Terminal
 
-**Estado actual, distinto del diseño del agente:** la pantalla muestra el banner y el prompt de `FakeTerminalRepository` **desde que se abre**, no una terminal vacía que se active con el primer toque o tecla (eso es el diseño de `doc/agente/terminal-sesiones-tmux.md`, pendiente de implementar; ver `08-historial-de-cambios.md`).
+**Estados** (`TerminalSessionState`): `empty` (sin sesión), `creating` (creándose) y `ready` (prompt real). Aplica el diseño de ciclo de vida de `doc/agente/terminal-sesiones-tmux.md` §4 sobre un `FakeTerminalRepository` (maqueta sin agente: no hay ventana del PC ni medidas reales de latencia).
 
-- `xterm.dart` (`TerminalView`) sobre el `Terminal` del `TerminalViewModel`, con el shell simulado del repositorio.
+- **`empty`:** pantalla con el aviso **«Toca para abrir una terminal en tu PC»**, centrado. Dispara la creación de sesión el primer toque sobre esa zona, o la primera tecla que no sea un modificador solo (CTRL, ALT, SHIFT, META).
+- **`creating`:** la terminal real ya está montada y enfocada por debajo (para no perder lo que se teclee con un teclado físico, que se guarda en cola y se envía en orden al quedar lista), pero se superpone un indicador con el texto **«Abriendo terminal…»**. En la maqueta, el retraso es un `Future.delayed` fijo de 600 ms.
+- **`ready`:** `xterm.dart` (`TerminalView`) sobre el `Terminal` del `TerminalViewModel`, con el shell simulado del repositorio. Escribir `exit` o Ctrl+D con la línea vacía cierra la sesión (vuelve a `empty`, con una `Terminal` nueva).
 - **Fuente: la del sistema** (decisión del 15/10/2026). No se pasa `fontFamily`, así que se usa el valor por defecto del paquete, `'monospace'`, que en Android resuelve a la fuente del dispositivo. Se descartan tanto JetBrains Mono como una Nerd Font.
   - **Conflicto con el espejo de la sesión** (cuando exista el agente): la ventana del PC y la app mostrarán el mismo contenido, pero no el mismo aspecto — la ventana del PC usa la fuente que tenga el usuario ahí (posiblemente una Nerd Font, con iconos de prompts como Starship), y la app la fuente del sistema Android. Discrepancia visual aceptada, documentada en `../XTERM_DART.md`.
 - **Cursor sin parpadeo** (decisión del 15/10/2026: se descarta implementarlo).
-- Fila de teclas extra (`ExtraKeysBar`, 44 dp de alto, solo visible con el teclado abierto): ESC, TAB, CTRL y ALT (se quedan pulsadas y afectan a la siguiente tecla: CTRL+letra manda el código de control, ALT antepone `ESC`), `-`, `/`, ↑/↓ (historial) y ocultar teclado.
+- Fila de teclas extra (`ExtraKeysBar`, 44 dp de alto, solo visible con el teclado abierto en `ready`): ESC, TAB, CTRL y ALT (se quedan pulsadas y afectan a la siguiente tecla: CTRL+letra manda el código de control, ALT antepone `ESC`), `-`, `/`, ↑/↓ (historial) y ocultar teclado.
 - Tamaño de fuente configurable en Ajustes (10–22, por defecto 13).
+- **Simplificaciones de la maqueta:** el disparador por tecla física solo abre la sesión, sin reconstruir qué carácter era (un `KeyEvent` crudo no equivale de forma fiable a texto de IME); en un móvil sin teclado físico el toque es el disparador real. No verificado en emulador si el teclado en pantalla pierde pulsaciones durante los 600 ms de `creating`.
 
 ## 6. Notas
 
@@ -141,6 +144,6 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 Lista completa y actualizada en [`../../documentos-generales-del-proyecto/08-historial-de-cambios.md`](../../documentos-generales-del-proyecto/08-historial-de-cambios.md), sección «Pendiente». Los más relevantes para esta interfaz:
 
-- Terminal: adaptar la pantalla al diseño de sesión vacía / primer toque o tecla (`doc/agente/terminal-sesiones-tmux.md`).
-- Terminal: pestañas para varias sesiones a la vez (ver `doc/agente/terminal-sesiones-tmux.md`).
+- Terminal: pestañas para varias sesiones a la vez; falta especificar la barra de pestañas en `doc/ui/` (ver `doc/agente/terminal-sesiones-tmux.md`, §10).
+- Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión.
 - Diseñar la pantalla de carga mientras se leen los ajustes guardados (hoy, placeholder blanco liso).
