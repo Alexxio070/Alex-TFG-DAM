@@ -6,15 +6,6 @@ import 'package:http/http.dart' as http;
 import '../models/metrics.dart';
 import '../repositories/metrics_repository.dart';
 
-class AgentUnavailableException implements Exception {
-  AgentUnavailableException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
 class HttpMetricsRepository implements MetricsRepository {
   HttpMetricsRepository(this.address, {http.Client? client}) : _client = client ?? http.Client();
 

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/app_button.dart';
 import '../settings/settings_viewmodel.dart';
 import 'metrics_viewmodel.dart';
 import 'widgets/disk_card.dart';
@@ -15,6 +16,9 @@ class MetricsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final metrics = context.watch<MetricsViewModel>();
     final settings = context.watch<SettingsViewModel>();
+    if (metrics.error != null && !metrics.ready) {
+      return _ErrorState(message: metrics.error!, onRetry: metrics.retry);
+    }
     final partition = metrics.partition;
     if (!metrics.ready || partition == null) return const SizedBox.shrink();
 
@@ -107,6 +111,41 @@ class _UnavailableTempCard extends StatelessWidget {
             style: TextStyle(fontSize: 13, color: t.muted),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            Text(
+              'No se puede conectar con el agente',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: t.ink),
+            ),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: t.muted),
+            ),
+            const SizedBox(height: 6),
+            AppButton(label: 'Reintentar', fill: t.accent, onPressed: onRetry),
+          ],
+        ),
       ),
     );
   }
