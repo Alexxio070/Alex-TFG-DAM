@@ -2,7 +2,7 @@
 
 import psutil
 
-GB = 1024**3
+GB = 1000**3
 
 # Nombres de sensor habituales para la temperatura de CPU, por fabricante.
 CPU_TEMP_SENSORS = ("k10temp", "coretemp", "cpu_thermal", "zenpower")
