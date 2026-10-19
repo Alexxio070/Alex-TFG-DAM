@@ -46,4 +46,15 @@ def read_partitions() -> list[dict]:
                 "total_gb": usage.total / GB,
             }
         )
-    return partitions
+    return _dedupe_by_device(partitions)
+
+
+def _dedupe_by_device(partitions: list[dict]) -> list[dict]:
+    """El mismo dispositivo puede montarse en varios puntos (p. ej. subvolúmenes
+    btrfs): se queda uno por dispositivo, el del punto de montaje más corto."""
+    shortest: dict[str, dict] = {}
+    for partition in partitions:
+        current = shortest.get(partition["device"])
+        if current is None or len(partition["mount"]) < len(current["mount"]):
+            shortest[partition["device"]] = partition
+    return list(shortest.values())
