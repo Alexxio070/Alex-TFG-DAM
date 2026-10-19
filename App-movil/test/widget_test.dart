@@ -3,63 +3,35 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:tfg/app.dart';
+import 'package:tfg/app_providers.dart';
 import 'package:tfg/core/theme/app_tokens.dart';
 import 'package:tfg/data/fake/fake_macro_repository.dart';
-import 'package:tfg/data/fake/fake_metrics_repository.dart';
 import 'package:tfg/data/fake/fake_notes_repository.dart';
 import 'package:tfg/data/fake/fake_pairing_repository.dart';
 import 'package:tfg/data/fake/fake_terminal_repository.dart';
-import 'package:tfg/data/fake/in_memory_settings_repository.dart';
 import 'package:tfg/data/models/metrics.dart';
 import 'package:tfg/data/models/note.dart';
-import 'package:tfg/data/repositories/macro_repository.dart';
 import 'package:tfg/data/repositories/metrics_repository.dart';
 import 'package:tfg/data/repositories/notes_repository.dart';
-import 'package:tfg/data/repositories/pairing_repository.dart';
-import 'package:tfg/data/repositories/settings_repository.dart';
-import 'package:tfg/data/repositories/terminal_repository.dart';
-import 'package:tfg/features/home/home_viewmodel.dart';
-import 'package:tfg/features/metrics/metrics_viewmodel.dart';
 import 'package:tfg/features/notes/note_form_view.dart';
-import 'package:tfg/features/notes/notes_viewmodel.dart';
 import 'package:tfg/features/settings/settings_viewmodel.dart';
-import 'package:tfg/features/shell/shell_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_tabs_viewmodel.dart';
 import 'package:tfg/features/terminal/terminal_viewmodel.dart';
 import 'package:xterm/xterm.dart';
 
+import 'fakes/fake_metrics_repository.dart';
+import 'fakes/in_memory_settings_repository.dart';
+
 Widget _app({MetricsRepository? metricsRepository, NotesRepository? notesRepository}) =>
     MultiProvider(
-      providers: [
-        Provider<PairingRepository>(create: (_) => FakePairingRepository()),
-        Provider<MacroRepository>(create: (_) => FakeMacroRepository()),
-        Provider<MetricsRepository>(create: (_) => metricsRepository ?? FakeMetricsRepository()),
-        Provider<NotesRepository>(create: (_) => notesRepository ?? FakeNotesRepository()),
-        Provider<TerminalRepository Function()>(create: (_) => FakeTerminalRepository.new),
-        Provider<SettingsRepository>(create: (_) => InMemorySettingsRepository()),
-        ChangeNotifierProvider(
-          create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => ShellViewModel(context.read<PairingRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => HomeViewModel(context.read<MacroRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => MetricsViewModel(context.read<MetricsRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => NotesViewModel(
-            context.read<NotesRepository>(),
-            context.read<PairingRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              TerminalTabsViewModel(context.read<TerminalRepository Function()>()),
-        ),
-      ],
+      providers: buildProviders(
+        pairingRepository: FakePairingRepository(),
+        macroRepository: FakeMacroRepository(),
+        notesRepository: notesRepository ?? FakeNotesRepository(),
+        terminalRepositoryFactory: FakeTerminalRepository.new,
+        settingsRepository: InMemorySettingsRepository(),
+        metricsRepositoryBuilder: (_) => metricsRepository ?? FakeMetricsRepository(),
+      ),
       child: const TfgApp(),
     );
 
