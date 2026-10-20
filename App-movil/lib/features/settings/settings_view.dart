@@ -26,7 +26,7 @@ class SettingsView extends StatelessWidget {
     final t = context.tokens;
     final fahrenheit = s.tempUnit == TempUnit.fahrenheit;
     final limit = fahrenheit
-        ? '${formatNumber(s.tempLimit * 9 / 5 + 32, 0)} °F'
+        ? '${formatNumber(s.tempUnit.fromCelsius(s.tempLimit.toDouble()), 0)} °F'
         : '${s.tempLimit} °C';
     final accentIndex = kAccentColors.indexOf(s.accent);
 

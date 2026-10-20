@@ -162,8 +162,8 @@ class _DiskCardState extends State<DiskCard> {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         MetricValue(
-                          number: formatNumber(p.usedGb * unit.factor),
-                          unit: '/ ${formatNumber(p.totalGb * unit.factor, 0)} $label',
+                          number: unit.format(p.usedGb),
+                          unit: '/ ${unit.format(p.totalGb, decimals: 0)} $label',
                         ),
                         Text(
                           '${formatNumber(pct, 0)} %',
@@ -204,8 +204,8 @@ class _DiskCardState extends State<DiskCard> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Usado ${formatNumber(p.usedGb * unit.factor)} $label'),
-                          Text('Libre ${formatNumber((p.totalGb - p.usedGb) * unit.factor)} $label'),
+                          Text('Usado ${unit.format(p.usedGb)} $label'),
+                          Text('Libre ${unit.format(p.totalGb - p.usedGb)} $label'),
                         ],
                       ),
                     ),
@@ -339,8 +339,8 @@ class _PartitionOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final color = selected ? t.accent : t.ink;
-    final size = '${formatNumber(partition.usedGb * unit.factor)} / '
-        '${formatNumber(partition.totalGb * unit.factor, 0)} ${unit.label}';
+    final size = '${unit.format(partition.usedGb)} / '
+        '${unit.format(partition.totalGb, decimals: 0)} ${unit.label}';
     return Semantics(
       button: true,
       selected: selected,

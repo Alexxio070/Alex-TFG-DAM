@@ -50,7 +50,7 @@ class _MetricsViewState extends State<MetricsView> {
     final fahrenheit = settings.tempUnit == TempUnit.fahrenheit;
     final tempNow = history.last.tempC;
     final hot = tempNow != null && settings.tempAlert && tempNow > settings.tempLimit;
-    final tempDisplay = tempNow == null ? null : (fahrenheit ? tempNow * 9 / 5 + 32 : tempNow);
+    final tempDisplay = tempNow == null ? null : settings.tempUnit.fromCelsius(tempNow);
 
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.paddingOf(context).bottom),

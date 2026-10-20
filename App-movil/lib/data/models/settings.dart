@@ -1,6 +1,13 @@
+import '../../core/format.dart';
+
 const kDefaultAgentAddress = '127.0.0.1:8443';
 
-enum TempUnit { celsius, fahrenheit }
+enum TempUnit {
+  celsius,
+  fahrenheit;
+
+  double fromCelsius(double celsius) => this == fahrenheit ? celsius * 9 / 5 + 32 : celsius;
+}
 
 enum ConnectionMode { local, iroh }
 
@@ -11,4 +18,6 @@ enum StorageUnit {
   const StorageUnit(this.label, this.factor);
   final String label;
   final double factor;
+
+  String format(double gb, {int decimals = 1}) => formatNumber(gb * factor, decimals);
 }
