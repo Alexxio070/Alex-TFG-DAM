@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import '../models/metrics.dart';
-import '../repositories/metrics_repository.dart';
+import 'package:tfg/data/models/metrics.dart';
+import 'package:tfg/data/repositories/metrics_repository.dart';
 
 class FakeMetricsRepository implements MetricsRepository {
   final _random = Random();
@@ -29,7 +29,7 @@ class FakeMetricsRepository implements MetricsRepository {
       );
 
   @override
-  Future<List<MetricSample>> loadHistory() async => List.generate(60, (_) => _next());
+  Future<List<MetricSample>> loadHistory() async => List.generate(kHistoryLength, (_) => _next());
 
   @override
   Stream<MetricSample> watch() => Stream.periodic(const Duration(seconds: 1), (_) => _next());

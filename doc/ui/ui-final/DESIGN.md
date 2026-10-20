@@ -1,12 +1,12 @@
 # Diseño final de la interfaz
 
-> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 15/10/2026. Sustituye a [`../ui-v1/DESIGN.md`](../ui-v1/DESIGN.md) y [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
+> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026. Sustituye a [`../ui-v1/DESIGN.md`](../ui-v1/DESIGN.md) y [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
 
 ## 0. Cómo leer este documento
 
 - Cada pantalla se describe tal como está implementada hoy, no como se planeó. Donde el código y un diseño anterior discrepaban, gana el código, y se anota el porqué.
-- **Qué es simulado:** todos los datos vienen de repositorios `Fake...` en memoria (sección 8). El agente Python no existe todavía.
-- El diseño de la terminal del agente (sesiones con tmux) vive en [`../../agente/terminal-sesiones-tmux.md`](../../agente/terminal-sesiones-tmux.md) y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que no existe todavía); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
+- **Qué es simulado y qué no:** Inicio, Terminal, Notas y el emparejado siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas y Ajustes ya hablan con implementaciones reales:** `HttpMetricsRepository` pide los datos al agente por HTTP (ver sección 4 y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
+- El diseño de la terminal del agente (sesiones con tmux) vive en [`../../agente/terminal-sesiones-tmux.md`](../../agente/terminal-sesiones-tmux.md) y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que todavía no tiene esa parte); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
 
 ## 1. Estructura general
 
@@ -85,6 +85,8 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 **Tarjeta** (`MetricSurface`): radio 20, borde 1 dp `border`, padding 16. El gráfico de área (`AreaChart`) lo dibuja un `CustomPainter` propio: 110 dp de alto, 3 líneas guía al 25/50/75 % y una línea base, sin librería de gráficos. Pie con «Hace 60 s · escala · Ahora». Actualización cada 1 s (`MetricsViewModel.watch()`).
 
 **Datos:** `HttpMetricsRepository` pide `GET http://<dirección>/metrics` al agente (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
+
+**Si el agente no responde** (tras 3 s de espera, o con cualquier otro fallo de conexión): la pantalla sustituye las cuatro tarjetas por un aviso centrado, **«No se puede conectar con el agente»** más el detalle del error y un botón **«Reintentar»** (`MetricsViewModel.retry()`). El sondeo se pausa al salir de la pantalla de Métricas o al pasar la app a segundo plano (`AppLifecycleListener`), y se reanuda al volver, para no seguir pidiendo datos al agente sin necesidad.
 
 ## 5. Terminal
 

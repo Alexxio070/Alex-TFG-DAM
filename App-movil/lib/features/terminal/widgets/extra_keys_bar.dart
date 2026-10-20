@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../terminal_viewmodel.dart';
-
-const _barBackground = Color(0xFF15171A);
-const _barBorder = Color(0xFF2B2F34);
-const _keyColor = Color(0xFFE6E8EB);
-const _activeBackground = Color(0xFF7EE787);
-const _activeForeground = Color(0xFF0D0F12);
 
 class ExtraKeysBar extends StatelessWidget {
   const ExtraKeysBar({super.key, required this.vm, required this.onHide});
@@ -21,8 +16,8 @@ class ExtraKeysBar extends StatelessWidget {
     return Container(
       height: 44,
       decoration: const BoxDecoration(
-        color: _barBackground,
-        border: Border(top: BorderSide(color: _barBorder)),
+        color: kTerminalBarBackground,
+        border: Border(top: BorderSide(color: kTerminalBarBorder)),
       ),
       child: Row(
         children: [
@@ -45,7 +40,7 @@ class ExtraKeysBar extends StatelessWidget {
           _Key(
             semantics: 'Ocultar teclado',
             onTap: onHide,
-            child: const AppIconView(AppIcon.keyboardHide, color: _keyColor, size: 20),
+            child: const AppIconView(AppIcon.keyboardHide, color: kTerminalForeground, size: 20),
           ),
         ],
       ),
@@ -77,7 +72,7 @@ class _Key extends StatelessWidget {
         excludeSemantics: true,
         onTap: onTap,
         child: Material(
-          color: active ? _activeBackground : Colors.transparent,
+          color: active ? kTerminalGreen : Colors.transparent,
           child: InkWell(
             onTap: onTap,
             child: Center(
@@ -85,10 +80,10 @@ class _Key extends StatelessWidget {
                   Text(
                     label!,
                     style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: kMonoFont,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: active ? _activeForeground : _keyColor,
+                      color: active ? kTerminalBackground : kTerminalForeground,
                     ),
                   ),
             ),

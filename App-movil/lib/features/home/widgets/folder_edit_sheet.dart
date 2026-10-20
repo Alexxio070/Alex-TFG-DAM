@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/field_label.dart';
 import '../../../core/widgets/modal_card.dart';
 import '../../../data/models/home_item.dart';
 import '../home_viewmodel.dart';
@@ -56,47 +57,26 @@ class _FolderEditCardState extends State<_FolderEditCard> {
               'Editar carpeta',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 8,
-              children: [
-                Text(
-                  'Nombre',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: t.muted2,
-                  ),
-                ),
-                AppTextField(controller: _name, focusColor: _color),
-              ],
+            FieldLabel(
+              label: 'Nombre',
+              child: AppTextField(controller: _name, focusColor: _color),
             ),
-            Column(
+            FieldLabel(
+              label: 'Color',
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 8,
-              children: [
-                Text(
-                  'Color',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: t.muted2,
-                  ),
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    for (var i = 0; i < kAccentColors.length; i++)
-                      _Swatch(
-                        color: kAccentColors[i],
-                        label: kAccentNames[i],
-                        selected: kAccentColors[i] == _color,
-                        onTap: () => setState(() => _color = kAccentColors[i]),
-                      ),
-                  ],
-                ),
-              ],
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (var i = 0; i < kAccentColors.length; i++)
+                    _Swatch(
+                      color: kAccentColors[i],
+                      label: kAccentNames[i],
+                      selected: kAccentColors[i] == _color,
+                      onTap: () => setState(() => _color = kAccentColors[i]),
+                    ),
+                ],
+              ),
             ),
             Row(
               spacing: 12,

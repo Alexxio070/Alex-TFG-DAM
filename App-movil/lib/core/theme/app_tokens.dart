@@ -33,6 +33,21 @@ const kAccentColorsDark = [
 const kRed = Color(0xFFB42318);
 const kGreen = Color(0xFF1F9D55);
 
+// Sombra y velo de los diálogos y menús flotantes, repetidos por toda la app.
+const kShadowColor = Color(0xFF16181D);
+const kScrim = Color.fromRGBO(22, 24, 29, 0.45);
+
+// Paleta fija de la terminal: no depende del tema claro/oscuro.
+const kTerminalBackground = Color(0xFF0D0F12);
+const kTerminalForeground = Color(0xFFE6E8EB);
+const kTerminalBarBackground = Color(0xFF15171A);
+const kTerminalBarBorder = Color(0xFF2B2F34);
+const kTerminalGreen = Color(0xFF7EE787);
+
+const kMonoFont = 'JetBrainsMono';
+
+const kDrawerWidth = 280.0;
+
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
     required this.bg,

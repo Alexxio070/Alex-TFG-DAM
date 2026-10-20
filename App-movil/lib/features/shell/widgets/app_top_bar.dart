@@ -7,25 +7,28 @@ class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,
     required this.title,
-    required this.onMenu,
+    required this.onIcon,
     this.icon = AppIcon.menu,
     this.iconLabel = 'Abrir menú',
+    this.borderColor,
   });
 
   final String title;
-  final VoidCallback onMenu;
+  final VoidCallback onIcon;
   final AppIcon icon;
   final String iconLabel;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
+    final topPadding = MediaQuery.paddingOf(context).top;
     return Container(
-      height: 64 + MediaQuery.paddingOf(context).top,
-      padding: EdgeInsets.fromLTRB(12, MediaQuery.paddingOf(context).top, 12, 0),
+      height: 64 + topPadding,
+      padding: EdgeInsets.fromLTRB(12, topPadding, 12, 0),
       decoration: BoxDecoration(
         color: t.surface,
-        border: Border(bottom: BorderSide(color: t.border)),
+        border: Border(bottom: BorderSide(color: borderColor ?? t.border)),
       ),
       child: Row(
         children: [
@@ -33,7 +36,7 @@ class AppTopBar extends StatelessWidget {
             button: true,
             label: iconLabel,
             child: InkWell(
-              onTap: onMenu,
+              onTap: onIcon,
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
                 width: 44,

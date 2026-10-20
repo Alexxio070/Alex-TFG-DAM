@@ -32,16 +32,16 @@ class ItemTile extends StatelessWidget {
         boxShadow: [
           if (highlight) ...[
             BoxShadow(color: t.accent, spreadRadius: 3),
-            const BoxShadow(
-              color: Color.fromRGBO(22, 24, 29, 0.18),
-              offset: Offset(0, 8),
+            BoxShadow(
+              color: kShadowColor.withValues(alpha: 0.18),
+              offset: const Offset(0, 8),
               blurRadius: 20,
             ),
           ],
           if (lifted)
-            const BoxShadow(
-              color: Color.fromRGBO(22, 24, 29, 0.28),
-              offset: Offset(0, 16),
+            BoxShadow(
+              color: kShadowColor.withValues(alpha: 0.28),
+              offset: const Offset(0, 16),
               blurRadius: 32,
             ),
         ],

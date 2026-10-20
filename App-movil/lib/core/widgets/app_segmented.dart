@@ -50,10 +50,10 @@ class AppSegmented<T> extends StatelessWidget {
                       color: option == value ? t.segOn : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: option == value
-                          ? const [
+                          ? [
                               BoxShadow(
-                                color: Color.fromRGBO(22, 24, 29, 0.15),
-                                offset: Offset(0, 1),
+                                color: kShadowColor.withValues(alpha: 0.15),
+                                offset: const Offset(0, 1),
                                 blurRadius: 3,
                               ),
                             ]

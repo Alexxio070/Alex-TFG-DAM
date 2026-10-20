@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/confirm_card.dart';
 import '../terminal_tabs_viewmodel.dart';
-import 'close_tab_dialog.dart';
 
-const _barBackground = Color(0xFF15171A);
-const _barBorder = Color(0xFF2B2F34);
-const _textColor = Color(0xFFE6E8EB);
 const _mutedTextColor = Color(0xFF9AA4AF);
-const _activeBackground = Color(0xFF0D0F12);
 
 class TerminalTabsBar extends StatelessWidget {
   const TerminalTabsBar({super.key, required this.vm});
@@ -20,8 +17,8 @@ class TerminalTabsBar extends StatelessWidget {
     return Container(
       height: 44,
       decoration: const BoxDecoration(
-        color: _barBackground,
-        border: Border(bottom: BorderSide(color: _barBorder)),
+        color: kTerminalBarBackground,
+        border: Border(bottom: BorderSide(color: kTerminalBarBorder)),
       ),
       child: Row(
         children: [
@@ -30,12 +27,23 @@ class TerminalTabsBar extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               itemCount: vm.tabs.length,
-              itemBuilder: (context, index) => _TabChip(
-                label: 'Terminal ${index + 1}',
-                active: index == vm.activeIndex,
-                onTap: () => vm.selectTab(index),
-                onClose: () => showCloseTabDialog(context, onClose: () => vm.closeTab(index)),
-              ),
+              itemBuilder: (context, index) {
+                final tab = vm.tabs[index];
+                return _TabChip(
+                  label: 'Terminal ${index + 1}',
+                  active: index == vm.activeIndex,
+                  onTap: () => vm.selectTab(index),
+                  onClose: () => showConfirmCard(
+                    context,
+                    title: '¿Cerrar esta pestaña?',
+                    body:
+                        'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
+                    confirmLabel: 'Cerrar',
+                    semanticsLabel: 'Cerrar pestaña',
+                    onConfirm: () => vm.closeTab(tab),
+                  ),
+                );
+              },
             ),
           ),
           Semantics(
@@ -48,7 +56,7 @@ class TerminalTabsBar extends StatelessWidget {
               child: const SizedBox(
                 width: 44,
                 height: 44,
-                child: Center(child: AppIconView(AppIcon.plus, color: _textColor, size: 20)),
+                child: Center(child: AppIconView(AppIcon.plus, color: kTerminalForeground, size: 20)),
               ),
             ),
           ),
@@ -76,7 +84,7 @@ class _TabChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       child: Material(
-        color: active ? _activeBackground : Colors.transparent,
+        color: active ? kTerminalBackground : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.only(left: 14, right: 6),
@@ -98,7 +106,7 @@ class _TabChip extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: active ? _textColor : _mutedTextColor,
+                      color: active ? kTerminalForeground : _mutedTextColor,
                     ),
                   ),
                 ),

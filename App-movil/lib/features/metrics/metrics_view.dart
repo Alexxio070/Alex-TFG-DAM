@@ -3,18 +3,44 @@ import 'package:provider/provider.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/app_button.dart';
 import '../settings/settings_viewmodel.dart';
 import 'metrics_viewmodel.dart';
 import 'widgets/disk_card.dart';
 import 'widgets/metric_card.dart';
 
-class MetricsView extends StatelessWidget {
+class MetricsView extends StatefulWidget {
   const MetricsView({super.key});
+
+  @override
+  State<MetricsView> createState() => _MetricsViewState();
+}
+
+class _MetricsViewState extends State<MetricsView> {
+  late final MetricsViewModel _vm = context.read<MetricsViewModel>();
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _vm.start();
+    _lifecycle = AppLifecycleListener(onResume: _vm.start, onPause: _vm.stop);
+  }
+
+  @override
+  void dispose() {
+    _vm.stop();
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final metrics = context.watch<MetricsViewModel>();
     final settings = context.watch<SettingsViewModel>();
+    if (metrics.error != null && !metrics.ready) {
+      return _ErrorState(message: metrics.error!, onRetry: metrics.retry);
+    }
     final partition = metrics.partition;
     if (!metrics.ready || partition == null) return const SizedBox.shrink();
 
@@ -24,7 +50,7 @@ class MetricsView extends StatelessWidget {
     final fahrenheit = settings.tempUnit == TempUnit.fahrenheit;
     final tempNow = history.last.tempC;
     final hot = tempNow != null && settings.tempAlert && tempNow > settings.tempLimit;
-    final tempDisplay = tempNow == null ? null : (fahrenheit ? tempNow * 9 / 5 + 32 : tempNow);
+    final tempDisplay = tempNow == null ? null : settings.tempUnit.fromCelsius(tempNow);
 
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.paddingOf(context).bottom),
@@ -107,6 +133,41 @@ class _UnavailableTempCard extends StatelessWidget {
             style: TextStyle(fontSize: 13, color: t.muted),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            Text(
+              'No se puede conectar con el agente',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: t.ink),
+            ),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: t.muted),
+            ),
+            const SizedBox(height: 6),
+            AppButton(label: 'Reintentar', fill: t.accent, onPressed: onRetry),
+          ],
+        ),
       ),
     );
   }

@@ -12,10 +12,8 @@ import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
 
-const _scrim = Color.fromRGBO(22, 24, 29, 0.45);
-const _drawerWidth = 280.0;
 const _edgeDragWidth = 24.0;
-const _flingVelocity = 365 / _drawerWidth;
+const _flingVelocity = 365 / kDrawerWidth;
 
 class ShellView extends StatefulWidget {
   const ShellView({super.key});
@@ -49,11 +47,11 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
   }
 
   void _dragUpdate(DragUpdateDetails details) {
-    _controller.value += (details.primaryDelta ?? 0) / _drawerWidth;
+    _controller.value += (details.primaryDelta ?? 0) / kDrawerWidth;
   }
 
   void _dragEnd(DragEndDetails details) {
-    final velocity = (details.primaryVelocity ?? 0) / _drawerWidth;
+    final velocity = (details.primaryVelocity ?? 0) / kDrawerWidth;
     if (velocity.abs() > _flingVelocity) {
       _controller.fling(velocity: velocity);
     } else if (_controller.value > 0.5) {
@@ -98,13 +96,13 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
             children: [
               Column(
                 children: [
-                  AppTopBar(title: vm.active.label, onMenu: _controller.forward),
+                  AppTopBar(title: vm.active.label, onIcon: _controller.forward),
                   Expanded(
                     child: switch (vm.active) {
                       Section.home => const HomeView(),
                       Section.metrics => const MetricsView(),
                       Section.notes => const NotesView(),
-                      Section.terminal => const TerminalScreen(),
+                      Section.terminal => const TerminalView(),
                       Section.settings => const SettingsView(),
                     },
                   ),
@@ -121,7 +119,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                       onTap: _controller.reverse,
                       onHorizontalDragUpdate: _dragUpdate,
                       onHorizontalDragEnd: _dragEnd,
-                      child: Container(color: _scrim),
+                      child: Container(color: kScrim),
                     ),
                   ),
                 ),

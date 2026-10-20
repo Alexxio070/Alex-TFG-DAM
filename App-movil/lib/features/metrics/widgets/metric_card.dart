@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import '../../../data/models/metrics.dart';
 import 'area_chart.dart';
 
 class MetricCard extends StatelessWidget {
@@ -45,14 +46,14 @@ class MetricCard extends StatelessWidget {
             values: values,
             min: min,
             max: max,
-            label: '$title en los últimos 60 segundos',
+            label: '$title en los últimos $kHistoryLength segundos',
           ),
           DefaultTextStyle(
             style: TextStyle(fontSize: 12, color: t.muted),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Hace 60 s'),
+                const Text('Hace $kHistoryLength s'),
                 Text(scaleLabel),
                 const Text('Ahora'),
               ],

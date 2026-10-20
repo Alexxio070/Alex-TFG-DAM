@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../data/models/settings.dart';
 import '../../data/repositories/settings_repository.dart';
 
-enum TempUnit { celsius, fahrenheit }
-
-enum ConnectionMode { local, iroh }
-
-enum StorageUnit {
-  gb('GB', 1),
-  gib('GiB', 0.9313);
-
-  const StorageUnit(this.label, this.factor);
-  final String label;
-  final double factor;
-}
+export '../../data/models/settings.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   SettingsViewModel(this._repository) {
@@ -32,7 +22,7 @@ class SettingsViewModel extends ChangeNotifier {
   int _tempLimit = 85;
   int _termFont = 13;
   ConnectionMode _connectionMode = ConnectionMode.local;
-  String _agentAddress = '127.0.0.1:8443';
+  String _agentAddress = kDefaultAgentAddress;
   String _irohId = '';
 
   bool get ready => _ready;
@@ -48,18 +38,24 @@ class SettingsViewModel extends ChangeNotifier {
   String get irohId => _irohId;
 
   Future<void> _load() async {
-    final saved = await _repository.load();
-    if (saved != null) {
-      _dark = saved.dark;
-      _accent = saved.accent;
-      _tempUnit = saved.tempUnit;
-      _storageUnit = saved.storageUnit;
-      _tempAlert = saved.tempAlert;
-      _tempLimit = saved.tempLimit;
-      _termFont = saved.termFont;
-      _connectionMode = saved.connectionMode;
-      _agentAddress = saved.agentAddress;
-      _irohId = saved.irohId;
+    try {
+      final saved = await _repository.load();
+      if (saved != null) {
+        _dark = saved.dark;
+        _accent = saved.accent;
+        _tempUnit = saved.tempUnit;
+        _storageUnit = saved.storageUnit;
+        _tempAlert = saved.tempAlert;
+        _tempLimit = saved.tempLimit;
+        _termFont = saved.termFont;
+        _connectionMode = saved.connectionMode;
+        _agentAddress = saved.agentAddress;
+        _irohId = saved.irohId;
+      }
+    } catch (_) {
+      // Ajustes guardados corruptos (p. ej. un índice de enum fuera de
+      // rango): se sigue con los valores por defecto en vez de quedarse
+      // en la pantalla de carga para siempre.
     }
     _ready = true;
     notifyListeners();

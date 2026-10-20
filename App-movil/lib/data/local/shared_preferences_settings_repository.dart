@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/settings/settings_viewmodel.dart';
+import '../models/settings.dart';
 import '../repositories/settings_repository.dart';
 
 const _keyDark = 'settings_dark';
@@ -29,7 +29,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
       tempLimit: prefs.getInt(_keyTempLimit) ?? 85,
       termFont: prefs.getInt(_keyTermFont) ?? 13,
       connectionMode: ConnectionMode.values[prefs.getInt(_keyConnectionMode) ?? 0],
-      agentAddress: prefs.getString(_keyAgentAddress) ?? '127.0.0.1:8443',
+      agentAddress: prefs.getString(_keyAgentAddress) ?? kDefaultAgentAddress,
       irohId: prefs.getString(_keyIrohId) ?? '',
     );
   }
