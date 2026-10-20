@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 
+import '../../core/widgets/app_toast.dart';
 import '../settings/settings_viewmodel.dart';
 import 'terminal_tabs_viewmodel.dart';
 import 'terminal_viewmodel.dart';
@@ -113,7 +114,13 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                 ),
                 if (vm.state == TerminalSessionState.creating) const _LoadingOverlay(),
                 if (tabs.showFullToast)
-                  const Align(alignment: Alignment.bottomCenter, child: _FullToast()),
+                  const Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 24),
+                      child: AppToast(text: 'No caben más pestañas'),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -163,38 +170,6 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _theme.foreground),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FullToast extends StatelessWidget {
-  const _FullToast();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Semantics(
-        liveRegion: true,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF16181D),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(22, 24, 29, 0.25),
-                offset: Offset(0, 8),
-                blurRadius: 24,
-              ),
-            ],
-          ),
-          child: const Text(
-            'No caben más pestañas',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ),
       ),

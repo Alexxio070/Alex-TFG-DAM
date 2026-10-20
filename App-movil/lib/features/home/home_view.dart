@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_icon.dart';
+import '../../core/widgets/app_toast.dart';
 import '../../data/models/home_item.dart';
 import 'home_viewmodel.dart';
 import 'run_macro.dart';
@@ -11,7 +12,6 @@ import 'widgets/folder_edit_sheet.dart';
 import 'widgets/folder_trash_dialog.dart';
 import 'widgets/macro_grid.dart';
 import 'widgets/new_macro_dialog.dart';
-import 'widgets/run_toast.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -64,7 +64,7 @@ class HomeView extends StatelessWidget {
             left: 20,
             right: 96,
             bottom: 28 + bottomInset,
-            child: RunToast(data: toast),
+            child: AppToast(text: toast.title, subtitle: toast.command),
           ),
       ],
     );
