@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/open_link.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/widgets/app_fab.dart';
 import '../../core/widgets/app_icon.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../data/models/note.dart';
@@ -32,7 +33,6 @@ class NotesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<NotesViewModel>();
-    final t = context.tokens;
     final message = vm.message;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Stack(
@@ -49,38 +49,7 @@ class NotesView extends StatelessWidget {
         Positioned(
           right: 20,
           bottom: 28 + bottomInset,
-          child: Semantics(
-            button: true,
-            label: 'Nueva nota',
-            excludeSemantics: true,
-            onTap: () => _openForm(context),
-            child: GestureDetector(
-              onTap: () => _openForm(context),
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: t.accent,
-                  shape: BoxShape.circle,
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromRGBO(22, 24, 29, 0.25),
-                      offset: Offset(0, 10),
-                      blurRadius: 24,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: AppIconView(
-                    AppIcon.plus,
-                    color: Colors.white,
-                    size: 26,
-                    strokeWidth: 2.2,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          child: AppFab(label: 'Nueva nota', onTap: () => _openForm(context)),
         ),
         if (message != null)
           Positioned(

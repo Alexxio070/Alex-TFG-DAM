@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/app_tokens.dart';
-import '../../core/widgets/app_icon.dart';
+import '../../core/widgets/app_fab.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../data/models/home_item.dart';
 import 'home_viewmodel.dart';
@@ -55,7 +54,8 @@ class HomeView extends StatelessWidget {
           Positioned(
             right: 20,
             bottom: 28 + bottomInset,
-            child: _AddButton(
+            child: AppFab(
+              label: 'Añadir macro',
               onTap: () => vm.isFull ? vm.showFullToast() : showNewMacroDialog(context),
             ),
           ),
@@ -71,44 +71,3 @@ class HomeView extends StatelessWidget {
   }
 }
 
-class _AddButton extends StatelessWidget {
-  const _AddButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Añadir macro',
-      excludeSemantics: true,
-      onTap: onTap,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: context.tokens.accent,
-            shape: BoxShape.circle,
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(22, 24, 29, 0.25),
-                offset: Offset(0, 10),
-                blurRadius: 24,
-              ),
-            ],
-          ),
-          child: const Center(
-            child: AppIconView(
-              AppIcon.plus,
-              color: Colors.white,
-              size: 26,
-              strokeWidth: 2.2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
