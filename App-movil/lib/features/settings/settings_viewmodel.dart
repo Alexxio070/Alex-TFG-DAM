@@ -22,7 +22,7 @@ class SettingsViewModel extends ChangeNotifier {
   int _tempLimit = 85;
   int _termFont = 13;
   ConnectionMode _connectionMode = ConnectionMode.local;
-  String _agentAddress = '127.0.0.1:8443';
+  String _agentAddress = kDefaultAgentAddress;
   String _irohId = '';
 
   bool get ready => _ready;

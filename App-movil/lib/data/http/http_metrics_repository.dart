@@ -69,7 +69,7 @@ class HttpMetricsRepository implements MetricsRepository {
   @override
   Future<List<MetricSample>> loadHistory() async {
     final sample = await _parsed(_sample);
-    return List.generate(60, (_) => sample);
+    return List.generate(kHistoryLength, (_) => sample);
   }
 
   @override

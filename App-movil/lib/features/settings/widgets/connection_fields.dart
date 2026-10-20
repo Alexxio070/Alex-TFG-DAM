@@ -72,7 +72,9 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
           controller: _controller,
           focusColor: t.accent,
           mono: true,
-          hint: s.connectionMode == ConnectionMode.local ? '127.0.0.1:8443' : 'Identificador iroh',
+          hint: s.connectionMode == ConnectionMode.local
+              ? kDefaultAgentAddress
+              : 'Identificador iroh',
           onChanged: (_) => setState(() => _error = null),
         ),
         if (_error != null) Text(_error!, style: const TextStyle(fontSize: 12, color: kRed)),

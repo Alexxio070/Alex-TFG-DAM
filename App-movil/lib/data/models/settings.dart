@@ -1,3 +1,5 @@
+const kDefaultAgentAddress = '127.0.0.1:8443';
+
 enum TempUnit { celsius, fahrenheit }
 
 enum ConnectionMode { local, iroh }

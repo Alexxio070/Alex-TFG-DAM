@@ -12,9 +12,8 @@ import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
 
-const _drawerWidth = 280.0;
 const _edgeDragWidth = 24.0;
-const _flingVelocity = 365 / _drawerWidth;
+const _flingVelocity = 365 / kDrawerWidth;
 
 class ShellView extends StatefulWidget {
   const ShellView({super.key});
@@ -48,11 +47,11 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
   }
 
   void _dragUpdate(DragUpdateDetails details) {
-    _controller.value += (details.primaryDelta ?? 0) / _drawerWidth;
+    _controller.value += (details.primaryDelta ?? 0) / kDrawerWidth;
   }
 
   void _dragEnd(DragEndDetails details) {
-    final velocity = (details.primaryVelocity ?? 0) / _drawerWidth;
+    final velocity = (details.primaryVelocity ?? 0) / kDrawerWidth;
     if (velocity.abs() > _flingVelocity) {
       _controller.fling(velocity: velocity);
     } else if (_controller.value > 0.5) {

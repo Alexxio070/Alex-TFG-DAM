@@ -32,7 +32,7 @@ class AppDrawer extends StatelessWidget {
     final t = context.tokens;
     final padding = MediaQuery.paddingOf(context);
     return Container(
-      width: 280,
+      width: kDrawerWidth,
       decoration: BoxDecoration(
         color: t.surface,
         boxShadow: [

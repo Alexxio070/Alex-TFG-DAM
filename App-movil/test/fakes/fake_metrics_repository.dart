@@ -29,7 +29,7 @@ class FakeMetricsRepository implements MetricsRepository {
       );
 
   @override
-  Future<List<MetricSample>> loadHistory() async => List.generate(60, (_) => _next());
+  Future<List<MetricSample>> loadHistory() async => List.generate(kHistoryLength, (_) => _next());
 
   @override
   Stream<MetricSample> watch() => Stream.periodic(const Duration(seconds: 1), (_) => _next());

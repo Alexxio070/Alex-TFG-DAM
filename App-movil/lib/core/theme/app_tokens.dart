@@ -46,6 +46,8 @@ const kTerminalGreen = Color(0xFF7EE787);
 
 const kMonoFont = 'JetBrainsMono';
 
+const kDrawerWidth = 280.0;
+
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
     required this.bg,
