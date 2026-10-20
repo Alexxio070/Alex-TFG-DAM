@@ -85,14 +85,13 @@ class MainScreen(Screen):
 
     Button:hover, Button:focus {
         background: ansi_blue;
-        color: ansi_bright_white;
+        color: ansi_white;
         border: round ansi_blue;
     }
 
     Button.-selected {
-        background: ansi_blue;
         border: round ansi_cyan;
-        color: ansi_bright_white;
+        text-style: bold reverse;
     }
 
     Footer, FooterKey, .footer-key--key, .footer-key--description {
