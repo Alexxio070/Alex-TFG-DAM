@@ -11,6 +11,8 @@ import 'partition_menu.dart';
 
 const _holdDuration = Duration(seconds: 1);
 const _holdSlop = 10.0;
+const _menuOffset = Offset(12, 60);
+const _menuBottomMargin = 16.0;
 
 class DiskCard extends StatefulWidget {
   const DiskCard({
@@ -37,6 +39,7 @@ class _DiskCardState extends State<DiskCard> {
   Offset? _holdStart;
   bool _pressing = false;
   double _width = 0;
+  double _anchorTop = 0;
 
   @override
   void dispose() {
@@ -45,7 +48,9 @@ class _DiskCardState extends State<DiskCard> {
   }
 
   void _openMenu() {
-    _width = context.size?.width ?? 0;
+    final box = context.findRenderObject() as RenderBox;
+    _width = box.size.width;
+    _anchorTop = box.localToGlobal(Offset.zero).dy;
     _menu.show();
   }
 
@@ -88,38 +93,49 @@ class _DiskCardState extends State<DiskCard> {
     final label = unit.label;
     return OverlayPortal(
       controller: _menu,
-      overlayChildBuilder: (_) => Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _menu.hide,
-              child: const SizedBox.expand(),
+      overlayChildBuilder: (overlayContext) {
+        final screenHeight = MediaQuery.sizeOf(overlayContext).height;
+        final bottomInset = MediaQuery.paddingOf(overlayContext).bottom;
+        final maxMenuHeight = (screenHeight - _anchorTop - _menuOffset.dy - bottomInset - _menuBottomMargin)
+            .clamp(0.0, double.infinity);
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _menu.hide,
+                child: const SizedBox.expand(),
+              ),
             ),
-          ),
-          CompositedTransformFollower(
-            link: _link,
-            targetAnchor: Alignment.topLeft,
-            followerAnchor: Alignment.topLeft,
-            offset: const Offset(12, 60),
-            child: SizedBox(
-              width: _width - 24,
-              child: Material(
-                type: MaterialType.transparency,
-                child: PartitionMenu(
-                  partitions: widget.partitions,
-                  selectedId: p.id,
-                  unit: unit,
-                  onPick: (id) {
-                    _menu.hide();
-                    widget.onSelect(id);
-                  },
+            CompositedTransformFollower(
+              link: _link,
+              targetAnchor: Alignment.topLeft,
+              followerAnchor: Alignment.topLeft,
+              offset: _menuOffset,
+              child: SizedBox(
+                width: _width - 24,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: maxMenuHeight),
+                    child: SingleChildScrollView(
+                      child: PartitionMenu(
+                        partitions: widget.partitions,
+                        selectedId: p.id,
+                        unit: unit,
+                        onPick: (id) {
+                          _menu.hide();
+                          widget.onSelect(id);
+                        },
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
       child: CompositedTransformTarget(
         link: _link,
         child: Listener(
