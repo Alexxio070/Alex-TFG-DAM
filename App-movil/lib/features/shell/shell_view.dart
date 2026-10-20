@@ -12,7 +12,6 @@ import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/app_top_bar.dart';
 
-const _scrim = Color.fromRGBO(22, 24, 29, 0.45);
 const _drawerWidth = 280.0;
 const _edgeDragWidth = 24.0;
 const _flingVelocity = 365 / _drawerWidth;
@@ -121,7 +120,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                       onTap: _controller.reverse,
                       onHorizontalDragUpdate: _dragUpdate,
                       onHorizontalDragEnd: _dragEnd,
-                      child: Container(color: _scrim),
+                      child: Container(color: kScrim),
                     ),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 
+import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_toast.dart';
 import '../settings/settings_viewmodel.dart';
 import 'terminal_tabs_viewmodel.dart';
@@ -10,32 +11,30 @@ import 'terminal_viewmodel.dart';
 import 'widgets/extra_keys_bar.dart';
 import 'widgets/terminal_tabs_bar.dart';
 
-const _background = Color(0xFF0D0F12);
-
 const _theme = TerminalTheme(
-  cursor: Color(0xFFE6E8EB),
+  cursor: kTerminalForeground,
   selection: Color(0x66E6E8EB),
-  foreground: Color(0xFFE6E8EB),
-  background: _background,
-  black: Color(0xFF0D0F12),
+  foreground: kTerminalForeground,
+  background: kTerminalBackground,
+  black: kTerminalBackground,
   red: Color(0xFFFF7B72),
-  green: Color(0xFF7EE787),
+  green: kTerminalGreen,
   yellow: Color(0xFFE3B341),
   blue: Color(0xFF79C0FF),
   magenta: Color(0xFFD2A8FF),
   cyan: Color(0xFF56D4DD),
-  white: Color(0xFFE6E8EB),
+  white: kTerminalForeground,
   brightBlack: Color(0xFF6E7681),
   brightRed: Color(0xFFFFA198),
-  brightGreen: Color(0xFF7EE787),
+  brightGreen: kTerminalGreen,
   brightYellow: Color(0xFFF2CC60),
   brightBlue: Color(0xFFA5D6FF),
   brightMagenta: Color(0xFFE2C5FF),
   brightCyan: Color(0xFF76E3EA),
   brightWhite: Color(0xFFFFFFFF),
   searchHitBackground: Color(0xFFE3B341),
-  searchHitBackgroundCurrent: Color(0xFF7EE787),
-  searchHitForeground: Color(0xFF0D0F12),
+  searchHitBackgroundCurrent: kTerminalGreen,
+  searchHitForeground: kTerminalBackground,
 );
 
 class TerminalScreen extends StatefulWidget {
@@ -81,13 +80,13 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
     final keyboardOpen = View.of(context).viewInsets.bottom > 0;
     if (tabs.tabs.isEmpty) {
       return ColoredBox(
-        color: _background,
+        color: kTerminalBackground,
         child: _EmptyState(onTrigger: () => _trigger(tabs)),
       );
     }
     final vm = tabs.active;
     return ColoredBox(
-      color: _background,
+      color: kTerminalBackground,
       child: Column(
         children: [
           TerminalTabsBar(vm: tabs),
@@ -183,7 +182,7 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: _background,
+      color: kTerminalBackground,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

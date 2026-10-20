@@ -28,7 +28,7 @@ void runMacro(BuildContext context, Macro macro) {
         decoration: BoxDecoration(color: t.bg, borderRadius: BorderRadius.circular(10)),
         child: Text(
           '\$ ${macro.command}',
-          style: TextStyle(fontFamily: 'JetBrainsMono', fontSize: 13, color: t.muted2),
+          style: TextStyle(fontFamily: kMonoFont, fontSize: 13, color: t.muted2),
         ),
       ),
       onConfirm: execute,

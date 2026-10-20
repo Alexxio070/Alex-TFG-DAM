@@ -258,7 +258,7 @@ class _PartitionChip extends StatelessWidget {
                   Text(
                     mount,
                     style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
+                      fontFamily: kMonoFont,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: t.ink,
@@ -297,10 +297,10 @@ class _PartitionMenu extends StatelessWidget {
         color: t.surface,
         border: Border.all(color: t.border),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(22, 24, 29, 0.22),
-            offset: Offset(0, 16),
+            color: kShadowColor.withValues(alpha: 0.22),
+            offset: const Offset(0, 16),
             blurRadius: 36,
           ),
         ],
@@ -365,7 +365,7 @@ class _PartitionOption extends StatelessWidget {
                       Text(
                         partition.mount,
                         style: TextStyle(
-                          fontFamily: 'JetBrainsMono',
+                          fontFamily: kMonoFont,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: color,

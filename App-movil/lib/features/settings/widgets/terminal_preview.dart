@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_tokens.dart';
+
 class TerminalPreview extends StatelessWidget {
   const TerminalPreview({super.key, required this.fontSize});
 
@@ -13,7 +15,7 @@ class TerminalPreview extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D0F12),
+          color: kTerminalBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text.rich(
@@ -22,10 +24,10 @@ class TerminalPreview extends StatelessWidget {
               fontFamily: 'monospace',
               fontSize: size,
               height: 1.5,
-              color: const Color(0xFFE6E8EB),
+              color: kTerminalForeground,
             ),
             children: [
-              const TextSpan(text: 'usuario@pc', style: TextStyle(color: Color(0xFF7EE787))),
+              const TextSpan(text: 'usuario@pc', style: TextStyle(color: kTerminalGreen)),
               const TextSpan(text: ':'),
               const TextSpan(text: '~', style: TextStyle(color: Color(0xFF79C0FF))),
               const TextSpan(text: r'$ ls'),
@@ -35,7 +37,7 @@ class TerminalPreview extends StatelessWidget {
                   width: size * 0.6,
                   height: size * 1.2,
                   margin: const EdgeInsets.only(left: 1),
-                  color: const Color(0xFFE6E8EB),
+                  color: kTerminalForeground,
                 ),
               ),
             ],

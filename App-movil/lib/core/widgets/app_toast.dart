@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_tokens.dart';
+
 class AppToast extends StatelessWidget {
   const AppToast({super.key, required this.text, this.subtitle});
 
@@ -13,12 +15,12 @@ class AppToast extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF16181D),
+          color: kShadowColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color.fromRGBO(22, 24, 29, 0.25),
-              offset: Offset(0, 8),
+              color: kShadowColor.withValues(alpha: 0.25),
+              offset: const Offset(0, 8),
               blurRadius: 24,
             ),
           ],
@@ -44,7 +46,7 @@ class AppToast extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontFamily: 'JetBrainsMono',
+                  fontFamily: kMonoFont,
                   fontSize: 12,
                   color: Color(0xFFC9CDD4),
                 ),

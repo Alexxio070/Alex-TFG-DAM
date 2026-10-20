@@ -24,10 +24,10 @@ class AppFab extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.tokens.accent,
             shape: BoxShape.circle,
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(22, 24, 29, 0.25),
-                offset: Offset(0, 10),
+                color: kShadowColor.withValues(alpha: 0.25),
+                offset: const Offset(0, 10),
                 blurRadius: 24,
               ),
             ],

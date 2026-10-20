@@ -369,10 +369,10 @@ class _Trash extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: hot ? kRed : t.surface,
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color.fromRGBO(22, 24, 29, 0.2),
-                  offset: Offset(0, 8),
+                  color: kShadowColor.withValues(alpha: 0.2),
+                  offset: const Offset(0, 8),
                   blurRadius: 24,
                 ),
               ],

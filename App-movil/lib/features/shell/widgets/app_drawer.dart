@@ -35,8 +35,12 @@ class AppDrawer extends StatelessWidget {
       width: 280,
       decoration: BoxDecoration(
         color: t.surface,
-        boxShadow: const [
-          BoxShadow(color: Color.fromRGBO(22, 24, 29, 0.18), offset: Offset(12, 0), blurRadius: 32),
+        boxShadow: [
+          BoxShadow(
+            color: kShadowColor.withValues(alpha: 0.18),
+            offset: const Offset(12, 0),
+            blurRadius: 32,
+          ),
         ],
       ),
       child: Column(
