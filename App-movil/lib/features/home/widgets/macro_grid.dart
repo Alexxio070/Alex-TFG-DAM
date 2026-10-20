@@ -49,7 +49,6 @@ class _Press {
   final double scroll0;
   Offset last;
   bool moved = false;
-  bool fired = false;
 }
 
 class _Drag {
@@ -167,7 +166,6 @@ class _MacroGridState extends State<MacroGrid> {
 
   void _startDrag(_Press press, int index) {
     if (_press != press || press.moved) return;
-    press.fired = true;
     final slot = _geo.slot(index);
     final tilePos = Offset(slot.dx, slot.dy - press.scroll0);
     setState(() => _drag = _Drag(id: press.id, pos: press.last, offset: press.start - tilePos));
@@ -217,7 +215,7 @@ class _MacroGridState extends State<MacroGrid> {
     final drag = _drag;
     if (drag != null) {
       _drop(drag);
-    } else if (!press.fired && !press.moved) {
+    } else if (!press.moved) {
       final item = widget.items.where((i) => i.id == press.id).firstOrNull;
       if (item != null) widget.onTap(item);
     }
