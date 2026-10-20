@@ -27,9 +27,8 @@ class PairingSection(Container):
     }
 
     PairingSection Button.-selected {
-        background: ansi_blue;
         border: round ansi_cyan;
-        color: ansi_bright_white;
+        text-style: bold reverse;
     }
     """
 
