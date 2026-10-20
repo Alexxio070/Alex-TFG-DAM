@@ -3,77 +3,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_tokens.dart';
-import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/home_item.dart';
 import 'item_tile.dart';
+import 'macro_grid_geometry.dart';
+import 'trash_indicator.dart';
 
-const _columns = 2;
-const _gap = 18.0;
-const _sideMargin = 20.0;
-const _topMargin = 24.0;
 const _scrollAfter = 6;
 const _longPress = Duration(milliseconds: 420);
 const _editHold = Duration(milliseconds: 1500);
 const _moveSlop = 8.0;
 const _mergeZone = 52.0;
 const _trashRadius = 52.0;
-
-class _Geometry {
-  _Geometry(Size size, double bottomInset)
-      : tile = (size.width - 2 * _sideMargin - _gap) / _columns,
-        gridHeight = size.height * 576 / 780,
-        trash = Offset(size.width / 2, size.height - 72 - bottomInset),
-        width = size.width;
-
-  final double tile;
-  final double gridHeight;
-  final Offset trash;
-  final double width;
-
-  Offset slot(int index) => Offset(
-        _sideMargin + (index % _columns) * (tile + _gap),
-        _topMargin + (index ~/ _columns) * (tile + _gap),
-      );
-
-  double contentHeight(int count) =>
-      _topMargin + ((count + _columns - 1) ~/ _columns) * (tile + _gap);
-}
-
-class _Press {
-  _Press(this.pointer, this.id, this.start, this.scroll0) : last = start;
-
-  final int pointer;
-  final String id;
-  final Offset start;
-  final double scroll0;
-  Offset last;
-  bool moved = false;
-}
-
-class _Drag {
-  const _Drag({required this.id, required this.pos, required this.offset});
-
-  final String id;
-  final Offset pos;
-  final Offset offset;
-
-  _Drag at(Offset p) => _Drag(id: id, pos: p, offset: offset);
-}
-
-sealed class _Hit {}
-
-class _TrashHit extends _Hit {}
-
-class _MergeHit extends _Hit {
-  _MergeHit(this.index);
-  final int index;
-}
-
-class _MoveHit extends _Hit {
-  _MoveHit(this.index);
-  final int index;
-}
+const _autoScrollZone = 50.0;
+const _autoScrollStep = 10.0;
 
 class MacroGrid extends StatefulWidget {
   const MacroGrid({
@@ -101,9 +43,9 @@ class MacroGrid extends StatefulWidget {
 
 class _MacroGridState extends State<MacroGrid> {
   final _scroll = ScrollController();
-  late _Geometry _geo = _Geometry(Size.zero, 0);
-  _Press? _press;
-  _Drag? _drag;
+  late Geometry _geo = Geometry(Size.zero, 0);
+  Press? _press;
+  Drag? _drag;
   Timer? _longTimer;
   Timer? _editTimer;
 
@@ -134,22 +76,22 @@ class _MacroGridState extends State<MacroGrid> {
     return null;
   }
 
-  _Hit _hit(Offset p, String draggedId) {
+  Hit _hit(Offset p, String draggedId) {
     final items = widget.items;
-    if ((p - _geo.trash).distance < _trashRadius) return _TrashHit();
+    if ((p - _geo.trash).distance < _trashRadius) return TrashHit();
     final y = p.dy + _offset;
-    final col = p.dx < _geo.width / 2 ? 0 : 1;
-    final row = math.max(0, ((y - _topMargin + _gap / 2) / (_geo.tile + _gap)).floor());
-    final index = row * _columns + col;
+    final col = (p.dx / (_geo.width / columns)).floor().clamp(0, columns - 1);
+    final row = math.max(0, ((y - topMargin + gap / 2) / (_geo.tile + gap)).floor());
+    final index = row * columns + col;
     final dragged = items.where((i) => i.id == draggedId).firstOrNull;
     if (index < items.length && items[index].id != draggedId && dragged is Macro) {
       final slot = _geo.slot(index);
       final center = Offset(slot.dx + _geo.tile / 2, slot.dy + _geo.tile / 2);
       if ((p.dx - center.dx).abs() < _mergeZone && (y - center.dy).abs() < _mergeZone) {
-        return _MergeHit(index);
+        return MergeHit(index);
       }
     }
-    return _MoveHit(math.min(index, items.length - 1));
+    return MoveHit(math.min(index, items.length - 1));
   }
 
   void _onDown(PointerDownEvent e) {
@@ -157,18 +99,18 @@ class _MacroGridState extends State<MacroGrid> {
     final index = _tileAt(e.localPosition);
     if (index == null) return;
     final item = widget.items[index];
-    final press = _Press(e.pointer, item.id, e.localPosition, _offset);
+    final press = Press(e.pointer, item.id, e.localPosition, _offset);
     _press = press;
     _longTimer?.cancel();
     _editTimer?.cancel();
     _longTimer = Timer(_longPress, () => _startDrag(press, index));
   }
 
-  void _startDrag(_Press press, int index) {
+  void _startDrag(Press press, int index) {
     if (_press != press || press.moved) return;
     final slot = _geo.slot(index);
     final tilePos = Offset(slot.dx, slot.dy - press.scroll0);
-    setState(() => _drag = _Drag(id: press.id, pos: press.last, offset: press.start - tilePos));
+    setState(() => _drag = Drag(id: press.id, pos: press.last, offset: press.start - tilePos));
     widget.onDraggingChanged(true);
     final item = widget.items[index];
     if (item is Folder) {
@@ -194,10 +136,10 @@ class _MacroGridState extends State<MacroGrid> {
     final drag = _drag;
     if (drag != null) {
       if (_scrollable) {
-        if (p.dy > _geo.gridHeight - 50) {
-          _scrollTo(_offset + 10);
-        } else if (p.dy < 50) {
-          _scrollTo(_offset - 10);
+        if (p.dy > _geo.gridHeight - _autoScrollZone) {
+          _scrollTo(_offset + _autoScrollStep);
+        } else if (p.dy < _autoScrollZone) {
+          _scrollTo(_offset - _autoScrollStep);
         }
       }
       setState(() => _drag = drag.at(p));
@@ -231,16 +173,16 @@ class _MacroGridState extends State<MacroGrid> {
     }
   }
 
-  void _drop(_Drag drag) {
+  void _drop(Drag drag) {
     final hit = _hit(drag.pos, drag.id);
     setState(() => _drag = null);
     widget.onDraggingChanged(false);
     switch (hit) {
-      case _TrashHit():
+      case TrashHit():
         widget.onDelete(drag.id);
-      case _MergeHit(:final index):
+      case MergeHit(:final index):
         widget.onMerge(drag.id, index);
-      case _MoveHit(:final index):
+      case MoveHit(:final index):
         widget.onMove(drag.id, index);
     }
   }
@@ -250,11 +192,11 @@ class _MacroGridState extends State<MacroGrid> {
     final items = widget.items;
     return LayoutBuilder(
       builder: (context, constraints) {
-        _geo = _Geometry(constraints.biggest, MediaQuery.paddingOf(context).bottom);
+        _geo = Geometry(constraints.biggest, MediaQuery.paddingOf(context).bottom);
         final drag = _drag;
         final hit = drag == null ? null : _hit(drag.pos, drag.id);
         final dragged = drag == null ? null : items.where((i) => i.id == drag.id).firstOrNull;
-        final trashHot = hit is _TrashHit;
+        final trashHot = hit is TrashHit;
         return Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: _onDown,
@@ -284,7 +226,7 @@ class _MacroGridState extends State<MacroGrid> {
                 ),
               ),
               if (drag != null) ...[
-                _Trash(center: _geo.trash, hot: trashHot),
+                TrashIndicator(center: _geo.trash, hot: trashHot),
                 if (dragged != null)
                   Positioned(
                     left: drag.pos.dx - drag.offset.dx,
@@ -309,9 +251,9 @@ class _MacroGridState extends State<MacroGrid> {
     );
   }
 
-  Widget _positionedTile(HomeItem item, int index, _Drag? drag, _Hit? hit) {
+  Widget _positionedTile(HomeItem item, int index, Drag? drag, Hit? hit) {
     final slot = _geo.slot(index);
-    final isTarget = hit is _MergeHit && hit.index == index;
+    final isTarget = hit is MergeHit && hit.index == index;
     final isDragged = drag?.id == item.id;
     final label = switch (item) {
       Macro() => item.label,
@@ -337,47 +279,6 @@ class _MacroGridState extends State<MacroGrid> {
             excludeSemantics: true,
             onTap: () => widget.onTap(item),
             child: ItemTile(item: item, highlight: isTarget),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Trash extends StatelessWidget {
-  const _Trash({required this.center, required this.hot});
-
-  final Offset center;
-  final bool hot;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.tokens;
-    return Positioned(
-      left: center.dx - 32,
-      top: center.dy - 32,
-      width: 64,
-      height: 64,
-      child: IgnorePointer(
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 150),
-          scale: hot ? 1.18 : 1,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: hot ? kRed : t.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: kShadowColor.withValues(alpha: 0.2),
-                  offset: const Offset(0, 8),
-                  blurRadius: 24,
-                ),
-              ],
-            ),
-            child: Center(
-              child: AppIconView(AppIcon.trash, color: hot ? Colors.white : kRed, size: 28),
-            ),
           ),
         ),
       ),
