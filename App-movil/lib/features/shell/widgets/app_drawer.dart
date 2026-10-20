@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../shell_viewmodel.dart';
+import 'app_top_bar.dart';
 
 const _navSections = [Section.home, Section.metrics, Section.terminal, Section.notes];
 
@@ -45,37 +46,12 @@ class AppDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            height: 64 + padding.top,
-            padding: EdgeInsets.fromLTRB(12, padding.top, 12, 0),
-            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: t.line))),
-            child: Row(
-              children: [
-                Semantics(
-                  button: true,
-                  label: 'Cerrar menú',
-                  child: InkWell(
-                    onTap: onClose,
-                    borderRadius: BorderRadius.circular(12),
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: Center(child: AppIconView(AppIcon.close, color: t.ink)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  active.label,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.18,
-                    color: t.ink,
-                  ),
-                ),
-              ],
-            ),
+          AppTopBar(
+            title: active.label,
+            icon: AppIcon.close,
+            iconLabel: 'Cerrar menú',
+            borderColor: t.line,
+            onIcon: onClose,
           ),
           Expanded(
             child: Padding(

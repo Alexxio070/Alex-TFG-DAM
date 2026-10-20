@@ -6,6 +6,7 @@ import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_icon.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/confirm_card.dart';
+import '../../core/widgets/field_label.dart';
 import '../../data/models/note.dart';
 import '../shell/widgets/app_top_bar.dart';
 import 'notes_viewmodel.dart';
@@ -85,7 +86,7 @@ class _NoteFormViewState extends State<NoteFormView> {
             title: _editing ? 'Editar nota' : 'Nueva nota',
             icon: AppIcon.close,
             iconLabel: 'Cerrar sin guardar',
-            onMenu: () => Navigator.of(context).pop(),
+            onIcon: () => Navigator.of(context).pop(),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -94,20 +95,15 @@ class _NoteFormViewState extends State<NoteFormView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 12,
                 children: [
-                  Text(
-                    'Contenido',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: t.muted2,
+                  FieldLabel(
+                    label: 'Contenido',
+                    child: AppTextField(
+                      controller: _content,
+                      focusColor: t.accent,
+                      multiline: true,
+                      autofocus: !_editing,
+                      onChanged: (_) => setState(() {}),
                     ),
-                  ),
-                  AppTextField(
-                    controller: _content,
-                    focusColor: t.accent,
-                    multiline: true,
-                    autofocus: !_editing,
-                    onChanged: (_) => setState(() {}),
                   ),
                   if (_editing)
                     Text(

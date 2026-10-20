@@ -96,7 +96,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
             children: [
               Column(
                 children: [
-                  AppTopBar(title: vm.active.label, onMenu: _controller.forward),
+                  AppTopBar(title: vm.active.label, onIcon: _controller.forward),
                   Expanded(
                     child: switch (vm.active) {
                       Section.home => const HomeView(),

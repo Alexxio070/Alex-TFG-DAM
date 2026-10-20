@@ -78,12 +78,10 @@ class _NotesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
     if (!vm.isPaired) {
-      return _Placeholder(
+      return const _Placeholder(
         title: 'Sin emparejar',
         body: 'Empareja el móvil para ver tus notas.',
-        color: t.muted,
       );
     }
     if (vm.loading && vm.items.isEmpty) {
@@ -91,16 +89,11 @@ class _NotesList extends StatelessWidget {
     }
     if (vm.items.isEmpty) {
       return vm.query.isEmpty
-          ? _Placeholder(
+          ? const _Placeholder(
               title: 'Aún no hay notas',
               body: 'Crea una nota para dejarla también en tu PC.',
-              color: t.muted,
             )
-          : _Placeholder(
-              title: 'Sin resultados para «${vm.query}»',
-              body: '',
-              color: t.muted,
-            );
+          : _Placeholder(title: 'Sin resultados para «${vm.query}»', body: '');
     }
     return RefreshIndicator(
       onRefresh: vm.load,
@@ -125,11 +118,10 @@ class _NotesList extends StatelessWidget {
 }
 
 class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.title, required this.body, required this.color});
+  const _Placeholder({required this.title, required this.body});
 
   final String title;
   final String body;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +142,7 @@ class _Placeholder extends StatelessWidget {
               Text(
                 body,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: color),
+                style: TextStyle(fontSize: 13, color: t.muted),
               ),
           ],
         ),

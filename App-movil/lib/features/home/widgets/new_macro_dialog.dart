@@ -6,6 +6,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/app_switch.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/field_label.dart';
 import '../../../core/widgets/modal_card.dart';
 import '../../../data/models/home_item.dart';
 import '../home_viewmodel.dart';
@@ -86,7 +87,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
               'Nueva macro',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
             ),
-            _Field(
+            FieldLabel(
               label: 'Nombre',
               error: _nameError,
               child: AppTextField(
@@ -96,7 +97,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
                 onChanged: (_) => setState(() {}),
               ),
             ),
-            _Field(
+            FieldLabel(
               label: 'Comando',
               child: AppTextField(
                 controller: _command,
@@ -106,7 +107,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
                 onChanged: (_) => setState(() {}),
               ),
             ),
-            _Field(
+            FieldLabel(
               label: 'Icono',
               child: Row(
                 spacing: 10,
@@ -208,28 +209,3 @@ class _IconOption extends StatelessWidget {
   }
 }
 
-class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.child, this.error});
-
-  final String label;
-  final Widget child;
-  final String? error;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.tokens;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 8,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2),
-        ),
-        child,
-        if (error != null)
-          Text(error!, style: const TextStyle(fontSize: 12, color: kRed)),
-      ],
-    );
-  }
-}
