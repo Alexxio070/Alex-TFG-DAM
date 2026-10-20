@@ -79,8 +79,8 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 - Al arrancar, el área de datos está vacía y ningún botón aparece marcado.
 - Pulsar un botón de sección muestra su vista y carga sus datos. Cambiar de sección reemplaza la vista.
-- El botón de la sección activa se resalta (fondo y borde azules); igual para la subpestaña activa
-  dentro de Emparejamiento.
+- El botón de la sección activa se resalta con el estilo "primario" del tema de Textual; igual
+  para la subpestaña activa dentro de Emparejamiento.
 - Los datos se leen de la base de datos SQLite en `~/.local/share/companion/companion.db`
   (creada por `agent/schema.sql`), salvo el historial de comandos de terminal.
 - Consultas de la base de datos: `sqlite_master` para las tablas, `PRAGMA table_info` para las
@@ -97,9 +97,12 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 ## Colores
 
-- Se usan los 16 colores ANSI del tema de la terminal (`ansi_green`, `ansi_blue`, `ansi_cyan`,
-  `ansi_red`, `ansi_bright_black`, etc.), no la paleta fija de Textual.
-- La app se crea con `ansi_color=True`.
+- **Cambiado (20/10/2026):** se usa la paleta propia de Textual (tema por defecto), no los
+  16 colores ANSI de la terminal. Con `ansi_color=True` varios colores con nombre (incluido
+  el blanco) resultaron casi ilegibles en terminales con una paleta ANSI personalizada —
+  depender de nombres de color no es fiable si el usuario ha recoloreado su terminal.
+- La sección o subpestaña activa se marca con `variant="primary"` del propio `Button` de
+  Textual (mecanismo del framework, con contraste garantizado por su tema), no con CSS propio.
 - La fuente es la de la propia terminal.
 
 ## Pendiente (marcado con TODO en el código)
