@@ -1,31 +1,40 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_tokens.dart';
-import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/modal_card.dart';
+import '../theme/app_tokens.dart';
+import 'app_button.dart';
+import 'modal_card.dart';
 
-Future<void> showCloseTabDialog(BuildContext context, {required VoidCallback onClose}) {
+Future<void> showConfirmCard(
+  BuildContext context, {
+  required String title,
+  String? body,
+  required String confirmLabel,
+  required VoidCallback onConfirm,
+  Color? confirmColor,
+  String? semanticsLabel,
+  Widget? extra,
+  double top = 280,
+}) {
   return showTopCard(
     context,
-    top: 280,
+    top: top,
     side: 28,
     builder: (dialogContext) {
       final t = dialogContext.tokens;
       return Semantics(
-        label: 'Cerrar pestaña',
+        label: semanticsLabel ?? title,
         child: ModalCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 12,
             children: [
               Text(
-                '¿Cerrar esta pestaña?',
+                title,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
               ),
-              Text(
-                'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
-                style: TextStyle(fontSize: 14, height: 1.45, color: t.muted2),
-              ),
+              if (body != null)
+                Text(body, style: TextStyle(fontSize: 14, height: 1.45, color: t.muted2)),
+              ?extra,
               const SizedBox(height: 6),
               Row(
                 spacing: 12,
@@ -38,11 +47,11 @@ Future<void> showCloseTabDialog(BuildContext context, {required VoidCallback onC
                   ),
                   Expanded(
                     child: AppButton(
-                      label: 'Cerrar',
-                      fill: kRed,
+                      label: confirmLabel,
+                      fill: confirmColor ?? kRed,
                       onPressed: () {
                         Navigator.of(dialogContext).pop();
-                        onClose();
+                        onConfirm();
                       },
                     ),
                   ),

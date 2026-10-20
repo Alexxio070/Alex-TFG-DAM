@@ -8,7 +8,7 @@ import '../../core/widgets/app_icon.dart';
 import '../../core/widgets/app_segmented.dart';
 import '../../core/widgets/app_stepper.dart';
 import '../../core/widgets/app_switch.dart';
-import '../../core/widgets/modal_card.dart';
+import '../../core/widgets/confirm_card.dart';
 import '../shell/shell_viewmodel.dart';
 import 'settings_viewmodel.dart';
 import 'widgets/accent_sheet.dart';
@@ -163,54 +163,13 @@ class SettingsView extends StatelessWidget {
   }
 
   Future<void> _confirmUnpair(BuildContext context, ShellViewModel shell) {
-    return showTopCard(
+    return showConfirmCard(
       context,
-      top: 280,
-      side: 28,
-      builder: (dialogContext) {
-        final t = dialogContext.tokens;
-        return Semantics(
-          label: 'Desemparejar',
-          child: ModalCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
-              children: [
-                Text(
-                  '¿Desemparejar este móvil?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
-                ),
-                Text(
-                  'Dejarás de controlar el PC desde la app hasta que vuelvas a emparejarlos.',
-                  style: TextStyle(fontSize: 14, height: 1.45, color: t.muted2),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: AppButton(
-                        label: 'Cancelar',
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                      ),
-                    ),
-                    Expanded(
-                      child: AppButton(
-                        label: 'Desemparejar',
-                        fill: kRed,
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop();
-                          shell.unpair();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      title: '¿Desemparejar este móvil?',
+      body: 'Dejarás de controlar el PC desde la app hasta que vuelvas a emparejarlos.',
+      confirmLabel: 'Desemparejar',
+      semanticsLabel: 'Desemparejar',
+      onConfirm: shell.unpair,
     );
   }
 }

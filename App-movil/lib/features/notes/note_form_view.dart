@@ -5,7 +5,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_icon.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/modal_card.dart';
+import '../../core/widgets/confirm_card.dart';
 import '../../data/models/note.dart';
 import '../shell/widgets/app_top_bar.dart';
 import 'notes_viewmodel.dart';
@@ -57,58 +57,19 @@ class _NoteFormViewState extends State<NoteFormView> {
     final vm = context.read<NotesViewModel>();
     final navigator = Navigator.of(context);
     final id = widget.note!.id;
-    return showTopCard(
+    return showConfirmCard(
       context,
-      top: 280,
-      side: 28,
-      builder: (dialogContext) {
-        final t = dialogContext.tokens;
-        return Semantics(
-          label: 'Eliminar nota',
-          child: ModalCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
-              children: [
-                Text(
-                  '¿Eliminar esta nota?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
-                ),
-                Text(
-                  'También dejará de estar en el PC.',
-                  style: TextStyle(fontSize: 14, height: 1.45, color: t.muted2),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: AppButton(
-                        label: 'Cancelar',
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                      ),
-                    ),
-                    Expanded(
-                      child: AppButton(
-                        label: 'Eliminar',
-                        fill: kRed,
-                        onPressed: () async {
-                          Navigator.of(dialogContext).pop();
-                          try {
-                            await vm.delete(id);
-                            navigator.pop();
-                          } catch (_) {
-                            if (mounted) setState(() => _error = 'No se pudo eliminar la nota');
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
+      title: '¿Eliminar esta nota?',
+      body: 'También dejará de estar en el PC.',
+      confirmLabel: 'Eliminar',
+      semanticsLabel: 'Eliminar nota',
+      onConfirm: () async {
+        try {
+          await vm.delete(id);
+          navigator.pop();
+        } catch (_) {
+          if (mounted) setState(() => _error = 'No se pudo eliminar la nota');
+        }
       },
     );
   }

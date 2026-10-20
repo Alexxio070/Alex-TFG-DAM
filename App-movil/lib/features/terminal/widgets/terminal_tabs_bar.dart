@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_icon.dart';
+import '../../../core/widgets/confirm_card.dart';
 import '../terminal_tabs_viewmodel.dart';
-import 'close_tab_dialog.dart';
 
 const _barBackground = Color(0xFF15171A);
 const _barBorder = Color(0xFF2B2F34);
@@ -36,7 +36,15 @@ class TerminalTabsBar extends StatelessWidget {
                   label: 'Terminal ${index + 1}',
                   active: index == vm.activeIndex,
                   onTap: () => vm.selectTab(index),
-                  onClose: () => showCloseTabDialog(context, onClose: () => vm.closeTab(tab)),
+                  onClose: () => showConfirmCard(
+                    context,
+                    title: '¿Cerrar esta pestaña?',
+                    body:
+                        'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
+                    confirmLabel: 'Cerrar',
+                    semanticsLabel: 'Cerrar pestaña',
+                    onConfirm: () => vm.closeTab(tab),
+                  ),
                 );
               },
             ),
