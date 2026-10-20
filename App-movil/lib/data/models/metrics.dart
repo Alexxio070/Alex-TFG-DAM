@@ -1,3 +1,6 @@
+// Cuántas muestras guarda el historial de métricas (60 s a 1 muestra/s).
+const kHistoryLength = 60;
+
 class MetricSample {
   const MetricSample({required this.cpu, required this.tempC, required this.ramGb});
 

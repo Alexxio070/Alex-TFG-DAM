@@ -33,16 +33,23 @@ class NotesViewModel extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    final requestedQuery = _query;
     _loading = true;
     notifyListeners();
+    List<Note>? items;
+    String? error;
     try {
-      _items = await _notes.list(query: _query);
+      items = await _notes.list(query: requestedQuery);
     } catch (_) {
-      showMessage('No se pudieron cargar las notas');
-    } finally {
-      _loading = false;
-      notifyListeners();
+      error = 'No se pudieron cargar las notas';
     }
+    // Ha salido una búsqueda más reciente mientras esperábamos: se
+    // descarta esta respuesta para no pisar un resultado más nuevo.
+    if (requestedQuery != _query) return;
+    if (items != null) _items = items;
+    if (error != null) showMessage(error);
+    _loading = false;
+    notifyListeners();
   }
 
   void search(String query) {

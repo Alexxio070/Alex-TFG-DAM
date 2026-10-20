@@ -42,7 +42,7 @@ class AppTextField extends StatelessWidget {
       enableSuggestions: !mono,
       textCapitalization: TextCapitalization.none,
       style: TextStyle(
-        fontFamily: mono ? 'JetBrainsMono' : null,
+        fontFamily: mono ? kMonoFont : null,
         fontSize: fontSize,
         height: multiline ? 1.5 : 1,
         color: t.ink,

@@ -5,3 +5,12 @@ abstract class MetricsRepository {
   Future<List<MetricSample>> loadHistory();
   Stream<MetricSample> watch();
 }
+
+class AgentUnavailableException implements Exception {
+  AgentUnavailableException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/painting.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../data/models/home_item.dart';
@@ -18,7 +18,6 @@ class HomeViewModel extends ChangeNotifier {
 
   final MacroRepository _repository;
   List<HomeItem> _items = [];
-  int _nextId = 100;
   bool _dragging = false;
   RunToastData? _toast;
   Timer? _toastTimer;
@@ -43,7 +42,6 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void execute(Macro macro) {
-    HapticFeedback.lightImpact();
     _repository.run(macro);
     _showToast((title: 'Ejecutando «${macro.label}»', command: macro.command), 2200);
   }
@@ -59,13 +57,12 @@ class HomeViewModel extends ChangeNotifier {
     MacroKind kind = MacroKind.bolt,
   }) {
     final macro = Macro(
-      id: 'm$_nextId',
+      id: 'm${_newId()}',
       label: name,
       command: command,
       confirm: confirm,
       kind: kind,
     );
-    _nextId++;
     _commit([..._items, macro]);
   }
 
@@ -88,12 +85,11 @@ class HomeViewModel extends ChangeNotifier {
       items[targetIndex] = target.copyWith(children: [...target.children, moving]);
     } else if (target is Macro) {
       items[targetIndex] = Folder(
-        id: 'f$_nextId',
+        id: 'f${_newId()}',
         name: 'Carpeta',
         color: kAccentColors.first,
         children: [target, moving],
       );
-      _nextId++;
     }
     items.removeAt(from);
     _commit(items);
@@ -121,6 +117,8 @@ class HomeViewModel extends ChangeNotifier {
         if (item is Folder && item.id == id) item.copyWith(name: label, color: color) else item,
     ]);
   }
+
+  int _newId() => DateTime.now().microsecondsSinceEpoch;
 
   void _commit(List<HomeItem> items) {
     _items = items;

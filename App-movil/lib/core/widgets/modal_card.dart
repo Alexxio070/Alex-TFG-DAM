@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
-const _scrim = Color.fromRGBO(22, 24, 29, 0.45);
-
 Future<void> showTopCard(
   BuildContext context, {
   required double top,
@@ -14,7 +12,7 @@ Future<void> showTopCard(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Cerrar',
-    barrierColor: _scrim,
+    barrierColor: kScrim,
     transitionDuration: Duration.zero,
     pageBuilder: (context, _, _) => Material(
       type: MaterialType.transparency,
@@ -34,7 +32,7 @@ Future<void> showBottomCard(BuildContext context, {required WidgetBuilder builde
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Cerrar',
-    barrierColor: _scrim,
+    barrierColor: kScrim,
     transitionDuration: Duration.zero,
     pageBuilder: (context, _, _) => Material(
       type: MaterialType.transparency,
@@ -63,8 +61,12 @@ class ModalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.tokens.surface,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(color: Color.fromRGBO(22, 24, 29, 0.25), offset: Offset(0, 16), blurRadius: 40),
+        boxShadow: [
+          BoxShadow(
+            color: kShadowColor.withValues(alpha: 0.25),
+            offset: const Offset(0, 16),
+            blurRadius: 40,
+          ),
         ],
       ),
       child: child,
@@ -91,8 +93,12 @@ class BottomSheetCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: t.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: const [
-          BoxShadow(color: Color.fromRGBO(22, 24, 29, 0.18), offset: Offset(0, -12), blurRadius: 32),
+        boxShadow: [
+          BoxShadow(
+            color: kShadowColor.withValues(alpha: 0.18),
+            offset: const Offset(0, -12),
+            blurRadius: 32,
+          ),
         ],
       ),
       child: Column(

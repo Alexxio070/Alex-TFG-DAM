@@ -5,7 +5,8 @@ import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_icon.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../../core/widgets/modal_card.dart';
+import '../../core/widgets/confirm_card.dart';
+import '../../core/widgets/field_label.dart';
 import '../../data/models/note.dart';
 import '../shell/widgets/app_top_bar.dart';
 import 'notes_viewmodel.dart';
@@ -21,6 +22,8 @@ class NoteFormView extends StatefulWidget {
 
 class _NoteFormViewState extends State<NoteFormView> {
   late final _content = TextEditingController(text: widget.note?.content ?? '');
+  bool _saving = false;
+  String? _error;
 
   bool get _editing => widget.note != null;
   bool get _valid => _content.text.trim().isNotEmpty;
@@ -34,62 +37,40 @@ class _NoteFormViewState extends State<NoteFormView> {
   Future<void> _save() async {
     final vm = context.read<NotesViewModel>();
     final navigator = Navigator.of(context);
-    await vm.save(id: widget.note?.id, content: _content.text);
-    navigator.pop();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await vm.save(id: widget.note?.id, content: _content.text);
+      navigator.pop();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = 'No se pudo guardar la nota';
+        });
+      }
+    }
   }
 
   Future<void> _confirmDelete() {
     final vm = context.read<NotesViewModel>();
     final navigator = Navigator.of(context);
     final id = widget.note!.id;
-    return showTopCard(
+    return showConfirmCard(
       context,
-      top: 280,
-      side: 28,
-      builder: (dialogContext) {
-        final t = dialogContext.tokens;
-        return Semantics(
-          label: 'Eliminar nota',
-          child: ModalCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
-              children: [
-                Text(
-                  '¿Eliminar esta nota?',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
-                ),
-                Text(
-                  'También dejará de estar en el PC.',
-                  style: TextStyle(fontSize: 14, height: 1.45, color: t.muted2),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: AppButton(
-                        label: 'Cancelar',
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                      ),
-                    ),
-                    Expanded(
-                      child: AppButton(
-                        label: 'Eliminar',
-                        fill: kRed,
-                        onPressed: () async {
-                          Navigator.of(dialogContext).pop();
-                          await vm.delete(id);
-                          navigator.pop();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
+      title: '¿Eliminar esta nota?',
+      body: 'También dejará de estar en el PC.',
+      confirmLabel: 'Eliminar',
+      semanticsLabel: 'Eliminar nota',
+      onConfirm: () async {
+        try {
+          await vm.delete(id);
+          navigator.pop();
+        } catch (_) {
+          if (mounted) setState(() => _error = 'No se pudo eliminar la nota');
+        }
       },
     );
   }
@@ -105,7 +86,7 @@ class _NoteFormViewState extends State<NoteFormView> {
             title: _editing ? 'Editar nota' : 'Nueva nota',
             icon: AppIcon.close,
             iconLabel: 'Cerrar sin guardar',
-            onMenu: () => Navigator.of(context).pop(),
+            onIcon: () => Navigator.of(context).pop(),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -114,26 +95,23 @@ class _NoteFormViewState extends State<NoteFormView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 12,
                 children: [
-                  Text(
-                    'Contenido',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: t.muted2,
+                  FieldLabel(
+                    label: 'Contenido',
+                    child: AppTextField(
+                      controller: _content,
+                      focusColor: t.accent,
+                      multiline: true,
+                      autofocus: !_editing,
+                      onChanged: (_) => setState(() {}),
                     ),
-                  ),
-                  AppTextField(
-                    controller: _content,
-                    focusColor: t.accent,
-                    multiline: true,
-                    autofocus: !_editing,
-                    onChanged: (_) => setState(() {}),
                   ),
                   if (_editing)
                     Text(
                       'Si también la editas en el PC, se conserva el último cambio guardado.',
                       style: TextStyle(fontSize: 11, color: t.muted),
                     ),
+                  if (_error != null)
+                    Text(_error!, style: const TextStyle(fontSize: 12, color: kRed)),
                   const SizedBox(height: 4),
                   Row(
                     spacing: 12,
@@ -150,7 +128,7 @@ class _NoteFormViewState extends State<NoteFormView> {
                         child: AppButton(
                           label: 'Guardar',
                           fill: t.accent,
-                          onPressed: _valid ? _save : null,
+                          onPressed: _valid && !_saving ? _save : null,
                         ),
                       ),
                     ],

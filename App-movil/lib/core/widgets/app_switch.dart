@@ -45,13 +45,13 @@ class AppSwitch extends StatelessWidget {
                     child: Container(
                       width: 24,
                       height: 24,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Color.fromRGBO(22, 24, 29, 0.25),
-                            offset: Offset(0, 1),
+                            color: kShadowColor.withValues(alpha: 0.25),
+                            offset: const Offset(0, 1),
                             blurRadius: 3,
                           ),
                         ],

@@ -1,4 +1,4 @@
-package com.example.tfg
+package io.github.alexxio070.companion
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -147,6 +147,12 @@ class FakeTerminalRepository implements TerminalRepository {
     if (!_sessionEnded.isClosed) _sessionEnded.add(null);
   }
 
+  @override
+  Future<void> close() async {
+    await _output.close();
+    await _sessionEnded.close();
+  }
+
   String _now() {
     final d = DateTime.now();
     String two(int n) => n.toString().padLeft(2, '0');
