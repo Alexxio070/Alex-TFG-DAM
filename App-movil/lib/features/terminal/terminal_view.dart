@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:xterm/xterm.dart';
+import 'package:xterm/xterm.dart' as xterm;
 
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_toast.dart';
@@ -11,7 +11,7 @@ import 'terminal_viewmodel.dart';
 import 'widgets/extra_keys_bar.dart';
 import 'widgets/terminal_tabs_bar.dart';
 
-const _theme = TerminalTheme(
+const _theme = xterm.TerminalTheme(
   cursor: kTerminalForeground,
   selection: Color(0x66E6E8EB),
   foreground: kTerminalForeground,
@@ -37,14 +37,14 @@ const _theme = TerminalTheme(
   searchHitForeground: kTerminalBackground,
 );
 
-class TerminalScreen extends StatefulWidget {
-  const TerminalScreen({super.key});
+class TerminalView extends StatefulWidget {
+  const TerminalView({super.key});
 
   @override
-  State<TerminalScreen> createState() => _TerminalScreenState();
+  State<TerminalView> createState() => _TerminalViewState();
 }
 
-class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObserver {
+class _TerminalViewState extends State<TerminalView> with WidgetsBindingObserver {
   final _focus = FocusNode();
 
   @override
@@ -68,7 +68,7 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
   }
 
-  void _trigger(TerminalTabsViewModel tabs) {
+  void _openFirstTab(TerminalTabsViewModel tabs) {
     tabs.addTab();
     WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
   }
@@ -81,7 +81,7 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
     if (tabs.tabs.isEmpty) {
       return ColoredBox(
         color: kTerminalBackground,
-        child: _EmptyState(onTrigger: () => _trigger(tabs)),
+        child: _EmptyState(onTrigger: () => _openFirstTab(tabs)),
       );
     }
     final vm = tabs.active;
@@ -97,7 +97,7 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                   context: context,
                   removeTop: true,
                   removeBottom: true,
-                  child: TerminalView(
+                  child: xterm.TerminalView(
                     vm.terminal,
                     focusNode: _focus,
                     theme: _theme,
@@ -108,7 +108,7 @@ class _TerminalScreenState extends State<TerminalScreen> with WidgetsBindingObse
                       12,
                       14 + MediaQuery.paddingOf(context).bottom,
                     ),
-                    textStyle: TerminalStyle(fontSize: fontSize.toDouble(), height: 1.5),
+                    textStyle: xterm.TerminalStyle(fontSize: fontSize.toDouble(), height: 1.5),
                   ),
                 ),
                 if (vm.state == TerminalSessionState.creating) const _LoadingOverlay(),

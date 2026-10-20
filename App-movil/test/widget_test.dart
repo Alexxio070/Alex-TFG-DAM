@@ -170,7 +170,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).at(0), 'Modo avión');
       await tester.enterText(find.byType(TextField).at(1), 'nmcli radio all off');
-      await tester.tap(find.bySemanticsLabel('lock'));
+      await tester.tap(find.bySemanticsLabel('Candado'));
       await tester.pump();
       await tester.tap(find.text('Crear'));
       await tester.pumpAndSettle();

@@ -102,7 +102,7 @@ class _ShellViewState extends State<ShellView> with SingleTickerProviderStateMix
                       Section.home => const HomeView(),
                       Section.metrics => const MetricsView(),
                       Section.notes => const NotesView(),
-                      Section.terminal => const TerminalScreen(),
+                      Section.terminal => const TerminalView(),
                       Section.settings => const SettingsView(),
                     },
                   ),

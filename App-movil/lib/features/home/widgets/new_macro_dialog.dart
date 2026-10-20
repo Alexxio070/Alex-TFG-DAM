@@ -189,7 +189,12 @@ class _IconOption extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: kind.name,
+      label: switch (kind) {
+        MacroKind.volume => 'Volumen',
+        MacroKind.lock => 'Candado',
+        MacroKind.moon => 'Luna',
+        MacroKind.bolt => 'Rayo',
+      },
       excludeSemantics: true,
       onTap: onTap,
       child: GestureDetector(
