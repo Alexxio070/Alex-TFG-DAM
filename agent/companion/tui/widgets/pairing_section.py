@@ -25,16 +25,11 @@ class PairingSection(Container):
         min-width: 14;
         margin-right: 1;
     }
-
-    PairingSection Button.-selected {
-        border: round ansi_cyan;
-        text-style: bold reverse;
-    }
     """
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="tabs"):
-            yield Button("Dispositivo", id="tab-device")
+            yield Button("Dispositivo", id="tab-device", variant="primary")
             yield Button("Seguridad", id="tab-security")
             yield Button("Servicio", id="tab-service")
 
@@ -43,16 +38,13 @@ class PairingSection(Container):
             yield SecurityTab(id="security")
             yield ServiceTab(id="service")
 
-    def on_mount(self) -> None:
-        self.query_one("#tab-device", Button).set_class(True, "-selected")
-
     def on_button_pressed(self, event: Button.Pressed) -> None:
         tab = TAB_IDS.get(event.button.id)
         if tab is None:
             return
         self.query_one("#pairing-tabs", ContentSwitcher).current = tab
         for button in self.query("#tabs Button"):
-            button.set_class(button is event.button, "-selected")
+            button.variant = "primary" if button is event.button else "default"
 
 
 class DeviceTab(Vertical):

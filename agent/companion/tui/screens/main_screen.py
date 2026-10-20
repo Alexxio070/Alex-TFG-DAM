@@ -48,17 +48,17 @@ class MainScreen(Screen):
         height: auto;
         align-horizontal: center;
         padding: 1 0;
-        border-bottom: heavy ansi_blue;
+        border-bottom: heavy $primary;
     }
 
     #banner Static {
-        color: ansi_green;
+        color: $success;
         text-style: bold;
     }
 
     #data {
         height: 1fr;
-        border: round ansi_cyan;
+        border: round $primary;
         border-title-align: left;
         padding: 1 2;
     }
@@ -75,23 +75,6 @@ class MainScreen(Screen):
     #buttons Button {
         width: 1fr;
         margin: 0 1;
-    }
-
-    Button {
-        color: ansi_white;
-        background: ansi_bright_black;
-        border: round ansi_bright_black;
-    }
-
-    Button:hover, Button:focus {
-        background: ansi_blue;
-        color: ansi_white;
-        border: round ansi_blue;
-    }
-
-    Button.-selected {
-        border: round ansi_cyan;
-        text-style: bold reverse;
     }
 
     Footer, FooterKey, .footer-key--key, .footer-key--description {
@@ -127,4 +110,4 @@ class MainScreen(Screen):
             return
         self.query_one("#sections", ContentSwitcher).current = section
         for button in self.query("#buttons Button"):
-            button.set_class(button is event.button, "-selected")
+            button.variant = "primary" if button is event.button else "default"
