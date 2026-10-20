@@ -13,6 +13,8 @@ Un **emulador de terminal** para Flutter. Un shell no envía texto plano: envía
 
 ## Cómo se ha implementado
 
+Hay dos niveles de `ViewModel`. `TerminalTabsViewModel` (uno, global) gestiona la lista de pestañas; cada pestaña es un `TerminalViewModel` independiente, con su propio `Terminal` de `xterm.dart` y su propio `TerminalRepository` (se le inyecta una fábrica, no una instancia compartida, para que cada pestaña tenga la suya):
+
 ```
 Teclado / teclas extra
         │  (texto o teclas)
@@ -20,17 +22,35 @@ Teclado / teclas extra
    Terminal.onOutput ──► TerminalViewModel ──► TerminalRepository.send ──► agente (PTY)
                                                                               │
    TerminalView ◄── Terminal.write ◄── TerminalViewModel ◄── repository.output ◄┘
+
+   TerminalTabsBar ──► TerminalTabsViewModel.addTab/selectTab/closeTab ──► crea/cierra TerminalViewModel
 ```
 
 | Archivo (`App-movil/lib/`) | Responsabilidad |
 |---|---|
-| `features/terminal/terminal_viewmodel.dart` | Crea el `Terminal`, lo conecta al repositorio y gestiona CTRL y ALT pegajosos. |
-| `features/terminal/terminal_view.dart` | Pantalla: `TerminalView` con el tema y la fuente, y la fila de teclas extra cuando hay teclado. |
+| `features/terminal/terminal_tabs_viewmodel.dart` | Lista de pestañas: crear, seleccionar, cerrar (con límite de `kMaxTerminalTabs`) y cerrar sola una pestaña cuya sesión termina (`exit`/Ctrl+D). |
+| `features/terminal/terminal_viewmodel.dart` | Una pestaña: crea el `Terminal`, lo conecta al repositorio y gestiona CTRL y ALT pegajosos. |
+| `features/terminal/terminal_view.dart` | Pantalla: barra de pestañas + `TerminalView` con el tema y la fuente, y la fila de teclas extra cuando hay teclado. |
+| `features/terminal/widgets/terminal_tabs_bar.dart` | Barra de pestañas: un chip por pestaña (título + cerrar, con confirmación) y el botón «+» para abrir una nueva. |
 | `features/terminal/widgets/extra_keys_bar.dart` | Fila ESC, TAB, CTRL, ALT, `-`, `/`, ↑, ↓ y ocultar teclado. |
-| `data/repositories/terminal_repository.dart` | Interfaz: `Stream<String> output` y `send(String)`. |
-| `data/fake/fake_terminal_repository.dart` | Shell simulado (`help`, `ls`, `echo`, historial con ↑/↓...) hasta tener el agente. |
+| `data/repositories/terminal_repository.dart` | Interfaz: ver más abajo. |
+| `data/fake/fake_terminal_repository.dart` | Shell simulado (`help`, `ls`, `echo`, historial con ↑/↓...) hasta tener el agente; una instancia por pestaña. |
 
-El `ViewModel` es global (se registra en `main.dart`), así que la sesión y el historial se mantienen al cambiar de sección.
+`TerminalTabsViewModel` se registra una sola vez en `app_providers.dart`, así que la lista de pestañas se conserva al cambiar de sección; cada `TerminalViewModel` vive mientras su pestaña está abierta, no más.
+
+### Interfaz de `TerminalRepository`
+
+```dart
+abstract class TerminalRepository {
+  Stream<String> get output;      // lo que responde el PC
+  Stream<void> get sessionEnded;  // la sesión terminó por su cuenta (exit, Ctrl+D...)
+  Future<void> createSession();   // abre la sesión; se resuelve cuando está lista
+  void send(String data);         // lo que teclea el usuario
+  Future<void> close();           // libera la sesión (dispose de la pestaña)
+}
+```
+
+`TerminalViewModel.requestSession()` llama a `createSession()` y pasa a `TerminalSessionState.ready` cuando termina (encolando lo que se teclee mientras tanto); se suscribe a `sessionEnded` para volver a `empty` y vaciar la cola. `dispose()` llama a `close()`.
 
 ## Cómo se usa en el código
 
