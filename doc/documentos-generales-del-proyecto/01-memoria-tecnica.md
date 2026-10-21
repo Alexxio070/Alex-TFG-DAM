@@ -201,7 +201,7 @@ WS     /ws/events                      (avisos en tiempo real)
 ### Navegación y pantallas de la app
 La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
 
-- **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
+- **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis), modo de conexión **Local / iroh** con la dirección del agente (`host:puerto` en Local, identificador a mano en iroh) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
 - **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
 - **Aún sin ubicación decidida:** energía (Módulo C), procesos (Módulo D), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
 
@@ -470,12 +470,8 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 
 ### 9.1 Control de versiones
 - Un repositorio Git con las carpetas `App-movil/` (Flutter) y `agent/` (Python).
-- Ramas:
-  - `main`: versiones estables;
-  - `develop`: integración;
-  - `feature/<nombre>`: una por tarea o fase.
+- Ramas: `main` (estable) y `feature/<nombre>` (una por tarea o fase). Sin `develop` ni etiquetas por versión.
 - Commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
-- Una etiqueta por versión (`v0.1-beta`, `v0.2`…).
 
 ### 9.2 Entorno de pruebas
 Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear la comunicación entre dispositivos):
