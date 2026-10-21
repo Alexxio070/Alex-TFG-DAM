@@ -261,7 +261,7 @@ Cada bloque sigue el mismo esquema:
 
 ### 8.2 Control de versiones
 - **Necesidad:** historial del trabajo y uso adecuado de ramas y commits (requisito del proyecto).
-- **Elección:** **Git** con un repositorio (`App-movil/` + `agent/`), ramas `main` / `feature/*` (sin `develop` ni etiquetas) y commits convencionales. Alojado en GitHub, que además sirve para publicar el APK en *releases*.
+- **Elección:** **Git**, un repositorio (`App-movil/` + `agent/`) alojado en GitHub, que además sirve para publicar el APK en *releases*. Ramas y convención de commits: `CLAUDE.md`.
 - **Alternativas descartadas:** *dos repositorios separados:* complica mantener sincronizadas app y agente.
 
 ### 8.3 Pruebas automáticas
