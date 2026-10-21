@@ -44,9 +44,8 @@ Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del
 
 - **Git:**
   - un repositorio con las carpetas `App-movil/` (Flutter) y `agent/` (Python);
-  - ramas `main` (versiones estables), `develop` (integración) y `feature/<nombre>` (una por tarea o fase);
-  - commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`);
-  - una etiqueta por versión (`v0.1-beta`, `v0.2`…).
+  - ramas `main` (estable) y `feature/<nombre>` (una por tarea o fase), sin `develop` ni etiquetas por versión;
+  - commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 - **Arquitectura en capas:**
   - *App (MVVM):* vistas (pantallas) → *viewmodels* (estado, con provider) → repositorios → servicios de red.
   - *Agente:* rutas de la API → servicios (lógica de negocio) → repositorios (acceso a BD) → modelos.
@@ -85,7 +84,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 **Objetivos:**
 - Instalar Flutter y Android Studio.
 - Configurar el **entorno de pruebas**: depuración USB en el móvil, `adb reverse` y emulador.
-- Crear el repositorio Git con la estructura `App-movil/` + `agent/` y las ramas `main`/`develop`.
+- Crear el repositorio Git con la estructura `App-movil/` + `agent/` y la rama `main`.
 - Aprender lo básico de Dart: variables, clases, `async`/`await`, `Future`, `Stream`.
 - Hacer el tutorial oficial de Flutter (widgets, estado, navegación entre pantallas).
 
@@ -95,6 +94,8 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 
 ### Fase 1 — Agente y métricas reales 🟢🟡
 **Duración:** ~3 semanas (mediados de octubre – principios de noviembre)
+
+**Estado (20/10/2026): fase cerrada.** Hecho: agente con endpoint `GET /metrics`; TUI de `companion` con sus cuatro secciones (Emparejamiento, Historial, Base de datos, Notas); comando `companion` instalable; app con métricas reales (gráficas, particiones, temperatura), aviso «No se puede conectar con el agente» y reintento. Probado por USB con `adb reverse` contra el agente real y con el APK release en el móvil.
 
 **Ya hecho:** la interfaz definitiva de la app, con todas las pantallas, la navegación, *placeholders* y datos del repositorio simulado.
 
@@ -187,7 +188,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
   - todas las rutas protegidas;
   - límite de intentos con esperas crecientes.
 - **App:**
-  - la pantalla de login (ya diseñada en la fase 1) con validaciones (campos obligatorios, mensajes de error claros);
+  - la pantalla de login (se diseña en esta fase) con validaciones (campos obligatorios, mensajes de error claros);
   - en la primera conexión, mostrar la huella del certificado para compararla con la de la TUI y guardarla (*certificate pinning*);
   - token en `flutter_secure_storage`.
 - Comprobar que todo funciona igual por USB y a través del túnel iroh.
@@ -216,11 +217,11 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
   - sin sesiones activas, terminal vacía con aviso de que tocar o escribir abre una ventana en el PC; la sesión se crea al primer toque o tecla y la app guarda las teclas hasta estar enganchada;
   - al abrir la app, `GET /terminales` restaura solo las pestañas propias que seguían abiertas al cerrarla;
   - barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas);
-  - Nerd Font incluida;
+  - fuente monoespaciada del sistema (se descartó la Nerd Font, 15/10/2026);
   - redimensionado al girar el móvil.
 - Pruebas con Zsh, un prompt tipo Starship y programas a pantalla completa (`htop`, `vim`), por USB y a través de iroh (también por relé, para comprobar que la latencia es usable).
 - Pruebas de persistencia: dejar un comando largo en marcha, cerrar la app, limpiarla de recientes y cortar la red; comprobar que sigue y que se recupera la salida al volver.
-- **Ampliación opcional** (solo si una sesión funciona bien y sin fallos): **varias pestañas** en la app, como las de un navegador. Cada pestaña es una terminal independiente (una sesión de tmux y una ventana del PC); cerrar la pestaña cierra su terminal en el PC. Requiere diseñar la barra de pestañas en `doc/ui/`.
+- **Pestañas de terminal:** la maqueta de UI ya está hecha (fase 0: `TerminalTabsViewModel`, barra de pestañas, límite de 6). En esta fase, cada pestaña engancha su propia sesión de tmux y su propia ventana en el PC; cerrar la pestaña cierra esa terminal en el PC.
 
 **Terminada cuando:** puedes trabajar con tu shell real desde el móvil, incluidos `htop` y `vim`, desde fuera de casa, y un comando largo sigue ejecutándose tras cerrar la app y se recupera al volver a abrirla.
 
@@ -298,7 +299,7 @@ usuario ──1:N── grupo ──1:N── accion_rapida ──1:N── ejec
   - nombre único dentro de cada grupo;
   - una carpeta solo contiene acciones (un único nivel) y la cuadrícula admite hasta 40 elementos de primer nivel.
 - **App:**
-  - cuadrícula de inicio con acciones y carpetas (ya diseñada en la fase 1 con datos simulados): se conecta al agente para cargar, guardar el orden, crear, editar y borrar;
+  - cuadrícula de inicio con acciones y carpetas (ya diseñada en la fase 0 con datos simulados): se conecta al agente para cargar, guardar el orden, crear, editar y borrar;
   - edición de carpeta (nombre y color) y creación rápida de acción (nombre, comando y confirmación);
   - ficha de acción editable (directorio, timeout y «notificar al terminar», con validaciones: nombre obligatorio y sin duplicados, comando obligatorio, timeout entre 1 y 3600 s, directorio existente validado por el agente), con estadísticas y botón "Ejecutar"; el acceso a la ficha se define aquí;
   - historial y detalle de ejecución con la salida del comando.
@@ -433,7 +434,7 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 | 1 | Agente y métricas reales (interfaz ya hecha) | 🟢🟡 | Oct – Nov |
 | 2 | Conexión remota con iroh (prueba de concepto, integración y pruebas) | 🔴 | Nov – Dic |
 | **Beta v0.1** | Interfaz + métricas por iroh, sin login | | **Mediados de diciembre – Navidad** |
-| 3 | Seguridad (TUI mínima y login) | 🔴 | Dic – Ene |
+| 3 | Seguridad (login, dentro de la TUI ya construida en la fase 1) | 🔴 | Dic – Ene |
 | 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
 | **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
 | 5 | Instalación y servicio | 🟡 | Feb |
