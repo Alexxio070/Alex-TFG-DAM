@@ -59,7 +59,7 @@
 * Without `tmux`: plain PTY bound to the connection (closed on disconnect), with a visible warning in the app.
 * Generic for any shell; **officially tested with Zsh**. No shell-specific code.
 * Details and open points: `doc/agente/terminal-sesiones-tmux.md`.
-* Client: `xterm.dart` + special-keys bar (Ctrl, Alt, Tab, Esc, arrows). Bundle a Nerd Font. Handle UTF-8 sequences split across chunks.
+* Client: `xterm.dart` + special-keys bar (Ctrl, Alt, Tab, Esc, arrows). System monospace font (Nerd Font discarded, 15/10/2026). Handle UTF-8 sequences split across chunks.
 
 ### B. Monitoring
 * `psutil`: CPU (total + per core), RAM, swap, disk usage per mount, temperatures (`/sys/class/hwmon`), load average, uptime.
@@ -222,7 +222,7 @@ See 06-ideas-de-futuro.md.
   * Phase 1: create the agent (`agent/`, layered) + metrics endpoint; app switches the metrics screen to the real repository (mid-October – early November);
   * Phase 2: iroh remote access (early November – mid-December): proof of concept, integration (no foreground service yet), home test matrix (same Wi-Fi, mobile data, outbound UDP blocked, network switch, restart keeps the same id), then a restrictive network. Until phase 3 the agent exposes only read-only metrics and is started by hand.
 * Post-beta:
-  * Phase 3: security (minimal TUI that creates the user, login, TLS pinning, sessions), also checked through the tunnel (mid-December – early January);
+  * Phase 3: security (activates user creation, login, TLS pinning and sessions inside the phase-1 TUI), also checked through the tunnel (mid-December – early January);
   * Phase 4: terminal (v0.2) (January – mid-February);
 * **February milestone** (exact date pending review): app connected through iroh + terminal + performance graphs. The terminal ends in mid-February; if the milestone is earlier, adjust.
   * Phase 5: pipx install + systemd service, installed from the TUI (end of February);
