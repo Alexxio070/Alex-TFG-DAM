@@ -34,6 +34,7 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 **Cliente (Android) — confirmado:**
 - Flutter/Dart, arquitectura MVVM + provider
 - xterm.dart para la terminal remota
+- shared_preferences para persistir los ajustes en el móvil
 - Componentes nativos del SO que lo requieran (servicio en primer plano, etc.) se envuelven con *platform channel* a Kotlin; el stack multilenguaje es normal cuando se justifica, no exclusivo de pasar todo a Kotlin
 
 **Agente (PC Linux) — confirmado:**
@@ -42,6 +43,8 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 - SQLite con patrón repository, sin ORM (schema.sql)
 - dbus-fast para integración con D-Bus/systemd-logind
 - psutil para métricas del sistema
+- Textual para la TUI `companion`; Typer solo para `companion serve`/`companion notify` (fases posteriores); qrcode para el QR de la TUI
+- tmux para las sesiones de terminal (fase 4)
 - iroh para el acceso P2P en WAN (NAT traversal, sin Firebase ni VPN)
 
 **Seguridad:**
@@ -53,9 +56,9 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 
 ## Repo, commits y PRs
 
-- `App-movil/`: cliente Flutter. `agent/`: agente Python (incluye `schema.sql`; se crea con el agente).
-- Ramas: `main` (estable), `develop` (integración), `feature/<nombre>` (una por tarea/fase). Una etiqueta por versión (`v0.1-beta`, `v0.2`…).
-- Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`), cortos y descriptivos. Nada de cambios enormes de una vez: dividir en piezas pequeñas y lógicas.
+- `App-movil/`: cliente Flutter. `agent/`: agente Python (sin `schema.sql` todavía; llega en la fase 3).
+- Ramas: `main` (estable) y `feature/<nombre>` (una por tarea o fase). Sin `develop` ni etiquetas por versión.
+- Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `build:`, `chore:`, `merge:`), cortos y descriptivos. Nada de cambios enormes de una vez: dividir en piezas pequeñas y lógicas.
 - Todo commit y PR se propone a alex **antes** de hacerse, incluida la forma de dividir un cambio grande.
 - Autoría siempre de alex, nunca de Claude (salvo indicación expresa para un commit concreto). Motivo: será open source y no debe parecer "vibecodeado".
 
@@ -65,7 +68,7 @@ Usar librerías/paquetes como infraestructura normal está permitido, incluso pa
 
 ## Documentación
 
-La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/), la interfaz (prototipo v1, especificación de Notas v2 y xterm.dart), en [`doc/ui/`](doc/ui/), y la documentación específica del agente de Python, en [`doc/agente/`](doc/agente/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`.
+La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/) (incluye `ESTRUCTURA_FLUTTER.md`); la interfaz, en [`doc/ui/`](doc/ui/) — referencia vigente: `doc/ui/ui-final/DESIGN.md` (`ui-v1/` y `ui-v2/` son histórico); y la documentación específica del agente de Python, en [`doc/agente/`](doc/agente/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`; el historial de cambios de diseño, en `08-historial-de-cambios.md`.
 - `01-memoria-tecnica.md`
 - `02-necesidades-tecnologicas.md`
 - `03-system-context.md`
