@@ -32,10 +32,21 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 15/10/2026 | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
 | 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
 | 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
+| 15/10/2026 | Tercera auditoría: deduplicación de detalle técnico repetido | Aplicado |
+| 15/10/2026 | TUI del agente: librería confirmada y construcción adelantada a la fase 1 | Aplicado en la documentación |
+| 15/10/2026 | Estructura de la TUI: de botones por fase a cuatro secciones fijas | Aplicado en la documentación |
+| 15/10/2026 | Nuevo documento: especificación de la TUI en doc/agente/ | Aplicado |
 | 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
 | 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
 | 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
 | 19/10/2026 | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
+| 19/10/2026 | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado en main y feature/agent; pendiente en feature/interfaz |
+| 19/10/2026 | Interfaz: conexión con el agente, timeout, reintento y dirección en caliente | Aplicado en código |
+| 19-20/10/2026 | Interfaz: identificador de Android, nombre visible y enlaces externos | Aplicado en código |
+| 20/10/2026 | Interfaz: limpieza — diálogos, toasts y botón flotante unificados | Aplicado en código |
+| 19/10/2026 | Agente: métricas en GB decimales y sin particiones duplicadas | Aplicado en código |
+| 19-20/10/2026 | Agente: comando `companion` instalable y resaltado de sección activa en la TUI | Aplicado en código |
+| 19/10/2026 | Agente: versiones mínimas, `pydantic` y `httpx2` en los tests | Aplicado en código |
 
 ---
 
