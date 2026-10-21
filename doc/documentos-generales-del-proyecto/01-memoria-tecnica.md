@@ -10,11 +10,7 @@
 
 ## 0. Decisiones
 
-| Decisión | Estado |
-|---|---|
-| Aceptación de Flutter por el centro (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter. El plan B (Kotlin + Jetpack Compose) ya no es necesario |
-| Herramienta del PC: TUI con botones (Textual) en lugar de CLI | **Resuelta (12/10/2026):** al escribir `companion` se abre la TUI; solo `companion serve` y `companion notify` quedan como comandos de terminal (ver 8.1) |
-| Registro del usuario | **Resuelto (12/10/2026):** QR en la TUI y cuenta creada desde la app (ver 5.1). Se implementa en la fase 9; hasta entonces, el usuario se crea desde la TUI |
+Registro de decisiones vigentes: `07-resumen-decisiones-y-contexto.md` §3.
 
 ---
 

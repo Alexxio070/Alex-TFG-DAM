@@ -20,16 +20,12 @@
 
 ## Decisiones
 
+Decisiones ya resueltas: registro vigente en `07-resumen-decisiones-y-contexto.md` §3.
+
+Abiertas, con fecha límite:
+
 | Decisión | Estado | Cuándo resolverla |
 |---|---|---|
-| ¿El centro acepta Flutter? (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter | — |
-| ¿El agente en Python cuenta como parte del proyecto? | **Resuelta (02/10/2026):** es parte fundamental del proyecto; sin él la app no funciona | — |
-| Orden de las fases | **Resuelta (02/10/2026 y 12/10/2026):** iroh en la fase 2 por ser la parte más crítica. La interfaz definitiva se hace primero (ya terminada el 12/10) y la beta se queda sin login; la seguridad va en enero, antes de la terminal | — |
-| Herramienta del agente en el PC | **Resuelta (12/10/2026, librería confirmada el 15/10/2026):** TUI con botones (Textual, tras comparar con urwid, prompt_toolkit y py_cui) al escribir `companion`; solo `companion serve` y `companion notify` quedan como comandos de terminal | — |
-| Estructura de la TUI | **Resuelta (15/10/2026):** interfaz definitiva construida en la fase 1, igual que la interfaz de la app en la fase 0: banner, área de datos (vacía por defecto) y cuatro botones fijos — **Emparejamiento, Historial, Base de datos, Notas** —, cada uno con su pantalla. Emparejamiento aloja también la seguridad (fase 3) y la gestión del servicio (fase 5). Las fases posteriores no añaden botones a la barra: activan contenido ya existente dentro de estas cuatro secciones (Notas se construye vacía en la fase 1 y se rellena en la fase 9) | — |
-| Historial de comandos de terminal | **Resuelta (15/10/2026):** archivo de log aparte (no tabla en SQLite, para no duplicar datos), una línea por comando (`ISO-8601<TAB>comando`) en una carpeta dentro de `~/.cache`, sin límite de tamaño por ahora. Solo registra lo que llega por el WebSocket de la app al pulsar Enter (el agente no ve lo escrito directamente en la ventana del PC; integración de shell con OSC 133 descartada del TFG, ver `06-ideas-de-futuro.md` §5). La pantalla Historial combina este archivo con la tabla `ejecucion` solo al mostrarlos, sin juntarlos en el almacenamiento | — |
-| Cómo se crea el usuario | **Resuelta (12/10/2026):** la TUI muestra un QR; la app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña | — |
-| En qué fase va el registro por QR | **Resuelta (12/10/2026):** fase 9. Hasta entonces, el usuario se crea desde la TUI (fase 3) | — |
 | Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
 | Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
