@@ -1,10 +1,10 @@
 # Especificación de UI v2 — Notas (espacio compartido)
 
-> Incorporada como sección 6 de [`../ui-final/DESIGN.md`](../ui-final/DESIGN.md), la referencia actual de toda la interfaz. Este documento sigue siendo preciso y es el detalle completo de esa sección.
+> Incorporada como sección 6 de [`../../interfaz-app.md`](../../interfaz-app.md), la referencia actual de toda la interfaz. Este documento sigue siendo preciso y es el detalle completo de esa sección.
 >
 > **Estado: definitiva.** Sustituye a la pantalla de Notas del prototipo v1 (`../ui-v1/DESIGN.md`, §6), que queda descartada.
 > Las demás pantallas (drawer, tema, Inicio, Métricas, Terminal y Ajustes) mantienen el diseño de v1.
-> Origen funcional: Módulo F de `../../documentos-generales-del-proyecto/01-memoria-tecnica.md` y decisión 3.5 de `../../documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`.
+> Origen funcional: Módulo F de `../../../documentos-generales-del-proyecto/01-memoria-tecnica.md` y decisión 3.5 de `../../../documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`.
 
 ## 1. Qué cambia respecto a v1
 
@@ -20,7 +20,7 @@ La app está pensada para usarse lejos del PC, por eso no hay actualización al 
 
 ## 2. Modelo de datos
 
-Tabla `nota` del agente (ver `../../documentos-generales-del-proyecto/03-system-context.md`, sección 5):
+Tabla `nota` del agente (ver `../../../documentos-generales-del-proyecto/01-memoria-tecnica.md`, §6.2):
 
 ```
 Nota { id, usuario_id, tipo:'texto'|'enlace', contenido, origen:'movil'|'pc', creado_en, actualizado_en }

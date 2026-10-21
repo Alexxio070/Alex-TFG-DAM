@@ -25,7 +25,7 @@ App (xterm.dart)  ◄── WebSocket ──►  Agente  ◄── tmux attach (
 
 ## 3. API propuesta
 
-Los nombres son un punto de partida, igual que el resto de rutas (`03-system-context.md`, §5b).
+Los nombres son un punto de partida, igual que el resto de rutas (ver las de cada módulo en `../documentos-generales-del-proyecto/01-memoria-tecnica.md`, §3).
 
 ```
 POST   /terminales              {comando?}  → {id}     crea la sesión (y su ventana en el PC)
@@ -131,7 +131,7 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 ## 10. Varias terminales: pestañas en la app
 
 **Estado (19/10/2026): implementado en la app.** Diseño final en
-`doc/ui/ui-final/DESIGN.md` §5. Lo que sigue en esta sección es el diseño
+`doc/ui/interfaz-app.md` §5. Lo que sigue en esta sección es el diseño
 previo a esa implementación; se conserva como referencia del lado del
 agente (la API ya lo soportaba sin cambios, ver "Lo que no cambia en el
 diseño" más abajo).
@@ -161,12 +161,12 @@ diseño" más abajo).
 
 **Resuelto (19/10/2026):** todas las dudas de esta tabla quedaron cerradas al
 implementar las pestañas en la app. Los valores concretos (título de pestaña,
-límite, indicador de actividad, etc.) están en `doc/ui/ui-final/DESIGN.md`
+límite, indicador de actividad, etc.) están en `doc/ui/interfaz-app.md`
 §5, no se repiten aquí.
 
 ### Impacto en la app y en la interfaz
 - `TerminalRepository` gana: listar sesiones, crear y cerrar. `TerminalViewModel` mantiene una lista de pestañas, cada una con su propio `Terminal`.
-- Interfaz de la barra de pestañas especificada e implementada: ver `doc/ui/ui-final/DESIGN.md` §5.
+- Interfaz de la barra de pestañas especificada e implementada: ver `doc/ui/interfaz-app.md` §5.
 
 ## 11. Evolución a muy largo plazo: cliente propio, sin tmux
 

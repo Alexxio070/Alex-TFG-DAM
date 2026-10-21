@@ -167,3 +167,107 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 | 9 (mDNS, QR, registro y espacio compartido) | LocalSend (idea del descubrimiento en red local, aunque no usa mDNS), KDE Connect (emparejamiento) |
 | 10 (Pulido) | LocalSend (organización de un proyecto Flutter grande) |
 | Memoria | KDE Connect, Cockpit, RustDesk, clientes SSH |
+
+---
+
+## 7. Bibliografía (formato APA)
+
+Fuentes usadas para documentar el proyecto y para aprender durante su desarrollo. Al haberse consultado a lo largo de muchas sesiones de trabajo con IA, esta lista es una primera versión reconstruida a partir de lo que cita el resto de la documentación: **revisa fechas de consulta, añade lo que falte y corrige lo que no cuadre** antes de usarla en la memoria.
+
+### Normativa
+
+Ministerio de Educación y Formación Profesional. (2023). *Real Decreto 405/2023, de 29 de mayo, por el que se actualizan los títulos de la formación profesional del sistema educativo de Técnico Superior en Desarrollo de Aplicaciones Multiplataforma y Técnico Superior en Desarrollo de Aplicaciones Web, de la familia profesional Informática y Comunicaciones, y se fijan sus enseñanzas mínimas*. Boletín Oficial del Estado, núm. 132. https://www.boe.es/boe/dias/2023/06/03/pdfs/BOE-A-2023-13221.pdf
+
+Ministerio de Educación. (2010). *Real Decreto 450/2010, de 16 de abril, por el que se establece el título de Técnico Superior en Desarrollo de Aplicaciones Multiplataforma y se fijan sus enseñanzas mínimas*. Boletín Oficial del Estado. https://www.boe.es/buscar/doc.php?id=BOE-A-2010-7609
+
+DIGITECH. (2026). *Requisitos del Proyecto Final DAM* [Documento interno del centro].
+
+### Documentación oficial — App (Flutter/Dart)
+
+Google. (s.f.). *Flutter documentation*. Flutter. Recuperado en 2026, de https://docs.flutter.dev/
+
+Google. (s.f.). *Dart documentation*. Dart. Recuperado en 2026, de https://dart.dev/guides
+
+TerminalStudio. (s.f.). *xterm.dart* [Repositorio de software]. GitHub. Recuperado el 12 de octubre de 2026, de https://github.com/TerminalStudio/xterm.dart
+
+Rousselet, R. (s.f.). *provider* [Paquete de Dart]. pub.dev. https://pub.dev/packages/provider
+
+Equipo de Dart. (s.f.). *http* [Paquete de Dart]. pub.dev. https://pub.dev/packages/http
+
+Equipo de Dart. (s.f.). *web_socket_channel* [Paquete de Dart]. pub.dev. https://pub.dev/packages/web_socket_channel
+
+Equipo de Flutter. (s.f.). *shared_preferences* [Paquete de Dart]. pub.dev. https://pub.dev/packages/shared_preferences
+
+Equipo de Flutter. (s.f.). *flutter_svg* [Paquete de Dart]. pub.dev. https://pub.dev/packages/flutter_svg
+
+Equipo de Flutter. (s.f.). *url_launcher* [Paquete de Dart]. pub.dev. https://pub.dev/packages/url_launcher
+
+Equipo de Flutter. (s.f.). *flutter_secure_storage* [Paquete de Dart]. pub.dev. https://pub.dev/packages/flutter_secure_storage
+
+Juliand665. (s.f.). *bonsoir* [Paquete de Dart]. pub.dev. https://pub.dev/packages/bonsoir
+
+Equipo de mobile_scanner. (s.f.). *mobile_scanner* [Paquete de Dart]. pub.dev. https://pub.dev/packages/mobile_scanner
+
+MaikuB. (s.f.). *flutter_local_notifications* [Paquete de Dart]. pub.dev. https://pub.dev/packages/flutter_local_notifications
+
+### Documentación oficial — Agente (Python)
+
+Ramírez, S. (s.f.). *FastAPI*. Recuperado en 2026, de https://fastapi.tiangolo.com/
+
+Encode. (s.f.). *Uvicorn*. Recuperado en 2026, de https://www.uvicorn.org/
+
+Rodola, G. (s.f.). *psutil documentation*. Recuperado en 2026, de https://psutil.readthedocs.io/
+
+Textualize. (s.f.). *Textual documentation*. Recuperado el 12 de octubre de 2026, de https://textual.textualize.io/
+
+Ramírez, S. (s.f.). *Typer*. Recuperado en 2026, de https://typer.tiangolo.com/
+
+Lincoln Loop. (s.f.). *qrcode* [Paquete de Python]. PyPI. https://pypi.org/project/qrcode/
+
+Pydantic Services Inc. (s.f.). *Pydantic documentation*. Recuperado en 2026, de https://docs.pydantic.dev/
+
+Encode. (s.f.). *HTTPX*. Recuperado en 2026, de https://www.python-httpx.org/
+
+Schlawack, H. (s.f.). *argon2-cffi documentation*. Recuperado en 2026, de https://argon2-cffi.readthedocs.io/
+
+Python Cryptographic Authority. (s.f.). *cryptography*. Recuperado en 2026, de https://cryptography.io/
+
+Equipo de pytest. (s.f.). *pytest documentation*. Recuperado en 2026, de https://docs.pytest.org/
+
+Equipo de dbus-fast. (s.f.). *dbus-fast* [Repositorio de software]. GitHub. https://github.com/Bluetooth-Devices/dbus-fast
+
+### Documentación oficial — Infraestructura y sistema
+
+n0 computer, Inc. (s.f.). *iroh documentation*. Recuperado el 2 de octubre de 2026, de https://www.iroh.computer/docs
+
+freedesktop.org. (s.f.). *systemd*. Recuperado en 2026, de https://systemd.io/
+
+freedesktop.org. (s.f.). *D-Bus specification*. Recuperado en 2026, de https://dbus.freedesktop.org/doc/dbus-specification.html
+
+Hipp, D. R. (s.f.). *SQLite documentation*. SQLite Consortium. Recuperado en 2026, de https://www.sqlite.org/docs.html
+
+Python Packaging Authority. (s.f.). *pipx documentation*. Recuperado en 2026, de https://pipx.pypa.io/
+
+Stufft, D., & Cannon, B. (2023). *PEP 668 – Marking Python base environments as "externally managed"*. Python.org. https://peps.python.org/pep-0668/
+
+### Proyectos de referencia y comparación
+
+*Detalle completo (qué aportan, licencia, repositorio) en las secciones 1-4 de este documento.*
+
+KDE e.V. (s.f.). *KDE Connect* [Repositorio de software]. GitLab. https://invent.kde.org/network/kdeconnect-kde
+
+Cockpit Project. (s.f.). *Cockpit* [Repositorio de software]. GitHub. https://github.com/cockpit-project/cockpit
+
+RustDesk. (s.f.). *RustDesk* [Repositorio de software]. GitHub. https://github.com/rustdesk/rustdesk
+
+LocalSend. (s.f.). *LocalSend* [Repositorio de software]. GitHub. https://github.com/localsend/localsend
+
+futpib. (s.f.). *iroh-ssh-android* [Repositorio de software]. GitHub. https://github.com/futpib/iroh-ssh-android
+
+1337farm. (s.f.). *iroh-android-native* [Repositorio de software]. GitHub. https://github.com/1337farm/iroh-android-native
+
+Clarke, J. (s.f.). *terminado* [Repositorio de software]. GitHub. https://github.com/jupyter/terminado
+
+Vinayak, K. (s.f.). *pyxtermjs* [Repositorio de software]. GitHub. https://github.com/cs01/pyxtermjs
+
+Nicolargo. (s.f.). *Glances* [Repositorio de software]. GitHub. https://github.com/nicolargo/glances

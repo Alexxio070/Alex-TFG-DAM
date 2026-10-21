@@ -47,10 +47,7 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 
 ## Estado actual
 
-- **App:** interfaz completa y navegable (las seis pantallas). La pantalla de métricas ya usa un repositorio real contra el agente; el resto sigue con datos simulados hasta que el agente los ofrezca.
-- **Agente:** estructura en capas creada; endpoint `GET /metrics` (CPU, RAM, discos, temperatura) implementado y probado; esqueleto de la TUI `companion` con sus cuatro secciones (la mayoría deshabilitadas a la espera de fases posteriores). Sin base de datos, login ni conexión remota todavía.
-
-El detalle completo, fase a fase, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
+El estado por fase, con lo hecho y lo pendiente, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
 
 ## Manual de instalación
 
@@ -75,14 +72,11 @@ Por defecto la app busca el agente en `127.0.0.1:8443` (pensado para depurar por
 cd agent
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
+.venv/bin/companion                                          # TUI
+.venv/bin/uvicorn companion.main:app --reload --port 8443    # API REST
 ```
 
-Arrancar a mano (todavía no hay servicio systemd ni comando `companion` empaquetado):
-
-```bash
-.venv/bin/uvicorn companion.main:app --reload --port 8443   # API REST
-.venv/bin/python -m companion.tui.app                       # TUI
-```
+Por defecto escucha solo en `127.0.0.1:8443`. **No usar `--host 0.0.0.0` todavía:** dejaría `/metrics` y `/docs` abiertos a toda la red local sin TLS ni login (llegan en la fase 3). Todavía no hay servicio systemd (llega en la fase 5).
 
 Pruebas:
 
@@ -100,4 +94,4 @@ Toda la documentación de diseño está en [`doc/`](doc/):
 - [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
 - [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
 
-Ramas: `main` (estable, con todo el proyecto), `feature/interfaz` (app) y `feature/agent` (agente).
+Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop` ni etiquetas por versión.
