@@ -426,6 +426,21 @@ Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a t
 
 ---
 
+## Pendientes
+
+Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fase:
+
+| Fase | Qué falta |
+|---|---|
+| Fase 4 (Terminal) | Prototipos previos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
+| Fase 4 (Terminal) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
+| Fase 4 (Terminal) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
+| Fase 4 (Terminal, maqueta de UI ya hecha en la fase 0) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
+| Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
+| Agente (general) | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
+
+---
+
 ## Resumen visual
 
 | Fase | Contenido | Dificultad | Fechas orientativas |

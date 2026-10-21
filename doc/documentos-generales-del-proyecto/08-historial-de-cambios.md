@@ -365,7 +365,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
   4. `HttpMetricsRepository` recibe `() => settings.agentAddress` y lee la dirección del `SettingsViewModel` en cada petición: el cambio de dirección se aplica sin reiniciar la app (sustituye lo descrito en la entrada del 19/10/2026 «Métricas: repositorio HTTP real…», punto 5, ver nota en esa entrada).
 - **Por qué:** cerraba los huecos de robustez de la conexión con el agente que quedaron abiertos al introducir `HttpMetricsRepository` el mismo día.
 - **Afecta a:** `http_metrics_repository.dart`, `metrics_repository.dart`, `metrics_viewmodel.dart`, `metrics_view.dart`, `main.dart`, `test/http_metrics_repository_test.dart`.
-- **Estado:** aplicado en código; sin verificación contra el agente real (prueba por USB con `adb reverse` pendiente, ver «Pendiente»).
+- **Estado:** aplicado en código y verificado por USB con `adb reverse` contra el agente real (fase 1 cerrada, ver `04-plan-de-fases.md`).
 
 ### 19-20/10/2026 — Interfaz: identificador de Android, nombre visible y enlaces externos
 
@@ -418,19 +418,3 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** evitar romper por una versión mínima no probada, declarar explícitamente una dependencia ya en uso, y quitar el aviso de obsolescencia de Starlette.
 - **Afecta a:** `pyproject.toml`.
 - **Estado:** aplicado en código. Commits: `e0de0f2`, `7d518ea`.
-
----
-
-## Pendiente
-
-Huecos de la interfaz o decisiones de plan que quedan abiertas:
-
-| Área | Qué falta |
-|---|---|
-| Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
-| Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
-| Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
-| Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
-| Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
-| Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
-| Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |

@@ -1,6 +1,6 @@
 # Agente (Python)
 
-Estado: fase 1 en marcha. Diseño completo en [`../doc/agente/`](../doc/agente/).
+Estado: ver [`../doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](../doc/documentos-generales-del-proyecto/04-plan-de-fases.md) (fase 1). Diseño completo en [`../doc/agente/`](../doc/agente/).
 
 ## Entorno de desarrollo
 

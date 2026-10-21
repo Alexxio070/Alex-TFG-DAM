@@ -2,7 +2,7 @@
 
 El **agente** es el programa que corre en el PC Linux del usuario y hace todo el trabajo: abre las terminales, mide el sistema, ejecuta acciones y guarda los datos. La app del móvil es solo el cliente que lo muestra y le manda órdenes.
 
-**Estado (fase 1 en marcha):** estructura en capas, endpoint `GET /metrics` (psutil) y el esqueleto de la TUI (`companion`, cuatro secciones, la mayoría deshabilitadas) ya están implementados y probados en `agent/` — integrado en `main` y en desarrollo continuo en `feature/agent`. El resto — API con autenticación, `schema.sql`, seguridad, instalación — sigue siendo solo **diseño**, sin comportamiento comprobado.
+**Estado:** ver `04-plan-de-fases.md` (fase 1).
 
 ## Stack (resumen)
 

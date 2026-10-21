@@ -47,10 +47,7 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 
 ## Estado actual
 
-- **App:** interfaz completa y navegable (las seis pantallas). La pantalla de métricas ya usa un repositorio real contra el agente; el resto sigue con datos simulados hasta que el agente los ofrezca.
-- **Agente:** estructura en capas creada; endpoint `GET /metrics` (CPU, RAM, discos, temperatura) implementado y probado; esqueleto de la TUI `companion` con sus cuatro secciones (la mayoría deshabilitadas a la espera de fases posteriores). Sin base de datos, login ni conexión remota todavía.
-
-El detalle completo, fase a fase, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
+El estado por fase, con lo hecho y lo pendiente, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
 
 ## Manual de instalación
 
