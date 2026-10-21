@@ -72,14 +72,11 @@ Por defecto la app busca el agente en `127.0.0.1:8443` (pensado para depurar por
 cd agent
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
+.venv/bin/companion                                          # TUI
+.venv/bin/uvicorn companion.main:app --reload --port 8443    # API REST
 ```
 
-Arrancar a mano (todavía no hay servicio systemd ni comando `companion` empaquetado):
-
-```bash
-.venv/bin/uvicorn companion.main:app --reload --port 8443   # API REST
-.venv/bin/python -m companion.tui.app                       # TUI
-```
+Por defecto escucha solo en `127.0.0.1:8443`. **No usar `--host 0.0.0.0` todavía:** dejaría `/metrics` y `/docs` abiertos a toda la red local sin TLS ni login (llegan en la fase 3). Todavía no hay servicio systemd (llega en la fase 5).
 
 Pruebas:
 
