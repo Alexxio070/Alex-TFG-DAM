@@ -22,7 +22,7 @@ class PairingSection(Container):
 
     PairingSection Horizontal#tabs Button {
         width: auto;
-        min-width: 14;
+        min-width: 8;
         margin-right: 1;
     }
     """
