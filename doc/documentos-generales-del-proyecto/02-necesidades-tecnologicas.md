@@ -40,8 +40,9 @@ Cada bloque sigue el mismo esquema:
 
 | Necesidad | Paquete previsto | Motivo |
 |---|---|---|
-| Peticiones HTTP | `http` (o `dio`) | Llamadas REST al agente |
+| Peticiones HTTP | `http` | Llamadas REST al agente |
 | WebSocket | `web_socket_channel` | Terminal, métricas y eventos |
+| Persistencia local de ajustes | `shared_preferences` | Guardar la dirección del agente, el modo de conexión y el resto de ajustes en el móvil |
 | Gráficas | `CustomPainter` (del propio Flutter) | Gráficas de área de CPU, temperatura y RAM en vivo; sin dependencia extra |
 | Terminal | `xterm` | Emulador de terminal (ver 1.2) |
 | Iconos | `flutter_svg` | Iconos del diseño como SVG, con el color del tema |
@@ -63,7 +64,7 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** lenguaje con buen acceso al sistema + framework web asíncrono.
 - **Elección:** **Python 3.11+ con FastAPI y Uvicorn.**
   - Python tiene las librerías de sistema más maduras para este caso (psutil, dbus-fast, zeroconf, bindings de iroh) y permite desarrollar rápido.
-  - FastAPI es asíncrono (*asyncio*): una misma instancia puede atender REST y varios WebSocket (terminal, métricas, eventos) a la vez sin bloquearse. Valida los datos automáticamente y genera documentación de la API, útil para probar sin la app.
+  - FastAPI es asíncrono (*asyncio*): una misma instancia puede atender REST y varios WebSocket (terminal, métricas, eventos) a la vez sin bloquearse. Valida los datos automáticamente (con **Pydantic**, declarado como dependencia directa) y genera documentación de la API, útil para probar sin la app.
 - **Alternativas descartadas:**
   - *Go:* muy buen rendimiento y binario único, pero menos librerías listas para D-Bus y un segundo lenguaje nuevo que aprender a la vez que Dart.
   - *Rust:* máximo rendimiento y acceso nativo a iroh, pero curva de aprendizaje demasiado alta para el plazo.
@@ -260,12 +261,12 @@ Cada bloque sigue el mismo esquema:
 
 ### 8.2 Control de versiones
 - **Necesidad:** historial del trabajo y uso adecuado de ramas y commits (requisito del proyecto).
-- **Elección:** **Git** con un repositorio (`App-movil/` + `agent/`), ramas `main` / `develop` / `feature/*`, commits convencionales y etiquetas por versión. Alojado en GitHub, que además sirve para publicar el APK en *releases*.
+- **Elección:** **Git** con un repositorio (`App-movil/` + `agent/`), ramas `main` / `feature/*` (sin `develop` ni etiquetas) y commits convencionales. Alojado en GitHub, que además sirve para publicar el APK en *releases*.
 - **Alternativas descartadas:** *dos repositorios separados:* complica mantener sincronizadas app y agente.
 
 ### 8.3 Pruebas automáticas
 - **Necesidad:** comprobar que la lógica funciona y no se rompe al añadir cambios.
-- **Elección:** **pytest** en el agente (repositorios, reglas de negocio, autenticación, reglas de alerta) y **flutter_test** en la app (validaciones de formularios).
+- **Elección:** **pytest** en el agente (repositorios, reglas de negocio, autenticación, reglas de alerta) y **flutter_test** en la app (validaciones de formularios). Los tests de la API usan `httpx2` en vez de `httpx`, que Starlette marca como obsoleto.
 - **Alternativas descartadas:** *unittest* (estándar, pero más verboso que pytest).
 
 ### 8.4 Entorno de pruebas
