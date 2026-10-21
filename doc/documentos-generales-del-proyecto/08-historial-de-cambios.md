@@ -381,6 +381,33 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `app_tokens.dart`, `confirm_card.dart` (nuevo), `app_toast.dart` (nuevo), `app_fab.dart` (nuevo), y las pantallas que los usan (Inicio, Métricas, Notas, Ajustes, Terminal, `shell_view.dart`/`app_drawer.dart`).
 - **Estado:** aplicado en código.
 
+### 19/10/2026 — Agente: métricas en GB decimales y sin particiones duplicadas
+
+- **Qué era:** el agente enviaba los tamaños en GiB (potencias de 1024), mientras la app esperaba GB decimales (potencias de 1000), lo que producía una discrepancia entre los valores mostrados; además, la lista de particiones incluía snaps, montajes *loop* y el mismo dispositivo físico repetido por cada punto de montaje.
+- **Qué es ahora:** los tamaños se calculan con `1000**3`; se descartan snaps, montajes *loop* y particiones duplicadas por dispositivo, quedándose con una por disco físico.
+- **Por qué:** corregir la discrepancia GB/GiB con la app y evitar una lista de particiones con ruido que no aporta al usuario.
+- **Afecta a:** `metrics_repository.py`, `metrics_service.py`.
+- **Estado:** aplicado en código. Commits: `8b639a5`, `1f55ab0`, `41a9a6a`, `a086eb6`.
+
+### 19-20/10/2026 — Agente: comando `companion` instalable y resaltado de sección activa en la TUI
+
+- **Qué era:** la TUI no se podía abrir como comando instalado por `pipx`; los botones de sección y las subpestañas de Emparejamiento no indicaban cuál estaba activa.
+- **Qué es ahora:**
+  1. Comando `companion` instalable que abre la TUI.
+  2. Resaltado de la sección y de la subpestaña activas: primero con una clase CSS que un temporizador de la propia Textual borraba sola; luego con `reverse` y la paleta propia de Textual en vez de `ansi_color` (que no se podía combinar de forma fiable con `reverse`); bordes consistentes en los botones y pie de página transparente.
+  3. Se quita el identificador `#home` (sin uso).
+- **Por qué:** tener un comando real en vez de ejecutar el módulo a mano, y que la TUI indique en qué sección y subpestaña está el usuario.
+- **Afecta a:** `tui/app.py`, `tui/screens/main_screen.py`, `tui/widgets/pairing_section.py`, `pyproject.toml`, `tests/test_tui.py`, `doc/agente/DESIGN.md`.
+- **Estado:** aplicado en código. Commits: `13d721f`, `360daf6`, `fc086b0`, `3a17b11`, `fd291ab`, `ecffaa5`, `381dfa9`.
+
+### 19/10/2026 — Agente: versiones mínimas, `pydantic` y `httpx2` en los tests
+
+- **Qué era:** `pyproject.toml` no fijaba versiones mínimas de las dependencias, no declaraba `pydantic` como dependencia directa (llegaba de forma transitiva) y los tests usaban `httpx`, que Starlette 1.9 empezó a marcar como obsoleto.
+- **Qué es ahora:** versiones mínimas fijadas, `pydantic` declarado como dependencia directa, `httpx2` en lugar de `httpx` para los tests.
+- **Por qué:** evitar romper por una versión mínima no probada, declarar explícitamente una dependencia ya en uso, y quitar el aviso de obsolescencia de Starlette.
+- **Afecta a:** `pyproject.toml`.
+- **Estado:** aplicado en código. Commits: `e0de0f2`, `7d518ea`.
+
 ---
 
 ## Pendiente
