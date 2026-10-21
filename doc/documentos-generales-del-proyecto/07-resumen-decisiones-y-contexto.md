@@ -1,6 +1,6 @@
 # Resumen de la conversación de diseño: decisiones y contexto
 
-Este documento complementa a los archivos 01–06. Aquellos describen **qué** es el proyecto; este recoge **por qué** se ha llegado a cada decisión, qué se descartó y con qué motivo, qué queda pendiente y cómo quiere trabajar el autor. Sirve como contexto para cualquier conversación futura sobre el proyecto.
+Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qué** es el proyecto; este recoge **por qué** se ha llegado a cada decisión, qué se descartó y con qué motivo, qué queda pendiente y cómo quiere trabajar el autor. Sirve como contexto para cualquier conversación futura sobre el proyecto.
 
 ---
 
@@ -60,7 +60,7 @@ Este documento complementa a los archivos 01–06. Aquellos describen **qué** e
 
 ### 3.3 Terminal
 - Se lanza `$SHELL -l` de forma genérica. **No hay que programar soporte por shell**: el PTY funciona igual con Bash, Zsh y Fish. **Shell probada oficialmente: Zsh.**
-- La paleta y la fuente las pone el móvil, no la shell. Hay que incluir una Nerd Font.
+- La paleta y la fuente las pone el móvil, no la shell. **Decisión del 15/10/2026:** se descarta la Nerd Font; la app usa la fuente monoespaciada del sistema Android.
 - Temas de terminal: "si da tiempo".
 - **Sesiones persistentes con tmux (14/10/2026):** la sesión de terminal es del agente y no de la conexión. La app solo pide «abre una terminal y ejecuta esto» y se engancha para ver la salida; si cierra la app, la limpia de recientes o pierde la red, el comando sigue en el PC y se recupera la salida al volver. El agente abre además una ventana de la terminal gráfica del usuario conectada a la misma sesión. La sesión termina con `exit`, al cerrar su ventana en la app o al cerrar su ventana en el PC; sin caducidad por inactividad. Empieza con una sola sesión. Sin sesiones activas, la app muestra una terminal vacía con un aviso de que tocar o escribir abre una ventana en el PC; la sesión se crea al primer toque o tecla (shell real desde el principio) y se sustituye el aviso por el prompt. Al reabrir la app, solo se restauran sus propias pestañas. Detalle en `../agente/terminal-sesiones-tmux.md`.
 - **tmux como dependencia del PC (14/10/2026):** se acepta (en el PC se aceptan dependencias). Sin tmux, la terminal queda ligada a la conexión, con aviso.
@@ -174,10 +174,9 @@ Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
 ## 7. Forma de trabajar con Claude
 
 - **Proyecto de Claude (organización actual):**
-  - los documentos 01–07 están en la carpeta "Documentacion TFG" del proyecto y son el contexto base de todos los hilos;
-  - el repositorio de GitHub (Alexxio070/Alex-TFG-DAM) está conectado y tiene una copia de estos documentos en `doc/`;
+  - la fuente de los documentos 01–08 es `doc/` en el repositorio de GitHub (Alexxio070/Alex-TFG-DAM); la carpeta "Documentacion TFG" del proyecto de Claude es un espejo que se actualiza desde el repo;
   - el trabajo se organiza en hilos con prefijo **PROYECTO:** (desarrollo del TFG), **APRENDIZAJE:** (unidades de estudio) y **PREGUNTAS:** (dudas sueltas);
-  - el hilo "Proyecto: Trabajo del repositorio" es el único que hace commits y PRs en el repo.
+  - alex abre una sesión de Claude Code por rama `feature/*` o por tarea de documentación; cada sesión propone sus commits antes de hacerlos.
 - **Regla de confirmación previa (01/10/2026):** antes de generar o crear nada, Claude explica cómo ha entendido la petición y su plan (qué, cómo y por qué), y espera mi confirmación explícita. Nunca toca el repositorio salvo que yo lo pida.
 - **No usar el conocimiento del proyecto como repositorio manual** del código: se queda desactualizado. El repositorio real es Git/GitHub.
 - **Reparto de herramientas:**
