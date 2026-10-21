@@ -267,7 +267,7 @@ Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **t�
 
 iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un servidor relé cifrado, que los dos equipos usan para intercambiar sus direcciones; después iroh intenta convertirla en directa atravesando el NAT y, si no lo consigue, sigue por el relé. Por defecto se usan los relés públicos gratuitos del proyecto (según iroh, solo para desarrollo y uso aficionado, con límite de tráfico y sin garantía de disponibilidad; suficientes para el TFG); opcionalmente pueden configurarse relés propios. Por defecto cada arranque genera una identidad nueva, así que el agente debe guardar su clave secreta (`SecretKey`) y cargarla al arrancar para conservar el mismo identificador.
 
-*Pendiente de revisión (se decide al empezar la fase 2):* cómo usar iroh desde Flutter. El binding de Kotlin publicado en Maven no incluye Android: hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). La alternativa es el plugin `iroh_flutter` de pub.dev (comunitario, no de n0), que compila el núcleo Rust automáticamente; también necesita Rust y el NDK instalados.
+*Pendiente de revisión (se decide al empezar la fase 2):* cómo usar iroh desde Flutter — opciones y motivos: `02-necesidades-tecnologicas.md` §4.2.
 
 El puente entre Flutter y Kotlin se limita a dos operaciones: *abrir túnel (identificador del PC) → puerto local* y *cerrar túnel*.
 
@@ -427,7 +427,7 @@ Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es 
 
 **Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
-Se usa **pipx** porque muchas distribuciones actuales (Debian 12+, Ubuntu 23.04+, Arch…) bloquean `pip install` fuera de entornos virtuales, siguiendo PEP 668. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python con el que se ejecuta, que normalmente es el de la propia distribución. Límite de compatibilidad por el binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
+Elección de **pipx** y límites de compatibilidad del binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
 
 ### 8.2 Servicio systemd
 El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
@@ -453,9 +453,7 @@ Por defecto, el gestor de usuario de systemd solo se ejecuta mientras el usuario
 loginctl enable-linger $USER
 ```
 
-Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie sesión. Limitaciones en ese estado:
-- no hay sesión gráfica que bloquear;
-- apagar o reiniciar sin una sesión activa puede requerir autorización de polkit. Opcionalmente, se puede añadir una regla de polkit que lo permita, asumiendo el riesgo que implica.
+Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie sesión. Limitaciones en ese estado y posible solución: ver §10.
 
 ### 8.4 App móvil
 - Distribución como **APK** en las *releases* del repositorio. La publicación en tiendas queda como trabajo futuro.
@@ -486,7 +484,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 - **Distribución:** cualquier distribución con systemd, Python 3.11+ y D-Bus. El entorno de pruebas oficial es KDE Plasma 6. El bloqueo de sesión depende de que el escritorio responda a la señal de logind (Plasma lo hace).
 - **Temperaturas:** dependen de los sensores que exponga el kernel en `/sys/class/hwmon`. Las GPU NVIDIA con controlador propietario no aparecen ahí; su soporte (vía `nvidia-smi`) es opcional.
 - **Hibernación:** muchas instalaciones no la tienen configurada. La app la ofrece solo si logind indica que está disponible.
-- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política.
+- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `04-plan-de-fases.md`, Decisiones.
 - **Procesos:** solo se pueden finalizar los del propio usuario.
 - **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra una notificación persistente, que es el comportamiento estándar de Android. Desde Android 14 el usuario puede descartarla, y sin el permiso `POST_NOTIFICATIONS` solo aparece en el gestor de tareas.
 - **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso aficionado (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
