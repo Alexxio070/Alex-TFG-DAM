@@ -353,7 +353,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué es ahora:** el endpoint real que se construyó solo expone lo que la app consume hoy (CPU total, RAM, discos, temperatura); núcleos/swap/carga/uptime quedan como ampliación opcional, no requisito. "Terminada cuando" pasa a "cuatro secciones" (se había añadido Notas y no se actualizó esa frase).
 - **Por qué:** esta reducción de alcance ya se había decidido y aplicado al propio endpoint; solo faltaba corregir el documento, que se quedó con la redacción antigua.
 - **Afecta a:** `04-plan-de-fases.md` (fase 1).
-- **Estado:** aplicado en `main` y `feature/agent`. **Pendiente en `feature/interfaz`:** tiene su propia copia de este archivo, sin esta corrección (no se tocó para no interferir con esa sesión).
+- **Estado:** aplicado. La corrección se hizo en `main` y `feature/agent`; `feature/interfaz` tenía su propia copia de este archivo sin ella, pero ya está fusionada en `main`.
 
 ### 19/10/2026 — Interfaz: conexión con el agente, timeout, reintento y dirección en caliente
 
@@ -423,7 +423,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 
 ## Pendiente
 
-Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de redacción conocidas entre la documentación y la implementación; lo que queda son huecos de la interfaz o decisiones de plan:
+Huecos de la interfaz o decisiones de plan que quedan abiertas:
 
 | Área | Qué falta |
 |---|---|
@@ -432,6 +432,5 @@ Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de reda
 | Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
 | Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
 | Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
-| Fase 1 | Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado) |
 | Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
 | Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
