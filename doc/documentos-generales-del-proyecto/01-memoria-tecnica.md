@@ -78,7 +78,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
 - Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado. Se usa `Session.Lock()` (o `LockSession(id)`) sobre la sesión del propio usuario, que no pide autorización; `LockSessions()` bloquea todas las sesiones y polkit exige permisos de administrador.
 - Todas las acciones destructivas piden confirmación en la app.
-- **Pendiente de investigar:** sin una sesión gráfica activa (por ejemplo, tras un reinicio con nadie conectado), polkit podría denegar estas acciones por defecto. Posible solución y sus riesgos: ver `04-plan-de-fases.md`, Decisiones.
+- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `04-plan-de-fases.md`, Decisiones.
 
 ### Módulo D — Gestión de procesos
 - Lista de procesos en tiempo real con búsqueda, filtro y orden por CPU y memoria.
