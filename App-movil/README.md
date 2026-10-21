@@ -1,17 +1,10 @@
-# tfg
+# App-movil
 
-A new Flutter project.
+Cliente Android (Flutter) de Linux System Companion: muestra el estado del PC y manda órdenes al agente.
 
-## Getting Started
+```bash
+flutter pub get
+flutter run
+```
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Ver el [README raíz](../README.md) para la instalación completa (app + agente) y [`ESTRUCTURA_FLUTTER.md`](../doc/documentos-generales-del-proyecto/ESTRUCTURA_FLUTTER.md) para la organización del código.
