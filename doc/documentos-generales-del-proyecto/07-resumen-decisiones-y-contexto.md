@@ -135,23 +135,10 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - fases difíciles intercaladas con fáciles para no dejar lo importante al final;
 - lo de menor impacto, al final como "si da tiempo".
 
-**Beta v0.1 (Navidad):**
-- Fase 0: preparación y aprender Flutter.
-- Interfaz definitiva con *placeholders* y datos simulados: ya hecha.
-- Fase 1: crear el agente, conectar las métricas reales y construir la TUI definitiva de `companion` (banner, Emparejamiento, Historial, Base de datos, Notas) con las secciones vacías o con lo que ya exista (mediados de octubre – principios de noviembre).
-- Fase 2: conexión remota con iroh (principios de noviembre – mediados de diciembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
+**Calendario completo, fase a fase:** `04-plan-de-fases.md`.
+
 - **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
 - **La beta NO necesita cumplir los mínimos de DAM.**
-
-**Después de la beta:**
-- Fase 3: seguridad (mediados de diciembre – principios de enero): activa dentro de «Emparejamiento» (ya construida en la fase 1) la configuración inicial que crea el usuario, y login. Va antes de la terminal porque esta da acceso a la shell.
-- Fase 4: terminal (enero – mediados de febrero), para el hito de febrero.
-- Fase 5: instalación con pipx y servicio (instalado desde la TUI).
-- Fase 6: energía y procesos.
-- Fase 7: CRUD de acciones rápidas (requisito obligatorio) y botones de exportación de la TUI.
-- Fase 8: notificaciones, reglas y servicio en primer plano.
-- Fase 9: mDNS, QR de emparejamiento, registro por QR y espacio compartido (notas de texto y enlaces; imágenes aún pensándolo).
-- Fase 10: pulido.
 
 **Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD de acciones rápidas, login y TLS, y pulido mínimo de errores.
 
@@ -159,15 +146,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 ## 6. Entorno de pruebas
 
-La red del centro está muy blindada y probablemente el móvil no pueda llegar al PC por ella. Solución sin depender de ninguna red:
-- **USB + `adb reverse tcp:8443 tcp:8443`** como método principal (la app se conecta a `127.0.0.1:8443`, la misma dirección que usará el túnel de iroh);
-- emulador de Android Studio (`10.0.2.2` = anfitrión);
-- punto de acceso del móvil para probar como LAN real;
-- repositorios simulados en la app.
-
-Fuera de casa, iroh no necesita abrir puertos de entrada: basta con que salga HTTPS (TCP 443 con WebSocket) hacia los relés, y si el UDP está bloqueado todo va por el relé. *Pendiente de revisión:* confirmar con el centro que deja salir ese tráfico.
-
-Para la defensa: USB o punto de acceso, más un vídeo de respaldo.
+Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04-plan-de-fases.md`, «Entorno de pruebas».
 
 ---
 

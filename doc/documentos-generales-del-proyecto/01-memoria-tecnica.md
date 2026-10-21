@@ -470,15 +470,7 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 - Commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 
 ### 9.2 Entorno de pruebas
-Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear la comunicación entre dispositivos):
-
-| Método | Uso |
-|---|---|
-| **USB + `adb reverse tcp:8443 tcp:8443`** | Método principal: la app se conecta a `127.0.0.1:8443` y llega al agente del portátil por el cable |
-| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No se usa para probar iroh (arquitecturas soportadas: ver `02-necesidades-tecnologicas.md` §3.3). *Pendiente de revisión:* si se elige `iroh_flutter`, comprobar si funciona en el emulador |
-| **Punto de acceso del móvil** | Red privada propia para probar como LAN real, incluido mDNS |
-| **Repositorios simulados** | Desarrollar pantallas sin el agente |
-| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. Requisitos de red y versiones: ver `02-necesidades-tecnologicas.md` §3.3 |
+Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04-plan-de-fases.md`, «Entorno de pruebas».
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
