@@ -31,6 +31,7 @@ Abiertas, con fecha límite:
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
 | ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
 | Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
+| Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
 
 ---
 

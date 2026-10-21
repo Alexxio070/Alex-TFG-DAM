@@ -124,6 +124,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Modo sin sesión mejorado 🟡
 - Con *linger*, ofrecer desde la TUI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
+- Relacionado con la decisión pendiente de investigar en `04-plan-de-fases.md` (Decisiones): si el Módulo C de energía necesita esta regla para funcionar sin sesión activa.
 
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
