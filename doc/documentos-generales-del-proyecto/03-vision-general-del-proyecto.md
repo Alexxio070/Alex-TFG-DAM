@@ -76,18 +76,45 @@ En casa, en la misma red Wi-Fi, el móvil encuentra al PC automáticamente, sin 
 
 ## 3. Cómo se adapta a los requisitos mínimos del proyecto
 
-*Pendiente: alex completará esta tabla con el listado oficial de requisitos mínimos del proyecto de DAM.*
+Según los requisitos mínimos del proyecto final de DAM (apartados generales y los específicos de aplicación móvil):
 
 | Requisito mínimo | Cómo lo cumple el proyecto |
 |---|---|
-| *(a rellenar)* | *(a rellenar)* |
+| Tipología: aplicación móvil Android | App Android hecha con Flutter |
+| Arquitectura con capas diferenciadas | MVVM en la app (vistas → ViewModels → repositorios → servicios de red); capas en el agente (rutas de la API → servicios → repositorios → modelos) |
+| Control de versiones con Git, ramas y commits | Git con rama `main` y una `feature/<nombre>` por tarea o fase, commits convencionales |
+| Manual de instalación y ejecución | README del repositorio |
+| Interfaz gráfica funcional y usable | Interfaz definitiva de la app, con sus seis pantallas |
+| Navegación fluida entre pantallas | Menú lateral (drawer) entre Inicio, Métricas, Terminal, Notas y Ajustes |
+| Validaciones en formularios | Validaciones en el login, en el formulario de acciones rápidas y en los ajustes |
+| Gestión de usuarios y autenticación (registro/login) | Emparejamiento por QR, login con token de sesión, contraseña con Argon2 |
+| CRUD de al menos dos entidades relacionadas | Grupos y acciones rápidas (fase 7); reforzado con reglas de alerta/notificaciones y notas |
+| Lógica de negocio (búsquedas, cálculos, filtrado) | Reglas de alerta por umbral, estadísticas de ejecuciones, filtros y orden de procesos |
+| Gestión de errores y feedback al usuario | Avisos de conexión con reintento, confirmaciones antes de acciones destructivas, mensajes de error claros |
+| Base de datos con mínimo 3-4 tablas y relaciones | 9 tablas relacionadas en `schema.sql` |
+| Acceso a datos mediante clases o funciones estructuradas | Patrón repository, una clase por tabla, sin ORM |
+| Script de creación o exportación de la base de datos | `schema.sql`, más exportación de datos y estructura desde la TUI |
+| Documentación completa (introducción, planificación, tecnologías, BD, pruebas, manual, estado del arte) | `doc/documentos-generales-del-proyecto/` (01-08) |
+| Elemento diferenciador — uso de sensores del dispositivo | Cámara para escanear el QR de emparejamiento y registro |
+| Elemento diferenciador — notificaciones push o servicios en segundo plano | Servicio en primer plano del móvil con notificaciones locales del PC (sin Firebase: conexión P2P propia con iroh) |
+| Elemento diferenciador — integración con Firebase | Descartado a propósito: el proyecto evita servidores de terceros; el P2P con iroh cubre el mismo papel sin depender de Google |
 
 ---
 
 ## 4. Conocimientos de los módulos formativos aplicados
 
-*Pendiente: alex completará esta tabla con los módulos formativos y asignaturas del ciclo que aplica el proyecto.*
+Resultados de Aprendizaje (RA) según el Real Decreto 405/2023, de 29 de mayo (currículo estatal actualizado del título de Técnico Superior en DAM, Anexo I):
 
-| Módulo formativo / asignatura | Qué parte del proyecto lo aplica |
-|---|---|
-| *(a rellenar)* | *(a rellenar)* |
+| Módulo profesional | Código | RA vinculado | Componente técnico en Linux System Companion |
+|---|---|---|---|
+| Sistemas Informáticos | 0483 | RA4, RA5, RA6 | Agente como servicio de usuario de systemd (RA4: cuentas, servicios y procesos); redes locales con mDNS y acceso remoto por iroh (RA5, RA6) |
+| Bases de Datos | 0484 | RA2, RA3, RA4, RA6 | Diseño del esquema relacional (`schema.sql`): creación de tablas (RA2), consultas y modificación vía repositorios (RA3, RA4), modelo normalizado con diagrama E/R (RA6) |
+| Programación | 0485 | RA2, RA4, RA5, RA9 | Programación orientada a objetos en Python y Dart (RA2, RA4), E/S con ficheros (log de comandos, config TOML) (RA5), integridad de datos en SQLite (RA9) |
+| Lenguajes de Marcas | 0373 | RA6, RA7 | Intercambio de información en JSON entre la app y el agente (RA6); exportación de datos y estructura de la BD desde la TUI (RA7) |
+| Entornos de Desarrollo | 0487 | RA3, RA4, RA6 | Pruebas automáticas con pytest y flutter_test (RA3); Git, refactorización e integración continua (RA4); diagrama de casos de uso de la memoria (RA6) |
+| Acceso a Datos | 0486 | RA1, RA2, RA6 | Acceso a ficheros (log de comandos, configuración) (RA1); conexión a SQLite sin ORM (RA2, explícitamente sin usar la herramienta de mapeo del RA3); componentes de acceso a datos con patrón repository (RA6) |
+| Desarrollo de Interfaces | 0488 | RA3, RA4, RA7 | Componentes visuales propios de la app (RA3); diseño con criterios de usabilidad (RA4); distribución del APK en releases (RA7). No aplica RA2 (interfaces naturales por voz/gestos/realidad aumentada): el proyecto no las usa |
+| Programación Multimedia y Dispositivos Móviles | 0489 | RA1, RA2 | Tecnologías de desarrollo móvil (Flutter) evaluadas y aplicadas (RA1); app con sensores (cámara para el QR), conexiones HTTP/HTTPS y persistencia (RA2). No aplica RA3-RA5 (contenido multimedia y motores de videojuegos): fuera del alcance |
+| Programación de Servicios y Procesos | 0490 | RA1, RA3, RA4, RA5 | Ejecución de acciones rápidas en procesos propios con control de grupo (RA1); socket Unix de `companion notify` (RA3); servicios REST/WebSocket con FastAPI (RA4); TLS, Argon2 y tokens de sesión (RA5) |
+| Sistemas de Gestión Empresarial | 0491 | — | Sin aplicación directa: el proyecto no implanta ni adapta sistemas ERP-CRM (herramienta personal de administración de sistemas, no de gestión empresarial) |
+| Proyecto de Desarrollo de Aplicaciones Multiplataforma | 0492 | RA1, RA2, RA3, RA4 | Esta memoria técnica (RA1), la planificación por fases (RA2, RA3) y el seguimiento de cambios en `08-historial-de-cambios.md` (RA4) |
