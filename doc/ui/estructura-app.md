@@ -2,7 +2,7 @@
 
 Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 20/10/2026.
 
-La interfaz sigue [`../ui/ui-final/DESIGN.md`](../ui/ui-final/DESIGN.md), que refleja el código real de cada pantalla. `ui-v1` y `ui-v2` se conservan como historial (el prototipo inicial y la primera especificación de Notas).
+La interfaz sigue [`interfaz-app.md`](interfaz-app.md), que refleja el código real de cada pantalla. `historico/ui-v1` y `historico/ui-v2` se conservan como historial (el prototipo inicial y la primera especificación de Notas).
 
 ## Árbol de carpetas
 
@@ -69,7 +69,7 @@ Cada sección sigue el mismo patrón:
 | `*_viewmodel.dart` | Estado y acciones (`ChangeNotifier`). Habla con los repositorios. |
 | `widgets/` | Piezas que solo usa esa sección. |
 
-Terminal es la única sección con dos niveles: `TerminalTabsViewModel` gestiona la lista de pestañas, y cada pestaña tiene su propio `TerminalViewModel` (ver `../ui/XTERM_DART.md`).
+Terminal es la única sección con dos niveles: `TerminalTabsViewModel` gestiona la lista de pestañas, y cada pestaña tiene su propio `TerminalViewModel` (ver `XTERM_DART.md`).
 
 ### main.dart y app_providers.dart
 `app_providers.dart` tiene la única lista de providers y ViewModels de la app (`buildProviders`), para no duplicarla entre `main.dart` y los tests (`test/widget_test.dart` la reutiliza con repositorios falsos). `main.dart` es el único sitio donde se decide qué implementación real de cada repositorio se usa.
@@ -127,11 +127,11 @@ Ejemplo con un repositorio ya real, Métricas:
 ## Decisiones tomadas
 
 - Tema: la temperatura usa el color `ink` del tema, no `#16181D` fijo (el prototipo lo hace ilegible en oscuro).
-- Fuentes de la interfaz: Plus Jakarta Sans y JetBrains Mono como assets locales en `assets/fonts/`. La terminal real usa la fuente del sistema, no una empaquetada (ver `../ui/XTERM_DART.md`).
+- Fuentes de la interfaz: Plus Jakarta Sans y JetBrains Mono como assets locales en `assets/fonts/`. La terminal real usa la fuente del sistema, no una empaquetada (ver `XTERM_DART.md`).
 - Gráficos de área con `CustomPainter`, sin librería de gráficos.
 - Arrastre de la cuadrícula con `Listener` + `Stack` + `AnimatedPositioned`, sin librería de reordenado (ninguna cubre fusionar, papelera y edición a 1500 ms). La geometría y los cálculos de impacto viven aparte, en `macro_grid_geometry.dart`.
-- Terminal con `xterm.dart` (ver `../ui/XTERM_DART.md`); el shell simulado se sustituirá por el WebSocket del agente. Varias pestañas, cada una con su propio `TerminalViewModel`.
-- Notas con tarjetas de texto seleccionable y enlaces pulsables, y formulario aparte (ver `ui-v2`).
+- Terminal con `xterm.dart` (ver `XTERM_DART.md`); el shell simulado se sustituirá por el WebSocket del agente. Varias pestañas, cada una con su propio `TerminalViewModel`.
+- Notas con tarjetas de texto seleccionable y enlaces pulsables, y formulario aparte (ver `historico/ui-v2`).
 - Los ViewModels de las secciones se registran en `app_providers.dart`, así que su estado se conserva al cambiar de sección.
 - Identificador de la app: `io.github.alexxio070.companion`; nombre visible: «Linux System Companion».
 

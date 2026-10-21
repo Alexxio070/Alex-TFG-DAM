@@ -4,17 +4,7 @@
 **Tipo:** Proyecto final de DAM — aplicación móvil Android con backend propio
 **Plataformas:** Android (cliente) — GNU/Linux con systemd (agente)
 **Entorno de referencia:** Android 10+ (probado en Android 15) · KDE Plasma 6 · systemd · Python 3.11+
-**Estado:** Memoria de diseño; implementación en curso (interfaz de la app con datos simulados)
-
----
-
-## 0. Decisiones
-
-| Decisión | Estado |
-|---|---|
-| Aceptación de Flutter por el centro (la normativa cita "Android Studio, Kotlin, Java") | **Resuelta (26/09/2026):** el tutor acepta Flutter. El plan B (Kotlin + Jetpack Compose) ya no es necesario |
-| Herramienta del PC: TUI con botones (Textual) en lugar de CLI | **Resuelta (12/10/2026):** al escribir `companion` se abre la TUI; solo `companion serve` y `companion notify` quedan como comandos de terminal (ver 8.1) |
-| Registro del usuario | **Resuelto (12/10/2026):** QR en la TUI y cuenta creada desde la app (ver 5.1). Se implementa en la fase 9; hasta entonces, el usuario se crea desde la TUI |
+**Estado:** implementación en curso; estado por fase en `04-plan-de-fases.md`. Decisiones vigentes en `07-resumen-decisiones-y-contexto.md` §3.
 
 ---
 
@@ -22,34 +12,17 @@
 
 Linux System Companion es una herramienta de código abierto para **administrar un PC con GNU/Linux desde el móvil cuando no estás delante de él**, tanto desde la red de casa como desde fuera (4G/5G u otra Wi-Fi), sin configurar el router ni instalar nada más en el móvil.
 
-El sistema tiene dos piezas:
-
-- **Una app Android** hecha con Flutter.
-- **Un agente en el PC** escrito en Python (FastAPI) que se ejecuta como servicio de usuario de systemd.
-
-Las funciones principales son:
-
-- una terminal remota que abre la shell real del usuario;
-- la monitorización del sistema en vivo;
-- la gestión de procesos;
-- el control de energía y sesión;
-- las acciones rápidas (comandos guardados y organizados en grupos, con historial de ejecuciones);
-- un espacio compartido entre el móvil y el PC para pasar notas de texto y enlaces de un lado a otro;
-- las notificaciones del PC al móvil con reglas de alerta configurables.
+El sistema tiene dos piezas: **una app Android** hecha con Flutter y **un agente en el PC** escrito en Python (FastAPI) que se ejecuta como servicio de usuario de systemd. Sus funciones (terminal remota, monitorización, procesos, energía, acciones rápidas, espacio compartido de notas y notificaciones) se detallan en la sección 3.
 
 La filosofía de diseño es: **solo se incluyen funciones que tienen sentido estando lejos del equipo**. Lo que únicamente es útil delante del PC (control multimedia, portapapeles, personalización del escritorio…) queda fuera del alcance y se recoge en *06-ideas-de-futuro.md*.
 
-El desarrollo es incremental. Una primera **beta (v0.1)** ofrece la interfaz definitiva (con *placeholders* en lo que aún no está hecho), las métricas y la conexión por iroh, y las versiones posteriores amplían el sistema sobre esa base. La planificación está en *04-plan-de-fases.md*.
+El desarrollo es incremental: una primera **beta (v0.1)** con la interfaz definitiva, las métricas y la conexión por iroh, y versiones posteriores que amplían el sistema sobre esa base (*04-plan-de-fases.md*).
 
 ---
 
 ## 2. Motivación y valor diferencial
 
-Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve completo:
-
-- **KDE Connect** está pensado para cuando estás *cerca* del PC y en la misma red local: control multimedia, portapapeles, notificaciones. No ofrece una terminal interactiva completa y fuera de la LAN necesita una VPN configurada por el usuario.
-- **Clientes SSH móviles** (Termius, ConnectBot…) ofrecen terminal, pero requieren que el PC sea accesible desde Internet (abrir puertos, IP pública o VPN) y no incluyen monitorización, gestión de energía ni notificaciones de eventos.
-- **Cockpit** ofrece administración web completa, pero no es una app móvil y exponerlo fuera de casa requiere configuración de red.
+Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve completo: KDE Connect solo sirve cerca del PC y en la misma red; los clientes SSH móviles exigen exponer el PC a Internet y no monitorizan ni avisan; Cockpit no es una app móvil. Comparativa completa en la sección 11.
 
 **Valor diferencial:** una única app que combina terminal real, monitorización, procesos, energía, acciones rápidas, espacio compartido y avisos, y que funciona desde cualquier sitio con una configuración mínima.
 
@@ -64,24 +37,23 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - **Persistencia:** si la app se cierra, pasa a segundo plano, se limpia de recientes o se pierde la cobertura, **la sesión y el comando siguen** en el PC. Al volver, la app se reengancha y recupera la salida que se perdió. Esto permite, por ejemplo, actualizar el sistema desde el móvil sin riesgo de dejarlo a medias.
 - **Ventana en el PC:** al crear la sesión, el agente abre una ventana de la terminal gráfica del usuario (kitty, Konsole…) conectada a la misma sesión, para que al volver al PC se vea lo ocurrido. Sin sesión gráfica, la sesión funciona igual, solo en la app.
 - **Cierre:** la sesión termina con `exit` (o Ctrl+D), al cerrar su ventana en la app o al cerrar su ventana en el PC. No hay caducidad por inactividad.
-- **Sin sesiones activas, terminal vacía con aviso.** Se muestra un mensaje genérico (p. ej. «Toca para abrir una terminal en tu PC»), que avisa de que tocar o escribir abre una ventana en el PC. La sesión se crea al primer toque o tecla, con shell real desde ese momento (prompt, Tab e historial); el mensaje se sustituye por el prompt. Al cerrar la última sesión, vuelve la terminal vacía con el aviso.
-- **Una sola sesión al principio.** Después, si va bien, **varias pestañas** en la app, como las de un navegador: cada pestaña es una terminal independiente con sus propios comandos y su propia ventana en el PC; cerrar una pestaña cierra su terminal en el PC (ver `06-ideas-de-futuro.md` y `../agente/terminal-sesiones-tmux.md`, sección 10).
+- **Sin sesiones activas, terminal vacía con aviso** («Toca para abrir una terminal en tu PC»): la sesión se crea al primer toque o tecla, con shell real desde ese momento.
+- **Varias pestañas**, como las de un navegador: cada una es una terminal independiente con su propia sesión y su propia ventana en el PC; cerrar una pestaña cierra su terminal en el PC.
 - **Requisitos en el PC:** `tmux`, y una terminal gráfica para la ventana. Sin `tmux`, la terminal funciona ligada a la conexión (se corta al desconectar) y la app avisa.
-- La app muestra la terminal con **xterm.dart**, que interpreta las secuencias ANSI, incluido color de 24 bits (True Color).
-- Barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`).
-- **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY, sin código específico. **La shell probada oficialmente es Zsh.**
-- **Nota:** la paleta de colores y la fuente las define el emulador del móvil, no la shell. **Decisión del 15/10/2026:** se descarta la Nerd Font; la app usa la fuente monoespaciada del propio sistema Android. Los iconos de prompts como Starship pueden no verse bien en la app aunque se vean bien en la ventana del PC (ver `../ui/XTERM_DART.md`).
+- La app muestra la terminal con **xterm.dart** (secuencias ANSI, color de 24 bits), con barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`). Usa la fuente monoespaciada del sistema Android, no una Nerd Font (ver `../ui/XTERM_DART.md`).
+- **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY. **La shell probada oficialmente es Zsh.**
 - Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
 
 ### Módulo B — Monitorización del sistema
-- Uso de CPU (global y por núcleo), RAM, swap, discos, temperaturas, carga del sistema y tiempo encendido.
-- Datos obtenidos con **psutil** (lee `/proc` y `/sys/class/hwmon`).
-- Gráficas en vivo en la app. La pantalla de métricas muestra uso de CPU, temperatura de CPU, uso de RAM y uso de disco (con selector de partición, que por defecto es la del sistema), actualizados cada segundo sobre los últimos 60 s. El resto de datos del agente (núcleos, swap, carga y tiempo encendido) queda disponible para ampliar la pantalla.
+- Uso de CPU, temperatura de CPU, RAM y discos, leídos con **psutil** (`/proc` y `/sys/class/hwmon`).
+- Gráficas en vivo en la app, actualizadas cada segundo sobre los últimos 60 s, con selector de partición (por defecto, la del sistema).
+- Ampliación opcional: CPU por núcleo, swap, carga del sistema y tiempo encendido (psutil ya los da, pero ni el endpoint ni la pantalla los muestran hoy).
 
 ### Módulo C — Energía y sesión
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
 - Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado. Se usa `Session.Lock()` (o `LockSession(id)`) sobre la sesión del propio usuario, que no pide autorización; `LockSessions()` bloquea todas las sesiones y polkit exige permisos de administrador.
 - Todas las acciones destructivas piden confirmación en la app.
+- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `04-plan-de-fases.md`, Decisiones.
 
 ### Módulo D — Gestión de procesos
 - Lista de procesos en tiempo real con búsqueda, filtro y orden por CPU y memoria.
@@ -111,20 +83,13 @@ En la app, las acciones aparecen como una **cuadrícula de botones** en la panta
   - mantener pulsada una carpeta abre su edición (nombre y color de entre seis).
 - **Orden persistente:** el orden de la cuadrícula y el de cada carpeta se guardan en el agente, de modo que son los mismos en cualquier momento y desde cualquier sesión.
 
-**Reglas de negocio:**
-- el nombre de una acción es único dentro de su grupo;
+**Reglas de negocio y validaciones** (en la app, para respuesta inmediata, y en el agente, para la seguridad real):
+- el nombre de una acción es único dentro de su grupo, obligatorio y de 1 a 50 caracteres;
+- comando obligatorio; tiempo máximo entre 1 y 3600 s; el directorio de trabajo debe existir y ser accesible;
 - al borrar un grupo con acciones, el usuario elige entre moverlas a "Sin grupo" o borrarlas;
 - al borrar una acción se borra su historial;
 - una carpeta solo contiene acciones (no hay carpetas dentro de carpetas);
 - la cuadrícula admite como máximo 40 elementos de primer nivel (carpetas y acciones sin carpeta).
-
-**Validaciones:**
-- nombre obligatorio (1–50 caracteres);
-- comando obligatorio;
-- tiempo máximo entre 1 y 3600 s;
-- el directorio de trabajo debe existir y ser accesible.
-
-Se valida en la app (respuesta inmediata) y en el agente (seguridad real).
 
 **Creación rápida:** desde la cuadrícula, el botón «+» abre un diálogo con solo **nombre, comando y «pedir confirmación»**. El resto de campos (directorio de trabajo, tiempo máximo y «notificar al terminar») toman sus valores por defecto y se editan después desde la ficha de la acción.
 
@@ -137,21 +102,7 @@ Se valida en la app (respuesta inmediata) y en el agente (seguridad real).
 4. **Ficha de la acción** (pantalla secundaria; el acceso se define en la fase 7): todos sus datos editables, estadísticas, botón "Ejecutar" e historial reciente.
 5. **Historial de ejecuciones** con filtros, y **detalle de ejecución** con estado, duración y salida del comando (opcionalmente mostrada con xterm.dart para conservar los colores).
 
-**API del agente:**
-```
-GET    /grupos                         POST   /grupos
-PUT    /grupos/{id}                    DELETE /grupos/{id}?modo=mover|borrar
-
-GET    /acciones?grupo=                POST   /acciones
-PUT    /orden                          (guarda el orden de la cuadrícula y de cada carpeta)
-GET    /acciones/{id}                  (incluye estadísticas)
-PUT    /acciones/{id}                  DELETE /acciones/{id}
-POST   /acciones/{id}/ejecutar         POST   /ejecuciones/{id}/cancelar
-
-GET    /ejecuciones?accion=&estado=&desde=&hasta=
-GET    /ejecuciones/{id}               DELETE /ejecuciones/{id}
-DELETE /ejecuciones?accion=            (limpiar historial)
-```
+Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
 ### Módulo F — Espacio compartido
 - Un **espacio común entre el móvil y el PC** donde dejar **notas de texto y enlaces**, accesible desde los dos lados, para pasar información de uno a otro. Ejemplos: guardar un enlace en el móvil para abrirlo luego en el PC, o dejar desde el PC un texto o un comando para consultarlo fuera de casa.
@@ -164,11 +115,7 @@ DELETE /ejecuciones?accion=            (limpiar historial)
 - *Imágenes en el espacio compartido: **aún pensándolo**.* No forman parte del alcance confirmado.
 - El explorador y la transferencia de archivos quedan fuera del alcance (ver *06-ideas-de-futuro.md*).
 
-**API del agente:**
-```
-GET    /notas?q=                       POST   /notas
-PUT    /notas/{id}                     DELETE /notas/{id}
-```
+Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
 ### Módulo G — Notificaciones y reglas de alerta
 - **Avisos manuales:** el comando `companion notify "mensaje"` envía una notificación al móvil desde cualquier script o programa. Ejemplos:
@@ -182,15 +129,7 @@ PUT    /notas/{id}                     DELETE /notas/{id}
   - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
   - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1. *Pendiente de revisión:* se confirma en la fase 8.
 
-**API del agente:**
-```
-GET    /reglas                         POST   /reglas
-PUT    /reglas/{id}                    DELETE /reglas/{id}
-GET    /notificaciones?origen=&leida=&q=&desde=&hasta=
-PATCH  /notificaciones/{id}            (marcar como leída)
-DELETE /notificaciones/{id}            DELETE /notificaciones   (limpiar historial)
-WS     /ws/events                      (avisos en tiempo real)
-```
+Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
 ### Módulo H — Conectividad
 - **En red local:** conexión directa, con autodescubrimiento del PC por **mDNS**.
@@ -201,9 +140,37 @@ WS     /ws/events                      (avisos en tiempo real)
 ### Navegación y pantallas de la app
 La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
 
-- **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
+- **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis), modo de conexión **Local / iroh** con la dirección del agente (`host:puerto` en Local, identificador a mano en iroh) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
 - **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
 - **Aún sin ubicación decidida:** energía (Módulo C), procesos (Módulo D), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
+
+### API REST (resumen)
+Rutas ya definidas para los módulos con CRUD completo (grupos y acciones rápidas, notas, reglas y notificaciones). El resto de módulos aún no tiene rutas concretas documentadas.
+
+```
+GET    /grupos                         POST   /grupos
+PUT    /grupos/{id}                    DELETE /grupos/{id}?modo=mover|borrar
+
+GET    /acciones?grupo=                POST   /acciones
+PUT    /orden                          (guarda el orden de la cuadrícula y de cada carpeta)
+GET    /acciones/{id}                  (incluye estadísticas)
+PUT    /acciones/{id}                  DELETE /acciones/{id}
+POST   /acciones/{id}/ejecutar         POST   /ejecuciones/{id}/cancelar
+
+GET    /ejecuciones?accion=&estado=&desde=&hasta=
+GET    /ejecuciones/{id}               DELETE /ejecuciones/{id}
+DELETE /ejecuciones?accion=            (limpiar historial)
+
+GET    /notas?q=                       POST   /notas
+PUT    /notas/{id}                     DELETE /notas/{id}
+
+GET    /reglas                         POST   /reglas
+PUT    /reglas/{id}                    DELETE /reglas/{id}
+GET    /notificaciones?origen=&leida=&q=&desde=&hasta=
+PATCH  /notificaciones/{id}            (marcar como leída)
+DELETE /notificaciones/{id}            DELETE /notificaciones   (limpiar historial)
+WS     /ws/events                      (avisos en tiempo real)
+```
 
 ---
 
@@ -212,35 +179,19 @@ La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Ini
 ### 4.1 Vista general
 
 ```
-+------------------------------------------------------------------+
-|                        APP ANDROID (Flutter)                     |
-|   Vistas → ViewModels (provider) → Repositorios → Servicios red  |
-|   xterm.dart · HTTP/REST · WebSocket · notificaciones locales    |
-|------------------------------------------------------------------|
-|  Kotlin (platform channel): túnel iroh + servicio 1er plano (*)  |
-+------------------------------------------------------------------+
-            |                                      |
-   [ Red local (LAN) ]                  [ Fuera de casa (WAN) ]
-   Conexión directa TLS                 Túnel iroh (QUIC cifrado):
-   Descubrimiento mDNS                  empieza por un relé y pasa a
-                                        directa si el NAT lo permite
-            |                                      |
-            +------------------+-------------------+
-                               |
-+------------------------------------------------------------------+
-|                       AGENTE PC (Python)                         |
-|   Rutas API (FastAPI) → Servicios → Repositorios → SQLite        |
-|   PTY · psutil · dbus-fast · iroh · TUI "companion"              |
-|   Socket Unix local para "companion notify"                      |
-+------------------------------------------------------------------+
-                               |
-+------------------------------------------------------------------+
-|                         GNU/LINUX                                |
-|   /proc y /sys  ·  D-Bus (systemd-logind)  ·  systemd (usuario)  |
-+------------------------------------------------------------------+
+App Android (Flutter): Vistas → ViewModels (provider) → Repositorios → Servicios de red
+  xterm.dart · HTTP/REST · WebSocket · notificaciones locales
+  Kotlin (platform channel): túnel iroh + servicio en 1er plano (*)
+        │
+  LAN: conexión directa TLS, descubrimiento mDNS  │  WAN: túnel iroh (QUIC cifrado; relé → directa si el NAT lo permite)
+        └──────────────────────────┬──────────────────────────┘
+Agente PC (Python): Rutas API (FastAPI) → Servicios → Repositorios → SQLite
+  PTY · psutil · dbus-fast · iroh · TUI "companion" · socket Unix para "companion notify"
+        │
+GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 ```
 
-*(\*) Diseño actual, pendiente de revisión:* la vía para usar iroh desde Flutter se decide al empezar la fase 2 (ver 4.4) y la implementación del servicio en primer plano, en la fase 8.
+*(\*) Pendiente de revisión:* la vía para usar iroh desde Flutter se decide en la fase 2 (ver 4.4); la implementación del servicio en primer plano, en la fase 8.
 
 ### 4.2 Arquitectura en capas
 
@@ -265,14 +216,10 @@ La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Ini
 Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **túnel transparente**, siguiendo el patrón de la herramienta *dumbpipe* del proyecto iroh:
 
 1. **En el PC,** el agente crea un punto de conexión iroh que reenvía todo lo que recibe a su propio servidor FastAPI local.
-2. **En el móvil,** un pequeño módulo en Kotlin (binding oficial de iroh, que para Android hay que compilar desde el código fuente con Rust y el NDK) abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh.
+2. **En el móvil,** un pequeño componente nativo abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh. Su interfaz con Flutter se limita a dos operaciones: *abrir túnel (identificador del PC) → puerto local* y *cerrar túnel*. Cómo se construye (binding de Kotlin compilado o plugin `iroh_flutter`) se decide en la fase 2: ver `02-necesidades-tecnologicas.md` §4.2.
 3. **La parte Flutter** se conecta a `127.0.0.1:puerto` con el mismo código HTTP/WebSocket que en LAN. El TLS y el login (desde la fase 3) siguen funcionando dentro del túnel.
 
-iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un servidor relé cifrado, que los dos equipos usan para intercambiar sus direcciones; después iroh intenta convertirla en directa atravesando el NAT y, si no lo consigue, sigue por el relé. Por defecto se usan los relés públicos gratuitos del proyecto (según iroh, solo para desarrollo y uso aficionado, con límite de tráfico y sin garantía de disponibilidad; suficientes para el TFG); opcionalmente pueden configurarse relés propios. Por defecto cada arranque genera una identidad nueva, así que el agente debe guardar su clave secreta (`SecretKey`) y cargarla al arrancar para conservar el mismo identificador.
-
-*Pendiente de revisión (se decide al empezar la fase 2):* cómo usar iroh desde Flutter. El binding de Kotlin publicado en Maven no incluye Android: hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). La alternativa es el plugin `iroh_flutter` de pub.dev (comunitario, no de n0), que compila el núcleo Rust automáticamente; también necesita Rust y el NDK instalados.
-
-El puente entre Flutter y Kotlin se limita a dos operaciones: *abrir túnel (identificador del PC) → puerto local* y *cerrar túnel*.
+iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después intenta pasar a directa atravesando el NAT; si no lo consigue, sigue por el relé. Se usan los relés públicos del proyecto (límites en §10). Cada arranque genera una identidad nueva por defecto, así que el agente guarda su clave secreta (`SecretKey`) y la carga al arrancar para conservar el mismo identificador.
 
 **Plan B:** si el acceso remoto no pudiera completarse, el sistema es plenamente funcional en red local. Las notificaciones tampoco dependen de iroh.
 
@@ -289,19 +236,16 @@ La app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del cer
 
 A partir de entonces la app solo confía en ese certificado. Para emparejar otro móvil o la app reinstalada, la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
 
-**Planificación (12/10/2026):** el registro por QR se implementa en la fase 9. Hasta entonces (fase 3), el botón de configuración inicial de la TUI crea directamente el usuario y la contraseña, y la huella del certificado se compara a ojo con la que muestra la TUI en la primera conexión. La beta no tiene login: el agente solo expone métricas de solo lectura.
+Hasta que llegue el registro por QR (fase 9), el botón de configuración inicial crea directamente el usuario y la huella del certificado se compara a ojo con la de la TUI.
 
 ### 5.2 Autenticación
 - Login con usuario y contraseña; el agente devuelve un **token de sesión** aleatorio que se guarda con hash en SQLite.
 - El token se guarda en el móvil en almacenamiento cifrado (Android Keystore).
 - **Revocación:** el botón «Cerrar todas las sesiones» de la TUI invalida todas las sesiones; cambiar la contraseña desde la TUI también.
 - **Límite de intentos:** tras varios fallos seguidos, el agente impone esperas crecientes.
+- **Mínimo privilegio:** el agente se ejecuta como servicio de usuario, nunca como root ni con `sudo`.
 
-### 5.3 Principio de mínimo privilegio
-- El agente se ejecuta como servicio **de usuario**, nunca como root, y nunca usa `sudo`.
-- El socket Unix de `companion notify` tiene permisos `0600`.
-
-### 5.4 Modelo de amenazas
+### 5.3 Modelo de amenazas
 
 | Amenaza | Riesgo | Mitigación |
 |---|---|---|
@@ -315,15 +259,15 @@ A partir de entonces la app solo confía en ese certificado. Para emparejar otro
 | Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/companion` y `~/.local/share/companion` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600` |
 | Escalada de privilegios mediante la app | Control de root | El agente no tiene más permisos que el usuario; nunca eleva privilegios |
 
-**Decisión documentada:** se descartó el 2FA (TOTP) para mantener la configuración mínima. Se compensa con contraseña robusta obligatoria, límite de intentos y revocación de sesiones.
+Sin 2FA, a propósito (motivo en `02-necesidades-tecnologicas.md` §5.2).
 
 ---
 
 ## 6. Diseño de la base de datos
 
-Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`). Se crea con el script `agent/schema.sql` y se accede exclusivamente a través de la capa de repositorios. SQLite tiene las claves foráneas desactivadas por defecto, así que cada conexión ejecuta `PRAGMA foreign_keys = ON`; sin ello no se aplican los borrados en cascada.
+Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02-necesidades-tecnologicas.md` §6.1).
 
-**Historial de comandos de terminal:** no vive en esta base de datos. Se guarda en un archivo de log aparte, dentro de una carpeta en `~/.cache` (una línea por comando, `ISO-8601<TAB>comando`), para no duplicar el mismo dato en dos sitios. Solo registra lo que la app envía por el WebSocket de la terminal (fase 4) al pulsar Enter; lo escrito directamente en la ventana del PC no pasa por el agente y no se registra. La pantalla «Historial» de la TUI combina este archivo con la tabla `ejecucion` solo al mostrarlos, sin juntarlos en el almacenamiento. Sin límite de tamaño por ahora.
+El historial de comandos de terminal **no** vive en esta base de datos: va en un archivo de log aparte (ver `../agente/tui.md`, «Historial de comandos de terminal»).
 
 ### 6.1 Diagrama entidad-relación (simplificado)
 
@@ -374,7 +318,7 @@ Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`).
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
 
 ### 6.3 Exportación desde la TUI
-La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, que en un sistema en español suele ser `~/Escritorio` y se lee de `$XDG_CONFIG_HOME/user-dirs.dirs`, por defecto `~/.config/user-dirs.dirs`); si no está definido, en la carpeta personal. La fecha y la hora en el nombre evitan sobrescribir exportaciones anteriores.
+La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`) o, si no está definido, en la carpeta personal, con la fecha y la hora en el nombre para no sobrescribir exportaciones anteriores.
 - **Exportar datos:** un único archivo JSON, `companion-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
 - **Exportar estructura:** una carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
 
@@ -420,17 +364,13 @@ El diagrama de casos de uso y la descripción detallada de los principales se in
 pipx install linux-system-companion   # instala el agente en un entorno aislado
 companion                             # abre la TUI: configuración inicial, QR de registro, servicio…
 ```
-Escribir `companion` abre una **TUI** hecha con **Textual**: banner con el nombre de la app, un área de datos (vacía por defecto) y cuatro botones fijos abajo, con colores ANSI de la propia terminal:
-- **Emparejamiento:** con tres subpestañas — **Dispositivo** (QR de emparejamiento, datos del dispositivo conectado, botón «Desemparejar»), **Seguridad** (configuración inicial y QR de registro, ver 5.1; cambiar la contraseña; cerrar todas las sesiones) y **Servicio** (instalar/quitar el servicio systemd de usuario, ver su estado);
-- **Historial:** acciones rápidas ejecutadas y comandos de terminal enviados desde la app (ver 6);
-- **Base de datos:** navegador en vivo de las tablas de `schema.sql`, con los botones «Exportar datos» y «Exportar estructura» (ver 6.3);
-- **Notas:** añadir y ver las notas del espacio compartido (ver Módulo F).
+Escribir `companion` abre una **TUI** hecha con **Textual**, con cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas). Especificación completa: `doc/agente/tui.md`.
 
 Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
 
 **Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
-Se usa **pipx** porque muchas distribuciones actuales (Debian 12+, Ubuntu 23.04+, Arch…) bloquean `pip install` fuera de entornos virtuales, siguiendo PEP 668. pipx usa pip por debajo, crea el entorno aislado automáticamente y utiliza el Python con el que se ejecuta, que normalmente es el de la propia distribución. Límite de compatibilidad por el binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
+Elección de **pipx** y límites de compatibilidad del binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
 
 ### 8.2 Servicio systemd
 El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
@@ -456,9 +396,7 @@ Por defecto, el gestor de usuario de systemd solo se ejecuta mientras el usuario
 loginctl enable-linger $USER
 ```
 
-Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie sesión. Limitaciones en ese estado:
-- no hay sesión gráfica que bloquear;
-- apagar o reiniciar sin una sesión activa puede requerir autorización de polkit. Opcionalmente, se puede añadir una regla de polkit que lo permita, asumiendo el riesgo que implica.
+Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie sesión. Limitaciones en ese estado y posible solución: ver §10.
 
 ### 8.4 App móvil
 - Distribución como **APK** en las *releases* del repositorio. La publicación en tiendas queda como trabajo futuro.
@@ -469,24 +407,10 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 ## 9. Metodología, control de versiones y pruebas
 
 ### 9.1 Control de versiones
-- Un repositorio Git con las carpetas `App-movil/` (Flutter) y `agent/` (Python).
-- Ramas:
-  - `main`: versiones estables;
-  - `develop`: integración;
-  - `feature/<nombre>`: una por tarea o fase.
-- Commits pequeños con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
-- Una etiqueta por versión (`v0.1-beta`, `v0.2`…).
+Un repositorio Git con `App-movil/` (Flutter) y `agent/` (Python). Ramas y convención de commits: `CLAUDE.md`.
 
 ### 9.2 Entorno de pruebas
-Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear la comunicación entre dispositivos):
-
-| Método | Uso |
-|---|---|
-| **USB + `adb reverse tcp:8443 tcp:8443`** | Método principal: la app se conecta a `127.0.0.1:8443` y llega al agente del portátil por el cable |
-| **Emulador de Android** | App y agente en el mismo portátil; `10.0.2.2` apunta al anfitrión. No se usa para probar iroh (arquitecturas soportadas: ver `02-necesidades-tecnologicas.md` §3.3). *Pendiente de revisión:* si se elige `iroh_flutter`, comprobar si funciona en el emulador |
-| **Punto de acceso del móvil** | Red privada propia para probar como LAN real, incluido mDNS |
-| **Repositorios simulados** | Desarrollar pantallas sin el agente |
-| **iroh** (desde la fase 2) | Probar el acceso al PC de casa desde otras redes, siempre con un móvil físico: primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado en el cortafuegos, cambio de red y reinicio) y después en una red restrictiva. Requisitos de red y versiones: ver `02-necesidades-tecnologicas.md` §3.3 |
+Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04-plan-de-fases.md`, «Entorno de pruebas».
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
@@ -501,7 +425,7 @@ Las pruebas no dependen de ninguna red externa (la red del centro puede bloquear
 - **Distribución:** cualquier distribución con systemd, Python 3.11+ y D-Bus. El entorno de pruebas oficial es KDE Plasma 6. El bloqueo de sesión depende de que el escritorio responda a la señal de logind (Plasma lo hace).
 - **Temperaturas:** dependen de los sensores que exponga el kernel en `/sys/class/hwmon`. Las GPU NVIDIA con controlador propietario no aparecen ahí; su soporte (vía `nvidia-smi`) es opcional.
 - **Hibernación:** muchas instalaciones no la tienen configurada. La app la ofrece solo si logind indica que está disponible.
-- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política.
+- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `04-plan-de-fases.md`, Decisiones.
 - **Procesos:** solo se pueden finalizar los del propio usuario.
 - **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra una notificación persistente, que es el comportamiento estándar de Android. Desde Android 14 el usuario puede descartarla, y sin el permiso `POST_NOTIFICATIONS` solo aparece en el gestor de tareas.
 - **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso aficionado (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.

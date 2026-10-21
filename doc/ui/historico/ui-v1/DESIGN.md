@@ -1,6 +1,6 @@
 # Especificación de UI v1 — App Android (Flutter)
 
-> **Histórico.** Sustituido por [`../ui-final/DESIGN.md`](../ui-final/DESIGN.md), la referencia actual de toda la interfaz. Se conserva como registro de cómo se llegó hasta allí.
+> **Histórico.** Sustituido por [`../../interfaz-app.md`](../../interfaz-app.md), la referencia actual de toda la interfaz. Se conserva como registro de cómo se llegó hasta allí.
 >
 > **Estado: v1 (prototipo inicial). La pantalla de Notas de esta versión (§6) queda DESCARTADA** y la sustituye la definitiva de [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md).
 > El resto de secciones (drawer, tema, Inicio, Métricas, Terminal y Ajustes) siguen vigentes como referencia visual y de comportamiento. La pantalla «Opciones» de este documento se llama ahora **«Ajustes»**. Esta carpeta se conserva como histórico de diseño.
@@ -8,7 +8,7 @@
 Documento de traspaso para implementar en Flutter la interfaz diseñada en el prototipo `prototipo.dc.html`.
 El prototipo es **la fuente de verdad** para colores, medidas, textos y comportamiento; este documento lo resume y explica qué es simulado.
 
-> **Para ver el prototipo:** `prototipo.dc.html` y `support.js` deben estar en la misma carpeta; se abre con doble clic en Chrome. `support.js` es solo el motor que dibuja la plantilla: **no hay que portarlo a Flutter**, solo sirve para ver y probar el diseño.
+> **Para ver el prototipo:** `prototipo.dc.html` y `support.js` deben estar en la misma carpeta; se abre con doble clic en Chrome. `support.js` es el *runtime* de la herramienta de prototipado (el motor que dibuja la plantilla), no código del proyecto: **no hay que portarlo a Flutter**, solo sirve para ver y probar el diseño.
 >
 > El prototipo es HTML con un componente JS (`class Component extends DCLogic`). Toda la lógica está en `renderVals()` y en los métodos de la clase. Los valores de estilo están inline en el HTML.
 

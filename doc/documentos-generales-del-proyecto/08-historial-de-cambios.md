@@ -9,33 +9,46 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 
 ## Índice
 
-| Fecha | Cambio | Estado |
-|---|---|---|
-| 12/10/2026 | Notas: de un campo de texto único a lista con CRUD, con tipo deducido y enlaces pulsables | Aplicado |
-| 12/10/2026 | Pantalla «Opciones» renombrada a «Ajustes» | Aplicado |
-| 12/10/2026 | Terminal: de widget propio a `xterm.dart` | Aplicado |
-| 12/10/2026 | Gráficas: de `fl_chart` a `CustomPainter` | Aplicado |
-| 12/10/2026 | Documentación de interfaz: `doc/UI` pasa a `doc/ui/ui-v1` y `ui-v2` | Aplicado |
-| 12/10/2026 | Temperatura de CPU: color del valor | Aplicado |
-| 12/10/2026 | Acciones rápidas: de lista con buscador a cuadrícula con carpetas | Aplicado en la memoria; ajustes de UI pendientes |
-| 12/10/2026 | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
-| 12/10/2026 | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
-| 12/10/2026 | Revisión de coherencia entre documentación e implementación | Aplicado |
-| 12/10/2026 | Herramienta del PC: de CLI con Typer a TUI con botones (Textual) | Aplicado en la documentación |
-| 12/10/2026 | Registro del usuario: de CLI o código de un solo uso a QR en la TUI y cuenta creada en la app | Aplicado en la documentación |
-| 12/10/2026 | Exportación de datos y de estructura de la BD desde la TUI | Aplicado en la documentación |
-| 12/10/2026 | Replanificación: interfaz primero y beta sin login | Aplicado en la documentación |
-| 12/10/2026 | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
-| 12/10/2026 | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
-| 14/10/2026 | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
-| 15/10/2026 | Inicio: validación de nombre de macro y selector de icono | Aplicado en código |
-| 15/10/2026 | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
-| 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
-| 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
-| 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
-| 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
-| 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
-| 19/10/2026 | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
+*Orden cronológico (no se reordena ni se reescribe). La columna «Área» es solo para localizar un tema rápido.*
+
+| Fecha | Área | Cambio | Estado |
+|---|---|---|---|
+| 12/10/2026 | Interfaz | Notas: de un campo de texto único a lista con CRUD, con tipo deducido y enlaces pulsables | Aplicado |
+| 12/10/2026 | Interfaz | Pantalla «Opciones» renombrada a «Ajustes» | Aplicado |
+| 12/10/2026 | Interfaz | Terminal: de widget propio a `xterm.dart` | Aplicado |
+| 12/10/2026 | Interfaz | Gráficas: de `fl_chart` a `CustomPainter` | Aplicado |
+| 12/10/2026 | Documentación | Documentación de interfaz: `doc/UI` pasa a `doc/ui/ui-v1` y `ui-v2` | Aplicado |
+| 12/10/2026 | Interfaz | Temperatura de CPU: color del valor | Aplicado |
+| 12/10/2026 | Interfaz | Acciones rápidas: de lista con buscador a cuadrícula con carpetas | Aplicado en la memoria; ajustes de UI pendientes |
+| 12/10/2026 | Documentación | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
+| 12/10/2026 | Documentación | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
+| 12/10/2026 | Documentación | Revisión de coherencia entre documentación e implementación | Aplicado |
+| 12/10/2026 | Agente | Herramienta del PC: de CLI con Typer a TUI con botones (Textual) | Aplicado en la documentación |
+| 12/10/2026 | Agente | Registro del usuario: de CLI o código de un solo uso a QR en la TUI y cuenta creada en la app | Aplicado en la documentación |
+| 12/10/2026 | Agente | Exportación de datos y de estructura de la BD desde la TUI | Aplicado en la documentación |
+| 12/10/2026 | Planificación | Replanificación: interfaz primero y beta sin login | Aplicado en la documentación |
+| 12/10/2026 | Documentación | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
+| 12/10/2026 | Planificación | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
+| 14/10/2026 | Agente | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
+| 15/10/2026 | Interfaz | Inicio: validación de nombre de macro y selector de icono | Aplicado en código |
+| 15/10/2026 | Interfaz | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
+| 15/10/2026 | Interfaz | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
+| 15/10/2026 | Documentación | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
+| 15/10/2026 | Documentación | Tercera auditoría: deduplicación de detalle técnico repetido | Aplicado |
+| 15/10/2026 | Agente | TUI del agente: librería confirmada y construcción adelantada a la fase 1 | Aplicado en la documentación |
+| 15/10/2026 | Agente | Estructura de la TUI: de botones por fase a cuatro secciones fijas | Aplicado en la documentación |
+| 15/10/2026 | Documentación | Nuevo documento: especificación de la TUI en doc/agente/ | Aplicado |
+| 19/10/2026 | Interfaz | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
+| 19/10/2026 | Interfaz | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
+| 19/10/2026 | Interfaz | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
+| 19/10/2026 | Interfaz | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
+| 19/10/2026 | Planificación | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado |
+| 19/10/2026 | Interfaz | Interfaz: conexión con el agente, timeout, reintento y dirección en caliente | Aplicado en código |
+| 19-20/10/2026 | Interfaz | Interfaz: identificador de Android, nombre visible y enlaces externos | Aplicado en código |
+| 20/10/2026 | Interfaz | Interfaz: limpieza — diálogos, toasts y botón flotante unificados | Aplicado en código |
+| 19/10/2026 | Agente | Agente: métricas en GB decimales y sin particiones duplicadas | Aplicado en código |
+| 19-20/10/2026 | Agente | Agente: comando `companion` instalable y resaltado de sección activa en la TUI | Aplicado en código |
+| 19/10/2026 | Agente | Agente: versiones mínimas, `pydantic` y `httpx2` en los tests | Aplicado en código |
 
 ---
 
@@ -318,6 +331,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
   4. **Ajustes → Dispositivo**, encima del botón Emparejar/Desemparejar: selector **Local / iroh** (`AppSegmented`, no un desplegable nativo — la app no usa ninguno en ningún otro sitio) y un campo de texto con botón «Guardar»: en modo Local, la dirección `host:puerto` (por defecto `127.0.0.1:8443`, validada con una expresión regular simple); en modo iroh, el identificador a mano (sin conexión real todavía, solo se guarda para cuando exista el túnel de la fase 2). Ambos valores persisten a la vez en `SettingsRepository`, junto con el modo activo, para no perder el otro al cambiar de uno a otro.
   5. **`main.dart`** pasa a ser `async`: antes de `runApp`, carga los ajustes guardados para tener ya la dirección real al construir `HttpMetricsRepository`. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones).
 - **Por qué:** es el trabajo de app de la fase 1 (`04-plan-de-fases.md`): repositorio real de métricas, pantalla de dirección del agente y selector local/iroh adelantado para no rehacer esa pantalla en la fase 2.
+- **Nota (19/10/2026):** el punto 5 quedó desfasado el mismo día: ver la entrada «19/10/2026 — Interfaz: conexión con el agente, timeout, reintento y dirección en caliente», que sustituye ese comportamiento por la dirección en caliente.
 - **Sin verificar en esta sesión:** la prueba completa por USB con `adb reverse` (necesita el agente real arrancado y un móvil o emulador conectado) y la TUI del agente (trabajo en curso en `feature/agent`, otra rama).
 - **Afecta a:** `metrics.dart` (modelo), `metrics_view.dart`, `settings_repository.dart`, `settings_viewmodel.dart`, `shared_preferences_settings_repository.dart`, `connection_fields.dart` (nuevo), `http_metrics_repository.dart` (nuevo), `main.dart`, `pubspec.yaml` (dependencia `http`). Documentación: `ui-final/DESIGN.md` (§4, §7, §8, §9), este historial.
 - **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test` y un test de `HttpMetricsRepository` contra un cliente HTTP simulado (`http/testing.dart`); sin verificación en dispositivo real ni contra el agente en marcha.
@@ -333,20 +347,76 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Sin verificar en esta sesión:** no se pudo probar visualmente en el emulador (acceso denegado al pedir el permiso de pantalla).
 - **Afecta a:** `terminal_repository.dart`, `fake_terminal_repository.dart` (sin cambios de contrato, solo de quién la instancia), `terminal_tabs_viewmodel.dart` (nuevo), `terminal_viewmodel.dart`, `terminal_view.dart`, `terminal_tabs_bar.dart` (nuevo), `close_tab_dialog.dart` (nuevo), `main.dart`, `app.dart`, `test/widget_test.dart`. Documentación: `ui-final/DESIGN.md` (§5, §7, §9), este historial.
 - **Estado:** aplicado en código, verificado con `flutter analyze`/`flutter test`; sin verificación visual.
+- **Nota (20/10/2026):** `close_tab_dialog.dart` se sustituyó por el diálogo único `confirm_card.dart`; ver la entrada «20/10/2026 — Interfaz: limpieza — diálogos, toasts y botón flotante unificados».
 
----
+### 19/10/2026 — Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo
 
-## Pendiente
+- **Qué era:** `04-plan-de-fases.md` (fase 1, objetivo del agente) pedía un endpoint con CPU por núcleo, swap, carga y tiempo encendido — la lista completa de psutil. El "Terminada cuando" de la fase decía "tres secciones" de la TUI.
+- **Qué es ahora:** el endpoint real que se construyó solo expone lo que la app consume hoy (CPU total, RAM, discos, temperatura); núcleos/swap/carga/uptime quedan como ampliación opcional, no requisito. "Terminada cuando" pasa a "cuatro secciones" (se había añadido Notas y no se actualizó esa frase).
+- **Por qué:** esta reducción de alcance ya se había decidido y aplicado al propio endpoint; solo faltaba corregir el documento, que se quedó con la redacción antigua.
+- **Afecta a:** `04-plan-de-fases.md` (fase 1).
+- **Estado:** aplicado. La corrección se hizo en `main` y `feature/agent`; `feature/interfaz` tenía su propia copia de este archivo sin ella, pero ya está fusionada en `main`.
 
-Cosas abiertas tras la revisión del 12/10/2026. Ya no hay incoherencias de redacción conocidas entre la documentación y la implementación; lo que queda son huecos de la interfaz o decisiones de plan:
+### 19/10/2026 — Interfaz: conexión con el agente, timeout, reintento y dirección en caliente
 
-| Área | Qué falta |
-|---|---|
-| Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
-| Terminal (fase 4) | Prototipos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
-| Terminal (fase 4) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
-| Agente | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
-| Terminal (agente) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
-| Fase 1 | Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado) |
-| Terminal (UI) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
-| Metodología | Mantener este historial al día: anotar aquí cada cambio de diseño que se aparte de lo documentado |
+- **Qué era:** `HttpMetricsRepository` pedía las métricas al agente sin timeout ni distinguir tipos de error; sin aviso en pantalla si no respondía; el sondeo seguía activo con la pantalla de Métricas en segundo plano o fuera de ella; cambiar la dirección en Ajustes no se aplicaba hasta reabrir la app.
+- **Qué es ahora:**
+  1. Timeout y errores (sin conexión, tiempo agotado, respuesta inválida) distinguidos con mensajes claros en `HttpMetricsRepository`.
+  2. Aviso «No se puede conectar con el agente» con botón «Reintentar» en la pantalla de Métricas.
+  3. El sondeo se pausa al salir de la pantalla de Métricas o con la app en segundo plano, y se reanuda al volver.
+  4. `HttpMetricsRepository` recibe `() => settings.agentAddress` y lee la dirección del `SettingsViewModel` en cada petición: el cambio de dirección se aplica sin reiniciar la app (sustituye lo descrito en la entrada del 19/10/2026 «Métricas: repositorio HTTP real…», punto 5, ver nota en esa entrada).
+- **Por qué:** cerraba los huecos de robustez de la conexión con el agente que quedaron abiertos al introducir `HttpMetricsRepository` el mismo día.
+- **Afecta a:** `http_metrics_repository.dart`, `metrics_repository.dart`, `metrics_viewmodel.dart`, `metrics_view.dart`, `main.dart`, `test/http_metrics_repository_test.dart`.
+- **Estado:** aplicado en código y verificado por USB con `adb reverse` contra el agente real (fase 1 cerrada, ver `04-plan-de-fases.md`).
+
+### 19-20/10/2026 — Interfaz: identificador de Android, nombre visible y enlaces externos
+
+- **Qué era:** la app seguía con el `applicationId`/`namespace` de la plantilla (`com.example.tfg`), sin nombre visible propio, sin declarar `<queries>` para abrir enlaces externos y sin el permiso `INTERNET` en el manifest de release.
+- **Qué es ahora:**
+  1. `applicationId` y `namespace` pasan a `io.github.alexxio070.companion`.
+  2. Nombre visible: «Linux System Companion».
+  3. Se declara `<queries>` (intent VIEW + esquema `https`) para que `url_launcher` pueda abrir enlaces en Android 11 y posteriores.
+  4. Se añade el permiso `INTERNET` al manifest de release (ya estaba en el de debug).
+- **Por qué:** identidad propia de la app, necesaria antes de publicar el APK, y requisito de Android 11+ para que los enlaces de Notas se abran desde la release.
+- **Afecta a:** `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`.
+- **Estado:** aplicado en código.
+
+### 20/10/2026 — Interfaz: limpieza — diálogos, toasts y botón flotante unificados
+
+- **Qué era:** cada pantalla tenía su propio diálogo de confirmación (incluido `close_tab_dialog.dart` de la entrada del 19/10/2026 «Terminal: pestañas…», ver nota en esa entrada), su propio *toast* y su propio botón flotante, con pequeñas diferencias de estilo entre ellos.
+- **Qué es ahora:**
+  1. **`confirm_card.dart`** (nuevo): único diálogo de confirmación, sustituye a `confirm_dialog.dart` y a `close_tab_dialog.dart`.
+  2. **`app_toast.dart`** (nuevo): único *toast*, sustituye a `run_toast.dart` y usos sueltos.
+  3. **`app_fab.dart`** (nuevo): único botón flotante.
+  4. Tokens de color compartidos movidos a `app_tokens.dart`; constantes con nombre para valores que estaban repetidos como literales.
+  5. Archivos largos divididos (`macro_grid.dart`, `disk_card.dart`).
+- **Por qué:** quitar duplicación de widgets casi iguales entre pantallas y dejar un único sitio para cambiar el estilo de confirmaciones, avisos y acción flotante.
+- **Afecta a:** `app_tokens.dart`, `confirm_card.dart` (nuevo), `app_toast.dart` (nuevo), `app_fab.dart` (nuevo), y las pantallas que los usan (Inicio, Métricas, Notas, Ajustes, Terminal, `shell_view.dart`/`app_drawer.dart`).
+- **Estado:** aplicado en código.
+
+### 19/10/2026 — Agente: métricas en GB decimales y sin particiones duplicadas
+
+- **Qué era:** el agente enviaba los tamaños en GiB (potencias de 1024), mientras la app esperaba GB decimales (potencias de 1000), lo que producía una discrepancia entre los valores mostrados; además, la lista de particiones incluía snaps, montajes *loop* y el mismo dispositivo físico repetido por cada punto de montaje.
+- **Qué es ahora:** los tamaños se calculan con `1000**3`; se descartan snaps, montajes *loop* y particiones duplicadas por dispositivo, quedándose con una por disco físico.
+- **Por qué:** corregir la discrepancia GB/GiB con la app y evitar una lista de particiones con ruido que no aporta al usuario.
+- **Afecta a:** `metrics_repository.py`, `metrics_service.py`.
+- **Estado:** aplicado en código. Commits: `8b639a5`, `1f55ab0`, `41a9a6a`, `a086eb6`.
+
+### 19-20/10/2026 — Agente: comando `companion` instalable y resaltado de sección activa en la TUI
+
+- **Qué era:** la TUI no se podía abrir como comando instalado por `pipx`; los botones de sección y las subpestañas de Emparejamiento no indicaban cuál estaba activa.
+- **Qué es ahora:**
+  1. Comando `companion` instalable que abre la TUI.
+  2. Resaltado de la sección y de la subpestaña activas: primero con una clase CSS que un temporizador de la propia Textual borraba sola; luego con `reverse` y la paleta propia de Textual en vez de `ansi_color` (que no se podía combinar de forma fiable con `reverse`); bordes consistentes en los botones y pie de página transparente.
+  3. Se quita el identificador `#home` (sin uso).
+- **Por qué:** tener un comando real en vez de ejecutar el módulo a mano, y que la TUI indique en qué sección y subpestaña está el usuario.
+- **Afecta a:** `tui/app.py`, `tui/screens/main_screen.py`, `tui/widgets/pairing_section.py`, `pyproject.toml`, `tests/test_tui.py`, `doc/agente/DESIGN.md`.
+- **Estado:** aplicado en código. Commits: `13d721f`, `360daf6`, `fc086b0`, `3a17b11`, `fd291ab`, `ecffaa5`, `381dfa9`.
+
+### 19/10/2026 — Agente: versiones mínimas, `pydantic` y `httpx2` en los tests
+
+- **Qué era:** `pyproject.toml` no fijaba versiones mínimas de las dependencias, no declaraba `pydantic` como dependencia directa (llegaba de forma transitiva) y los tests usaban `httpx`, que Starlette 1.9 empezó a marcar como obsoleto.
+- **Qué es ahora:** versiones mínimas fijadas, `pydantic` declarado como dependencia directa, `httpx2` en lugar de `httpx` para los tests.
+- **Por qué:** evitar romper por una versión mínima no probada, declarar explícitamente una dependencia ya en uso, y quitar el aviso de obsolescencia de Starlette.
+- **Afecta a:** `pyproject.toml`.
+- **Estado:** aplicado en código. Commits: `e0de0f2`, `7d518ea`.
