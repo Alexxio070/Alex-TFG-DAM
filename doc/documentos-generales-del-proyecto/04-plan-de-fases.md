@@ -79,7 +79,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ### Fase 0 — Preparación y aprender Flutter 🟢
 **Duración:** ~3 semanas (finales de septiembre – mediados de octubre)
 
-**Estado (12/10/2026):** la app ya tiene la interfaz definitiva completa, con *placeholders* y datos simulados (ver *ESTRUCTURA_FLUTTER.md*). El agente FastAPI mínimo pasa a la fase 1.
+**Estado (12/10/2026):** la app ya tiene la interfaz definitiva completa, con *placeholders* y datos simulados (ver `doc/ui/estructura-app.md`). El agente FastAPI mínimo pasa a la fase 1.
 
 **Objetivos:**
 - Instalar Flutter y Android Studio.

@@ -7,4 +7,4 @@ flutter pub get
 flutter run
 ```
 
-Ver el [README raíz](../README.md) para la instalación completa (app + agente) y [`ESTRUCTURA_FLUTTER.md`](../doc/documentos-generales-del-proyecto/ESTRUCTURA_FLUTTER.md) para la organización del código.
+Ver el [README raíz](../README.md) para la instalación completa (app + agente) y [`estructura-app.md`](../doc/ui/estructura-app.md) para la organización del código.

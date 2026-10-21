@@ -22,7 +22,7 @@ Fuente de verdad del stack: `CLAUDE.md` y `../documentos-generales-del-proyecto/
 | Documento | Contenido |
 |---|---|
 | [`terminal-sesiones-tmux.md`](terminal-sesiones-tmux.md) | Diseño de la terminal: sesiones persistentes con tmux, ventana en el PC, ciclo de vida, requisitos y pendientes |
-| [`DESIGN.md`](DESIGN.md) | Especificación de la TUI del agente (`companion`): estructura, las cuatro secciones (Emparejamiento con sus subpestañas, Historial, Base de datos, Notas), comportamiento y colores |
+| [`tui.md`](tui.md) | Especificación de la TUI del agente (`companion`): estructura, las cuatro secciones (Emparejamiento con sus subpestañas, Historial, Base de datos, Notas), comportamiento y colores |
 
 ## Dónde está el resto sobre el agente
 

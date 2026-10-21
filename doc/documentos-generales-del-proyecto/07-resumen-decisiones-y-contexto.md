@@ -78,7 +78,7 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 - Un espacio común entre el móvil y el PC donde dejar **notas de texto y enlaces** para pasar información de un lado a otro. CRUD desde la app y botones de la TUI en el PC; la app pide las notas al abrir la pantalla y al recargar (sin actualización al momento: es una app para usar lejos del PC). Si los dos lados editan la misma nota, gana el último cambio.
 - **Imágenes: aún pensándolo.** Fuera del alcance confirmado hasta que se decida.
 - Va en la fase 9, después del CRUD (fase 7), cuyo patrón reutiliza.
-- **Pantalla de Notas definitiva (12/10/2026):** lista de notas con tarjetas, búsqueda, formulario de crear/editar y borrado, tal como describe el Módulo F. Sustituye al campo de texto único del prototipo v1, que queda descartado. Detalle en `../ui/ui-v2/DESIGN.md`; el prototipo inicial se conserva como histórico en `../ui/ui-v1/`.
+- **Pantalla de Notas definitiva (12/10/2026):** lista de notas con tarjetas, búsqueda, formulario de crear/editar y borrado, tal como describe el Módulo F. Sustituye al campo de texto único del prototipo v1, que queda descartado. Detalle en `../ui/historico/ui-v2/DESIGN.md`; el prototipo inicial se conserva como histórico en `../ui/historico/ui-v1/`.
 
 ### 3.6 Requisitos mínimos de DAM
 Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo se resolvieron:
@@ -107,7 +107,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - ricing de KDE y personalización en general;
 - portapapeles compartido. Se reconvirtió en **espacio compartido** de notas de texto y enlaces, que el 12/10/2026 pasó a formar parte del TFG (ver 3.5).
 - explorador y transferencia de archivos (12/10/2026): sustituido por el espacio compartido; queda como idea de futuro.
-- **Campo de texto único compartido para Notas (12/10/2026):** era la pantalla del prototipo v1. Se descartó porque no cubría notas de texto y enlaces con CRUD y búsqueda. Lo sustituye la lista de notas de `../ui/ui-v2/`.
+- **Campo de texto único compartido para Notas (12/10/2026):** era la pantalla del prototipo v1. Se descartó porque no cubría notas de texto y enlaces con CRUD y búsqueda. Lo sustituye la lista de notas de `../ui/historico/ui-v2/`.
 
 **Descartado por complejidad o por chocar con otros requisitos:**
 - Terminal ligada a la conexión del móvil como comportamiento por defecto (14/10/2026): el comando se cortaba al cerrar o limpiar la app. Sustituida por sesiones persistentes con tmux; queda solo como alternativa si falta tmux.
