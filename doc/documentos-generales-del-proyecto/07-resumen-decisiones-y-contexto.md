@@ -138,7 +138,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 **Beta v0.1 (Navidad):**
 - Fase 0: preparación y aprender Flutter.
 - Interfaz definitiva con *placeholders* y datos simulados: ya hecha.
-- Fase 1: crear el agente, conectar las métricas reales y construir la TUI definitiva de `companion` (banner, Emparejamiento, Historial, Base de datos) con las secciones vacías o con lo que ya exista (mediados de octubre – principios de noviembre).
+- Fase 1: crear el agente, conectar las métricas reales y construir la TUI definitiva de `companion` (banner, Emparejamiento, Historial, Base de datos, Notas) con las secciones vacías o con lo que ya exista (mediados de octubre – principios de noviembre).
 - Fase 2: conexión remota con iroh (principios de noviembre – mediados de diciembre): prueba de concepto, integración sin servicio en primer plano y pruebas primero en casa (misma Wi-Fi, datos móviles, UDP bloqueado, cambio de red y reinicio) y después en una red restrictiva. Hasta la fase 3 el agente solo expone métricas.
 - **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
 - **La beta NO necesita cumplir los mínimos de DAM.**

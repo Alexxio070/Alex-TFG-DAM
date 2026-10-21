@@ -172,7 +172,7 @@ Listed here as a flat set for reference only. **Power, Processes, Alert rules, N
 * **No 2FA** (deliberate). **No JWT** (opaque tokens are revocable).
 
 ## 7. PC INTERFACE (TUI + commands)
-* `companion` (no arguments) opens a **Textual** TUI with buttons: initial setup + registration QR · show pairing QR · install / remove service · status · change password · log out all sessions · add / view shared-space notes · export data · export structure.
+* `companion` (no arguments) opens a **Textual** TUI: banner, an empty-by-default data area, and four fixed buttons. **Pairing** (three subtabs — Device: QR + connected-device data; Security, phase 3: initial setup, change password, log out all sessions; Service, phase 5: install/remove service, status). **History** (phase-7 quick-action runs + a separate terminal-command log file, phase 4). **Database** (live browser of the `schema.sql` tables + phase-7 export buttons). **Notes** (phase-9 shared-space CRUD). Later phases don't add buttons to the bar, they enable content already built in phase 1. Full spec: `doc/agente/DESIGN.md` (Spanish).
 * Terminal commands (Typer), only: `companion serve` (started by systemd) · `companion notify "<msg>"` (scripts, hooks).
 * Exports (phase 7), saved to `XDG_DESKTOP_DIR` (read from `~/.config/user-dirs.dirs`, e.g. `~/Escritorio`), falling back to `$HOME`; timestamp in the name avoids overwriting:
   * data: one JSON file `companion-datos-YYYYMMDD-HHMM.json`, one section per table; excludes `sesion`, `intento_login` and the password hash;
