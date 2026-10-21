@@ -100,4 +100,4 @@ Toda la documentación de diseño está en [`doc/`](doc/):
 - [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
 - [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
 
-Ramas: `main` (estable, con todo el proyecto), `feature/interfaz` (app) y `feature/agent` (agente).
+Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop` ni etiquetas por versión.
