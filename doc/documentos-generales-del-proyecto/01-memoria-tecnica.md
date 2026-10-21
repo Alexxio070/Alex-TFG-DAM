@@ -417,11 +417,7 @@ El diagrama de casos de uso y la descripción detallada de los principales se in
 pipx install linux-system-companion   # instala el agente en un entorno aislado
 companion                             # abre la TUI: configuración inicial, QR de registro, servicio…
 ```
-Escribir `companion` abre una **TUI** hecha con **Textual**: banner con el nombre de la app, un área de datos (vacía por defecto) y cuatro botones fijos abajo, con colores ANSI de la propia terminal:
-- **Emparejamiento:** con tres subpestañas — **Dispositivo** (QR de emparejamiento, datos del dispositivo conectado, botón «Desemparejar»), **Seguridad** (configuración inicial y QR de registro, ver 5.1; cambiar la contraseña; cerrar todas las sesiones) y **Servicio** (instalar/quitar el servicio systemd de usuario, ver su estado);
-- **Historial:** acciones rápidas ejecutadas y comandos de terminal enviados desde la app (ver 6);
-- **Base de datos:** navegador en vivo de las tablas de `schema.sql`, con los botones «Exportar datos» y «Exportar estructura» (ver 6.3);
-- **Notas:** añadir y ver las notas del espacio compartido (ver Módulo F).
+Escribir `companion` abre una **TUI** hecha con **Textual**, con cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas). Especificación completa: `doc/agente/tui.md`.
 
 Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
 

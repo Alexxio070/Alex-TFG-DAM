@@ -160,11 +160,10 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 **Repositorios ya no simulados:**
 - `SettingsRepository`: `SharedPreferencesSettingsRepository` (persistencia local con `shared_preferences`), además de `InMemorySettingsRepository` para los tests.
-- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app; `main.dart` lo construye con la dirección ya guardada en Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`), no contra el agente real en marcha ni por USB.
+- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app; `main.dart` lo construye con la dirección ya guardada en Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`) y, ya cerrada la fase 1, por USB con `adb reverse` contra el agente real y con el APK release.
 
 ## 9. Pendientes conocidos
 
-Lista completa y actualizada en [`../documentos-generales-del-proyecto/08-historial-de-cambios.md`](../documentos-generales-del-proyecto/08-historial-de-cambios.md), sección «Pendiente». Los más relevantes para esta interfaz:
+Lista completa y actualizada en [`../documentos-generales-del-proyecto/04-plan-de-fases.md`](../documentos-generales-del-proyecto/04-plan-de-fases.md), sección «Pendientes». El más relevante para esta interfaz:
 
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).
-- Probar `HttpMetricsRepository` por USB con `adb reverse` contra el agente real (hoy solo probado con un cliente HTTP simulado).
