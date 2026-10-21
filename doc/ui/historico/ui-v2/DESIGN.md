@@ -20,7 +20,7 @@ La app está pensada para usarse lejos del PC, por eso no hay actualización al 
 
 ## 2. Modelo de datos
 
-Tabla `nota` del agente (ver `../../../documentos-generales-del-proyecto/03-system-context.md`, sección 5):
+Tabla `nota` del agente (ver `../../../documentos-generales-del-proyecto/01-memoria-tecnica.md`, §6.2):
 
 ```
 Nota { id, usuario_id, tipo:'texto'|'enlace', contenido, origen:'movil'|'pc', creado_en, actualizado_en }

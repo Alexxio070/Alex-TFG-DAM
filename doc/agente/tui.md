@@ -8,8 +8,8 @@ de datos SQLite local.
 Emparejamiento/Historial/Base de datos). Las subpestañas de Emparejamiento (Seguridad, Servicio)
 y el botón Notas se añadieron después para cubrir las fases del proyecto que el boceto inicial
 no contemplaba (fase 3, fase 5, fase 9). El esquema de datos y las rutas son los ya documentados
-en `../documentos-generales-del-proyecto/01-memoria-tecnica.md` (§6) y `03-system-context.md`
-(§5), no los de ejemplo del boceto original.
+en `../documentos-generales-del-proyecto/01-memoria-tecnica.md` (§6), no los de ejemplo del
+boceto original.
 
 ## Estructura (de arriba abajo, todo a ancho completo)
 

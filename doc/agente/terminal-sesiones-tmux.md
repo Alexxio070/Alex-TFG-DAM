@@ -25,7 +25,7 @@ App (xterm.dart)  ◄── WebSocket ──►  Agente  ◄── tmux attach (
 
 ## 3. API propuesta
 
-Los nombres son un punto de partida, igual que el resto de rutas (`03-system-context.md`, §5b).
+Los nombres son un punto de partida, igual que el resto de rutas (ver las de cada módulo en `../documentos-generales-del-proyecto/01-memoria-tecnica.md`, §3).
 
 ```
 POST   /terminales              {comando?}  → {id}     crea la sesión (y su ventana en el PC)

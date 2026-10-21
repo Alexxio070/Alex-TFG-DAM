@@ -31,9 +31,9 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 | Tema | Dónde |
 |---|---|
 | Módulos funcionales (terminal, métricas, energía, procesos, acciones, notas…) | `01-memoria-tecnica.md`, §3 |
-| Base de datos y esquema | `01-memoria-tecnica.md`, §6 · `03-system-context.md`, §5 |
-| API REST y WebSocket | `03-system-context.md`, §5b |
-| Seguridad | `01-memoria-tecnica.md`, §5 · `03-system-context.md`, §6 |
+| Base de datos y esquema | `01-memoria-tecnica.md`, §6 |
+| API REST y WebSocket | `01-memoria-tecnica.md`, §3 (rutas de cada módulo) |
+| Seguridad | `01-memoria-tecnica.md`, §5 |
 | Instalación y servicio systemd | `01-memoria-tecnica.md`, §8 · `02-necesidades-tecnologicas.md`, §7 |
 | Fases de implementación | `04-plan-de-fases.md` |
 
@@ -41,7 +41,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 
 Cuando haya implementación o decisiones que no quepan en los documentos generales:
 
-- Referencia de la API del agente (de momento solo existe `GET /metrics`, documentada por FastAPI en `/docs`; el resto de rutas son diseño en `03-system-context.md` §5b, sin implementar).
+- Referencia de la API del agente (de momento solo existe `GET /metrics`, documentada por FastAPI en `/docs`; el resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar).
 - Esquema de la base de datos y repositorios (no existe `schema.sql`: las primeras tablas llegan en la fase 3).
 - Seguridad: certificados, sesiones y límite de intentos (sin implementar, fase 3).
 - Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 5).
