@@ -139,6 +139,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Historial de métricas 🟡
 - Guardar métricas en el tiempo (SQLite) y mostrar gráficas de horas o días.
+- Exportar ese histórico a un archivo de texto desde un botón de la TUI (como las exportaciones de la fase 7, pero para métricas en vez de para la BD de acciones/notas).
 
 ### Más fuentes de datos 🟡
 - GPU (uso y VRAM, NVIDIA y AMD), red (tráfico por interfaz), estado de servicios systemd, contenedores Docker/Podman.
