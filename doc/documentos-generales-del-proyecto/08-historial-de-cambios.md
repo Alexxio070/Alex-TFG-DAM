@@ -40,7 +40,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
 | 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
 | 19/10/2026 | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
-| 19/10/2026 | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado en main y feature/agent; pendiente en feature/interfaz |
+| 19/10/2026 | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado |
 | 19/10/2026 | Interfaz: conexión con el agente, timeout, reintento y dirección en caliente | Aplicado en código |
 | 19-20/10/2026 | Interfaz: identificador de Android, nombre visible y enlaces externos | Aplicado en código |
 | 20/10/2026 | Interfaz: limpieza — diálogos, toasts y botón flotante unificados | Aplicado en código |
