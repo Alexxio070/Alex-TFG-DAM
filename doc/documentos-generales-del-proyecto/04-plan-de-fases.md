@@ -6,60 +6,35 @@
 2. **Después, lo obligatorio y lo que más pesa en la nota.** Los requisitos mínimos del proyecto se completan entre la beta y marzo; las funciones de menor impacto, al final.
 3. **Fases difíciles intercaladas con fáciles.** Así no se acumula todo lo complejo al final y cada fase difícil va seguida de un respiro.
 4. **Cada fase termina con algo que funciona.** Nunca se empieza una fase dejando la anterior a medias.
-5. **Una beta mínima en Navidad (decidido el 12/10/2026).** La interfaz definitiva, con *placeholders* en lo que aún no está hecho, las métricas y la conexión por iroh. Sin usuarios ni login: el agente solo expone métricas de solo lectura. Es la base sobre la que seguir añadiendo funciones y **no** necesita cumplir los requisitos mínimos.
-6. **Hito de febrero:** una versión funcional con la app conectándose al PC a través de iroh, la terminal y las gráficas de rendimiento.
-7. **Se parte de cero en desarrollo móvil.** Las estimaciones incluyen tiempo de aprendizaje y asumen dedicación a tiempo parcial, compaginada con clases.
+5. **Dos hitos intermedios:** una beta mínima en Navidad y una versión funcional en febrero (ver sus apartados más abajo).
+6. **Se parte de cero en desarrollo móvil.** Las estimaciones incluyen tiempo de aprendizaje y asumen dedicación a tiempo parcial, compaginada con clases.
 
-**Calendario (12/10/2026):** la interfaz definitiva de la app ya está hecha (con *placeholders* y datos simulados), así que las fases empiezan antes. La terminal termina a mediados de febrero y las fases 9–10 coinciden con la redacción de la memoria en mayo. Si hay retraso, se aplica el orden de recortes.
-
-*Fechas orientativas desde finales de septiembre de 2026. La defensa es la primera semana de junio de 2027. **Pendiente de revisión:** la fecha exacta del hito de febrero y la fecha oficial de entrega de la memoria; ajustar el plan cuando se conozcan, junto con el calendario de exámenes.*
+*Fechas orientativas desde finales de septiembre de 2026; las fases 9–10 coinciden con la redacción de la memoria en mayo y la defensa es la primera semana de junio de 2027. **Pendiente de revisión:** la fecha exacta del hito de febrero y la de entrega de la memoria; ajustar el plan cuando se conozcan, junto con el calendario de exámenes.*
 
 **Leyenda de dificultad:** 🟢 fácil · 🟡 media · 🔴 difícil
 
 ---
 
-## Decisiones
+## Resumen visual
 
-Decisiones ya resueltas: registro vigente en `07-resumen-decisiones-y-contexto.md` §3.
-
-Abiertas, con fecha límite:
-
-| Decisión | Estado | Cuándo resolverla |
-|---|---|---|
-| Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
-| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
-| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
-| ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
-| Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
-| Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
-
----
-
-## Tareas transversales (en todas las fases)
-
-Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del proyecto.
-
-- **Git y ramas:** ver `CLAUDE.md`.
-- **Arquitectura en capas** (App MVVM, Agente por capas): ver `01-memoria-tecnica.md` §4.2.
-- **Base de datos:** `agent/schema.sql`, acceso siempre a través de repositorios (ver `01-memoria-tecnica.md` §6).
-- **Pruebas:** pytest en el agente, `flutter_test` en la app (ver `02-necesidades-tecnologicas.md` §8.3), más una tabla de casos de prueba manuales por fase.
-- **Material para la memoria:** al cerrar cada fase, capturas de pantalla, casos de prueba realizados y decisiones tomadas.
-
----
-
-## Entorno de pruebas
-
-La red del centro puede bloquear la comunicación entre el móvil y el PC, así que el desarrollo diario **no depende de ninguna red externa**:
-
-| Método | Cómo funciona | Cuándo usarlo |
-|---|---|---|
-| **USB + `adb reverse`** (principal) | `adb reverse tcp:8443 tcp:8443`: la app se conecta a `127.0.0.1:8443` en el móvil y llega al agente del portátil por el cable | Desarrollo diario, en cualquier sitio |
-| **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: oficialmente solo ARM (aarch64, armv7); x86_64 se puede compilar pero no está soportado, así que iroh se prueba en el móvil físico |
-| **Punto de acceso del móvil** | El portátil se conecta al punto de acceso del móvil; ambos quedan en una red privada propia | Probar como LAN real (incluido mDNS). Puede requerir abrir el puerto en el cortafuegos del portátil |
-| **Repositorio simulado** | Versión falsa del repositorio de la app que devuelve datos inventados | Trabajar en pantallas sin el agente arrancado |
-| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02-necesidades-tecnologicas.md` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico* |
-
-**Para la defensa:** USB o punto de acceso como opción principal y un vídeo grabado como respaldo. No depender de la red del tribunal.
+| Fase | Contenido | Dificultad | Fechas orientativas |
+|---|---|---|---|
+| 0 | Preparación, entorno de pruebas y Flutter | 🟢 | Sep – Oct |
+| 1 | Agente y métricas reales (interfaz ya hecha) | 🟢🟡 | Oct – Nov |
+| 2 | Conexión remota con iroh (prueba de concepto, integración y pruebas) | 🔴 | Nov – Dic |
+| **Beta v0.1** | Interfaz + métricas por iroh, sin login | | **Mediados de diciembre – Navidad** |
+| 3 | Seguridad (login, dentro de la TUI ya construida en la fase 1) | 🔴 | Dic – Ene |
+| 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
+| **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
+| 5 | Instalación y servicio | 🟡 | Feb |
+| 6 | Energía y procesos | 🟢🟡 | Mar |
+| 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
+| 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
+| 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | Abr – May |
+| 10 | Pulido | 🟢 | May |
+| Memoria | Redacción final | | May (entrega pendiente de revisión) |
+| **Defensa** | | | **Primera semana de junio** |
+| Extra | Temas de terminal (`06-ideas-de-futuro.md`) | 🟢 | Si da tiempo |
 
 ---
 
@@ -68,7 +43,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ### Fase 0 — Preparación y aprender Flutter 🟢
 **Duración:** ~3 semanas (finales de septiembre – mediados de octubre)
 
-**Estado (12/10/2026):** la app ya tiene la interfaz definitiva completa, con *placeholders* y datos simulados (ver `doc/ui/estructura-app.md`). El agente FastAPI mínimo pasa a la fase 1.
+**Estado (12/10/2026): fase cerrada.** Además, la interfaz definitiva de la app quedó hecha con *placeholders* y datos simulados (ver `doc/ui/estructura-app.md`).
 
 **Objetivos:**
 - Instalar Flutter y Android Studio.
@@ -84,7 +59,7 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 ### Fase 1 — Agente y métricas reales 🟢🟡
 **Duración:** ~3 semanas (mediados de octubre – principios de noviembre)
 
-**Estado (20/10/2026): fase cerrada.** Hecho: agente con endpoint `GET /metrics`; TUI de `companion` con sus cuatro secciones (Emparejamiento, Historial, Base de datos, Notas); comando `companion` instalable; app con métricas reales (gráficas, particiones, temperatura), aviso «No se puede conectar con el agente» y reintento. Probado por USB con `adb reverse` contra el agente real y con el APK release en el móvil.
+**Estado (20/10/2026): fase cerrada.** Todos los objetivos cumplidos, más el comando `companion` instalable y el aviso «No se puede conectar con el agente» con reintento. Probado por USB con `adb reverse` contra el agente real y con el APK release en el móvil.
 
 **Objetivos:**
 - Crear el agente (`agent/`), en capas, con endpoint de métricas (CPU, RAM, discos, temperatura).
@@ -137,8 +112,7 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 
 **Nunca se recorta:** la interfaz navegable y la conexión por iroh. Si iroh no funciona, se aplica el plan B de la fase 2.
 
-**Requisitos mínimos del proyecto que ya cumple la beta:** interfaz y navegación, Git y capas.
-**Pendientes después de la beta:** login y BD (fase 3), manual de instalación (fase 5), lógica de negocio (fases 6 y 7), CRUD de dos entidades y BD de 3–4 tablas con contenido gestionado por el usuario (fase 7).
+La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase cubre cada uno: «Cobertura de los requisitos mínimos», al final).
 
 ---
 
@@ -185,7 +159,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo A) y `doc/agente/terminal
 ### 🎯 Hito de febrero
 > La app se conecta al agente Python del PC a través de iroh y ofrece la terminal y las gráficas de rendimiento.
 
-*Pendiente de revisión: fecha exacta de la presentación.* Las gráficas se hacen en la fase 1 (o, si se recortaron, antes del hito); para el hito hay que tener el login (fase 3) y la terminal a través de iroh (fase 4). La terminal termina a mediados de febrero: si el hito es antes, hay que ajustar.
+Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 4). *Pendiente de revisión: fecha exacta;* si es antes de mediados de febrero, la terminal no llega y hay que ajustar.
 
 ---
 
@@ -296,25 +270,9 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 
 ---
 
-## BLOQUE 3: Si da tiempo
-
-Ideas que solo se hacen si queda tiempo tras cubrir todo lo anterior: ver `06-ideas-de-futuro.md` ("Temas de la terminal").
-
----
-
 ## Redacción y defensa (mayo – primera semana de junio)
 
-**Memoria final** (*pendiente de revisión: fecha oficial de entrega*):
-- introducción y justificación;
-- planificación;
-- tecnologías;
-- diseño de la BD (diagrama entidad-relación);
-- diagrama de casos de uso;
-- capturas;
-- pruebas (incluida la matriz de pruebas de iroh);
-- manual de instalación y de uso;
-- estado del arte actualizado;
-- decisiones tomadas en cada fase.
+**Memoria final** (*pendiente de revisión: fecha oficial de entrega*): introducción y justificación, planificación, tecnologías, diagrama E/R, diagrama de casos de uso, capturas, pruebas (incluida la matriz de iroh), manual de instalación y uso, estado del arte y decisiones de cada fase.
 
 **Demo recomendada:**
 1. Instalar el agente.
@@ -347,38 +305,62 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 
 ---
 
-## Resumen visual
-
-| Fase | Contenido | Dificultad | Fechas orientativas |
-|---|---|---|---|
-| 0 | Preparación, entorno de pruebas y Flutter | 🟢 | Sep – Oct |
-| 1 | Agente y métricas reales (interfaz ya hecha) | 🟢🟡 | Oct – Nov |
-| 2 | Conexión remota con iroh (prueba de concepto, integración y pruebas) | 🔴 | Nov – Dic |
-| **Beta v0.1** | Interfaz + métricas por iroh, sin login | | **Mediados de diciembre – Navidad** |
-| 3 | Seguridad (login, dentro de la TUI ya construida en la fase 1) | 🔴 | Dic – Ene |
-| 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
-| **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
-| 5 | Instalación y servicio | 🟡 | Feb |
-| 6 | Energía y procesos | 🟢🟡 | Mar |
-| 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
-| 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
-| 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | Abr – May |
-| 10 | Pulido | 🟢 | May |
-| Memoria | Redacción final | | May (entrega pendiente de revisión) |
-| **Defensa** | | | **Primera semana de junio** |
-| Extra | Temas de terminal | 🟢 | Si da tiempo |
-
 ## Cobertura de los requisitos mínimos
 
 | Requisito | Dónde se cubre |
 |---|---|
 | App Android | Todo el proyecto (Flutter, aceptado por el tutor) |
-| Capas, Git, manual de instalación | Tareas transversales · Fase 5 |
+| Capas, Git, manual de instalación | Tareas transversales (apéndice) · Fase 5 |
 | Interfaz, navegación, validaciones | Interfaz definitiva (ya hecha) · fase 3 (login) · formularios de las fases 7, 8 y 9 |
 | Registro / login | Login: fase 3 (usuario creado desde la TUI) · Registro por QR: fase 9 |
 | CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) y la fase 9 (nota) |
 | Lógica de negocio | Filtros de procesos (fase 6), estadísticas y reglas (fase 7), umbrales (fase 8) |
 | Gestión de errores | Todas las fases · revisión en la fase 10 |
 | BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fase 3 (3 tablas) · fase 7 (6 tablas) · fase 8 (8 tablas) · fase 9 (9 tablas) |
-| Documentación completa | Material por fase · redacción final |
+| Documentación completa | Material por fase (apéndice) · redacción final |
 | Elemento diferenciador | P2P con iroh (fase 2), terminal remota (fase 4), servicios en segundo plano y notificaciones (fase 8), cámara/QR (fase 9) |
+
+---
+
+## Apéndice: referencia transversal
+
+Material que se consulta desde varias fases, no narrativa del plan en sí.
+
+### Decisiones
+
+Decisiones ya resueltas: registro vigente en `07-resumen-decisiones-y-contexto.md` §3.
+
+Abiertas, con fecha límite:
+
+| Decisión | Estado | Cuándo resolverla |
+|---|---|---|
+| Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
+| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
+| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
+| ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
+| Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
+| Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
+
+### Tareas transversales (en todas las fases)
+
+Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del proyecto.
+
+- **Git y ramas:** ver `CLAUDE.md`.
+- **Arquitectura en capas** (App MVVM, Agente por capas): ver `01-memoria-tecnica.md` §4.2.
+- **Base de datos:** `agent/schema.sql`, acceso siempre a través de repositorios (ver `01-memoria-tecnica.md` §6).
+- **Pruebas:** pytest en el agente, `flutter_test` en la app (ver `02-necesidades-tecnologicas.md` §8.3), más una tabla de casos de prueba manuales por fase.
+- **Material para la memoria:** al cerrar cada fase, capturas de pantalla, casos de prueba realizados y decisiones tomadas.
+
+### Entorno de pruebas
+
+La red del centro puede bloquear la comunicación entre el móvil y el PC, así que el desarrollo diario **no depende de ninguna red externa**:
+
+| Método | Cómo funciona | Cuándo usarlo |
+|---|---|---|
+| **USB + `adb reverse`** (principal) | `adb reverse tcp:8443 tcp:8443`: la app se conecta a `127.0.0.1:8443` en el móvil y llega al agente del portátil por el cable | Desarrollo diario, en cualquier sitio |
+| **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: oficialmente solo ARM (aarch64, armv7); x86_64 se puede compilar pero no está soportado, así que iroh se prueba en el móvil físico |
+| **Punto de acceso del móvil** | El portátil se conecta al punto de acceso del móvil; ambos quedan en una red privada propia | Probar como LAN real (incluido mDNS). Puede requerir abrir el puerto en el cortafuegos del portátil |
+| **Repositorio simulado** | Versión falsa del repositorio de la app que devuelve datos inventados | Trabajar en pantallas sin el agente arrancado |
+| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02-necesidades-tecnologicas.md` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico* |
+
+**Para la defensa:** USB o punto de acceso como opción principal y un vídeo grabado como respaldo. No depender de la red del tribunal.
