@@ -184,14 +184,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 
 ## 9. Pendientes inmediatos
 
-1. ~~Preguntar al tutor por escrito~~ **Resuelto:** Flutter aceptado (26/09/2026), el agente en Python es parte fundamental del proyecto (02/10/2026) y la política de IA está aclarada (28/09/2026, ver sección 8).
-2. Averiguar la **fecha oficial de entrega de la memoria** y la fecha exacta del hito de febrero, y ajustar el plan. *Pendiente de revisión.*
-3. ~~Decidir cómo se crea el usuario~~ **Resuelto (12/10/2026):** registro por QR desde la TUI y la app, en la fase 9.
-4. ~~Revisar las licencias marcadas como "verificar" en el documento 05~~ **Resuelto (02/10/2026):** licencias comprobadas; iroh-ssh-android es GPL-3.0 e iroh-android-native no declara licencia, así que de ninguno de los dos se puede copiar código.
-5. Preguntar en el centro cómo está montada la red: si deja salir HTTPS con WebSocket hacia los relés de iroh o si hay un proxy que inspeccione el tráfico. *Pendiente de revisión* (antes de la prueba en red restrictiva de la fase 2).
-6. Confirmar el tipo del servicio en primer plano (`connectedDevice` como candidato). *Pendiente de revisión* (fase 8).
-7. Elegir cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter`. *Pendiente de revisión* (al empezar la fase 2).
-8. Decidir si las **imágenes** entran en el espacio compartido. *Aún pensándolo* (antes de la fase 9).
+Decisiones abiertas, con fecha límite para resolverlas: `04-plan-de-fases.md`, Decisiones.
 
 ---
 
