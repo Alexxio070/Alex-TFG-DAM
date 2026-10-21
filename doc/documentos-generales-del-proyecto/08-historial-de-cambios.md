@@ -344,6 +344,43 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `04-plan-de-fases.md` (fase 1).
 - **Estado:** aplicado en `main` y `feature/agent`. **Pendiente en `feature/interfaz`:** tiene su propia copia de este archivo, sin esta corrección (no se tocó para no interferir con esa sesión).
 
+### 19/10/2026 — Interfaz: conexión con el agente, timeout, reintento y dirección en caliente
+
+- **Qué era:** `HttpMetricsRepository` pedía las métricas al agente sin timeout ni distinguir tipos de error; sin aviso en pantalla si no respondía; el sondeo seguía activo con la pantalla de Métricas en segundo plano o fuera de ella; cambiar la dirección en Ajustes no se aplicaba hasta reabrir la app.
+- **Qué es ahora:**
+  1. Timeout y errores (sin conexión, tiempo agotado, respuesta inválida) distinguidos con mensajes claros en `HttpMetricsRepository`.
+  2. Aviso «No se puede conectar con el agente» con botón «Reintentar» en la pantalla de Métricas.
+  3. El sondeo se pausa al salir de la pantalla de Métricas o con la app en segundo plano, y se reanuda al volver.
+  4. `HttpMetricsRepository` recibe `() => settings.agentAddress` y lee la dirección del `SettingsViewModel` en cada petición: el cambio de dirección se aplica sin reiniciar la app (sustituye lo descrito en la entrada del 19/10/2026 «Métricas: repositorio HTTP real…», punto 5, ver nota en esa entrada).
+- **Por qué:** cerraba los huecos de robustez de la conexión con el agente que quedaron abiertos al introducir `HttpMetricsRepository` el mismo día.
+- **Afecta a:** `http_metrics_repository.dart`, `metrics_repository.dart`, `metrics_viewmodel.dart`, `metrics_view.dart`, `main.dart`, `test/http_metrics_repository_test.dart`.
+- **Estado:** aplicado en código; sin verificación contra el agente real (prueba por USB con `adb reverse` pendiente, ver «Pendiente»).
+
+### 19-20/10/2026 — Interfaz: identificador de Android, nombre visible y enlaces externos
+
+- **Qué era:** la app seguía con el `applicationId`/`namespace` de la plantilla (`com.example.tfg`), sin nombre visible propio, sin declarar `<queries>` para abrir enlaces externos y sin el permiso `INTERNET` en el manifest de release.
+- **Qué es ahora:**
+  1. `applicationId` y `namespace` pasan a `io.github.alexxio070.companion`.
+  2. Nombre visible: «Linux System Companion».
+  3. Se declara `<queries>` (intent VIEW + esquema `https`) para que `url_launcher` pueda abrir enlaces en Android 11 y posteriores.
+  4. Se añade el permiso `INTERNET` al manifest de release (ya estaba en el de debug).
+- **Por qué:** identidad propia de la app, necesaria antes de publicar el APK, y requisito de Android 11+ para que los enlaces de Notas se abran desde la release.
+- **Afecta a:** `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml`.
+- **Estado:** aplicado en código.
+
+### 20/10/2026 — Interfaz: limpieza — diálogos, toasts y botón flotante unificados
+
+- **Qué era:** cada pantalla tenía su propio diálogo de confirmación (incluido `close_tab_dialog.dart` de la entrada del 19/10/2026 «Terminal: pestañas…», ver nota en esa entrada), su propio *toast* y su propio botón flotante, con pequeñas diferencias de estilo entre ellos.
+- **Qué es ahora:**
+  1. **`confirm_card.dart`** (nuevo): único diálogo de confirmación, sustituye a `confirm_dialog.dart` y a `close_tab_dialog.dart`.
+  2. **`app_toast.dart`** (nuevo): único *toast*, sustituye a `run_toast.dart` y usos sueltos.
+  3. **`app_fab.dart`** (nuevo): único botón flotante.
+  4. Tokens de color compartidos movidos a `app_tokens.dart`; constantes con nombre para valores que estaban repetidos como literales.
+  5. Archivos largos divididos (`macro_grid.dart`, `disk_card.dart`).
+- **Por qué:** quitar duplicación de widgets casi iguales entre pantallas y dejar un único sitio para cambiar el estilo de confirmaciones, avisos y acción flotante.
+- **Afecta a:** `app_tokens.dart`, `confirm_card.dart` (nuevo), `app_toast.dart` (nuevo), `app_fab.dart` (nuevo), y las pantallas que los usan (Inicio, Métricas, Notas, Ajustes, Terminal, `shell_view.dart`/`app_drawer.dart`).
+- **Estado:** aplicado en código.
+
 ---
 
 ## Pendiente
