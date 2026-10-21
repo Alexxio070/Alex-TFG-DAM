@@ -9,44 +9,46 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 
 ## Índice
 
-| Fecha | Cambio | Estado |
-|---|---|---|
-| 12/10/2026 | Notas: de un campo de texto único a lista con CRUD, con tipo deducido y enlaces pulsables | Aplicado |
-| 12/10/2026 | Pantalla «Opciones» renombrada a «Ajustes» | Aplicado |
-| 12/10/2026 | Terminal: de widget propio a `xterm.dart` | Aplicado |
-| 12/10/2026 | Gráficas: de `fl_chart` a `CustomPainter` | Aplicado |
-| 12/10/2026 | Documentación de interfaz: `doc/UI` pasa a `doc/ui/ui-v1` y `ui-v2` | Aplicado |
-| 12/10/2026 | Temperatura de CPU: color del valor | Aplicado |
-| 12/10/2026 | Acciones rápidas: de lista con buscador a cuadrícula con carpetas | Aplicado en la memoria; ajustes de UI pendientes |
-| 12/10/2026 | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
-| 12/10/2026 | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
-| 12/10/2026 | Revisión de coherencia entre documentación e implementación | Aplicado |
-| 12/10/2026 | Herramienta del PC: de CLI con Typer a TUI con botones (Textual) | Aplicado en la documentación |
-| 12/10/2026 | Registro del usuario: de CLI o código de un solo uso a QR en la TUI y cuenta creada en la app | Aplicado en la documentación |
-| 12/10/2026 | Exportación de datos y de estructura de la BD desde la TUI | Aplicado en la documentación |
-| 12/10/2026 | Replanificación: interfaz primero y beta sin login | Aplicado en la documentación |
-| 12/10/2026 | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
-| 12/10/2026 | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
-| 14/10/2026 | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
-| 15/10/2026 | Inicio: validación de nombre de macro y selector de icono | Aplicado en código |
-| 15/10/2026 | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
-| 15/10/2026 | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
-| 15/10/2026 | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
-| 15/10/2026 | Tercera auditoría: deduplicación de detalle técnico repetido | Aplicado |
-| 15/10/2026 | TUI del agente: librería confirmada y construcción adelantada a la fase 1 | Aplicado en la documentación |
-| 15/10/2026 | Estructura de la TUI: de botones por fase a cuatro secciones fijas | Aplicado en la documentación |
-| 15/10/2026 | Nuevo documento: especificación de la TUI en doc/agente/ | Aplicado |
-| 19/10/2026 | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
-| 19/10/2026 | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
-| 19/10/2026 | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
-| 19/10/2026 | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
-| 19/10/2026 | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado |
-| 19/10/2026 | Interfaz: conexión con el agente, timeout, reintento y dirección en caliente | Aplicado en código |
-| 19-20/10/2026 | Interfaz: identificador de Android, nombre visible y enlaces externos | Aplicado en código |
-| 20/10/2026 | Interfaz: limpieza — diálogos, toasts y botón flotante unificados | Aplicado en código |
-| 19/10/2026 | Agente: métricas en GB decimales y sin particiones duplicadas | Aplicado en código |
-| 19-20/10/2026 | Agente: comando `companion` instalable y resaltado de sección activa en la TUI | Aplicado en código |
-| 19/10/2026 | Agente: versiones mínimas, `pydantic` y `httpx2` en los tests | Aplicado en código |
+*Orden cronológico (no se reordena ni se reescribe). La columna «Área» es solo para localizar un tema rápido.*
+
+| Fecha | Área | Cambio | Estado |
+|---|---|---|---|
+| 12/10/2026 | Interfaz | Notas: de un campo de texto único a lista con CRUD, con tipo deducido y enlaces pulsables | Aplicado |
+| 12/10/2026 | Interfaz | Pantalla «Opciones» renombrada a «Ajustes» | Aplicado |
+| 12/10/2026 | Interfaz | Terminal: de widget propio a `xterm.dart` | Aplicado |
+| 12/10/2026 | Interfaz | Gráficas: de `fl_chart` a `CustomPainter` | Aplicado |
+| 12/10/2026 | Documentación | Documentación de interfaz: `doc/UI` pasa a `doc/ui/ui-v1` y `ui-v2` | Aplicado |
+| 12/10/2026 | Interfaz | Temperatura de CPU: color del valor | Aplicado |
+| 12/10/2026 | Interfaz | Acciones rápidas: de lista con buscador a cuadrícula con carpetas | Aplicado en la memoria; ajustes de UI pendientes |
+| 12/10/2026 | Documentación | Notas: el tipo (texto/enlace) lo deduce el agente | Aplicado en la documentación |
+| 12/10/2026 | Documentación | Carpeta del cliente: `app/` pasa a `App-movil/` | Aplicado |
+| 12/10/2026 | Documentación | Revisión de coherencia entre documentación e implementación | Aplicado |
+| 12/10/2026 | Agente | Herramienta del PC: de CLI con Typer a TUI con botones (Textual) | Aplicado en la documentación |
+| 12/10/2026 | Agente | Registro del usuario: de CLI o código de un solo uso a QR en la TUI y cuenta creada en la app | Aplicado en la documentación |
+| 12/10/2026 | Agente | Exportación de datos y de estructura de la BD desde la TUI | Aplicado en la documentación |
+| 12/10/2026 | Planificación | Replanificación: interfaz primero y beta sin login | Aplicado en la documentación |
+| 12/10/2026 | Documentación | Auditoría de la documentación frente a fuentes oficiales | Aplicado |
+| 12/10/2026 | Planificación | Cronograma adelantado: la interfaz definitiva ya está hecha | Aplicado en la documentación |
+| 14/10/2026 | Agente | Terminal: de PTY ligado a la conexión a sesiones persistentes con tmux | Decidido y documentado; implementación en la fase 4 |
+| 15/10/2026 | Interfaz | Inicio: validación de nombre de macro y selector de icono | Aplicado en código |
+| 15/10/2026 | Interfaz | Tema oscuro: color de acento aclarado para contraste suficiente | Aplicado en código |
+| 15/10/2026 | Interfaz | Terminal: fuente del sistema en vez de Nerd Font; se descarta el parpadeo del cursor | Aplicado en código y documentación |
+| 15/10/2026 | Documentación | Documentación de interfaz: `doc/ui/ui-final/DESIGN.md` como referencia única del estado actual | Aplicado |
+| 15/10/2026 | Documentación | Tercera auditoría: deduplicación de detalle técnico repetido | Aplicado |
+| 15/10/2026 | Agente | TUI del agente: librería confirmada y construcción adelantada a la fase 1 | Aplicado en la documentación |
+| 15/10/2026 | Agente | Estructura de la TUI: de botones por fase a cuatro secciones fijas | Aplicado en la documentación |
+| 15/10/2026 | Documentación | Nuevo documento: especificación de la TUI en doc/agente/ | Aplicado |
+| 19/10/2026 | Interfaz | Inicio: papelera sobre carpeta; Ajustes: persistencia local y fuente de la vista previa | Aplicado |
+| 19/10/2026 | Interfaz | Terminal: estado vacío y creación de sesión al primer toque o tecla | Aplicado en código (maqueta sin agente) |
+| 19/10/2026 | Interfaz | Métricas: repositorio HTTP real contra el agente; Ajustes: dirección del agente y modo de conexión (local/iroh) | Aplicado en la app; agente y prueba por USB en marcha por separado |
+| 19/10/2026 | Interfaz | Terminal: pestañas; Arranque: pantalla de carga con spinner y texto | Aplicado en código |
+| 19/10/2026 | Planificación | Fase 1: el objetivo de métricas seguía pidiendo el endpoint completo | Aplicado |
+| 19/10/2026 | Interfaz | Interfaz: conexión con el agente, timeout, reintento y dirección en caliente | Aplicado en código |
+| 19-20/10/2026 | Interfaz | Interfaz: identificador de Android, nombre visible y enlaces externos | Aplicado en código |
+| 20/10/2026 | Interfaz | Interfaz: limpieza — diálogos, toasts y botón flotante unificados | Aplicado en código |
+| 19/10/2026 | Agente | Agente: métricas en GB decimales y sin particiones duplicadas | Aplicado en código |
+| 19-20/10/2026 | Agente | Agente: comando `companion` instalable y resaltado de sección activa en la TUI | Aplicado en código |
+| 19/10/2026 | Agente | Agente: versiones mínimas, `pydantic` y `httpx2` en los tests | Aplicado en código |
 
 ---
 
