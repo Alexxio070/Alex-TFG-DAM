@@ -101,10 +101,8 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Permitiría, por ejemplo, abrir el explorador de archivos (si se llega a hacer, ver sección 2) en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `companion notify`.
 - Requiere configuración específica por shell.
 
-### Varias terminales: pestañas en la app 🟡
-*(Las sesiones persistentes con tmux ya forman parte del TFG, fase 4. Aquí queda lo que se deja fuera.)*
-- **Pestañas de terminal**, como las de un navegador: cada pestaña es una terminal independiente con sus propios comandos y su propia ventana de kitty en el PC. Cerrar una pestaña cierra su terminal en el PC, para que no se acumulen. Se haría si una sola sesión funciona bien y sin fallos.
-- Diseño y puntos abiertos en `../agente/terminal-sesiones-tmux.md`, sección 10.
+### Alternativas al multiplexor de terminal 🟡
+*(tmux ya forma parte del TFG, fase 4. Las pestañas de terminal ya tienen maqueta de UI, fase 0; conectarlas a sesiones reales es parte de la fase 4, ver `04-plan-de-fases.md`.)*
 - Zellij como alternativa a tmux.
 
 ### Cliente de sesiones propio, sin tmux 🟢 *(muy largo plazo)*
@@ -126,6 +124,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Modo sin sesión mejorado 🟡
 - Con *linger*, ofrecer desde la TUI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
+- Relacionado con la decisión pendiente de investigar en `04-plan-de-fases.md` (Decisiones): si el Módulo C de energía necesita esta regla para funcionar sin sesión activa.
 
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
@@ -140,6 +139,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Historial de métricas 🟡
 - Guardar métricas en el tiempo (SQLite) y mostrar gráficas de horas o días.
+- Exportar ese histórico a un archivo de texto desde un botón de la TUI (como las exportaciones de la fase 7, pero para métricas en vez de para la BD de acciones/notas).
 
 ### Más fuentes de datos 🟡
 - GPU (uso y VRAM, NVIDIA y AMD), red (tráfico por interfaz), estado de servicios systemd, contenedores Docker/Podman.
