@@ -49,6 +49,10 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/10/2026 | Agente | Agente: métricas en GB decimales y sin particiones duplicadas | Aplicado en código |
 | 19-20/10/2026 | Agente | Agente: comando `companion` instalable y resaltado de sección activa en la TUI | Aplicado en código |
 | 19/10/2026 | Agente | Agente: versiones mínimas, `pydantic` y `httpx2` en los tests | Aplicado en código |
+| 21/10/2026 | Planificación | Gestión de procesos descartada: la cubre la terminal | Aplicado en la documentación |
+| 21/10/2026 | Planificación | Multi-dispositivo: sale de la documentación general y queda solo como idea futura | Aplicado en la documentación |
+| 21/10/2026 | Interfaz | Procesos: se recupera como sección propia de la app, con búsqueda y congelar | Aplicado en la documentación |
+| 22/10/2026 | Repositorio | Etiquetas de versión permitidas solo para las releases del APK | Aplicado en la documentación |
 
 ---
 
@@ -420,3 +424,35 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** evitar romper por una versión mínima no probada, declarar explícitamente una dependencia ya en uso, y quitar el aviso de obsolescencia de Starlette.
 - **Afecta a:** `pyproject.toml`.
 - **Estado:** aplicado en código. Commits: `e0de0f2`, `7d518ea`.
+
+### 21/10/2026 — Gestión de procesos: descartada, la cubre la terminal
+
+- **Qué era:** el Módulo D de `01` y la fase 6 de `04` preveían una pantalla propia con la lista de procesos (búsqueda, filtro y orden por CPU y memoria) y su finalización en dos pasos (SIGTERM → SIGKILL), limitada a los procesos del propio usuario.
+- **Qué es ahora:** no hay función propia. Ver qué procesos consumen más y matarlos se hace desde la terminal integrada (`htop`, `kill`). El Módulo D queda como marcador descartado en `01` para no cambiar la letra de los demás módulos. La fase 6 queda solo con energía, cuya inclusión está pendiente de decidir (`07` §3.8).
+- **Por qué:** decisión del autor: lo más cercano a administrar procesos a ese nivel es matarlos a mano o abrir el administrador de procesos desde la terminal, así que una pantalla y unas rutas propias no aportan.
+- **Afecta a:** `01` (§1, Módulo D, §3 navegación, §7, §10, §11), `02` (§2.3), `03` (§1, §2, §3), `04` (resumen, fase 6, recortes, demo, cobertura), `07` (§4 y recortes), `doc/agente/ESTRUCTURA.md`, `doc/agente/README.md` y `README.md`.
+- **Estado:** aplicado en la documentación.
+
+### 21/10/2026 — Multi-dispositivo: fuera de la documentación general
+
+- **Qué era:** `01` §5.1 hablaba de emparejar "otro móvil" y `03` de varios móviles con un mismo PC; `07` fijaba un solo dispositivo y remitía a `06` como idea futura.
+- **Qué es ahora:** un PC se empareja con un único móvil. El multi-dispositivo solo consta en `06`, marcado como muy a futuro y pendiente de investigar.
+- **Por qué:** exigiría rediseñar varias piezas y no está claro cómo se comportarían la terminal (sesiones y ventanas en el PC) y las notas (ediciones simultáneas) con varios móviles a la vez.
+- **Afecta a:** `01` (§5.1), `03` (§2), `06` y `07` (§3.2).
+- **Estado:** aplicado en la documentación.
+
+### 21/10/2026 — Procesos: se recupera como sección propia de la app
+
+- **Qué era:** el mismo día se había descartado la gestión de procesos por considerar que la terminal ya la cubría (entrada «Gestión de procesos: descartada»).
+- **Qué es ahora:** una sección nueva del menú lateral, «Procesos», con la lista de todos los procesos del PC y su consumo, búsqueda por nombre o PID, y las acciones de finalizar y congelar (con opción de reanudar), ambas con confirmación. La lista va ordenada por nombre, con barra de búsqueda por nombre o PID, y se actualiza cada segundo como Métricas. En el menú lateral va entre Métricas y Terminal. La fase 6 pasa a ser procesos más energía (esta última sigue pendiente de decidir).
+- **Por qué:** idea nueva del autor; existen herramientas como `htop` y `psutil` que la hacen viable sin gran esfuerzo.
+- **Afecta a:** `01` (resumen, Módulo D, navegación, casos de uso, comparativa), `03` (§1 y §2), `04` (resumen y fase 6) y `07` (§3.8 y §4).
+- **Estado:** aplicado en la documentación.
+
+### 22/10/2026 — Etiquetas de versión: solo para las releases del APK
+
+- **Qué era:** `CLAUDE.md` y `README.md` decían «sin `develop` ni etiquetas por versión», mientras `04` publicaba el APK como release `v0.1-beta` y nombraba la fase 4 «v0.2».
+- **Qué es ahora:** no hay `develop`; las etiquetas de versión (`v0.1-beta`, `v0.2`…) se usan solo para publicar el APK en las releases de GitHub.
+- **Por qué:** una release de GitHub necesita una etiqueta; así se elimina la contradicción sin cambiar el plan.
+- **Afecta a:** `CLAUDE.md` y `README.md`.
+- **Estado:** aplicado en la documentación.

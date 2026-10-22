@@ -31,7 +31,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 
 | Tema | Dónde |
 |---|---|
-| Módulos funcionales (terminal, métricas, energía, procesos, acciones, notas…) | `01-memoria-tecnica.md`, §3 |
+| Módulos funcionales (terminal, métricas, energía, acciones, notas…) | `01-memoria-tecnica.md`, §3 |
 | Base de datos y esquema | `01-memoria-tecnica.md`, §6 |
 | API REST y WebSocket | `01-memoria-tecnica.md`, §3 (rutas de cada módulo) |
 | Seguridad | `01-memoria-tecnica.md`, §5 |

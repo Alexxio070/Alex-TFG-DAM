@@ -19,7 +19,7 @@ agent/companion/
 | 3 | login/sesión | autenticación (Argon2, token de sesión) | usuarios/sesiones | `LoginRequest`, `SessionToken` | activa la subpestaña Seguridad de Emparejamiento (configuración inicial, cambiar contraseña, cerrar sesiones) |
 | 4 | `WS /ws/terminal` | terminal (PTY sobre tmux con `$SHELL -l`, asyncio) | — | — | — (la terminal es de la app; la TUI no tiene botón propio para ella) |
 | 5 | — | — | — | — | activa la subpestaña Servicio de Emparejamiento (instalar/quitar servicio, estado) |
-| 6 | apagar/reiniciar/suspender/bloquear, procesos | energía/sesión (dbus-fast, systemd-logind), procesos (SIGTERM/SIGKILL) | — | `Process` | — |
+| 6 | apagar/reiniciar/suspender/bloquear | energía/sesión (dbus-fast, systemd-logind) | — | — | — |
 | 7 | CRUD de grupos y acciones rápidas, `PUT /orden` | ejecución de acciones (timeout, `os.killpg`) | `grupo`, `accion_rapida`, `ejecucion` | `Grupo`, `AccionRapida` | activa Historial (acciones rápidas + log de terminal) y los botones de exportación en Base de datos |
 | 8 | notificaciones/reglas de alerta | notificaciones | reglas de notificación | `NotificationRule` | — |
 | 9 | espacio de notas, registro QR | notas | `nota` | `Nota` | activa Notas y la subpestaña Dispositivo (QR real, datos del dispositivo emparejado) |
