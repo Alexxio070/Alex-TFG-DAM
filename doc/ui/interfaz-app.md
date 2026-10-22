@@ -6,7 +6,7 @@
 
 - Cada pantalla se describe tal como está implementada hoy, no como se planeó. Donde el código y un diseño anterior discrepaban, gana el código, y se anota el porqué.
 - **Qué es simulado y qué no:** Inicio, Terminal, Notas y el emparejado siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas y Ajustes ya hablan con implementaciones reales:** `HttpMetricsRepository` pide los datos al agente por HTTP (ver sección 4 y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
-- El diseño de la terminal del agente (sesiones con tmux) vive en [`../agente/terminal-sesiones-tmux.md`](../agente/terminal-sesiones-tmux.md) y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que todavía no tiene esa parte); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
+- El diseño de la terminal del agente (sesiones con tmux) vive en `../agente/terminal-sesiones-tmux.md` y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que todavía no tiene esa parte); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
 
 ## 1. Estructura general
 
@@ -164,6 +164,6 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 ## 9. Pendientes conocidos
 
-Lista completa y actualizada en [`../documentos-generales-del-proyecto/04-plan-de-fases.md`](../documentos-generales-del-proyecto/04-plan-de-fases.md), sección «Pendientes». El más relevante para esta interfaz:
+Lista completa y actualizada en `../documentos-generales-del-proyecto/04-plan-de-fases.md`, sección «Pendientes». El más relevante para esta interfaz:
 
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).
