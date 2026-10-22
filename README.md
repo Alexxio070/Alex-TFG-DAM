@@ -7,7 +7,7 @@ El sistema tiene dos piezas que se desarrollan juntas pero por separado:
 - **Una app Android** (Flutter) que es el cliente: muestra el estado del PC y manda órdenes.
 - **Un agente en el PC** (Python) que hace todo el trabajo real: abre terminales, mide el sistema, ejecuta acciones y guarda los datos.
 
-Funciones principales (solo las que tienen sentido estando lejos del PC): terminal remota con la shell real del usuario, monitorización del sistema en vivo, gestión de procesos, energía y sesión, acciones rápidas (comandos guardados, con historial), un espacio compartido de notas entre el móvil y el PC, y notificaciones con reglas de alerta configurables.
+Funciones principales (solo las que tienen sentido estando lejos del PC): terminal remota con la shell real del usuario, monitorización del sistema en vivo, energía y sesión, acciones rápidas (comandos guardados, con historial), un espacio compartido de notas entre el móvil y el PC, y notificaciones con reglas de alerta configurables.
 
 ## Componentes
 
@@ -94,4 +94,4 @@ Toda la documentación de diseño está en [`doc/`](doc/):
 - [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
 - [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
 
-Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop` ni etiquetas por versión.
+Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop`; las etiquetas de versión solo para publicar el APK en las releases.
