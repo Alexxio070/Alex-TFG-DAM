@@ -3,7 +3,7 @@
 ## Criterios de planificación
 
 1. **Primero lo más arriesgado.** La conexión entre el móvil y el PC con iroh es la parte más crítica y con más incertidumbre, así que va justo después de la interfaz y las métricas (fase 2). Si da problemas, se descubre en noviembre, con tiempo para aplicar el plan B.
-2. **Después, lo obligatorio y lo que más pesa en la nota.** Los requisitos mínimos del proyecto se completan entre la beta y marzo; las funciones de menor impacto, al final.
+2. **Después, lo obligatorio y lo que más pesa en la nota.** Los requisitos mínimos del proyecto se completan entre la beta y principios de abril; las funciones de menor impacto, al final.
 3. **Fases difíciles intercaladas con fáciles.** Así no se acumula todo lo complejo al final y cada fase difícil va seguida de un respiro.
 4. **Cada fase termina con algo que funciona.** Nunca se empieza una fase dejando la anterior a medias.
 5. **Dos hitos intermedios:** una beta mínima en Navidad y una versión funcional en febrero (ver sus apartados más abajo).
@@ -27,7 +27,7 @@
 | 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
 | **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
 | 5 | Instalación y servicio | 🟡 | Feb |
-| 6 | Energía y procesos | 🟢🟡 | Mar |
+| 6 | Procesos y energía (energía pendiente de decidir) | 🟢🟡 | Mar |
 | 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
 | 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
 | 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | Abr – May |
@@ -82,7 +82,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
 
 **Objetivos:**
 - Prueba de concepto del túnel iroh (primera semana): reenviar el puerto local del agente a través de iroh.
-- Integrar iroh en el agente (punto de conexión, identificador estable) y en la app (túnel, selector local/iroh en Ajustes).
+- Integrar iroh en el agente (punto de conexión, identificador estable) y en la app (el túnel real; el selector local/iroh de Ajustes ya existe).
 - Matriz de pruebas en casa:
   1. Móvil y PC en la misma Wi-Fi: la conexión debe pasar a directa.
   2. Móvil con datos móviles y PC en casa: empieza por el relé y debe intentar pasar a directa.
@@ -96,6 +96,8 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 **⚠️ Seguridad hasta la fase 3 (incluida la beta):** hasta que exista el login, cualquiera que conozca el identificador iroh puede llegar al agente. Mientras tanto, el agente solo expone las métricas (solo lectura), el identificador no se comparte y el agente se arranca a mano solo para probar.
 
 **Al terminar:** generar el APK y publicarlo como release `v0.1-beta`.
+
+**Decisiones abiertas:** cómo usar iroh desde Flutter y si la red del centro deja salir el tráfico hacia los relés (`07` §3.8).
 
 **Terminada cuando:** las métricas de la fase 1 se ven en el móvil desde datos móviles contra el PC de casa, y la matriz de pruebas está documentada.
 
@@ -144,7 +146,7 @@ Detalle técnico: `01-memoria-tecnica.md` §5 (Seguridad).
 **Objetivos:**
 - Prototipos previos de los puntos abiertos (ver «Pendientes»).
 - Agente: sesiones de terminal sobre tmux (crear, listar, cerrar), WebSocket que engancha la sesión y recupera el historial, ventana en la terminal gráfica del PC.
-- App: xterm.dart conectado al WebSocket, reenganche al volver a abrir la app; cada pestaña (maqueta ya hecha en la fase 0) engancha su propia sesión de tmux y su propia ventana en el PC.
+- App: xterm.dart conectado al WebSocket, reenganche al volver a abrir la app; cada pestaña (la maqueta ya está hecha) engancha su propia sesión de tmux y su propia ventana en el PC.
 - Pruebas con Zsh, un prompt tipo Starship y programas a pantalla completa (`htop`, `vim`), por USB y por iroh (incluido por relé).
 - Pruebas de persistencia: dejar un comando largo en marcha, cerrar la app y cortar la red; comprobar que sigue y se recupera al volver.
 
@@ -169,7 +171,7 @@ Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 
 **Objetivos:**
 - Empaquetar el agente para instalarlo con `pipx install`; comprobar las dependencias del sistema (`tmux`, terminal gráfica).
 - Activar dentro de «Emparejamiento» los botones «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario con el punto de conexión iroh activo desde el arranque.
-- README con instalación, uso básico y prueba por USB y por iroh.
+- Completar el README (ya tiene una guía de instalación manual) con la instalación por `pipx`, el uso básico y la prueba por USB y por iroh.
 - Probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio) y hacer capturas para la memoria.
 
 Detalle técnico: `01-memoria-tecnica.md` §8 (Despliegue) y `02-necesidades-tecnologicas.md` §7.
@@ -178,18 +180,20 @@ Detalle técnico: `01-memoria-tecnica.md` §8 (Despliegue) y `02-necesidades-tec
 
 ---
 
-### Fase 6 — Energía y procesos 🟢🟡
+### Fase 6 — Procesos y energía 🟢🟡
 **Duración:** ~2 semanas (principios – mediados de marzo)
 
+**Estado:** el control de energía está pendiente de decidir (`07-resumen-decisiones-y-contexto.md` §3.8); si no entra, la fase queda solo con Procesos.
+
 **Objetivos:**
-- Agente: apagar, reiniciar, suspender, hibernar y bloquear sesión vía systemd-logind; listado de procesos; finalización con SIGTERM → SIGKILL.
-- App: botones de energía con confirmación, lista de procesos con búsqueda y orden, mensajes claros cuando falta permiso.
+- Procesos. Agente: lista con consumo (CPU y memoria), búsqueda por nombre o PID, finalizar (SIGTERM → SIGKILL) y congelar. App: sección «Procesos» en el menú lateral, con confirmación al finalizar o congelar.
+- Energía (si entra). Agente: apagar, reiniciar, suspender, hibernar y bloquear sesión vía systemd-logind. App: botones con confirmación y mensajes claros cuando falta permiso.
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulos C y D).
+Detalle técnico: `01-memoria-tecnica.md` §3 (Módulos C y D). Decisiones abiertas sobre energía: `07` §3.8.
 
-**Terminada cuando:** puedes apagar, reiniciar y bloquear el portátil y finalizar un proceso colgado desde el móvil.
+**Terminada cuando:** puedes ver qué procesos consumen más, buscar uno, congelarlo y finalizarlo desde el móvil (y, si la energía entra, apagar, reiniciar y bloquear el portátil).
 
-**Nota:** las pruebas de apagado y reinicio se hacen mejor en una máquina virtual o al final de cada sesión de trabajo. Si se apaga el PC a través de iroh, no se puede volver a encender desde el móvil (ver Wake-on-LAN en las ideas de futuro).
+**Nota sobre energía:** las pruebas de apagado y reinicio se hacen mejor en una máquina virtual o al final de cada sesión de trabajo. Si se apaga el PC a través de iroh, no se puede volver a encender desde el móvil (ver Wake-on-LAN en las ideas de futuro).
 
 ---
 
@@ -221,7 +225,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo E) y §6.3 (exportaciones
 - App: servicio en primer plano (mantiene el túnel iroh y la conexión de eventos) y notificaciones locales. *Cubre el elemento diferenciador "notificaciones / servicios en segundo plano".*
 - Opción "notificar al terminar" en las acciones rápidas de la fase 7.
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo G) y `02-necesidades-tecnologicas.md` §4.1 (tipo del servicio en primer plano, *pendiente de revisión, se confirma en esta fase*).
+Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo G) y `02-necesidades-tecnologicas.md` §4.1 (tipo del servicio en primer plano, decisión abierta en `07` §3.8).
 
 **Terminada cuando:** con el móvil bloqueado y fuera de casa recibes un aviso al terminar un comando en el PC y cuando salta una regla de alerta.
 
@@ -233,9 +237,9 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo G) y `02-necesidades-tecn
 **Objetivos:**
 - mDNS: el agente se anuncia y la app lo encuentra sin escribir la dirección.
 - QR de emparejamiento y registro (sustituye a la creación del usuario desde la TUI de la fase 3): la TUI muestra el QR, la app lo escanea y crea la cuenta. *Cubre el elemento diferenciador "uso de sensores/cámara".*
-- Espacio compartido: BD y CRUD de notas, sección «Notas» de la TUI, pantalla de notas en la app (lista, búsqueda, enlaces pulsables).
+- Espacio compartido: BD y CRUD de notas, sección «Notas» de la TUI y pantalla de notas de la app conectada al agente (la interfaz ya existe con datos simulados).
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo F) y §5.1 (registro por QR).
+Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo F) y §5.1 (registro por QR). Decisión abierta sobre imágenes en el espacio compartido: `07` §3.8.
 
 **Terminada cuando:** una instalación nueva se empareja y crea la cuenta escaneando un QR, y una nota guardada desde el móvil aparece en el PC al consultarla (y al revés).
 
@@ -263,7 +267,7 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 
 1. **Reglas de alerta con CRUD** (fase 8): mantener solo `companion notify`.
 2. **mDNS** (fase 9): el QR ya evita escribir la dirección.
-3. **Hibernar y ordenación de procesos** (fase 6): dejar el listado y el botón de finalizar.
+3. **Hibernar** (fase 6): dejar apagar, reiniciar, suspender y bloquear.
 4. **Registro por QR** (fase 9): mantener la creación del usuario desde la TUI.
 
 **Nunca se recortan:** conexión por iroh (o su plan B documentado), terminal (función estrella), CRUD de acciones rápidas (requisito mínimo), login y TLS, y pulido mínimo de errores.
@@ -280,9 +284,9 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 3. Mostrar las métricas.
 4. Usar la terminal.
 5. Ejecutar una acción rápida y ver su historial.
-6. Finalizar un proceso.
+6. Buscar y finalizar un proceso.
 7. Recibir una notificación al terminar un comando.
-8. Apagar el PC.
+8. Apagar el PC (solo si el control de energía se mantiene).
 
 Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a través de iroh.
 
@@ -299,7 +303,7 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 | Fase 4 (Terminal) | Prototipos previos: cierre al cerrar la ventana del PC, historial sin duplicados, ventana en kitty y Konsole, versión mínima de tmux y supervivencia al reinicio del agente |
 | Fase 4 (Terminal) | Decidir límite de sesiones, tamaño del historial y *keepalive*; completar la tabla «emulador → cómo lanzarlo» |
 | Fase 4 (Terminal) | Medir la latencia real de crear sesión + ventana del PC + enganche (estimada en 200 ms–1 s LAN, sin verificar); hoy la maqueta simula 600 ms fijos |
-| Fase 4 (Terminal, maqueta de UI ya hecha en la fase 0) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
+| Fase 4 (Terminal, maqueta de UI ya hecha) | Verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión |
 | Fase 7 | Definir el acceso a la ficha de acción y a su historial, y los valores por defecto de la creación rápida |
 | Agente (general) | Documentar la API, el esquema, la seguridad y la instalación en `doc/agente/` |
 
@@ -314,7 +318,7 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 | Interfaz, navegación, validaciones | Interfaz definitiva (ya hecha) · fase 3 (login) · formularios de las fases 7, 8 y 9 |
 | Registro / login | Login: fase 3 (usuario creado desde la TUI) · Registro por QR: fase 9 |
 | CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) y la fase 9 (nota) |
-| Lógica de negocio | Filtros de procesos (fase 6), estadísticas y reglas (fase 7), umbrales (fase 8) |
+| Lógica de negocio | Búsqueda de procesos (fase 6), estadísticas y reglas de negocio (fase 7), umbrales (fase 8) |
 | Gestión de errores | Todas las fases · revisión en la fase 10 |
 | BD de 3–4 tablas con relaciones, `schema.sql`, repositorios | Fase 3 (3 tablas) · fase 7 (6 tablas) · fase 8 (8 tablas) · fase 9 (9 tablas) |
 | Documentación completa | Material por fase (apéndice) · redacción final |
@@ -325,21 +329,6 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 ## Apéndice: referencia transversal
 
 Material que se consulta desde varias fases, no narrativa del plan en sí.
-
-### Decisiones
-
-Decisiones ya resueltas: registro vigente en `07-resumen-decisiones-y-contexto.md` §3.
-
-Abiertas, con fecha límite:
-
-| Decisión | Estado | Cuándo resolverla |
-|---|---|---|
-| Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
-| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
-| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
-| ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
-| Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
-| Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
 
 ### Tareas transversales (en todas las fases)
 

@@ -57,7 +57,7 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 ## Repo, commits y PRs
 
 - `App-movil/`: cliente Flutter. `agent/`: agente Python (sin `schema.sql` todavía; llega en la fase 3).
-- Ramas: `main` (estable) y `feature/<nombre>` (una por tarea o fase). Sin `develop` ni etiquetas por versión.
+- Ramas: `main` (estable) y `feature/<nombre>` (una por tarea o fase). Sin `develop`; las etiquetas de versión (`v0.1-beta`, `v0.2`…) solo para publicar el APK en las releases.
 - Commits con formato convencional (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `build:`, `chore:`, `merge:`), cortos y descriptivos. Nada de cambios enormes de una vez: dividir en piezas pequeñas y lógicas.
 - Todo commit y PR se propone a alex **antes** de hacerse, incluida la forma de dividir un cambio grande.
 - Autoría siempre de alex, nunca de Claude (salvo indicación expresa para un commit concreto). Motivo: será open source y no debe parecer "vibecodeado".
@@ -77,3 +77,4 @@ La documentación está en [`doc/`](doc/): los documentos generales del proyecto
 - `06-ideas-de-futuro.md`
 - `07-resumen-decisiones-y-contexto.md`
 - `08-historial-de-cambios.md`
+- `09-indice-de-funciones.md` (qué funciones hay y dónde se documenta cada una)

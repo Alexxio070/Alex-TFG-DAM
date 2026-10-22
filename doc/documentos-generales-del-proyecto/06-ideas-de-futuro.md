@@ -77,9 +77,10 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Requiere Mac con Xcode. Para probar en un iPhone propio basta un Apple ID gratuito, con límites: los perfiles caducan a los 7 días (hay que recompilar y reinstalar), como máximo 3 apps por dispositivo y 3 dispositivos. La cuenta de desarrollador de pago es necesaria para distribuir la app y para las capacidades avanzadas.
 - iOS es muy restrictivo con las conexiones en segundo plano, lo que afecta a las notificaciones.
 
-### Multi-dispositivo 🟡
+### Multi-dispositivo 🟡 *(muy a futuro, pendiente de investigar)*
 - Varios móviles emparejados con el mismo PC, y un móvil con varios PCs.
 - Lista de dispositivos con nombre, fecha de emparejamiento, último acceso y botón de revocar.
+- Exigiría rediseñar varias piezas. Técnicamente es posible, pero está por investigar cómo se comportarían con varios móviles a la vez la terminal (sesiones y ventanas en el PC) y las notas (ediciones simultáneas).
 
 ### Publicación en tiendas 🟢🟡
 - Google Play (cuenta de desarrollador y revisión) y F-Droid.
@@ -124,7 +125,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Modo sin sesión mejorado 🟡
 - Con *linger*, ofrecer desde la TUI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
-- Relacionado con la decisión pendiente de investigar en `04-plan-de-fases.md` (Decisiones): si el Módulo C de energía necesita esta regla para funcionar sin sesión activa.
+- Relacionado con la decisión pendiente de investigar en `07-resumen-decisiones-y-contexto.md` §3.8: si el Módulo C de energía necesita esta regla para funcionar sin sesión activa.
 
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
