@@ -55,7 +55,7 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 - **Registro por QR (12/10/2026):** la TUI muestra un QR con la dirección, la huella, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña. El modo registro se cierra tras la primera cuenta. **Va en la fase 9 (12/10/2026);** hasta entonces el usuario se crea desde la TUI.
 - **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, se compara a ojo con la que muestra la TUI).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
-- **Un solo dispositivo.** Multi-dispositivo como idea futura.
+- **Un solo dispositivo.**
 - **El agente nunca usa root ni sudo.** Para operaciones de root, la app avisa de que hay que usar la terminal.
 
 ### 3.3 Terminal
@@ -93,6 +93,20 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - Dos botones en la TUI (fase 7), con los archivos en el escritorio (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`; si no existe, la carpeta personal) y la fecha y la hora en el nombre.
 - **Datos:** un JSON `companion-datos-AAAAMMDD-HHMM.json` con una sección por tabla, sin `sesion`, `intento_login` ni el hash de la contraseña. Descartados CSV (un archivo por tabla, pierde tipos) y SQL con `INSERT` (mezcla datos y estructura).
 - **Estructura:** carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, leídos de `sqlite_schema`. Los *joins* no se guardan en la BD: las relaciones son las claves foráneas de `tablas.sql`. El diseño no tiene vistas ni triggers, así que esos archivos llevan un comentario que lo explica.
+
+### 3.8 Decisiones abiertas
+
+Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la sección que le corresponda de §3 y se quita de aquí.
+
+| Decisión | Estado | Cuándo resolverla |
+|---|---|---|
+| Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
+| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
+| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
+| ¿La red del centro deja salir HTTPS con WebSocket hacia los relés de iroh? | **Pendiente de revisión:** preguntar en el centro cómo está montada la red | Antes de la prueba en red restrictiva (fase 2) |
+| Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
+| ¿Entra el control de energía (apagar, reiniciar, suspender, hibernar, bloquear) en el proyecto? **Por qué está:** encaja con el criterio de alcance (tiene sentido sin estar delante del PC), forma parte del valor diferencial (`01` §2) y cuenta como elemento diferenciador de integración con el sistema (D-Bus / systemd-logind, `01` §12), aunque quedan otros (cámara/QR, servicio en segundo plano, P2P con iroh). **Por qué se duda:** sin sesión activa polkit puede denegarla y la solución exige una regla manual con sudo (fila siguiente); apagado el PC no se puede volver a encender desde el móvil (Wake-on-LAN descartado); hibernar suele no estar configurado y es el primer recorte; su pantalla no tiene sitio decidido en la app. *Otros motivos del autor: pendientes de anotar.* | **Pendiente de decidir** | Antes de la fase 6 |
+| Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
 
 ---
 
@@ -140,7 +154,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - **Sin login en la beta:** el agente solo expone métricas de solo lectura y se arranca a mano.
 - **La beta NO necesita cumplir los mínimos de DAM.**
 
-**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar y ordenación de procesos → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD de acciones rápidas, login y TLS, y pulido mínimo de errores.
+**Orden de recorte si voy con retraso:** reglas de alerta → mDNS → hibernar → registro por QR. Si iroh no funciona, se aplica el plan B en la fase 2 (solo LAN). **Nunca se recortan:** iroh (o su plan B documentado), terminal, CRUD de acciones rápidas, login y TLS, y pulido mínimo de errores.
 
 ---
 
@@ -182,13 +196,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 
 ---
 
-## 9. Pendientes inmediatos
-
-Decisiones abiertas, con fecha límite para resolverlas: `04-plan-de-fases.md`, Decisiones.
-
----
-
-## 10. Qué NO está en estos documentos
+## 9. Qué NO está en estos documentos
 
 - **La normativa oficial de requisitos mínimos del proyecto de DAM.** Aquí solo está resumida (03, sección 2) y cruzada con el plan (04, tabla final). **Súbela también al proyecto** tal cual la da el centro.
 - **Los tres documentos originales generados con otra IA.** Están obsoletos y sustituidos por los 01–06; no hace falta conservarlos.

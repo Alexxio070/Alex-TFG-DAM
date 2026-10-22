@@ -50,15 +50,17 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - Ampliación opcional: CPU por núcleo, swap, carga del sistema y tiempo encendido (psutil ya los da, pero ni el endpoint ni la pantalla los muestran hoy).
 
 ### Módulo C — Energía y sesión
+- **Estado: pendiente de decidir si entra en el proyecto.** Motivos y contexto: `07-resumen-decisiones-y-contexto.md` §3.8.
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
 - Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado. Se usa `Session.Lock()` (o `LockSession(id)`) sobre la sesión del propio usuario, que no pide autorización; `LockSessions()` bloquea todas las sesiones y polkit exige permisos de administrador.
 - Todas las acciones destructivas piden confirmación en la app.
-- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `04-plan-de-fases.md`, Decisiones.
+- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `07-resumen-decisiones-y-contexto.md` §3.8.
 
 ### Módulo D — Gestión de procesos
-- Lista de procesos en tiempo real con búsqueda, filtro y orden por CPU y memoria.
-- Finalización en dos pasos: primero **SIGTERM** (cierre ordenado); si el proceso sigue vivo tras unos segundos, se ofrece **SIGKILL** (cierre forzado).
-- El agente se ejecuta sin privilegios, así que **solo puede finalizar procesos del propio usuario**. La app lo indica claramente.
+- Sección propia de la app, «Procesos», en el menú lateral.
+- Lista de todos los procesos del PC con lo que consumen (CPU y memoria), ordenados por nombre, con una barra de búsqueda para encontrarlos por nombre o PID. Se actualiza con la misma frecuencia que las métricas (cada segundo).
+- Acciones sobre un proceso, ambas con confirmación: **finalizarlo** en dos pasos (primero SIGTERM, cierre ordenado; si sigue vivo tras unos segundos, SIGKILL, cierre forzado) y **congelarlo** (pausarlo), con opción de reanudarlo después.
+- El agente se ejecuta sin privilegios: ve todos los procesos, pero **solo puede finalizar o congelar los del propio usuario**. La app lo indica claramente.
 
 ### Módulo E — Acciones rápidas (CRUD)
 Comandos guardados, organizados en grupos, que se ejecutan con un toque desde el móvil. Por ejemplo:
@@ -138,11 +140,11 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 - El resto de la app no distingue entre ambos modos: usa exactamente el mismo código de comunicación.
 
 ### Navegación y pantallas de la app
-La app se organiza con un **menú lateral (drawer)** con cuatro secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
+La app se organiza con un **menú lateral (drawer)** con cinco secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Procesos** (Módulo D), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
 
 - **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis), modo de conexión **Local / iroh** con la dirección del agente (`host:puerto` en Local, identificador a mano en iroh) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
 - **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
-- **Aún sin ubicación decidida:** energía (Módulo C), procesos (Módulo D), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
+- **Aún sin ubicación decidida:** energía (Módulo C), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
 
 ### API REST (resumen)
 Rutas ya definidas para los módulos con CRUD completo (grupos y acciones rápidas, notas, reglas y notificaciones). El resto de módulos aún no tiene rutas concretas documentadas.
@@ -208,7 +210,7 @@ GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 - **Modelos:** clases de datos que representan cada entidad.
 
 ### 4.3 Comunicación
-- **REST (HTTP/JSON):** peticiones puntuales, como login, energía, procesos y el CRUD de grupos, acciones, notas, reglas y notificaciones.
+- **REST (HTTP/JSON):** peticiones puntuales, como login, energía y el CRUD de grupos, acciones, notas, reglas y notificaciones.
 - **WebSocket:** canales continuos para la terminal, las métricas en vivo y los eventos o notificaciones.
 - En la beta las métricas se obtienen por consulta periódica REST (cada 1 s) por simplicidad.
 
@@ -234,7 +236,7 @@ El usuario escribe `companion` en el PC y se abre la **TUI** (interfaz de texto 
 
 La app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
 
-A partir de entonces la app solo confía en ese certificado. Para emparejar otro móvil o la app reinstalada, la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
+A partir de entonces la app solo confía en ese certificado. Para volver a emparejar la app (por ejemplo, reinstalada), la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
 
 Hasta que llegue el registro por QR (fase 9), el botón de configuración inicial crea directamente el usuario y la huella del certificado se compara a ojo con la de la TUI.
 
@@ -339,7 +341,7 @@ La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el
 | Iniciar y cerrar sesión | Usuario | Seguridad |
 | Consultar métricas del sistema | Usuario | B |
 | Apagar, reiniciar, suspender o bloquear | Usuario | C |
-| Buscar y finalizar procesos | Usuario | D |
+| Buscar, congelar y finalizar procesos | Usuario | D |
 | Gestionar grupos (crear, editar, borrar) | Usuario | E |
 | Gestionar acciones rápidas (crear, editar, borrar) | Usuario | E |
 | Ejecutar una acción rápida y ver su salida | Usuario | E |
@@ -425,8 +427,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 - **Distribución:** cualquier distribución con systemd, Python 3.11+ y D-Bus. El entorno de pruebas oficial es KDE Plasma 6. El bloqueo de sesión depende de que el escritorio responda a la señal de logind (Plasma lo hace).
 - **Temperaturas:** dependen de los sensores que exponga el kernel en `/sys/class/hwmon`. Las GPU NVIDIA con controlador propietario no aparecen ahí; su soporte (vía `nvidia-smi`) es opcional.
 - **Hibernación:** muchas instalaciones no la tienen configurada. La app la ofrece solo si logind indica que está disponible.
-- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `04-plan-de-fases.md`, Decisiones.
-- **Procesos:** solo se pueden finalizar los del propio usuario.
+- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `07-resumen-decisiones-y-contexto.md` §3.8.
 - **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra una notificación persistente, que es el comportamiento estándar de Android. Desde Android 14 el usuario puede descartarla, y sin el permiso `POST_NOTIFICATIONS` solo aparece en el gestor de tareas.
 - **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso aficionado (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
 - **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica; cuando se suba a 37 habrá que pedir este permiso en la pantalla de conexión. El móvil de pruebas usa Android 15, donde no se exige. Las conexiones a `127.0.0.1` (USB y túnel iroh) previsiblemente no se ven afectadas, porque la definición oficial de red local no incluye el *loopback*. *Pendiente de confirmar.*
@@ -441,7 +442,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 | Clientes SSH (Termius, ConnectBot) | No (requiere IP accesible o VPN) | Sí | No | Solo vía comandos | Sí | No |
 | Cockpit | No (requiere exponerlo o VPN) | Sí (web) | Sí | Sí | No (web) | No |
 | RustDesk | Sí (servidor de encuentro/relé) | Sí (desde la versión 1.4.1; su función principal es el escritorio remoto) | No | No | Sí | No |
-| **Linux System Companion** | **Sí (iroh)** | **Sí** | **Sí** | **Sí** | **Sí** | **Sí** |
+| **Linux System Companion** | **Sí (iroh)** | **Sí** | **Sí** | Sí (energía pendiente de decidir) | **Sí** | **Sí** |
 
 *Tabla orientativa; revisar cada entrada en la redacción final. Detalle de proyectos y licencias en 05-referencias-y-proyectos.md.*
 
