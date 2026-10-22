@@ -15,6 +15,9 @@ boceto original.
 
 1. **Banner** — nombre de la app en arte ASCII ANSI Shadow, en una sola línea:
    "LINUX" y "SYSTEM" uno al lado del otro. Color verde, en negrita. Línea inferior gruesa.
+   **Responsivo (20/10/2026):** el arte ASCII tiene un ancho fijo (no se puede "encoger" sin
+   romperse). Por debajo de ~97 columnas de ancho de terminal, se sustituye por el texto plano
+   "LINUX SYSTEM COMPANION" centrado, mismo color y negrita.
 2. **Área de datos** — un marco redondeado con el título "Datos" arriba a la izquierda.
    Ocupa todo el espacio libre. Por defecto está **vacía**; muestra la sección del botón pulsado.
 3. **Barra de botones** — cuatro botones de igual anchura, en este orden:

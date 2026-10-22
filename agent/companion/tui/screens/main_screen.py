@@ -28,6 +28,8 @@ SYSTEM_ART = [
 ]
 _LINUX_WIDTH = max(len(line) for line in LINUX_ART)
 BANNER = "\n".join(f"{left.ljust(_LINUX_WIDTH)}  {right}" for left, right in zip(LINUX_ART, SYSTEM_ART))
+BANNER_MIN_WIDTH = max(len(line) for line in BANNER.split("\n")) + 4
+BANNER_FALLBACK = "LINUX SYSTEM COMPANION"
 
 SECTION_IDS = {
     "btn-pairing": "pairing",
@@ -52,6 +54,7 @@ class MainScreen(Screen):
     }
 
     #banner Static {
+        width: auto;
         color: $success;
         text-style: bold;
     }
@@ -74,6 +77,7 @@ class MainScreen(Screen):
 
     #buttons Button {
         width: 1fr;
+        min-width: 8;
         margin: 0 1;
     }
 
@@ -84,7 +88,7 @@ class MainScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Container(id="banner"):
-            yield Static(BANNER)
+            yield Static(BANNER, id="banner-text")
 
         with Container(id="data"):
             with ContentSwitcher(id="sections"):
@@ -103,6 +107,14 @@ class MainScreen(Screen):
 
     def on_mount(self) -> None:
         self.query_one("#data").border_title = "Datos"
+        self._update_banner()
+
+    def on_resize(self) -> None:
+        self._update_banner()
+
+    def _update_banner(self) -> None:
+        text = BANNER if self.size.width >= BANNER_MIN_WIDTH else BANNER_FALLBACK
+        self.query_one("#banner-text", Static).update(text)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         section = SECTION_IDS.get(event.button.id)

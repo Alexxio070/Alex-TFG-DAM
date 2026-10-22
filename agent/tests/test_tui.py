@@ -1,8 +1,9 @@
 """Comprueba que la TUI monta y que se puede navegar por sus secciones."""
 
-from textual.widgets import ContentSwitcher
+from textual.widgets import ContentSwitcher, Static
 
 from companion.tui.app import CompanionApp
+from companion.tui.screens.main_screen import BANNER_FALLBACK, BANNER_MIN_WIDTH
 
 MAIN_BUTTONS = ("btn-pairing", "btn-history", "btn-database", "btn-notes")
 SECTIONS = ("pairing", "history", "database", "notes")
@@ -11,6 +12,7 @@ PAIRING_TABS = ("tab-device", "tab-security", "tab-service")
 # Tamaño amplio: con el por defecto de run_test() (80x24) el banner y los
 # marcos no caben y los clics no llegan a los widgets de más abajo.
 SIZE = (120, 40)
+NARROW_SIZE = (BANNER_MIN_WIDTH - 1, 24)
 
 
 async def test_mounts_with_empty_data_area():
@@ -60,3 +62,25 @@ async def test_pairing_subtabs_switch():
             await pilot.pause()
             assert switcher.current == tab
             assert app.screen.query_one(f"#{tab_id}").variant == "primary"
+
+
+async def test_banner_falls_back_to_plain_text_when_narrow():
+    app = CompanionApp()
+    async with app.run_test(size=SIZE):
+        full_width = app.screen.query_one("#banner-text", Static).region.width
+        assert full_width > len(BANNER_FALLBACK)
+
+    app = CompanionApp()
+    async with app.run_test(size=NARROW_SIZE):
+        narrow_width = app.screen.query_one("#banner-text", Static).region.width
+        assert narrow_width == len(BANNER_FALLBACK)
+
+
+async def test_buttons_stay_clickable_when_narrow():
+    app = CompanionApp()
+    async with app.run_test(size=NARROW_SIZE) as pilot:
+        await pilot.click("#btn-pairing")
+        await pilot.pause()
+        await pilot.click("#tab-security")
+        await pilot.pause()
+        assert app.screen.query_one("#tab-security").variant == "primary"
