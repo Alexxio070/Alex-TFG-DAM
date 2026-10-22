@@ -91,7 +91,7 @@ Cada bloque sigue el mismo esquema:
 - Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
 
 ### 2.3 Métricas del sistema
-- **Necesidad:** leer CPU, RAM, swap, discos, temperaturas, carga y procesos.
+- **Necesidad:** leer CPU, RAM, swap, discos, temperaturas y carga.
 - **Tipo de tecnología:** librería de telemetría del sistema.
 - **Elección:** **psutil.** Unifica la lectura de `/proc` y `/sys` con una API sencilla y muy probada.
 - **Alternativas descartadas:** *leer `/proc` a mano:* más trabajo y más errores sin ventaja real.

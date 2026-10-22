@@ -19,12 +19,12 @@ La app nunca accede al PC directamente: siempre pide las cosas al agente, y es e
 - usar una terminal real del PC desde el móvil, como si se estuviera delante;
 - ver en vivo cómo va el PC (uso de CPU, temperatura, memoria, disco);
 - apagar, reiniciar, suspender o bloquear el PC en remoto;
-- ver y cerrar programas que se han quedado colgados;
+- ver qué procesos corren en el PC y cuánto consumen, buscarlos, congelarlos o cerrarlos;
 - guardar comandos frecuentes como botones de un toque (por ejemplo, «actualizar el sistema» o «hacer una copia de seguridad»);
 - dejar notas de texto o enlaces compartidos entre el móvil y el PC;
 - recibir en el móvil un aviso cuando pase algo en el PC (un proceso largo termina, la CPU se calienta demasiado…).
 
-**Por qué funciona desde cualquier sitio sin configurar nada en el router:** el móvil y el PC se encuentran a través de un servicio intermediario de terceros (no un servidor propio) que les ayuda a establecer una conexión directa y cifrada entre ellos, sin que el usuario tenga que abrir puertos ni instalar una VPN. En casa, en la misma red Wi-Fi, la conexión es directa.
+**Por qué funciona desde cualquier sitio sin configurar nada en el router:** el móvil y el PC se encuentran a través de los relés públicos del proyecto iroh (gratuitos y con límites de tráfico, no un servidor propio del proyecto), que les ayudan a establecer una conexión directa y cifrada entre ellos, sin que el usuario tenga que abrir puertos ni instalar una VPN. En casa, en la misma red Wi-Fi, la conexión es directa.
 
 **Por qué tiene sentido como proyecto:** ninguna herramienta existente cubre esto completo. Hay apps para mirar el PC solo cuando se está cerca (en la misma red), y hay apps de terminal remota que exigen abrir el PC a Internet a mano. Esta aplicación junta terminal, monitorización, gestión del PC y avisos en una sola app que funciona igual estés donde estés, sin que el usuario tenga que configurar redes.
 
@@ -34,23 +34,29 @@ La app nunca accede al PC directamente: siempre pide las cosas al agente, y es e
 
 ### Primera configuración y emparejamiento
 
-Antes de poder usar la app, hay que emparejar el móvil con el PC una vez. Al instalar el agente, este abre en el propio PC una pantalla de texto con botones (sin necesidad de ratón) donde se pulsa "configuración inicial". Esa pantalla muestra un **código QR** en la propia terminal. Se abre la app en el móvil, se escanea ese código con la cámara, y con eso el móvil ya sabe cómo encontrar a ese PC y confía en él. A continuación se crea un usuario y una contraseña para la app, y a partir de ahí los dos dispositivos quedan emparejados: ese PC solo hablará con ese móvil (y con los que se emparejen después de la misma forma).
+Antes de poder usar la app, hay que emparejar el móvil con el PC una vez. En el PC se escribe `companion` y se abre una pantalla de texto con botones, donde se pulsa "configuración inicial". Esa pantalla muestra un **código QR** en la propia terminal. Se abre la app en el móvil, se escanea ese código con la cámara, y con eso el móvil ya sabe cómo encontrar a ese PC y confía en él. A continuación se crea un usuario y una contraseña para la app, y a partir de ahí los dos dispositivos quedan emparejados: el PC se empareja con un único móvil.
 
 ### Iniciar sesión y seguridad
 
-Una vez emparejados, cada vez que se usa la app hay que iniciar sesión con el usuario y la contraseña creados al emparejar. El PC guarda la contraseña de forma que ni él mismo puede leerla directamente (solo puede comprobar si una contraseña es correcta, no recuperarla). Si alguien intenta adivinar la contraseña a base de probar, el sistema le obliga a esperar cada vez más entre intentos. Y en cualquier momento se puede, desde el propio PC, cerrar la sesión de todos los móviles a la vez, por ejemplo si se pierde el teléfono.
+Una vez emparejados, cada vez que se usa la app hay que iniciar sesión con el usuario y la contraseña creados al emparejar. El PC guarda la contraseña de forma que ni él mismo puede leerla directamente (solo puede comprobar si una contraseña es correcta, no recuperarla). Si alguien intenta adivinar la contraseña a base de probar, el sistema le obliga a esperar cada vez más entre intentos. Y en cualquier momento se puede, desde el propio PC, cerrar todas las sesiones abiertas, por ejemplo si se pierde el teléfono.
 
 ### Terminal remota
 
-Es la función principal del proyecto: usar la shell real del PC (la misma terminal que se usaría sentado delante, con los mismos programas, los mismos atajos y la misma configuración personal) pero escribiendo desde el móvil. La sesión de terminal vive en el PC, no en la conexión del móvil: si se cierra la app, se pierde la cobertura o se guarda el móvil en el bolsillo, lo que se estaba ejecutando sigue corriendo en el PC, y al volver a abrir la app se recupera tal y como estaba, con toda la salida que se haya generado mientras tanto. Esto permite, por ejemplo, lanzar una actualización larga del sistema desde el móvil y no preocuparse de mantener la pantalla encendida.
+Es la función principal del proyecto: usar la shell real del PC (la misma terminal que se usaría sentado delante, con sus alias, variables y prompt) pero escribiendo desde el móvil. La sesión de terminal vive en el PC, no en la conexión del móvil: si se cierra la app, se pierde la cobertura o se guarda el móvil en el bolsillo, lo que se estaba ejecutando sigue corriendo en el PC, y al volver a abrir la app se recupera tal y como estaba, con toda la salida que se haya generado mientras tanto. Esto permite, por ejemplo, lanzar una actualización larga del sistema desde el móvil y no preocuparse de mantener la pantalla encendida.
 
 ### Monitorización en vivo
 
 La app muestra en tiempo real cómo está el PC: cuánto está trabajando el procesador, a qué temperatura está, cuánta memoria y espacio en disco queda libre. Los datos se actualizan cada segundo y se ven como gráficas, no solo como números, para poder ver de un vistazo si algo se está disparando.
 
-### Energía y procesos
+### Procesos
 
-Desde el móvil se puede apagar, reiniciar, suspender o bloquear el PC, y también ver qué programas están abiertos y cuáles consumen más recursos, para poder cerrarlos si algo se ha quedado colgado. Todas las acciones que podrían causar una pérdida de trabajo (apagar, matar un programa) piden confirmación antes de ejecutarse.
+Una sección de la app muestra todos los procesos que corren en el PC y cuánto consumen (procesador y memoria). Se pueden buscar por nombre o por identificador (PID) y actuar sobre ellos: cerrarlos (primero de forma ordenada y, si no responden, a la fuerza) o congelarlos para que dejen de consumir sin cerrarlos, y reanudarlos después. Ambas acciones piden confirmación. Solo se puede actuar sobre los procesos del propio usuario, no sobre los del sistema.
+
+### Energía
+
+*Pendiente de decidir si el control de energía (apagar, reiniciar, suspender, bloquear) entra en el proyecto (`07` §3.8).*
+
+Desde el móvil se puede apagar, reiniciar, suspender o bloquear el PC. Estas acciones piden confirmación antes de ejecutarse.
 
 ### Acciones rápidas
 
@@ -62,11 +68,11 @@ Un sitio común entre el móvil y el PC donde dejar notas de texto o enlaces, pa
 
 ### Notificaciones y reglas de alerta
 
-El PC puede avisar al móvil de dos formas: a mano, mandando una notificación desde cualquier script o programa (por ejemplo, al terminar una compilación larga), o automáticamente, mediante reglas que el propio usuario define («avísame si la CPU pasa del 90 % durante más de 2 minutos»). Los avisos llegan como notificaciones normales de Android, sin depender de ningún servicio de terceros para el envío.
+El PC puede avisar al móvil de dos formas: a mano, mandando una notificación desde cualquier script o programa (por ejemplo, al terminar una compilación larga), o automáticamente, mediante reglas que el propio usuario define («avísame si la CPU pasa del 90 % durante más de 2 minutos»). Los avisos llegan como notificaciones normales de Android; no se usa Firebase.
 
 ### Cómo se guardan los datos
 
-Todo lo que el sistema necesita recordar (usuarios, acciones guardadas, su historial, reglas de alerta, notas, notificaciones) se guarda en una base de datos sencilla dentro del propio PC, no en ningún servidor externo. Nada de esto sale de los dos dispositivos del usuario salvo lo imprescindible para que se vean entre ellos.
+Todo lo que el sistema necesita recordar (usuarios, acciones guardadas, su historial, reglas de alerta, notas, notificaciones) se guarda en una base de datos SQLite dentro del propio PC, no en ningún servidor externo.
 
 ### Cómo se conectan el móvil y el PC
 
@@ -89,7 +95,7 @@ Según los requisitos mínimos del proyecto final de DAM (apartados generales y 
 | Validaciones en formularios | Validaciones en el login, en el formulario de acciones rápidas y en los ajustes |
 | Gestión de usuarios y autenticación (registro/login) | Emparejamiento por QR, login con token de sesión, contraseña con Argon2 |
 | CRUD de al menos dos entidades relacionadas | Grupos y acciones rápidas (fase 7); reforzado con reglas de alerta/notificaciones y notas |
-| Lógica de negocio (búsquedas, cálculos, filtrado) | Reglas de alerta por umbral, estadísticas de ejecuciones, filtros y orden de procesos |
+| Lógica de negocio (búsquedas, cálculos, filtrado) | Reglas de alerta por umbral, estadísticas y filtros del historial de ejecuciones |
 | Gestión de errores y feedback al usuario | Avisos de conexión con reintento, confirmaciones antes de acciones destructivas, mensajes de error claros |
 | Base de datos con mínimo 3-4 tablas y relaciones | 9 tablas relacionadas en `schema.sql` |
 | Acceso a datos mediante clases o funciones estructuradas | Patrón repository, una clase por tabla, sin ORM |
