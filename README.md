@@ -13,7 +13,7 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 
 | Carpeta | Qué es | Stack |
 |---|---|---|
-| [`App-movil/`](App-movil/) | Cliente Android | Flutter/Dart, MVVM + `provider`, `xterm.dart` para la terminal |
+| `App-movil/` | Cliente Android | Flutter/Dart, MVVM + `provider`, `xterm.dart` para la terminal |
 | [`agent/`](agent/) | Agente del PC | Python 3.11+, FastAPI + Uvicorn, Textual (TUI `companion`), `psutil` |
 
 ## Estructura de carpetas
@@ -47,7 +47,7 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 
 ## Estado actual
 
-El estado por fase, con lo hecho y lo pendiente, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
+El estado por fase, con lo hecho y lo pendiente, está en `doc/documentos-generales-del-proyecto/04-plan-de-fases.md`.
 
 ## Manual de instalación
 
@@ -88,10 +88,10 @@ Pruebas:
 
 Toda la documentación de diseño está en [`doc/`](doc/):
 
-- [`doc/documentos-generales-del-proyecto/01-memoria-tecnica.md`](doc/documentos-generales-del-proyecto/01-memoria-tecnica.md) — diseño completo del sistema.
-- [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md) — plan de fases y calendario.
-- [`doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`](doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md) — decisiones tomadas y pendientes.
-- [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
+- `doc/documentos-generales-del-proyecto/01-memoria-tecnica.md` — diseño completo del sistema.
+- `doc/documentos-generales-del-proyecto/04-plan-de-fases.md` — plan de fases y calendario.
+- `doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md` — decisiones tomadas y pendientes.
+- `doc/ui/` — especificación de la interfaz de la app.
 - [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
 
 Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop`; las etiquetas de versión solo para publicar el APK en las releases.
