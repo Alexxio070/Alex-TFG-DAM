@@ -106,11 +106,8 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 ### ✅ Qué es la beta v0.1 (mediados de diciembre – Navidad)
 > Una app Android con la interfaz definitiva (lo que aún no está hecho muestra *placeholders*) que se conecta al PC de casa desde cualquier red a través de iroh y muestra las métricas en vivo con gráficas. Sin login: el agente solo expone métricas de solo lectura y se arranca a mano.
 
-**Recortes posibles si vas con retraso, en este orden:**
-1. Gráficas (dejar solo cifras y completarlas para el hito de febrero).
-2. Prueba en red restrictiva (dejarla para enero).
 
-**Nunca se recorta:** la interfaz navegable y la conexión por iroh. Si iroh no funciona, se aplica el plan B de la fase 2.
+Solo queda pendiente la conexion por iroh
 
 La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase cubre cada uno: «Cobertura de los requisitos mínimos», al final).
 
