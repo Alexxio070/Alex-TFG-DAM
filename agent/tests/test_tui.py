@@ -2,8 +2,8 @@
 
 from textual.widgets import ContentSwitcher, Static
 
-from companion.tui.app import CompanionApp
-from companion.tui.screens.main_screen import BANNER_FALLBACK, BANNER_MIN_WIDTH
+from sysmote.tui.app import SysmoteApp
+from sysmote.tui.screens.main_screen import BANNER_FALLBACK, BANNER_MIN_WIDTH
 
 MAIN_BUTTONS = ("btn-pairing", "btn-history", "btn-database", "btn-notes")
 SECTIONS = ("pairing", "history", "database", "notes")
@@ -16,7 +16,7 @@ NARROW_SIZE = (BANNER_MIN_WIDTH - 1, 24)
 
 
 async def test_mounts_with_empty_data_area():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=SIZE):
         switcher = app.screen.query_one("#sections", ContentSwitcher)
         assert switcher.current is None
@@ -25,7 +25,7 @@ async def test_mounts_with_empty_data_area():
 
 
 async def test_main_buttons_switch_section():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=SIZE) as pilot:
         switcher = app.screen.query_one("#sections", ContentSwitcher)
         for button_id, section in zip(MAIN_BUTTONS, SECTIONS):
@@ -35,7 +35,7 @@ async def test_main_buttons_switch_section():
 
 
 async def test_active_button_is_highlighted():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=SIZE) as pilot:
         await pilot.click("#btn-history")
         await pilot.pause()
@@ -49,7 +49,7 @@ async def test_active_button_is_highlighted():
 
 
 async def test_pairing_subtabs_switch():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=SIZE) as pilot:
         await pilot.click("#btn-pairing")
         await pilot.pause()
@@ -65,19 +65,19 @@ async def test_pairing_subtabs_switch():
 
 
 async def test_banner_falls_back_to_plain_text_when_narrow():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=SIZE):
         full_width = app.screen.query_one("#banner-text", Static).region.width
         assert full_width > len(BANNER_FALLBACK)
 
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=NARROW_SIZE):
         narrow_width = app.screen.query_one("#banner-text", Static).region.width
         assert narrow_width == len(BANNER_FALLBACK)
 
 
 async def test_buttons_stay_clickable_when_narrow():
-    app = CompanionApp()
+    app = SysmoteApp()
     async with app.run_test(size=NARROW_SIZE) as pilot:
         await pilot.click("#btn-pairing")
         await pilot.pause()

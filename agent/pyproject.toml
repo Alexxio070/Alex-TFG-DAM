@@ -1,7 +1,7 @@
 [project]
-name = "linux-system-companion"
+name = "sysmote"
 version = "0.1.0"
-description = "Agente Python del Linux System Companion: API del PC y TUI companion"
+description = "Agente Python del Sysmote: API del PC y TUI sysmote"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.146",
@@ -16,14 +16,14 @@ dependencies = [
 dev = ["pytest>=9.1", "pytest-asyncio>=1.4", "httpx2>=2.14"]
 
 [project.scripts]
-companion = "companion.tui.app:main"
+sysmote = "sysmote.tui.app:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["companion*"]
+include = ["sysmote*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

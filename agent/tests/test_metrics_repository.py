@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from companion.repositories import metrics_repository as repo
+from sysmote.repositories import metrics_repository as repo
 
 
 def partition(device, mount, fstype="ext4"):

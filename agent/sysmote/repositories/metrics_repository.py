@@ -1,6 +1,6 @@
 import psutil
 
-from companion.models.metrics import Partition
+from sysmote.models.metrics import Partition
 
 GB = 1000**3
 

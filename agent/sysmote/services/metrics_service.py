@@ -1,5 +1,5 @@
-from companion.models.metrics import Metrics
-from companion.repositories import metrics_repository
+from sysmote.models.metrics import Metrics
+from sysmote.repositories import metrics_repository
 
 
 def get_metrics() -> Metrics:

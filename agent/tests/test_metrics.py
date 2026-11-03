@@ -2,7 +2,7 @@
 
 from fastapi.testclient import TestClient
 
-from companion.main import app
+from sysmote.main import app
 
 client = TestClient(app)
 

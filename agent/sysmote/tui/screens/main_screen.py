@@ -5,31 +5,22 @@ from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Static
 
-from companion.tui.widgets.database_section import DatabaseSection
-from companion.tui.widgets.history_section import HistorySection
-from companion.tui.widgets.notes_section import NotesSection
-from companion.tui.widgets.pairing_section import PairingSection
+from sysmote.tui.widgets.database_section import DatabaseSection
+from sysmote.tui.widgets.history_section import HistorySection
+from sysmote.tui.widgets.notes_section import NotesSection
+from sysmote.tui.widgets.pairing_section import PairingSection
 
-LINUX_ART = [
-    "██╗     ██╗███╗   ██╗██╗   ██╗██╗  ██╗",
-    "██║     ██║████╗  ██║██║   ██║╚██╗██╔╝",
-    "██║     ██║██╔██╗ ██║██║   ██║ ╚███╔╝ ",
-    "██║     ██║██║╚██╗██║██║   ██║ ██╔██╗ ",
-    "███████╗██║██║ ╚████║╚██████╔╝██╔╝ ██╗",
-    "╚══════╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝",
+BANNER_ART = [
+    "███████╗██╗   ██╗███████╗███╗   ███╗ ██████╗ ████████╗███████╗",
+    "██╔════╝╚██╗ ██╔╝██╔════╝████╗ ████║██╔═══██╗╚══██╔══╝██╔════╝",
+    "███████╗ ╚████╔╝ ███████╗██╔████╔██║██║   ██║   ██║   █████╗  ",
+    "╚════██║  ╚██╔╝  ╚════██║██║╚██╔╝██║██║   ██║   ██║   ██╔══╝  ",
+    "███████║   ██║   ███████║██║ ╚═╝ ██║╚██████╔╝   ██║   ███████╗",
+    "╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚══════╝",
 ]
-SYSTEM_ART = [
-    "███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗",
-    "██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║",
-    "███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║",
-    "╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║",
-    "███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║",
-    "╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝",
-]
-_LINUX_WIDTH = max(len(line) for line in LINUX_ART)
-BANNER = "\n".join(f"{left.ljust(_LINUX_WIDTH)}  {right}" for left, right in zip(LINUX_ART, SYSTEM_ART))
+BANNER = "\n".join(BANNER_ART)
 BANNER_MIN_WIDTH = max(len(line) for line in BANNER.split("\n")) + 4
-BANNER_FALLBACK = "LINUX SYSTEM COMPANION"
+BANNER_FALLBACK = "SYSMOTE"
 
 SECTION_IDS = {
     "btn-pairing": "pairing",

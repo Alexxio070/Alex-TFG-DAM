@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from companion.models.metrics import Metrics
-from companion.services import metrics_service
+from sysmote.models.metrics import Metrics
+from sysmote.services import metrics_service
 
 router = APIRouter()
 
