@@ -118,7 +118,7 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 2. **Historial sin duplicados:** recuperar lo acumulado y engancharse en vivo sin repetir líneas.
 3. **Abrir la ventana** en kitty y en Konsole, con la sesión gráfica de KDE Plasma, y completar la tabla de la sección 7.
 4. **Versión mínima de tmux** necesaria para las opciones usadas.
-5. **Supervivencia al reinicio del agente:** comprobar que un tmux lanzado fuera del grupo del servicio sigue vivo cuando systemd reinicia `companion.service`, y que el agente se vuelve a enganchar.
+5. **Supervivencia al reinicio del agente:** comprobar que un tmux lanzado fuera del grupo del servicio sigue vivo cuando systemd reinicia `sysmote.service`, y que el agente se vuelve a enganchar.
 
 ### Decisiones abiertas
 
@@ -173,7 +173,7 @@ límite, indicador de actividad, etc.) están en `doc/ui/interfaz-app.md`
 Para **eliminar la dependencia de tmux**, el agente podría sustituirlo por un gestor de sesiones propio:
 
 - PTY propio del agente para cada sesión y buffer circular de salida (en lugar de `capture-pane`);
-- un cliente del propio agente (`companion attach <id>`) que ejecuta la ventana del PC;
+- un cliente del propio agente (`sysmote attach <id>`) que ejecuta la ventana del PC;
 - reenganche por identificador de sesión.
 
 **Qué se ganaría:** ninguna dependencia nueva en el PC y control total del comportamiento.
