@@ -1,4 +1,4 @@
-# Linux System Companion (TFG)
+# Sysmote (TFG)
 
 TFG de DAM de alex: app Android + agente Python en el PC Linux del usuario para administrar ese PC en remoto desde el móvil (LAN o WAN), sin configurar router ni VPN.
 
@@ -43,7 +43,7 @@ Aplica a cualquier sesión de Claude/Claude Code que trabaje en este repo:
 - SQLite con patrón repository, sin ORM (schema.sql)
 - dbus-fast para integración con D-Bus/systemd-logind
 - psutil para métricas del sistema
-- Textual para la TUI `companion`; Typer solo para `companion serve`/`companion notify` (fases posteriores); qrcode para el QR de la TUI
+- Textual para la TUI `sysmote`; Typer solo para `sysmote serve`/`sysmote notify` (fases posteriores); qrcode para el QR de la TUI
 - tmux para las sesiones de terminal (fase 4)
 - iroh para el acceso P2P en WAN (NAT traversal, sin Firebase ni VPN)
 

@@ -133,7 +133,7 @@ Ejemplo con un repositorio ya real, Métricas:
 - Terminal con `xterm.dart` (ver `XTERM_DART.md`); el shell simulado se sustituirá por el WebSocket del agente. Varias pestañas, cada una con su propio `TerminalViewModel`.
 - Notas con tarjetas de texto seleccionable y enlaces pulsables, y formulario aparte (ver `historico/ui-v2`).
 - Los ViewModels de las secciones se registran en `app_providers.dart`, así que su estado se conserva al cambiar de sección.
-- Identificador de la app: `io.github.alexxio070.companion`; nombre visible: «Linux System Companion».
+- Identificador de la app: `io.github.alexxio070.sysmote`; nombre visible: «Sysmote».
 
 ## Orden de implementación
 
