@@ -1,4 +1,4 @@
-import 'package:tfg/data/repositories/settings_repository.dart';
+import 'package:sysmote/data/repositories/settings_repository.dart';
 
 class InMemorySettingsRepository implements SettingsRepository {
   SettingsData? _data;

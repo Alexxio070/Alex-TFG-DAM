@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/models/metrics.dart';
-import 'package:tfg/data/repositories/metrics_repository.dart';
-import 'package:tfg/features/metrics/metrics_viewmodel.dart';
+import 'package:sysmote/data/models/metrics.dart';
+import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/features/metrics/metrics_viewmodel.dart';
 
 class _FlakyMetricsRepository implements MetricsRepository {
   bool shouldFail = true;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:tfg/app.dart';
-import 'package:tfg/core/theme/app_tokens.dart';
-import 'package:tfg/features/settings/settings_viewmodel.dart';
+import 'package:sysmote/app.dart';
+import 'package:sysmote/core/theme/app_tokens.dart';
+import 'package:sysmote/features/settings/settings_viewmodel.dart';
 
 import 'helpers/app_harness.dart';
 
@@ -17,7 +17,7 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pump();
     settings = Provider.of<SettingsViewModel>(
-      tester.element(find.byType(TfgApp)),
+      tester.element(find.byType(SysmoteApp)),
       listen: false,
     );
     await tester.tap(find.bySemanticsLabel('Abrir menú'));

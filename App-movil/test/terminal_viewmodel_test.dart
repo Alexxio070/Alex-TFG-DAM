@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/repositories/terminal_repository.dart';
-import 'package:tfg/features/terminal/terminal_viewmodel.dart';
+import 'package:sysmote/data/repositories/terminal_repository.dart';
+import 'package:sysmote/features/terminal/terminal_viewmodel.dart';
 
 class _RecordingTerminalRepository implements TerminalRepository {
   final sent = <String>[];

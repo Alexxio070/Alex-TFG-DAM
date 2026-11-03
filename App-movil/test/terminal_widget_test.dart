@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:tfg/app.dart';
-import 'package:tfg/features/terminal/terminal_tabs_viewmodel.dart';
-import 'package:tfg/features/terminal/terminal_viewmodel.dart';
+import 'package:sysmote/app.dart';
+import 'package:sysmote/features/terminal/terminal_tabs_viewmodel.dart';
+import 'package:sysmote/features/terminal/terminal_viewmodel.dart';
 import 'package:xterm/xterm.dart';
 
 import 'helpers/app_harness.dart';
 
 void main() {
   TerminalTabsViewModel tabsOf(WidgetTester tester) => Provider.of<TerminalTabsViewModel>(
-        tester.element(find.byType(TfgApp)),
+        tester.element(find.byType(SysmoteApp)),
         listen: false,
       );
 

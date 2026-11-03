@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/repositories/settings_repository.dart';
-import 'package:tfg/features/settings/settings_viewmodel.dart';
+import 'package:sysmote/data/repositories/settings_repository.dart';
+import 'package:sysmote/features/settings/settings_viewmodel.dart';
 
 class _CorruptSettingsRepository implements SettingsRepository {
   @override

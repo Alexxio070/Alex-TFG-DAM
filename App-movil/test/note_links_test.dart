@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/models/note_links.dart';
+import 'package:sysmote/data/models/note_links.dart';
 
 void main() {
   test('detecta una dirección sola', () {

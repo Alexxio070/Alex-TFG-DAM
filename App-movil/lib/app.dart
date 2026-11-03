@@ -6,15 +6,15 @@ import 'core/theme/app_tokens.dart';
 import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_view.dart';
 
-class TfgApp extends StatelessWidget {
-  const TfgApp({super.key});
+class SysmoteApp extends StatelessWidget {
+  const SysmoteApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsViewModel>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Linux System Companion',
+      title: 'Sysmote',
       theme: buildTheme(dark: settings.dark, accent: settings.accent),
       home: settings.ready ? const ShellView() : const _LoadingPlaceholder(),
     );
@@ -36,7 +36,7 @@ class _LoadingPlaceholder extends StatelessWidget {
           children: [
             CircularProgressIndicator(color: t.accent),
             Text(
-              'Linux System Companion',
+              'Sysmote',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.muted2),
             ),
           ],

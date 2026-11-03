@@ -1,5 +1,5 @@
-name: tfg
-description: "Cliente Flutter de Linux System Companion: administra en remoto el PC Linux del usuario desde el móvil."
+name: sysmote
+description: "Cliente Flutter de Sysmote: administra en remoto el PC Linux del usuario desde el móvil."
 publish_to: 'none'
 version: 1.0.0+1
 

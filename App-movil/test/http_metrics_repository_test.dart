@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:tfg/data/http/http_metrics_repository.dart';
-import 'package:tfg/data/repositories/metrics_repository.dart';
+import 'package:sysmote/data/http/http_metrics_repository.dart';
+import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 const _body = '''
 {
