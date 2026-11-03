@@ -53,6 +53,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 21/10/2026 | Planificación | Multi-dispositivo: sale de la documentación general y queda solo como idea futura | Aplicado en la documentación |
 | 21/10/2026 | Interfaz | Procesos: se recupera como sección propia de la app, con búsqueda y congelar | Aplicado en la documentación |
 | 22/10/2026 | Repositorio | Etiquetas de versión permitidas solo para las releases del APK | Aplicado en la documentación |
+| 03/11/2026 | Repositorio | El proyecto pasa a llamarse Sysmote (app, agente, comando, paquete y documentación) | Aplicado en la documentación; el código está en las ramas feature |
 
 ---
 
@@ -456,3 +457,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** una release de GitHub necesita una etiqueta; así se elimina la contradicción sin cambiar el plan.
 - **Afecta a:** `CLAUDE.md` y `README.md`.
 - **Estado:** aplicado en la documentación.
+
+### 03/11/2026 — El proyecto pasa a llamarse Sysmote
+
+- **Qué era:** el proyecto se llamaba «Linux System Companion»; el comando y el paquete del agente, `companion`; el paquete Dart, `tfg` (clase `TfgApp`); el id de Android, `io.github.alexxio070.companion`.
+- **Qué es ahora:** el nombre visible es «Sysmote». En minúsculas, `sysmote` es el comando de la TUI, el paquete Python (`agent/sysmote/`), el paquete Dart y el id de Android (`io.github.alexxio070.sysmote`). Las rutas del PC documentadas pasan a `~/.config/sysmote`, `~/.local/share/sysmote/sysmote.db`, `sysmote.service`, etc. La clase de la TUI es `SysmoteApp`, igual que la de la app. El banner de la TUI dibuja «SYSMOTE».
+- **Por qué:** decisión del autor.
+- **Afecta a:** `agent/`, `App-movil/`, `README.md`, `CLAUDE.md`, `01`–`07`, `09`, `doc/agente/` y `doc/ui/`. Las entradas anteriores de este historial conservan el nombre antiguo, porque describen lo que se hizo en su fecha. El repositorio de GitHub conserva de momento su nombre (`Alex-TFG-DAM`).
+- **Estado:** aplicado en la documentación y en `feature/agent` y `feature/interfaz`; con el id de Android nuevo, el móvil trata la app como una distinta a la instalada antes.

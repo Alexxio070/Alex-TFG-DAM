@@ -22,7 +22,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 | **Espacio compartido** (notas de texto y enlaces) | En el proyecto | `01` §3 Módulo F, §6.2 · `03` §2 · `04` fase 9 · `07` §3.5 · [interfaz-app](../ui/interfaz-app.md) §6 · [ui-v2 (histórico)](../ui/historico/ui-v2/DESIGN.md) · [tui](../agente/tui.md) «Notas» · `06` §2 |
 | ↳ Imágenes en las notas | Idea futura (aún pensándolo) | `06` §2 · `07` §3.8 |
 | **Notificaciones y reglas de alerta** | En el proyecto | `01` §3 Módulo G · `02` §4.1 · `03` §2 · `04` fase 8 · `07` §3.4 · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) · `06` §7 (alertas más completas) |
-| ↳ `companion notify` | En el proyecto | `01` §3 Módulo G, §8.1 · `02` §2.6 |
+| ↳ `sysmote notify` | En el proyecto | `01` §3 Módulo G, §8.1 · `02` §2.6 |
 | ↳ Servicio en primer plano de Android | En el proyecto (tipo por decidir) | `01` §3 Módulo G · `02` §4.1 · `04` fase 8 · `07` §3.8 |
 | **Descubrimiento en red local** (mDNS) | En el proyecto | `01` §3 Módulo H, §10 · `02` §3.2 · `04` fase 9 y recortes |
 | **Acceso remoto P2P** (iroh) | En el proyecto | `01` §4.4, §10 · `02` §3.3, §4.2 · `03` §2 «Cómo se conectan» · `04` fase 2 · `07` §3.1, §3.8 · `06` §6 (relé propio) |
@@ -30,7 +30,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 | **Login, sesiones y seguridad** (TLS, Argon2, tokens, límite de intentos) | En el proyecto | `01` §5.2, §5.3 · `02` §5 · `03` §2 «Iniciar sesión» · `04` fase 3 · `07` §3.2 · `06` §6 (2FA, biométrico) |
 | **Ajustes de la app** | En el proyecto | `01` §3 «Navegación y pantallas» · [interfaz-app](../ui/interfaz-app.md) §7 |
 | **Exportación de datos y estructura de la BD** | En el proyecto | `01` §6.3 · `04` fase 7 · `07` §3.7 · [tui](../agente/tui.md) «Base de datos» |
-| **TUI `companion`** (Emparejamiento, Historial, Base de datos, Notas) | En el proyecto | `01` §8.1 · `02` §2.6 · `04` fase 1 · `07` §3.1 · [tui](../agente/tui.md) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
+| **TUI `sysmote`** (Emparejamiento, Historial, Base de datos, Notas) | En el proyecto | `01` §8.1 · `02` §2.6 · `04` fase 1 · `07` §3.1 · [tui](../agente/tui.md) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
 
 ## 2. Partes técnicas
 

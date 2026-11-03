@@ -15,11 +15,11 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 
 ## 2. La idea central (lo más importante)
 
-**Linux System Companion es una app para administrar mi PC Linux desde el móvil cuando NO estoy delante de él**, desde casa o desde cualquier sitio.
+**Sysmote es una app para administrar mi PC Linux desde el móvil cuando NO estoy delante de él**, desde casa o desde cualquier sitio.
 
 **Criterio de alcance:** si una función solo tiene sentido estando delante o cerca del PC, **queda fuera del TFG**. Este criterio decidió qué se mantenía y qué se descartaba.
 
-**Frase para la defensa:** *KDE Connect es una herramienta para cuando estás cerca del PC; Linux System Companion es para cuando no lo estás.*
+**Frase para la defensa:** *KDE Connect es una herramienta para cuando estás cerca del PC; Sysmote es para cuando no lo estás.*
 
 **Requisito de experiencia de usuario:**
 - En el móvil, **solo descargar la app**; nada de instalar VPNs ni otras apps.
@@ -45,11 +45,11 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
 | Instalación del agente | **pipx** | Usa el Python de la distro; evita atar el agente a la glibc con la que se compila, aunque iroh exige glibc ≥ 2.28 | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
 | Servicio | systemd de usuario con `default.target` + linger opcional | Al quitar lo gráfico, no hace falta la sesión gráfica | `graphical-session.target` |
-| Herramienta del PC | **TUI con botones (Textual)** al escribir `companion` (12/10/2026, librería confirmada el 15/10/2026); **Typer** solo para `companion serve` y `companion notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts; Textual es la opción mejor soportada para botones/formularios frente a las alternativas | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid (más bajo nivel que Textual), prompt_toolkit (pensado para línea de comandos/REPL, no pantallas con varios controles), py_cui (sin publicaciones desde 2022, abandonado) |
+| Herramienta del PC | **TUI con botones (Textual)** al escribir `sysmote` (12/10/2026, librería confirmada el 15/10/2026); **Typer** solo para `sysmote serve` y `sysmote notify`; QR con `qrcode` | Botones en lugar de comandos que recordar; `serve` y `notify` los lanzan systemd y los scripts; Textual es la opción mejor soportada para botones/formularios frente a las alternativas | Solo CLI con Typer (diseño anterior), curses (bajo nivel), urwid (más bajo nivel que Textual), prompt_toolkit (pensado para línea de comandos/REPL, no pantallas con varios controles), py_cui (sin publicaciones desde 2022, abandonado) |
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
-- **TUI en lugar de CLI (12/10/2026):** al escribir `companion` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones).
+- **TUI en lugar de CLI (12/10/2026):** al escribir `sysmote` se abre una TUI con botones para todo (configuración inicial y QR de registro, QR de emparejamiento, servicio, estado, contraseña, cerrar sesiones, notas y exportaciones).
 - **Construcción de la TUI adelantada a la fase 1 (15/10/2026, estructura revisada el 15/10/2026):** igual que la interfaz de la app, la TUI se construye entera y de una vez. Estructura fija: banner, área de datos vacía por defecto y cuatro botones — **Emparejamiento** (con tres subpestañas: Dispositivo —QR y datos del dispositivo—, Seguridad —fase 3: configuración inicial, contraseña, cerrar sesiones— y Servicio —fase 5: instalar, quitar, estado—), **Historial** (acciones rápidas de la fase 7 y comandos de terminal desde un archivo de log aparte), **Base de datos** (navegador en vivo de las tablas + exportaciones de la fase 7) y **Notas** (CRUD de notas de la fase 9). Las fases posteriores no añaden botones a la barra: activan contenido dentro de estas cuatro secciones.
 - **Historial de comandos de terminal (15/10/2026):** archivo de log en una carpeta dentro de `~/.cache` (`ISO-8601<TAB>comando`), sin límite de tamaño por ahora; no se duplica en SQLite. Solo registra lo que la app envía por el WebSocket de la terminal al pulsar Enter — el agente no ve lo escrito directamente en la ventana del PC (eso exigiría integración de shell con OSC 133, descartada del TFG, ver `06-ideas-de-futuro.md` §5). La pantalla Historial combina este log con la tabla `ejecucion` solo al mostrarlos.
 - **Registro por QR (12/10/2026):** la TUI muestra un QR con la dirección, la huella, el identificador iroh y un código de registro de un solo uso con caducidad corta. La app lo escanea, muestra "Emparejado, se necesita crear autenticación" y abre un diálogo de usuario y contraseña. El modo registro se cierra tras la primera cuenta. **Va en la fase 9 (12/10/2026);** hasta entonces el usuario se crea desde la TUI.
@@ -68,7 +68,7 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 ### 3.4 Notificaciones (dentro del TFG)
 - Quiero recibir en el móvil avisos del PC, por ejemplo cuando **Claude Code termine de trabajar**, cuando un proceso de terminal termine o arranque bien, o si hay **CPU o RAM elevadas**.
 - Diseño:
-  - `companion notify "mensaje"` por socket Unix (sirve para scripts y *hooks* de Claude Code);
+  - `sysmote notify "mensaje"` por socket Unix (sirve para scripts y *hooks* de Claude Code);
   - reglas de alerta por umbral;
   - servicio en primer plano en Android que reutiliza el del túnel iroh.
 - **Sin Firebase.** Funciona también en LAN, sin iroh.
@@ -91,8 +91,8 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 
 ### 3.7 Exportar la base de datos (12/10/2026)
 - Dos botones en la TUI (fase 7), con los archivos en el escritorio (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`; si no existe, la carpeta personal) y la fecha y la hora en el nombre.
-- **Datos:** un JSON `companion-datos-AAAAMMDD-HHMM.json` con una sección por tabla, sin `sesion`, `intento_login` ni el hash de la contraseña. Descartados CSV (un archivo por tabla, pierde tipos) y SQL con `INSERT` (mezcla datos y estructura).
-- **Estructura:** carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, leídos de `sqlite_schema`. Los *joins* no se guardan en la BD: las relaciones son las claves foráneas de `tablas.sql`. El diseño no tiene vistas ni triggers, así que esos archivos llevan un comentario que lo explica.
+- **Datos:** un JSON `sysmote-datos-AAAAMMDD-HHMM.json` con una sección por tabla, sin `sesion`, `intento_login` ni el hash de la contraseña. Descartados CSV (un archivo por tabla, pierde tipos) y SQL con `INSERT` (mezcla datos y estructura).
+- **Estructura:** carpeta `sysmote-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, leídos de `sqlite_schema`. Los *joins* no se guardan en la BD: las relaciones son las claves foráneas de `tablas.sql`. El diseño no tiene vistas ni triggers, así que esos archivos llevan un comentario que lo explica.
 
 ### 3.8 Decisiones abiertas
 

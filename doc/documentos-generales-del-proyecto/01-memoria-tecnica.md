@@ -1,6 +1,6 @@
-# Memoria Técnica: Linux System Companion
+# Memoria Técnica: Sysmote
 
-**Título del proyecto:** Linux System Companion — Administración remota de tu PC Linux desde el móvil
+**Título del proyecto:** Sysmote — Administración remota de tu PC Linux desde el móvil
 **Tipo:** Proyecto final de DAM — aplicación móvil Android con backend propio
 **Plataformas:** Android (cliente) — GNU/Linux con systemd (agente)
 **Entorno de referencia:** Android 10+ (probado en Android 15) · KDE Plasma 6 · systemd · Python 3.11+
@@ -10,7 +10,7 @@
 
 ## 1. Resumen
 
-Linux System Companion es una herramienta de código abierto para **administrar un PC con GNU/Linux desde el móvil cuando no estás delante de él**, tanto desde la red de casa como desde fuera (4G/5G u otra Wi-Fi), sin configurar el router ni instalar nada más en el móvil.
+Sysmote es una herramienta de código abierto para **administrar un PC con GNU/Linux desde el móvil cuando no estás delante de él**, tanto desde la red de casa como desde fuera (4G/5G u otra Wi-Fi), sin configurar el router ni instalar nada más en el móvil.
 
 El sistema tiene dos piezas: **una app Android** hecha con Flutter y **un agente en el PC** escrito en Python (FastAPI) que se ejecuta como servicio de usuario de systemd. Sus funciones (terminal remota, monitorización, procesos, energía, acciones rápidas, espacio compartido de notas y notificaciones) se detallan en la sección 3.
 
@@ -26,7 +26,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 
 **Valor diferencial:** una única app que combina terminal real, monitorización, procesos, energía, acciones rápidas, espacio compartido y avisos, y que funciona desde cualquier sitio con una configuración mínima.
 
-> KDE Connect es una herramienta para cuando estás cerca del PC; Linux System Companion es una herramienta para cuando no lo estás.
+> KDE Connect es una herramienta para cuando estás cerca del PC; Sysmote es una herramienta para cuando no lo estás.
 
 ---
 
@@ -111,7 +111,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 - **CRUD completo desde la app:** crear, editar, borrar y buscar notas.
 - **Tipo deducido por el agente:** el usuario solo pega o escribe el contenido. Al guardar, el agente marca la nota como `enlace` si incluye alguna dirección web (`http://`, `https://` o `www.`) en cualquier parte del texto, y como `texto` en caso contrario. La app usa la misma regla solo para mostrar los enlaces como pulsables.
 - **Pantalla:** lista de tarjetas con texto seleccionable y enlaces que se abren al pulsarlos, botones de copiar y editar, y un formulario de un único campo.
-- **En el PC:** desde la TUI (`companion`), con botones para añadir y ver notas.
+- **En el PC:** desde la TUI (`sysmote`), con botones para añadir y ver notas.
 - La app pide las notas al agente al abrir la pantalla del espacio compartido y al deslizar hacia abajo para recargar; no hace falta actualización al momento, porque es una app pensada para usarla lejos del PC.
 - Si los dos lados editan la misma nota a la vez, se guarda el último cambio.
 - *Imágenes en el espacio compartido: **aún pensándolo**.* No forman parte del alcance confirmado.
@@ -120,8 +120,8 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
 ### Módulo G — Notificaciones y reglas de alerta
-- **Avisos manuales:** el comando `companion notify "mensaje"` envía una notificación al móvil desde cualquier script o programa. Ejemplos:
-  - `make && companion notify "Compilación terminada"`;
+- **Avisos manuales:** el comando `sysmote notify "mensaje"` envía una notificación al móvil desde cualquier script o programa. Ejemplos:
+  - `make && sysmote notify "Compilación terminada"`;
   - un *hook* de Claude Code al terminar de trabajar.
 - **Avisos de acciones rápidas:** opción "notificar al terminar" en cada acción.
 - **Reglas de alerta (CRUD completo desde la app):** métrica (CPU, RAM, temperatura, disco), operador, umbral, duración sostenida, tiempo mínimo entre avisos y activa/inactiva. Ejemplo: "CPU > 90 % durante 2 minutos".
@@ -188,7 +188,7 @@ App Android (Flutter): Vistas → ViewModels (provider) → Repositorios → Ser
   LAN: conexión directa TLS, descubrimiento mDNS  │  WAN: túnel iroh (QUIC cifrado; relé → directa si el NAT lo permite)
         └──────────────────────────┬──────────────────────────┘
 Agente PC (Python): Rutas API (FastAPI) → Servicios → Repositorios → SQLite
-  PTY · psutil · dbus-fast · iroh · TUI "companion" · socket Unix para "companion notify"
+  PTY · psutil · dbus-fast · iroh · TUI "sysmote" · socket Unix para "sysmote notify"
         │
 GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 ```
@@ -230,7 +230,7 @@ iroh identifica a cada equipo por su clave pública. La conexión empieza a trav
 ## 5. Seguridad
 
 ### 5.1 Configuración inicial, registro y emparejamiento
-El usuario escribe `companion` en el PC y se abre la **TUI** (interfaz de texto con botones, ver 8.1). El botón de configuración inicial:
+El usuario escribe `sysmote` en el PC y se abre la **TUI** (interfaz de texto con botones, ver 8.1). El botón de configuración inicial:
 - genera un certificado TLS autofirmado propio del equipo;
 - abre el **modo registro** y muestra en la terminal un **código QR** con la dirección, la huella del certificado, el identificador iroh (cuando exista) y un **código de registro de un solo uso** con caducidad corta.
 
@@ -258,7 +258,7 @@ Hasta que llegue el registro por QR (fase 9), el botón de configuración inicia
 | Acceso desde Internet a través de iroh | Conexiones no autorizadas | El túnel solo da acceso al servidor de la aplicación, que sigue exigiendo TLS con huella fijada y login (desde la fase 3) |
 | Acceso al agente durante la beta (hasta la fase 3, sin TLS de aplicación ni login) | Cualquiera que conozca el identificador iroh llega al agente | El agente solo expone métricas de solo lectura, el identificador no se comparte y el agente se arranca a mano solo para probar |
 | Acciones rápidas con comandos maliciosos | Ejecución de comandos arbitrarios | Solo las crea y ejecuta un usuario autenticado, con sus propios permisos; no amplía lo que ya permite la terminal |
-| Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/companion` y `~/.local/share/companion` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600` |
+| Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/sysmote` y `~/.local/share/sysmote` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600` |
 | Escalada de privilegios mediante la app | Control de root | El agente no tiene más permisos que el usuario; nunca eleva privilegios |
 
 Sin 2FA, a propósito (motivo en `02-necesidades-tecnologicas.md` §5.2).
@@ -267,7 +267,7 @@ Sin 2FA, a propósito (motivo en `02-necesidades-tecnologicas.md` §5.2).
 
 ## 6. Diseño de la base de datos
 
-Base de datos **SQLite** en el agente (`~/.local/share/companion/companion.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02-necesidades-tecnologicas.md` §6.1).
+Base de datos **SQLite** en el agente (`~/.local/share/sysmote/sysmote.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02-necesidades-tecnologicas.md` §6.1).
 
 El historial de comandos de terminal **no** vive en esta base de datos: va en un archivo de log aparte (ver `../agente/tui.md`, «Historial de comandos de terminal»).
 
@@ -317,12 +317,12 @@ El historial de comandos de terminal **no** vive en esta base de datos: va en un
 
 **Entidades de historial:** ejecucion y notificacion (creación automática, consulta, filtrado, marcado y borrado).
 
-La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/companion/config.toml`.
+La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/sysmote/config.toml`.
 
 ### 6.3 Exportación desde la TUI
 La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`) o, si no está definido, en la carpeta personal, con la fecha y la hora en el nombre para no sobrescribir exportaciones anteriores.
-- **Exportar datos:** un único archivo JSON, `companion-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
-- **Exportar estructura:** una carpeta `companion-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
+- **Exportar datos:** un único archivo JSON, `sysmote-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
+- **Exportar estructura:** una carpeta `sysmote-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
 
 ---
 
@@ -330,7 +330,7 @@ La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el
 
 **Actores:**
 - **Usuario:** la persona propietaria del PC, que usa la app.
-- **Programa del PC:** un script o herramienta que llama a `companion notify`.
+- **Programa del PC:** un script o herramienta que llama a `sysmote notify`.
 - **Sistema:** el agente, cuando evalúa las reglas de alerta.
 
 | Caso de uso | Actor | Módulo |
@@ -350,7 +350,7 @@ La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el
 | Gestionar notas del espacio compartido (crear, editar, borrar, buscar) | Usuario (en el móvil o en el PC) | F |
 | Gestionar reglas de alerta | Usuario | G |
 | Consultar y gestionar notificaciones | Usuario | G |
-| Enviar una notificación (`companion notify`) | Programa del PC | G |
+| Enviar una notificación (`sysmote notify`) | Programa del PC | G |
 | Generar una alerta por umbral | Sistema | G |
 | Exportar los datos o la estructura de la base de datos | Usuario (en el PC) | Base de datos |
 | Recibir una notificación en el móvil | Usuario | G |
@@ -363,26 +363,26 @@ El diagrama de casos de uso y la descripción detallada de los principales se in
 
 ### 8.1 Agente en el PC
 ```bash
-pipx install linux-system-companion   # instala el agente en un entorno aislado
-companion                             # abre la TUI: configuración inicial, QR de registro, servicio…
+pipx install sysmote   # instala el agente en un entorno aislado
+sysmote                             # abre la TUI: configuración inicial, QR de registro, servicio…
 ```
-Escribir `companion` abre una **TUI** hecha con **Textual**, con cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas). Especificación completa: `doc/agente/tui.md`.
+Escribir `sysmote` abre una **TUI** hecha con **Textual**, con cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas). Especificación completa: `doc/agente/tui.md`.
 
-Solo quedan como comandos de terminal (con **Typer**) `companion serve`, que es lo que arranca systemd, y `companion notify "mensaje"`, pensado para scripts y *hooks*.
+Solo quedan como comandos de terminal (con **Typer**) `sysmote serve`, que es lo que arranca systemd, y `sysmote notify "mensaje"`, pensado para scripts y *hooks*.
 
 **Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
 Elección de **pipx** y límites de compatibilidad del binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
 
 ### 8.2 Servicio systemd
-El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/companion.service`:
+El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/sysmote.service`:
 
 ```ini
 [Unit]
-Description=Linux System Companion agent
+Description=Sysmote agent
 
 [Service]
-ExecStart=%h/.local/bin/companion serve
+ExecStart=%h/.local/bin/sysmote serve
 Restart=on-failure
 
 [Install]
@@ -442,7 +442,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 | Clientes SSH (Termius, ConnectBot) | No (requiere IP accesible o VPN) | Sí | No | Solo vía comandos | Sí | No |
 | Cockpit | No (requiere exponerlo o VPN) | Sí (web) | Sí | Sí | No (web) | No |
 | RustDesk | Sí (servidor de encuentro/relé) | Sí (desde la versión 1.4.1; su función principal es el escritorio remoto) | No | No | Sí | No |
-| **Linux System Companion** | **Sí (iroh)** | **Sí** | **Sí** | Sí (energía pendiente de decidir) | **Sí** | **Sí** |
+| **Sysmote** | **Sí (iroh)** | **Sí** | **Sí** | Sí (energía pendiente de decidir) | **Sí** | **Sí** |
 
 *Tabla orientativa; revisar cada entrada en la redacción final. Detalle de proyectos y licencias en 05-referencias-y-proyectos.md.*
 

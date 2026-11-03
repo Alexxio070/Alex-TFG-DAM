@@ -1,4 +1,4 @@
-# Plan de Desarrollo por Fases: Linux System Companion
+# Plan de Desarrollo por Fases: Sysmote
 
 ## Criterios de planificación
 
@@ -59,17 +59,17 @@
 ### Fase 1 — Agente y métricas reales 🟢🟡
 **Duración:** ~3 semanas (mediados de octubre – principios de noviembre)
 
-**Estado (20/10/2026): fase cerrada.** Todos los objetivos cumplidos, más el comando `companion` instalable y el aviso «No se puede conectar con el agente» con reintento. Probado por USB con `adb reverse` contra el agente real y con el APK release en el móvil.
+**Estado (20/10/2026): fase cerrada.** Todos los objetivos cumplidos, más el comando `sysmote` instalable y el aviso «No se puede conectar con el agente» con reintento. Probado por USB con `adb reverse` contra el agente real y con el APK release en el móvil.
 
 **Objetivos:**
 - Crear el agente (`agent/`), en capas, con endpoint de métricas (CPU, RAM, discos, temperatura).
-- Construir la TUI definitiva de `companion` (banner, cuatro secciones fijas: Emparejamiento, Historial, Base de datos, Notas), vacías o con solo lo que ya existe en la BD.
+- Construir la TUI definitiva de `sysmote` (banner, cuatro secciones fijas: Emparejamiento, Historial, Base de datos, Notas), vacías o con solo lo que ya existe en la BD.
 - App: repositorio real de métricas, pantalla de dirección del agente, gráficas con datos reales cada 1 s.
 - Probar por USB con `adb reverse`.
 
 Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
 
-**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, el resto de pantallas siguen funcionando con datos simulados, y `companion` abre la TUI definitiva con sus cuatro secciones.
+**Terminada cuando:** la pantalla de métricas muestra el estado real del portátil en vivo, con gráficas, el resto de pantallas siguen funcionando con datos simulados, y `sysmote` abre la TUI definitiva con sus cuatro secciones.
 
 **Si vas con retraso:** cifras reales sin gráficas en vivo; las gráficas se completan para el hito de febrero.
 
@@ -217,7 +217,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo E) y §6.3 (exportaciones
 **Duración:** ~3 semanas (abril)
 
 **Objetivos:**
-- Agente: WebSocket de eventos, comando `companion notify`, BD de reglas de alerta y notificaciones.
+- Agente: WebSocket de eventos, comando `sysmote notify`, BD de reglas de alerta y notificaciones.
 - Reglas de alerta con CRUD completo desde la app; historial de notificaciones con filtros.
 - App: servicio en primer plano (mantiene el túnel iroh y la conexión de eventos) y notificaciones locales. *Cubre el elemento diferenciador "notificaciones / servicios en segundo plano".*
 - Opción "notificar al terminar" en las acciones rápidas de la fase 7.
@@ -262,7 +262,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo F) y §5.1 (registro por 
 
 Recortar en este orden (lo primero es lo que menos se pierde):
 
-1. **Reglas de alerta con CRUD** (fase 8): mantener solo `companion notify`.
+1. **Reglas de alerta con CRUD** (fase 8): mantener solo `sysmote notify`.
 2. **mDNS** (fase 9): el QR ya evita escribir la dirección.
 3. **Hibernar** (fase 6): dejar apagar, reiniciar, suspender y bloquear.
 4. **Registro por QR** (fase 9): mantener la creación del usuario desde la TUI.

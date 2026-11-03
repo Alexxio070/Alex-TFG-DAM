@@ -6,7 +6,7 @@ Descripción del proyecto en lenguaje llano, sin tecnicismos: qué es, cómo fun
 
 ## 1. Qué es el proyecto
 
-**Linux System Companion** es una aplicación para controlar y vigilar un PC con Linux desde el móvil, cuando no se está delante de él: fuera de casa, en otra habitación o simplemente sin querer sentarse al ordenador.
+**Sysmote** es una aplicación para controlar y vigilar un PC con Linux desde el móvil, cuando no se está delante de él: fuera de casa, en otra habitación o simplemente sin querer sentarse al ordenador.
 
 El sistema tiene dos partes que se instalan por separado y se hablan entre ellas:
 
@@ -34,7 +34,7 @@ La app nunca accede al PC directamente: siempre pide las cosas al agente, y es e
 
 ### Primera configuración y emparejamiento
 
-Antes de poder usar la app, hay que emparejar el móvil con el PC una vez. En el PC se escribe `companion` y se abre una pantalla de texto con botones, donde se pulsa "configuración inicial". Esa pantalla muestra un **código QR** en la propia terminal. Se abre la app en el móvil, se escanea ese código con la cámara, y con eso el móvil ya sabe cómo encontrar a ese PC y confía en él. A continuación se crea un usuario y una contraseña para la app, y a partir de ahí los dos dispositivos quedan emparejados: el PC se empareja con un único móvil.
+Antes de poder usar la app, hay que emparejar el móvil con el PC una vez. En el PC se escribe `sysmote` y se abre una pantalla de texto con botones, donde se pulsa "configuración inicial". Esa pantalla muestra un **código QR** en la propia terminal. Se abre la app en el móvil, se escanea ese código con la cámara, y con eso el móvil ya sabe cómo encontrar a ese PC y confía en él. A continuación se crea un usuario y una contraseña para la app, y a partir de ahí los dos dispositivos quedan emparejados: el PC se empareja con un único móvil.
 
 ### Iniciar sesión y seguridad
 
@@ -111,7 +111,7 @@ Según los requisitos mínimos del proyecto final de DAM (apartados generales y 
 
 Resultados de Aprendizaje (RA) según el Real Decreto 405/2023, de 29 de mayo (currículo estatal actualizado del título de Técnico Superior en DAM, Anexo I):
 
-| Módulo profesional | Código | RA vinculado | Componente técnico en Linux System Companion |
+| Módulo profesional | Código | RA vinculado | Componente técnico en Sysmote |
 |---|---|---|---|
 | Sistemas Informáticos | 0483 | RA4, RA5, RA6 | Agente como servicio de usuario de systemd (RA4: cuentas, servicios y procesos); redes locales con mDNS y acceso remoto por iroh (RA5, RA6) |
 | Bases de Datos | 0484 | RA2, RA3, RA4, RA6 | Diseño del esquema relacional (`schema.sql`): creación de tablas (RA2), consultas y modificación vía repositorios (RA3, RA4), modelo normalizado con diagrama E/R (RA6) |
@@ -121,6 +121,6 @@ Resultados de Aprendizaje (RA) según el Real Decreto 405/2023, de 29 de mayo (c
 | Acceso a Datos | 0486 | RA1, RA2, RA6 | Acceso a ficheros (log de comandos, configuración) (RA1); conexión a SQLite sin ORM (RA2, explícitamente sin usar la herramienta de mapeo del RA3); componentes de acceso a datos con patrón repository (RA6) |
 | Desarrollo de Interfaces | 0488 | RA3, RA4, RA7 | Componentes visuales propios de la app (RA3); diseño con criterios de usabilidad (RA4); distribución del APK en releases (RA7). No aplica RA2 (interfaces naturales por voz/gestos/realidad aumentada): el proyecto no las usa |
 | Programación Multimedia y Dispositivos Móviles | 0489 | RA1, RA2 | Tecnologías de desarrollo móvil (Flutter) evaluadas y aplicadas (RA1); app con sensores (cámara para el QR), conexiones HTTP/HTTPS y persistencia (RA2). No aplica RA3-RA5 (contenido multimedia y motores de videojuegos): fuera del alcance |
-| Programación de Servicios y Procesos | 0490 | RA1, RA3, RA4, RA5 | Ejecución de acciones rápidas en procesos propios con control de grupo (RA1); socket Unix de `companion notify` (RA3); servicios REST/WebSocket con FastAPI (RA4); TLS, Argon2 y tokens de sesión (RA5) |
+| Programación de Servicios y Procesos | 0490 | RA1, RA3, RA4, RA5 | Ejecución de acciones rápidas en procesos propios con control de grupo (RA1); socket Unix de `sysmote notify` (RA3); servicios REST/WebSocket con FastAPI (RA4); TLS, Argon2 y tokens de sesión (RA5) |
 | Sistemas de Gestión Empresarial | 0491 | — | Sin aplicación directa: el proyecto no implanta ni adapta sistemas ERP-CRM (herramienta personal de administración de sistemas, no de gestión empresarial) |
 | Proyecto de Desarrollo de Aplicaciones Multiplataforma | 0492 | RA1, RA2, RA3, RA4 | Esta memoria técnica (RA1), la planificación por fases (RA2, RA3) y el seguimiento de cambios en `08-historial-de-cambios.md` (RA4) |

@@ -1,4 +1,4 @@
-# Ideas de Futuro: Linux System Companion (después del TFG)
+# Ideas de Futuro: Sysmote (después del TFG)
 
 Este documento recoge las funciones descartadas del alcance del TFG y las ideas para seguir desarrollando la app una vez presentado. No forma parte de la planificación del TFG.
 
@@ -99,7 +99,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Integración con la shell (*shell integration*) 🟡
 - Saber en qué carpeta está la terminal, dónde empieza y termina cada comando y si terminó bien o mal (secuencias OSC 7 y OSC 133).
-- Permitiría, por ejemplo, abrir el explorador de archivos (si se llega a hacer, ver sección 2) en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `companion notify`.
+- Permitiría, por ejemplo, abrir el explorador de archivos (si se llega a hacer, ver sección 2) en la carpeta actual o notificar automáticamente cuando termine un comando largo sin escribir `sysmote notify`.
 - Requiere configuración específica por shell.
 
 ### Alternativas al multiplexor de terminal 🟡
@@ -107,7 +107,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Zellij como alternativa a tmux.
 
 ### Cliente de sesiones propio, sin tmux 🟢 *(muy largo plazo)*
-- Sustituir tmux por un gestor de sesiones propio en el agente: PTY propio por sesión, buffer circular de salida y un cliente (`companion attach`) que ejecuta la ventana del PC.
+- Sustituir tmux por un gestor de sesiones propio en el agente: PTY propio por sesión, buffer circular de salida y un cliente (`sysmote attach`) que ejecuta la ventana del PC.
 - Objetivo: **eliminar la dependencia de tmux** en el PC.
 - Contrapartida: más código y mantenimiento; hay que reimplementar lo que tmux ya ofrece, y las sesiones no sobrevivirían a un reinicio del agente salvo que se diseñe expresamente.
 - Detalle en `../agente/terminal-sesiones-tmux.md`, sección 11.

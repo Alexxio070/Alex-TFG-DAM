@@ -145,7 +145,7 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 
 **Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador a mano — sin conexión real todavía (fase 2). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones de disco, sección 4).
 
-**Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Linux System Companion» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
+**Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Sysmote» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
 
 ## 8. Qué es simulado
 

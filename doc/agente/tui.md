@@ -1,4 +1,4 @@
-# Linux System Companion — especificación de la TUI
+# Sysmote — especificación de la TUI
 
 Aplicación de terminal (Textual, Python) para gestionar el emparejamiento con la app Android,
 la seguridad y el servicio del propio agente, ver el historial de acciones y consultar la base
@@ -17,7 +17,7 @@ boceto original.
    "LINUX" y "SYSTEM" uno al lado del otro. Color verde, en negrita. Línea inferior gruesa.
    **Responsivo (20/10/2026):** el arte ASCII tiene un ancho fijo (no se puede "encoger" sin
    romperse). Por debajo de ~97 columnas de ancho de terminal, se sustituye por el texto plano
-   "LINUX SYSTEM COMPANION" centrado, mismo color y negrita.
+   "SYSMOTE" centrado, mismo color y negrita.
 2. **Área de datos** — un marco redondeado con el título "Datos" arriba a la izquierda.
    Ocupa todo el espacio libre. Por defecto está **vacía**; muestra la sección del botón pulsado.
 3. **Barra de botones** — cuatro botones de igual anchura, en este orden:
@@ -47,7 +47,7 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 #### Servicio (fase 5)
 - Botones **Instalar servicio**, **Quitar servicio** y **Estado**: gestionan el servicio systemd
-  de usuario que ejecuta `companion serve`.
+  de usuario que ejecuta `sysmote serve`.
 - Deshabilitados hasta la fase 5.
 
 ### Historial
@@ -84,7 +84,7 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 - Pulsar un botón de sección muestra su vista y carga sus datos. Cambiar de sección reemplaza la vista.
 - El botón de la sección activa se resalta con el estilo "primario" del tema de Textual; igual
   para la subpestaña activa dentro de Emparejamiento.
-- Los datos se leen de la base de datos SQLite en `~/.local/share/companion/companion.db`
+- Los datos se leen de la base de datos SQLite en `~/.local/share/sysmote/sysmote.db`
   (creada por `agent/schema.sql`), salvo el historial de comandos de terminal.
 - Consultas de la base de datos: `sqlite_master` para las tablas, `PRAGMA table_info` para las
   columnas y `SELECT * ... LIMIT 200` para las filas.

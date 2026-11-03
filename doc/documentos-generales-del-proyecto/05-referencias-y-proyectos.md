@@ -1,4 +1,4 @@
-# Referencias y Proyectos de Inspiración: Linux System Companion
+# Referencias y Proyectos de Inspiración: Sysmote
 
 Proyectos existentes que resuelven partes del problema. Para cada uno se indica qué aporta al TFG, en qué fase es útil y si se puede aprovechar su código o solo inspirarse en él.
 

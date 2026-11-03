@@ -1,14 +1,14 @@
 # Estructura del agente Python
 
-Organización de `agent/companion/` y qué entra en cada carpeta, fase a fase.
+Organización de `agent/sysmote/` y qué entra en cada carpeta, fase a fase.
 
 ```
-agent/companion/
+agent/sysmote/
   api/            rutas de FastAPI
   services/       lógica de negocio
   repositories/   acceso a datos (psutil, SQLite cuando exista)
   models/         modelos Pydantic
-  tui/            interfaz de terminal `companion` (Textual)
+  tui/            interfaz de terminal `sysmote` (Textual)
 ```
 
 ## Qué entra en cada carpeta, por fase

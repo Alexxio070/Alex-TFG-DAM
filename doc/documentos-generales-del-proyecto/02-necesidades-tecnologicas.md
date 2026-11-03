@@ -1,4 +1,4 @@
-# Necesidades Tecnológicas: Linux System Companion
+# Necesidades Tecnológicas: Sysmote
 
 Este documento parte de **lo que el proyecto necesita** y, para cada necesidad, explica qué tipo de tecnología la cubre, cuál se ha elegido y qué alternativas se descartaron y por qué.
 
@@ -83,7 +83,7 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** multiplexor de terminal.
 - **Elección:** **tmux**, instalado en el PC. Cada terminal es una sesión de tmux; la ventana del PC y la app son clientes de esa sesión. tmux aporta el buffer de salida y el reenganche sin código propio.
 - **Alternativas:**
-  - *Cliente propio en el agente (PTY propio, buffer circular y `companion attach`):* sin dependencias nuevas, pero hay que programar y mantener lo que tmux ya hace. **Aplazada a muy largo plazo** (ver `06-ideas-de-futuro.md`).
+  - *Cliente propio en el agente (PTY propio, buffer circular y `sysmote attach`):* sin dependencias nuevas, pero hay que programar y mantener lo que tmux ya hace. **Aplazada a muy largo plazo** (ver `06-ideas-de-futuro.md`).
   - *Zellij:* alternativa equivalente, menos extendida; no se elige.
   - *PTY ligado a la conexión (diseño inicial):* el comando se corta al desconectar. Se mantiene solo como alternativa si falta tmux.
   - *Abrir una terminal gráfica y leer su salida:* los emuladores no ofrecen una forma genérica de leer su pantalla desde fuera.
@@ -114,11 +114,11 @@ Cada bloque sigue el mismo esquema:
   - *Colas de tareas (Celery, RQ):* requieren un broker externo; excesivo para ejecuciones de un solo usuario.
 
 ### 2.6 Interfaz del agente en el PC (TUI y comandos)
-- **Necesidad:** manejar el agente desde el PC: configuración inicial y QR de registro, QR de emparejamiento, instalar o quitar el servicio, estado, cambiar la contraseña, cerrar todas las sesiones, notas del espacio compartido y exportaciones de la base de datos. Además, dos comandos que no puede lanzar una persona desde una interfaz: `companion serve` (lo arranca systemd) y `companion notify "mensaje"` (scripts y *hooks*).
+- **Necesidad:** manejar el agente desde el PC: configuración inicial y QR de registro, QR de emparejamiento, instalar o quitar el servicio, estado, cambiar la contraseña, cerrar todas las sesiones, notas del espacio compartido y exportaciones de la base de datos. Además, dos comandos que no puede lanzar una persona desde una interfaz: `sysmote serve` (lo arranca systemd) y `sysmote notify "mensaje"` (scripts y *hooks*).
 - **Tipo de tecnología:** framework de interfaz de texto (TUI) y framework de CLI.
 - **Elección (decidida el 12/10/2026):**
-  - **Textual** para la TUI: al escribir `companion` se abre una interfaz con botones. Es un framework de Python para aplicaciones de terminal (licencia MIT), con widgets como `Button` y una API de *workers* para tareas largas o de red sin bloquear la interfaz.
-  - **Typer** solo para `companion serve` y `companion notify` (basado en Click, que va integrado dentro de Typer desde la versión 0.26).
+  - **Textual** para la TUI: al escribir `sysmote` se abre una interfaz con botones. Es un framework de Python para aplicaciones de terminal (licencia MIT), con widgets como `Button` y una API de *workers* para tareas largas o de red sin bloquear la interfaz.
+  - **Typer** solo para `sysmote serve` y `sysmote notify` (basado en Click, que va integrado dentro de Typer desde la versión 0.26).
   - **qrcode** para dibujar el QR en la terminal (licencia BSD; `print_ascii()` lo genera con caracteres de texto).
 - **Alternativas descartadas:**
   - *Solo CLI con Typer:* era el diseño anterior; el autor prefiere botones para no tener que recordar comandos.
@@ -203,7 +203,7 @@ Cada bloque sigue el mismo esquema:
 ### 6.1 Base de datos
 - **Necesidad:** guardar de forma persistente y relacionada los usuarios, sesiones, intentos de login, grupos, acciones rápidas, ejecuciones, reglas de alerta, notificaciones y notas (9 tablas; diseño en 01-memoria-tecnica.md, sección 6).
 - **Tipo de tecnología:** base de datos relacional embebida.
-- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/companion/companion.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada. SQLite trae las claves foráneas desactivadas por defecto, así que el agente ejecuta `PRAGMA foreign_keys = ON` en cada conexión; sin eso no se aplican ni las claves foráneas ni el `ON DELETE CASCADE`.
+- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/sysmote/sysmote.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada. SQLite trae las claves foráneas desactivadas por defecto, así que el agente ejecuta `PRAGMA foreign_keys = ON` en cada conexión; sin eso no se aplican ni las claves foráneas ni el `ON DELETE CASCADE`.
 - **Alternativas descartadas:**
   - *MySQL / PostgreSQL:* requieren un servidor aparte; excesivo para un agente de un solo usuario y contrario a la instalación mínima.
   - *Firebase:* los datos saldrían del PC a un servicio externo, en contra del diseño sin servidores de terceros.
@@ -217,7 +217,7 @@ Cada bloque sigue el mismo esquema:
 
 ### 6.3 Configuración
 - **Necesidad:** ajustes editables a mano (puertos, relés, umbrales por defecto).
-- **Elección:** fichero **TOML** en `~/.config/companion/config.toml` (lectura con `tomllib`, estándar desde Python 3.11). `tomllib` solo lee TOML; si la TUI tiene que escribir el fichero, hace falta el paquete `tomli-w`.
+- **Elección:** fichero **TOML** en `~/.config/sysmote/config.toml` (lectura con `tomllib`, estándar desde Python 3.11). `tomllib` solo lee TOML; si la TUI tiene que escribir el fichero, hace falta el paquete `tomli-w`.
 - **Alternativas descartadas:** *guardarlo en la BD:* menos cómodo de editar y de documentar.
 
 ---
