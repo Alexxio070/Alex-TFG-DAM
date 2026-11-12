@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,30 +21,43 @@ class ConnectionFields extends StatefulWidget {
 class _ConnectionFieldsState extends State<ConnectionFields> {
   late final _controller = TextEditingController();
   String? _error;
+  String? _saved;
+  Timer? _savedTimer;
   ConnectionMode? _lastMode;
 
   @override
   void dispose() {
     _controller.dispose();
+    _savedTimer?.cancel();
     super.dispose();
   }
 
-  void _save(SettingsViewModel s) {
+  Future<void> _save(SettingsViewModel s) async {
     final value = _controller.text.trim();
     if (s.connectionMode == ConnectionMode.local) {
       if (!_addressFormat.hasMatch(value)) {
         setState(() => _error = 'Formato esperado: host:puerto');
         return;
       }
-      s.setAgentAddress(value);
+      await s.setAgentAddress(value);
     } else {
       if (value.isEmpty) {
         setState(() => _error = 'Introduce el identificador iroh');
         return;
       }
-      s.setIrohId(value);
+      await s.setIrohId(value);
     }
+    if (!mounted) return;
     setState(() => _error = null);
+    _showSaved();
+  }
+
+  void _showSaved() {
+    _savedTimer?.cancel();
+    setState(() => _saved = 'Guardado');
+    _savedTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _saved = null);
+    });
   }
 
   @override
@@ -75,9 +90,13 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
           hint: s.connectionMode == ConnectionMode.local
               ? kDefaultAgentAddress
               : 'Identificador iroh',
-          onChanged: (_) => setState(() => _error = null),
+          onChanged: (_) => setState(() {
+            _error = null;
+            _saved = null;
+          }),
         ),
         if (_error != null) Text(_error!, style: const TextStyle(fontSize: 12, color: kRed)),
+        if (_saved != null) Text(_saved!, style: const TextStyle(fontSize: 12, color: kGreen)),
         Align(
           alignment: Alignment.centerRight,
           child: AppButton(label: 'Guardar', onPressed: () => _save(s)),

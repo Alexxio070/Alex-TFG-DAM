@@ -42,7 +42,8 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 └── doc/                     Documentación del proyecto
     ├── documentos-generales-del-proyecto/   Memoria técnica, plan de fases, decisiones…
     ├── ui/                                  Especificación y prototipos de la interfaz
-    └── agente/                              Especificación del agente y su TUI
+    ├── agente/                              Especificación del agente y su TUI
+    └── iroh/                                Qué es iroh, implementación, problemas y pruebas
 ```
 
 ## Estado actual
@@ -93,5 +94,6 @@ Toda la documentación de diseño está en [`doc/`](doc/):
 - `doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md` — decisiones tomadas y pendientes.
 - [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
 - `doc/agente/` — especificación del agente y de su TUI.
+- [`doc/iroh/`](doc/iroh/) — qué es iroh, cómo está implementado, problemas encontrados y pruebas.
 
 Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop`; las etiquetas de versión solo para publicar el APK en las releases.

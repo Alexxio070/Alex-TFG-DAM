@@ -61,21 +61,24 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setDark(bool value) => _update(() => _dark = value);
-  void setAccent(Color value) => _update(() => _accent = value);
-  void setTempUnit(TempUnit value) => _update(() => _tempUnit = value);
-  void setStorageUnit(StorageUnit value) => _update(() => _storageUnit = value);
-  void setTempAlert(bool value) => _update(() => _tempAlert = value);
-  void setTempLimit(int value) => _update(() => _tempLimit = value.clamp(60, 95));
-  void setTermFont(int value) => _update(() => _termFont = value.clamp(10, 22));
-  void setConnectionMode(ConnectionMode value) => _update(() => _connectionMode = value);
-  void setAgentAddress(String value) => _update(() => _agentAddress = value);
-  void setIrohId(String value) => _update(() => _irohId = value);
+  Future<void> setDark(bool value) => _update(() => _dark = value);
+  Future<void> setAccent(Color value) => _update(() => _accent = value);
+  Future<void> setTempUnit(TempUnit value) => _update(() => _tempUnit = value);
+  Future<void> setStorageUnit(StorageUnit value) => _update(() => _storageUnit = value);
+  Future<void> setTempAlert(bool value) => _update(() => _tempAlert = value);
+  Future<void> setTempLimit(int value) => _update(() => _tempLimit = value.clamp(60, 95));
+  Future<void> setTermFont(int value) => _update(() => _termFont = value.clamp(10, 22));
+  Future<void> setConnectionMode(ConnectionMode value) =>
+      _update(() => _connectionMode = value);
+  Future<void> setAgentAddress(String value) => _update(() => _agentAddress = value);
+  Future<void> setIrohId(String value) => _update(() => _irohId = value);
 
-  void _update(VoidCallback change) {
+  Future<void> _update(VoidCallback change) async {
     change();
     notifyListeners();
-    _repository.save(
+    // Se espera a que termine de escribirse en disco: si se cierra la app
+    // justo después de guardar, el cambio no debe perderse.
+    await _repository.save(
       SettingsData(
         dark: _dark,
         accent: _accent,

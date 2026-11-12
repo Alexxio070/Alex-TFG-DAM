@@ -34,10 +34,14 @@ class MetricCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
+            spacing: 8,
             children: [
-              Text(
-                title,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.muted2),
+              Flexible(
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.muted2),
+                ),
               ),
               value,
             ],
@@ -52,9 +56,16 @@ class MetricCard extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: t.muted),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 8,
               children: [
                 const Text('Hace $kHistoryLength s'),
-                Text(scaleLabel),
+                Flexible(
+                  child: Text(
+                    scaleLabel,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 const Text('Ahora'),
               ],
             ),
