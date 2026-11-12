@@ -183,7 +183,7 @@ WS     /ws/events                      (avisos en tiempo real)
 ```
 App Android (Flutter): Vistas → ViewModels (provider) → Repositorios → Servicios de red
   xterm.dart · HTTP/REST · WebSocket · notificaciones locales
-  Kotlin (platform channel): túnel iroh + servicio en 1er plano (*)
+  iroh_flutter (Dart): conexión iroh · Kotlin (platform channel): servicio en 1er plano (*)
         │
   LAN: conexión directa TLS, descubrimiento mDNS  │  WAN: túnel iroh (QUIC cifrado; relé → directa si el NAT lo permite)
         └──────────────────────────┬──────────────────────────┘
@@ -193,7 +193,7 @@ Agente PC (Python): Rutas API (FastAPI) → Servicios → Repositorios → SQLit
 GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 ```
 
-*(\*) Pendiente de revisión:* la vía para usar iroh desde Flutter se decide en la fase 2 (ver 4.4); la implementación del servicio en primer plano, en la fase 8.
+*(\*) Pendiente de revisión:* la implementación del servicio en primer plano, en la fase 8.
 
 ### 4.2 Arquitectura en capas
 
@@ -218,8 +218,8 @@ GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **túnel transparente**, siguiendo el patrón de la herramienta *dumbpipe* del proyecto iroh:
 
 1. **En el PC,** el agente crea un punto de conexión iroh que reenvía todo lo que recibe a su propio servidor FastAPI local.
-2. **En el móvil,** un pequeño componente nativo abre un puerto en `127.0.0.1` y reenvía las conexiones al PC a través de iroh. Su interfaz con Flutter se limita a dos operaciones: *abrir túnel (identificador del PC) → puerto local* y *cerrar túnel*. Cómo se construye (binding de Kotlin compilado o plugin `iroh_flutter`) se decide en la fase 2: ver `02-necesidades-tecnologicas.md` §4.2.
-3. **La parte Flutter** se conecta a `127.0.0.1:puerto` con el mismo código HTTP/WebSocket que en LAN. El TLS y el login (desde la fase 3) siguen funcionando dentro del túnel.
+2. **En el móvil,** la app usa el plugin `iroh_flutter` desde Dart, sin puente en Kotlin: `IrohMetricsRepository` abre una conexión iroh con el identificador del PC y, por cada petición, un *stream* en el que escribe la petición HTTP y lee la respuesta. Detalle en `doc/iroh/02-implementacion.md` y `02-necesidades-tecnologicas.md` §4.2.
+3. **El resto de la app** no cambia: `ConnectionModeMetricsRepository` elige entre el repositorio HTTP (LAN) y el de iroh según el modo de Ajustes, y los ViewModels y vistas usan la misma interfaz. De momento solo las métricas viajan por iroh; el resto de funciones, en sus fases (TLS y login desde la fase 3).
 
 iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después intenta pasar a directa atravesando el NAT; si no lo consigue, sigue por el relé. Se usan los relés públicos del proyecto (límites en §10). Cada arranque genera una identidad nueva por defecto, así que el agente guarda su clave secreta (`SecretKey`) y la carga al arrancar para conservar el mismo identificador.
 

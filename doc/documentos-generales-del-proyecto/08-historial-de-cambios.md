@@ -56,6 +56,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 03/11/2026 | Repositorio | El proyecto pasa a llamarse Sysmote (app, agente, comando, paquete y documentación) | Aplicado en la documentación; el código está en las ramas feature |
 | 12/11/2026 | Plan | Iroh probado en una red restrictiva real: la duda de la red del centro queda cerrada | Aplicado en la documentación |
 | 12/11/2026 | Interfaz | `shared_preferences` 2.5.x no guardaba nada en dispositivo real (`NoSuchMethodError`); fijada una pareja de versiones anterior | Aplicado en código |
+| 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
 
 ---
 
@@ -483,4 +484,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué es ahora:** el autor confirma que la prueba se hizo y funciona. La decisión sale de §3.8 y se anota en §3.1.
 - **Por qué:** la prueba se completó.
 - **Afecta a:** `04` (fase 2), `07` (§3.1 y §3.8) y `doc/iroh/04-pruebas.md`. No se han anotado la red usada ni el detalle del resultado.
+- **Estado:** aplicado en la documentación.
+
+### 12/11/2026 — Fase 2 cerrada y puente Flutter ↔ iroh actualizado
+
+- **Qué era:** `01` §4.1 y §4.4, `02` §4.2 y `07` §3.1 describían un componente nativo en Kotlin (*platform channel*, `openTunnel`/`closeTunnel`) con un puerto local, y la decisión sobre cómo usar iroh desde Flutter figuraba como pendiente (`07` §3.8, `04`). `04` no marcaba la fase 2 como cerrada y decía que de la beta «solo queda pendiente la conexión por iroh».
+- **Qué es ahora:** la app usa el plugin `iroh_flutter` directamente desde Dart (`IrohMetricsRepository`), sin puente en Kotlin y sin puerto local; `ConnectionModeMetricsRepository` elige entre el repositorio HTTP y el de iroh según Ajustes. La decisión sale de `07` §3.8 y se anota en §3.1. La fase 2 queda cerrada en `04`: a la beta le falta publicar la release `v0.1-beta`.
+- **Por qué:** el autor da la fase por cerrada y la implementación ya existe en el código (`App-movil/pubspec.yaml`, `doc/iroh/02-implementacion.md`).
+- **Afecta a:** `01` (§4.1 y §4.4), `02` (§4.2), `04` (fase 2 y beta), `07` (§3.1 y §3.8) y `doc/iroh/README.md`. De la prueba 5 solo se reinició el proceso del agente, no el PC entero; consta en `04` y en `doc/iroh/`.
 - **Estado:** aplicado en la documentación.

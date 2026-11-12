@@ -25,7 +25,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 | ↳ `sysmote notify` | En el proyecto | `01` §3 Módulo G, §8.1 · `02` §2.6 |
 | ↳ Servicio en primer plano de Android | En el proyecto (tipo por decidir) | `01` §3 Módulo G · `02` §4.1 · `04` fase 8 · `07` §3.8 |
 | **Descubrimiento en red local** (mDNS) | En el proyecto | `01` §3 Módulo H, §10 · `02` §3.2 · `04` fase 9 y recortes |
-| **Acceso remoto P2P** (iroh) | En el proyecto (PoC hecha e integrada) | `01` §4.4, §10 · `02` §3.3, §4.2 · `03` §2 «Cómo se conectan» · `04` fase 2 · `07` §3.1, §3.8 · `06` §6 (relé propio) · [doc/iroh/](../iroh/README.md) |
+| **Acceso remoto P2P** (iroh) | En el proyecto (fase 2 cerrada) | `01` §4.4, §10 · `02` §3.3, §4.2 · `03` §2 «Cómo se conectan» · `04` fase 2 · `07` §3.1 · `06` §6 (relé propio) · [doc/iroh/](../iroh/README.md) |
 | **Emparejamiento y registro por QR** | En el proyecto | `01` §5.1 · `03` §2 «Primera configuración» · `04` fases 3 y 9 · [tui](../agente/tui.md) «Emparejamiento» · `07` §3.2 |
 | **Login, sesiones y seguridad** (TLS, Argon2, tokens, límite de intentos) | En el proyecto | `01` §5.2, §5.3 · `02` §5 · `03` §2 «Iniciar sesión» · `04` fase 3 · `07` §3.2 · `06` §6 (2FA, biométrico) |
 | **Ajustes de la app** | En el proyecto | `01` §3 «Navegación y pantallas» · [interfaz-app](../ui/interfaz-app.md) §7 |

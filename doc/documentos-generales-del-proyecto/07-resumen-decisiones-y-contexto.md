@@ -40,7 +40,7 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 | Framework móvil | **Flutter** (aceptado por el tutor el 26/09/2026) | Se valora usar tecnología no vista en clase; xterm.dart resuelve la terminal (la pieza más difícil); *hot reload* ayuda a aprender | Kotlin + Compose: más fácil para iroh (binding oficial), pero sin emulador de terminal equivalente. Era el plan B; ya no es necesario |
 | Agente PC | Python 3.11 + FastAPI | Mejores librerías de sistema; asíncrono | Go, Rust (curva), Flask (síncrono) |
 | Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (principios de noviembre – mediados de diciembre)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
-| Puente Flutter ↔ iroh | Platform channel mínimo en Kotlin: `openTunnel` / `closeTunnel` (*pendiente de revisión*) | Flutter no sabe que iroh existe; usa el mismo código que en LAN | El binding de Kotlin publicado no incluye Android y hay que compilarlo con Rust y el NDK igualmente, así que el plugin `iroh_flutter` (pub.dev) vuelve a ser candidato. Se decide al empezar la fase 2 |
+| Puente Flutter ↔ iroh | Plugin **`iroh_flutter`** (pub.dev) llamado desde Dart, sin puente en Kotlin | La app tiene un `IrohMetricsRepository` con la misma interfaz que el repositorio HTTP; `ConnectionModeMetricsRepository` elige uno u otro según Ajustes, así que ViewModels y vistas no cambian | Platform channel con módulo Kotlin sobre el binding oficial: el binding publicado no incluye Android y habría que compilarlo con Rust y el NDK igualmente |
 | Red restrictiva real | Probado en una red restrictiva real: iroh conecta y funciona (confirmado por el autor, 12/11/2026) | Era la duda sobre si la red del centro deja salir el tráfico hacia los relés; ya no hay decisión abierta | — |
 | Tokens | Opacos, con hash en SQLite | Revocables al instante (botón «Cerrar todas las sesiones») | JWT (no revocables; innecesarios con un solo dispositivo) |
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
@@ -101,7 +101,6 @@ Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la secci�
 
 | Decisión | Estado | Cuándo resolverla |
 |---|---|---|
-| Cómo usar iroh desde Flutter: binding de Kotlin compilado desde el código fuente + *platform channel*, o el plugin `iroh_flutter` de pub.dev | **Pendiente de revisión:** el binding de Kotlin publicado no incluye Android; las dos opciones necesitan Rust y el NDK | Al empezar la fase 2, con la prueba de concepto |
 | Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
 | Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |

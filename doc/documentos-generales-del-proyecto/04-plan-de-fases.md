@@ -78,6 +78,8 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
 ### Fase 2 — Conexión remota con iroh 🔴
 **Duración:** ~6 semanas (principios de noviembre – mediados de diciembre)
 
+**Estado (12/11/2026): fase cerrada.** Túnel iroh en el agente, repositorio iroh en la app con el selector local/iroh de Ajustes, matriz de pruebas 1 a 4 hecha en casa y conexión probada en una red restrictiva real. La prueba 5 solo se hizo reiniciando el proceso del agente, no el PC entero. Detalle y resultados: `doc/iroh/`.
+
 **Por qué va aquí:** es la parte más crítica y con más incertidumbre del proyecto. Hacerla pronto deja margen para resolver problemas o aplicar el plan B sin poner en riesgo la beta ni el hito de febrero.
 
 **Objetivos:**
@@ -97,8 +99,6 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 
 **Al terminar:** generar el APK y publicarlo como release `v0.1-beta`.
 
-**Decisiones abiertas:** cómo usar iroh desde Flutter (`07` §3.8). La duda sobre la red del centro quedó resuelta con la prueba en una red restrictiva real.
-
 **Terminada cuando:** las métricas de la fase 1 se ven en el móvil desde datos móviles contra el PC de casa, y la matriz de pruebas está documentada.
 
 **Plan B:** si iroh no funciona, documentar por qué en la memoria, seguir en modo LAN (USB, punto de acceso o misma Wi-Fi) y dejar el acceso remoto como trabajo en curso, con la prueba de concepto como evidencia.
@@ -109,7 +109,7 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 > Una app Android con la interfaz definitiva (lo que aún no está hecho muestra *placeholders*) que se conecta al PC de casa desde cualquier red a través de iroh y muestra las métricas en vivo con gráficas. Sin login: el agente solo expone métricas de solo lectura y se arranca a mano.
 
 
-Solo queda pendiente la conexion por iroh
+La conexión por iroh ya está hecha (fase 2); queda publicar la release `v0.1-beta`.
 
 La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase cubre cada uno: «Cobertura de los requisitos mínimos», al final).
 

@@ -171,12 +171,11 @@ Cada bloque sigue el mismo esquema:
 
 ### 4.2 Usar iroh desde Flutter
 - **Necesidad:** llamar a la librería iroh desde la app. iroh no tiene binding oficial para Flutter.
-- **Tipo de tecnología:** puente entre Flutter y código nativo.
-- **Elección (pendiente de revisión, se decide al empezar la fase 2):**
-  - *Opción A, diseño actual:* **platform channels (MethodChannel)** con un módulo Kotlin mínimo (abrir y cerrar túnel) sobre el binding oficial de Kotlin. Es el mecanismo estándar de Flutter, pero el binding publicado no incluye Android: hay que compilar iroh-ffi desde el código fuente con Rust y el NDK.
-  - *Opción B:* plugin **`iroh_flutter`** de pub.dev (1.0.3, 07/08/2026, comunitario, no de n0), que compila el núcleo Rust automáticamente con cargokit y expone la API de iroh en Dart.
-  - Las dos opciones necesitan Rust y el NDK instalados, así que esa ya no es una razón para descartar la vía Rust. Hay que elegir con la prueba de concepto: cuál compila y funciona antes en el móvil físico.
-- **Otra alternativa:** *flutter_rust_bridge con el núcleo Rust de iroh, escrito a mano:* más trabajo que la opción B.
+- **Tipo de tecnología:** plugin de Flutter que expone la API de iroh en Dart.
+- **Elección:** plugin **`iroh_flutter`** de pub.dev (1.3.0 en `pubspec.yaml`; comunitario, no de n0). Compila el núcleo Rust para Android con cargokit y `cargo-ndk` en el primer build y exige fijar el NDK (`ndkVersion` en `App-movil/android/app/build.gradle.kts`). Elegido en la fase 2; cómo se usa y los problemas encontrados: `doc/iroh/02-implementacion.md` y `03-problemas-y-soluciones.md`.
+- **Alternativas descartadas:**
+  - *Platform channel con un módulo Kotlin mínimo sobre el binding oficial de Kotlin:* el binding publicado no incluye Android y habría que compilar iroh-ffi con Rust y el NDK igualmente.
+  - *flutter_rust_bridge con el núcleo Rust de iroh, escrito a mano:* más trabajo que el plugin.
 
 ---
 
