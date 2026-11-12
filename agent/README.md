@@ -1,6 +1,6 @@
 # Agente (Python)
 
-Estado: ver `../doc/documentos-generales-del-proyecto/04-plan-de-fases.md` (fase 1). Diseño completo en [`../doc/agente/`](../doc/agente/).
+Estado: ver `../doc/documentos-generales-del-proyecto/04-plan-de-fases.md` (fase 1). Diseño completo en `../doc/agente/`.
 
 Instalación, arranque y pruebas: ver el [README raíz](../README.md).
 
