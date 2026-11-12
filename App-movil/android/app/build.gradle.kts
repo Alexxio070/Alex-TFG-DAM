@@ -7,7 +7,8 @@ plugins {
 android {
     namespace = "io.github.alexxio070.sysmote"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // iroh_flutter exige la NDK 29.0.14206865 (ver aviso de Gradle en la fase 2).
+    ndkVersion = "29.0.14206865"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
