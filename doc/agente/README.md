@@ -24,6 +24,7 @@ Fuente de verdad del stack: `CLAUDE.md` y `../documentos-generales-del-proyecto/
 | [`terminal-sesiones-tmux.md`](terminal-sesiones-tmux.md) | Diseño de la terminal: sesiones persistentes con tmux, ventana en el PC, ciclo de vida, requisitos y pendientes |
 | [`tui.md`](tui.md) | Especificación de la TUI del agente (`sysmote`): estructura, las cuatro secciones (Emparejamiento con sus subpestañas, Historial, Base de datos, Notas), comportamiento y colores |
 | [`ESTRUCTURA.md`](ESTRUCTURA.md) | Organización de `agent/sysmote/` (`api/`, `services/`, `repositories/`, `models/`, `tui/`) y qué entra en cada carpeta, fase a fase |
+| [`tests.md`](tests.md) | Los tests del agente (`agent/tests/`): qué prueba cada archivo y para qué sirve |
 
 ## Dónde está el resto sobre el agente
 
