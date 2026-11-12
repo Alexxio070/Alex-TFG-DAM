@@ -41,7 +41,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 | **API REST y WebSocket** | `01` §3 (resumen de rutas), §4.3 · `02` §3.1 · [terminal-sesiones-tmux](../agente/terminal-sesiones-tmux.md) §3 |
 | **Base de datos** (SQLite, `schema.sql`, repositorios) | `01` §6 · `02` §6 · `04` tareas transversales |
 | **Instalación y servicio** (pipx, systemd, linger) | `01` §8 · `02` §7 · `04` fase 5 · [README](../../README.md) |
-| **Pruebas** | `01` §9.3 · `02` §8.3, §8.4 · `04` entorno de pruebas |
+| **Pruebas** | `01` §9.3 · `02` §8.3, §8.4 · `04` entorno de pruebas · [tests del agente](../agente/tests.md) · [tests de la app](../ui/tests.md) |
 
 ## 3. Ideas futuras y funciones descartadas
 
