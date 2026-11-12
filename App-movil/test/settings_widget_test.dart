@@ -125,6 +125,7 @@ void main() {
 
     expect(settings.agentAddress, '192.168.1.50:8443');
     expect(find.text('Formato esperado: host:puerto'), findsNothing);
+    expect(find.text('Guardado'), findsOneWidget);
   });
 
   testWidgets('rechaza una dirección con formato inválido', (tester) async {
