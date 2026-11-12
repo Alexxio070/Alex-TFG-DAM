@@ -77,6 +77,35 @@ void main() {
     await closeApp(tester);
   });
 
+  testWidgets('el punto de montaje largo no desborda en un móvil estrecho', (tester) async {
+    tester.view.physicalSize = const Size(360 * 2, 800 * 2);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(metricsRepository: _LongMountMetricsRepository()));
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel('Abrir menú'));
+    await pumpFor(tester, 500);
+    await tester.tap(find.text('Métricas'));
+    await pumpFor(tester, 600);
+
+    // Las tarjetas de CPU/RAM también desbordan en un móvil tan estrecho
+    // (fallo aparte, pendiente); aquí solo importa la tarjeta de disco.
+    tester.takeException();
+
+    final gesture = await tester.startGesture(tester.getCenter(find.text('Uso de disco')));
+    await tester.pump(const Duration(milliseconds: 1100));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.takeException(), isNull);
+
+    final screenWidth = tester.view.physicalSize.width / tester.view.devicePixelRatio;
+    final mountRect = tester.getRect(find.text('/home/juegos-y-apss'));
+    expect(mountRect.right, lessThanOrEqualTo(screenWidth));
+
+    await closeApp(tester);
+  });
+
   testWidgets('avisa cuando no hay sensor de temperatura', (tester) async {
     tester.view.physicalSize = const Size(700 * 3, 1400 * 3);
     tester.view.devicePixelRatio = 3;
@@ -91,6 +120,30 @@ void main() {
     expect(find.text('No se ha podido mostrar la temperatura'), findsOneWidget);
     await closeApp(tester);
   });
+}
+
+class _LongMountMetricsRepository implements MetricsRepository {
+  @override
+  Future<MachineInfo> loadInfo() async => const MachineInfo(
+    ramTotalGb: 34,
+    partitions: [
+      Partition(id: 'root', mount: '/', device: '/dev/nvme0n1p6', usedGb: 70, totalGb: 380),
+      Partition(
+        id: 'home',
+        mount: '/home/juegos-y-apss',
+        device: '/dev/nvme1n1p2',
+        usedGb: 598,
+        totalGb: 983,
+      ),
+    ],
+  );
+
+  @override
+  Future<List<MetricSample>> loadHistory() async =>
+      List.generate(60, (_) => const MetricSample(cpu: 10, tempC: null, ramGb: 15));
+
+  @override
+  Stream<MetricSample> watch() => const Stream.empty();
 }
 
 class _NoTempMetricsRepository implements MetricsRepository {
