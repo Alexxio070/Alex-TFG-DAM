@@ -94,6 +94,6 @@ Toda la documentación de diseño está en [`doc/`](doc/):
 - [`doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`](doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md) — decisiones tomadas y pendientes.
 - [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
 - [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
-- `doc/iroh/` — qué es iroh, cómo está implementado, problemas encontrados y pruebas.
+- [`doc/iroh/`](doc/iroh/) — qué es iroh, cómo está implementado, problemas encontrados y pruebas.
 
 Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop`; las etiquetas de versión solo para publicar el APK en las releases.
