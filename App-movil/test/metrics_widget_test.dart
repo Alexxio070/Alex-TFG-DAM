@@ -88,9 +88,7 @@ void main() {
     await tester.tap(find.text('Métricas'));
     await pumpFor(tester, 600);
 
-    // Las tarjetas de CPU/RAM también desbordan en un móvil tan estrecho
-    // (fallo aparte, pendiente); aquí solo importa la tarjeta de disco.
-    tester.takeException();
+    expect(tester.takeException(), isNull);
 
     final gesture = await tester.startGesture(tester.getCenter(find.text('Uso de disco')));
     await tester.pump(const Duration(milliseconds: 1100));
@@ -103,6 +101,23 @@ void main() {
     final mountRect = tester.getRect(find.text('/home/juegos-y-apss'));
     expect(mountRect.right, lessThanOrEqualTo(screenWidth));
 
+    await closeApp(tester);
+  });
+
+  testWidgets('las tarjetas de CPU, temperatura y RAM no desbordan en un móvil estrecho', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360 * 2, 800 * 2);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app());
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel('Abrir menú'));
+    await pumpFor(tester, 500);
+    await tester.tap(find.text('Métricas'));
+    await pumpFor(tester, 600);
+
+    expect(tester.takeException(), isNull);
     await closeApp(tester);
   });
 
