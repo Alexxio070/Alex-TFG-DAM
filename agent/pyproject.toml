@@ -10,6 +10,7 @@ dependencies = [
     "textual>=8.2",
     "pydantic>=2.14",
     "qrcode>=8.2",
+    "iroh>=1.2.0",
 ]
 
 [project.optional-dependencies]
