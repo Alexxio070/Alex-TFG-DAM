@@ -33,16 +33,19 @@ class PartitionChip extends StatelessWidget {
             child: SizedBox(
               height: 36,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 spacing: 6,
                 children: [
-                  Text(
-                    mount,
-                    style: TextStyle(
-                      fontFamily: kMonoFont,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: t.ink,
+                  Flexible(
+                    child: Text(
+                      mount,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: kMonoFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: t.ink,
+                      ),
                     ),
                   ),
                   AppIconView(AppIcon.chevronDown, color: t.ink, size: 16),
@@ -141,24 +144,28 @@ class PartitionOption extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 spacing: 12,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 2,
-                    children: [
-                      Text(
-                        partition.mount,
-                        style: TextStyle(
-                          fontFamily: kMonoFont,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: color,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 2,
+                      children: [
+                        Text(
+                          partition.mount,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: kMonoFont,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: color,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '${partition.device} · $size',
-                        style: TextStyle(fontSize: 12, color: t.muted),
-                      ),
-                    ],
+                        Text(
+                          '${partition.device} · $size',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, color: t.muted),
+                        ),
+                      ],
+                    ),
                   ),
                   if (selected)
                     AppIconView(AppIcon.check, color: color, size: 20, strokeWidth: 2.2),

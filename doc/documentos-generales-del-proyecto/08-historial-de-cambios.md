@@ -54,6 +54,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 21/10/2026 | Interfaz | Procesos: se recupera como sección propia de la app, con búsqueda y congelar | Aplicado en la documentación |
 | 22/10/2026 | Repositorio | Etiquetas de versión permitidas solo para las releases del APK | Aplicado en la documentación |
 | 03/11/2026 | Repositorio | El proyecto pasa a llamarse Sysmote (app, agente, comando, paquete y documentación) | Aplicado en la documentación; el código está en las ramas feature |
+| 12/11/2026 | Interfaz | `shared_preferences` 2.5.x no guardaba nada en dispositivo real (`NoSuchMethodError`); fijada una pareja de versiones anterior | Aplicado en código |
 
 ---
 
@@ -465,3 +466,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** decisión del autor.
 - **Afecta a:** `agent/`, `App-movil/`, `README.md`, `CLAUDE.md`, `01`–`07`, `09`, `doc/agente/` y `doc/ui/`. Las entradas anteriores de este historial conservan el nombre antiguo, porque describen lo que se hizo en su fecha. El repositorio de GitHub conserva de momento su nombre (`Alex-TFG-DAM`).
 - **Estado:** aplicado en la documentación y en `feature/agent` y `feature/interfaz`; con el id de Android nuevo, el móvil trata la app como una distinta a la instalada antes.
+
+### 12/11/2026 — `shared_preferences` no guardaba nada en un dispositivo real
+
+- **Qué era:** `shared_preferences: ^2.5.6` resolvía `shared_preferences_android` en su versión 2.5.0 (y, tras un intento de actualizarlo a mano, 2.5.5). En el emulador y en los tests (que usan `SharedPreferences.setMockInitialValues`) todo funcionaba; en un móvil real **ningún ajuste se guardaba** tras cerrar la app del todo y reabrirla — ni el identificador de iroh, ni la dirección del agente, ni el tema oscuro, ni nada.
+- **Causa encontrada:** con `adb logcat`, cada llamada a `shared_preferences` (leer y guardar) lanzaba `PlatformException` → `java.lang.NoSuchMethodError: no non-static method ...SharedPreferencesApiRegistrar.getAll(...)` (y, tras subir la versión de `shared_preferences_android` a 2.5.5, el mismo error pero con `getInstance`). Es un desajuste real entre el código Dart generado por `shared_preferences` 2.5.6 y la clase Kotlin de `shared_preferences_android` en esas versiones — no se ha confirmado si es un fallo conocido y reportado en el repositorio oficial, solo que es reproducible de forma determinista en este proyecto. No tiene relación con MIUI ni con iroh, aunque se descubrió probando el identificador de iroh.
+- **Qué es ahora:** se fija con `dependency_overrides` en `App-movil/pubspec.yaml` una pareja de versiones anterior y estable: `shared_preferences: 2.3.3` y `shared_preferences_android: 2.3.4`. Probado en un móvil real (Xiaomi/MIUI): el ajuste sobrevive a cerrar la app del todo y reabrirla.
+- **Pendiente:** confirmar si hay una versión más reciente que corrija el fallo (para poder quitar el *override*) y, si no, considerar abrir un issue en el repositorio de `shared_preferences`.
+- **Afecta a:** `App-movil/pubspec.yaml`. También de paso: `SettingsViewModel._update()` ahora espera (`await`) a que `save()` termine antes de dar el cambio por guardado, y `ConnectionFields` muestra un «Guardado» al terminar — refuerzos añadidos durante esta misma depuración, independientes del fallo de versión.
+- **Estado:** aplicado.

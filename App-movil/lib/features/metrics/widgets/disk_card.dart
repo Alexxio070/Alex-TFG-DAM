@@ -160,6 +160,7 @@ class _DiskCardState extends State<DiskCard> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: 12,
                       children: [
                         Text(
                           'Uso de disco',
@@ -169,7 +170,7 @@ class _DiskCardState extends State<DiskCard> {
                             color: t.muted2,
                           ),
                         ),
-                        PartitionChip(mount: p.mount, onTap: _toggleMenu),
+                        Flexible(child: PartitionChip(mount: p.mount, onTap: _toggleMenu)),
                       ],
                     ),
                     Row(
@@ -219,9 +220,20 @@ class _DiskCardState extends State<DiskCard> {
                       style: TextStyle(fontSize: 12, color: t.muted),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 8,
                         children: [
-                          Text('Usado ${unit.format(p.usedGb)} $label'),
-                          Text('Libre ${unit.format(p.totalGb - p.usedGb)} $label'),
+                          Flexible(
+                            child: Text(
+                              'Usado ${unit.format(p.usedGb)} $label',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Flexible(
+                            child: Text(
+                              'Libre ${unit.format(p.totalGb - p.usedGb)} $label',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                     ),
