@@ -164,6 +164,6 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 ## 9. Pendientes conocidos
 
-Lista completa y actualizada en [`../documentos-generales-del-proyecto/04-plan-de-fases.md`](../documentos-generales-del-proyecto/04-plan-de-fases.md), sección «Pendientes». El más relevante para esta interfaz:
+Lista completa y actualizada en `../documentos-generales-del-proyecto/04-plan-de-fases.md`, sección «Pendientes». El más relevante para esta interfaz:
 
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).

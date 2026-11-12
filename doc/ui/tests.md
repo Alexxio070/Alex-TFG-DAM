@@ -7,7 +7,7 @@ cd App-movil && flutter test                    # todos
 cd App-movil && flutter test test/<archivo>.dart  # uno solo
 ```
 
-Casi todos usan repositorios falsos o en memoria: prueban la app, no su conexión real con el agente. La única prueba de esa conexión es `http_metrics_repository_test`, con un cliente HTTP simulado. Las pruebas con el agente real (por USB con `adb reverse`) se hicieron a mano en la fase 1 y constan en el [plan de fases](../documentos-generales-del-proyecto/04-plan-de-fases.md).
+Casi todos usan repositorios falsos o en memoria: prueban la app, no su conexión real con el agente. La única prueba de esa conexión es `http_metrics_repository_test`, con un cliente HTTP simulado. Las pruebas con el agente real (por USB con `adb reverse`) se hicieron a mano en la fase 1 y constan en el plan de fases.
 
 ## Apoyo (no son tests)
 
