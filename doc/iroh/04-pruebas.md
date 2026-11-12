@@ -2,7 +2,7 @@
 
 Qué cubre cada test automático de la integración de iroh, y la matriz de pruebas manuales de la fase 2 (`../documentos-generales-del-proyecto/04-plan-de-fases.md`). Se completa a medida que se hacen las pruebas.
 
-Abreviaturas: `04` plan de fases, `02` necesidades tecnológicas, `07` decisiones.
+Abreviaturas: `04` [plan de fases](../documentos-generales-del-proyecto/04-plan-de-fases.md), `02` [necesidades tecnológicas](../documentos-generales-del-proyecto/02-necesidades-tecnologicas.md), `07` [decisiones](../documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md).
 
 ---
 
@@ -62,9 +62,9 @@ el RTT y la dirección remota.
 **Pendiente antes de dar por cerrada la prueba 5:** reiniciar también el PC,
 no solo el proceso del agente.
 
-**Pendiente antes de repetir la prueba 4 en otra red:** confirmar si la red
-usada tiene las mismas restricciones que la del centro (`02` §3.3, decisión
-abierta en `07` §3.8).
+**Red restrictiva real:** repetida la conexión desde una red restrictiva real;
+probada y funciona (confirmado por el autor, 12/11/2026). Cierra la duda sobre
+si la red del centro deja salir el tráfico hacia los relés (`02` §3.3).
 
 ---
 
