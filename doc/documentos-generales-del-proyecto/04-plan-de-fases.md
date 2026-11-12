@@ -89,7 +89,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
   3. Bloquear el UDP saliente en el cortafuegos del PC (red restrictiva simulada): todo el tráfico debe ir por el relé.
   4. Cambiar de Wi-Fi a datos móviles en mitad del uso: comprobar la reconexión.
   5. Reiniciar el agente y el PC: el identificador iroh debe ser el mismo.
-- Después, repetir la conexión desde una red restrictiva real (centro o Wi-Fi pública).
+- Después, repetir la conexión desde una red restrictiva real (centro o Wi-Fi pública): probada y funciona (12/11/2026).
 
 Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 
@@ -97,7 +97,7 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 
 **Al terminar:** generar el APK y publicarlo como release `v0.1-beta`.
 
-**Decisiones abiertas:** cómo usar iroh desde Flutter y si la red del centro deja salir el tráfico hacia los relés (`07` §3.8).
+**Decisiones abiertas:** cómo usar iroh desde Flutter (`07` §3.8). La duda sobre la red del centro quedó resuelta con la prueba en una red restrictiva real.
 
 **Terminada cuando:** las métricas de la fase 1 se ven en el móvil desde datos móviles contra el PC de casa, y la matriz de pruebas está documentada.
 
