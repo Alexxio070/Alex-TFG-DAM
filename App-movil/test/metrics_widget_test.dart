@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:tfg/app.dart';
-import 'package:tfg/data/models/metrics.dart';
-import 'package:tfg/data/repositories/metrics_repository.dart';
-import 'package:tfg/features/settings/settings_viewmodel.dart';
+import 'package:sysmote/app.dart';
+import 'package:sysmote/data/models/metrics.dart';
+import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/features/settings/settings_viewmodel.dart';
 
 import 'helpers/app_harness.dart';
 
@@ -64,7 +64,7 @@ void main() {
   testWidgets('muestra temperatura en Fahrenheit y GiB según ajustes', (tester) async {
     await openMetrics(tester);
     final settings = Provider.of<SettingsViewModel>(
-      tester.element(find.byType(TfgApp)),
+      tester.element(find.byType(SysmoteApp)),
       listen: false,
     );
 

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/models/note.dart';
-import 'package:tfg/data/repositories/notes_repository.dart';
-import 'package:tfg/data/repositories/pairing_repository.dart';
-import 'package:tfg/features/notes/notes_viewmodel.dart';
+import 'package:sysmote/data/models/note.dart';
+import 'package:sysmote/data/repositories/notes_repository.dart';
+import 'package:sysmote/data/repositories/pairing_repository.dart';
+import 'package:sysmote/features/notes/notes_viewmodel.dart';
 
 class _SlowNotesRepository implements NotesRepository {
   final Map<String, Duration> delays;

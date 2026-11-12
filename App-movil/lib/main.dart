@@ -28,7 +28,7 @@ Future<void> main() async {
           return HttpMetricsRepository(() => settings.agentAddress);
         },
       ),
-      child: const TfgApp(),
+      child: const SysmoteApp(),
     ),
   );
 }

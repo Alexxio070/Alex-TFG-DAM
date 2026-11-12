@@ -1,6 +1,6 @@
 # App-movil
 
-Cliente Android (Flutter) de Linux System Companion: muestra el estado del PC y manda órdenes al agente.
+Cliente Android (Flutter) de Sysmote: muestra el estado del PC y manda órdenes al agente.
 
 ```bash
 flutter pub get

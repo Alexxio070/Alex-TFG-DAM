@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.alexxio070.companion"
+    namespace = "io.github.alexxio070.sysmote"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.alexxio070.companion"
+        applicationId = "io.github.alexxio070.sysmote"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION

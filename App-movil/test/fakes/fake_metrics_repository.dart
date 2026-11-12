@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:tfg/data/models/metrics.dart';
-import 'package:tfg/data/repositories/metrics_repository.dart';
+import 'package:sysmote/data/models/metrics.dart';
+import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 class FakeMetricsRepository implements MetricsRepository {
   final _random = Random();

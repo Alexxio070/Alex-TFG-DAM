@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/fake/fake_macro_repository.dart';
-import 'package:tfg/data/models/home_item.dart';
-import 'package:tfg/features/home/home_viewmodel.dart';
+import 'package:sysmote/data/fake/fake_macro_repository.dart';
+import 'package:sysmote/data/models/home_item.dart';
+import 'package:sysmote/features/home/home_viewmodel.dart';
 
 void main() {
   Future<HomeViewModel> openHome() async {

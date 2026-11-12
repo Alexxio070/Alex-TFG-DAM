@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfg/data/fake/fake_notes_repository.dart';
-import 'package:tfg/data/models/note.dart';
-import 'package:tfg/data/repositories/notes_repository.dart';
-import 'package:tfg/features/notes/note_form_view.dart';
+import 'package:sysmote/data/fake/fake_notes_repository.dart';
+import 'package:sysmote/data/models/note.dart';
+import 'package:sysmote/data/repositories/notes_repository.dart';
+import 'package:sysmote/features/notes/note_form_view.dart';
 
 import 'helpers/app_harness.dart';
 
