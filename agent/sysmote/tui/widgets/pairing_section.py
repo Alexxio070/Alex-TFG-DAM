@@ -4,6 +4,8 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, ContentSwitcher, Static
 
+from sysmote.tui.sections import select_section
+
 TAB_IDS = {
     "tab-device": "device",
     "tab-security": "security",
@@ -39,12 +41,7 @@ class PairingSection(Container):
             yield ServiceTab(id="service")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        tab = TAB_IDS.get(event.button.id)
-        if tab is None:
-            return
-        self.query_one("#pairing-tabs", ContentSwitcher).current = tab
-        for button in self.query("#tabs Button"):
-            button.variant = "primary" if button is event.button else "default"
+        select_section(self, TAB_IDS, "#pairing-tabs", "#tabs Button", event.button)
 
 
 class DeviceTab(Vertical):
