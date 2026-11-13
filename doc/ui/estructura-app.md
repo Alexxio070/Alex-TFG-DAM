@@ -32,7 +32,10 @@ lib/
   data/                          de dónde salen los datos
     models/                      home_item, metrics, note, note_links, settings (enums y constantes)
     repositories/                interfaces abstractas
-    http/                        implementación real contra el agente (HttpMetricsRepository)
+    agent_metrics_repository.dart  parte común de los repositorios de métricas del agente (parseo del JSON, loadInfo, loadHistory, watch)
+    connection_mode_metrics_repository.dart  elige entre HTTP e iroh según el modo de conexión de Ajustes
+    http/                        implementación real contra el agente por HTTP (HttpMetricsRepository)
+    iroh/                        implementación real contra el agente por un túnel iroh (IrohMetricsRepository)
     local/                       implementación real con shared_preferences (ajustes)
     fake/                        implementaciones con datos de prueba que usa la app
   features/                      una carpeta por sección
@@ -57,7 +60,7 @@ Todo lo relacionado con los datos.
 
 - `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones.
 - `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo.
-- `http/` y `local/`: implementaciones reales (agente por HTTP, ajustes con `shared_preferences`).
+- `http/`, `iroh/` y `local/`: implementaciones reales (agente por HTTP, agente por iroh, ajustes con `shared_preferences`). `http/` e `iroh/` heredan de `agent_metrics_repository.dart` y solo implementan cómo traer el JSON de `/metrics`; `connection_mode_metrics_repository.dart` elige una u otra según el ajuste.
 - `fake/`: implementaciones con datos de prueba que se usan de verdad en la app (terminal, macros, notas, emparejado) mientras no existe esa parte del agente.
 
 ### features/
@@ -94,7 +97,7 @@ Para conectar el agente real basta con escribir la implementación nueva y cambi
 | Repositorio | Entrega | Implementación en `main.dart` |
 |---|---|---|
 | `MacroRepository` | cargar y guardar la cuadrícula (macros y carpetas) y ejecutar una macro | `FakeMacroRepository` |
-| `MetricsRepository` | datos de la máquina (RAM total, particiones), historial de 60 s y flujo de muestras; lanza `AgentUnavailableException` si el agente no responde | `HttpMetricsRepository`, contra el agente real |
+| `MetricsRepository` | datos de la máquina (RAM total, particiones), historial de 60 s y flujo de muestras; lanza `AgentUnavailableException` si el agente no responde | `ConnectionModeMetricsRepository`, que usa `HttpMetricsRepository` (modo local) o `IrohMetricsRepository` (modo iroh) |
 | `TerminalRepository` | enviar teclas, recibir la salida, crear sesión (`createSession`), avisar de que terminó (`sessionEnded`) y cerrar (`close`); se inyecta una fábrica (`TerminalRepository Function()`), una instancia por pestaña | `FakeTerminalRepository` |
 | `NotesRepository` | listar (con búsqueda), crear, editar y borrar notas | `FakeNotesRepository` |
 | `PairingRepository` | estado de emparejado, emparejar y desemparejar | `FakePairingRepository` |
@@ -120,8 +123,8 @@ Ejemplo, tocar la macro «Bloquear»:
 Ejemplo con un repositorio ya real, Métricas:
 
 1. `MetricsViewModel.start()` pide `loadInfo()`/`loadHistory()` y se suscribe a `watch()`.
-2. `HttpMetricsRepository` hace `GET http://<dirección>/metrics` al agente; si tarda más de 3 s o responde mal, lanza `AgentUnavailableException`.
-3. El ViewModel guarda ese error (`error`) y la vista (`MetricsView`) muestra el aviso «No se puede conectar con el agente» con un botón «Reintentar» en vez de las tarjetas.
+2. El repositorio activo (`HttpMetricsRepository` o `IrohMetricsRepository`) pide `/metrics` al agente; si tarda más de 3 s o responde mal, lanza `AgentUnavailableException`.
+3. El ViewModel guarda ese error (`error`). Si aún no había datos, la vista (`MetricsView`) muestra el aviso «No se puede conectar con el agente» con un botón «Reintentar»; si ya los había, deja las tarjetas con los últimos valores y muestra encima «Conexión perdida. Reintentando…», que desaparece sola cuando llega una muestra.
 4. Al salir de la pantalla se llama a `stop()` (y al volver, `start()` de nuevo), con `AppLifecycleListener` para pausar también en segundo plano: así no se sigue sondeando al agente sin necesidad.
 
 ## Decisiones tomadas
