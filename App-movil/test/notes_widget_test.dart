@@ -9,17 +9,8 @@ import 'package:sysmote/features/notes/note_form_view.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
-  Future<void> openNotes(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Notas'));
-    await pumpFor(tester, 600);
-  }
+  Future<void> openNotes(WidgetTester tester, {NotesRepository? repository}) =>
+      openSection(tester, 'Notas', root: app(notesRepository: repository));
 
   Finder note(String text) => find.textContaining(text, findRichText: true);
   Finder formField() => find.descendant(
@@ -124,16 +115,8 @@ void main() {
   });
 
   testWidgets('un error al guardar avisa y deja reintentar', (tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
     final notes = _FailingNotesRepository();
-    await tester.pumpWidget(app(notesRepository: notes));
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Notas'));
-    await pumpFor(tester, 600);
+    await openNotes(tester, repository: notes);
 
     await tester.tap(find.bySemanticsLabel('Nueva nota'));
     await pumpFor(tester, 500);
@@ -153,16 +136,8 @@ void main() {
   });
 
   testWidgets('no deja guardar dos veces mientras la primera está en marcha', (tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
     final notes = _FailingNotesRepository();
-    await tester.pumpWidget(app(notesRepository: notes));
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Notas'));
-    await pumpFor(tester, 600);
+    await openNotes(tester, repository: notes);
 
     await tester.tap(find.bySemanticsLabel('Nueva nota'));
     await pumpFor(tester, 500);

@@ -31,3 +31,23 @@ Future<void> pumpFor(WidgetTester tester, int milliseconds) async {
     await tester.pump(const Duration(milliseconds: 100));
   }
 }
+
+/// Monta [root] (por defecto, [app]) en una pantalla de móvil de [size] puntos
+/// y abre [section] desde el menú lateral.
+Future<void> openSection(
+  WidgetTester tester,
+  String section, {
+  Widget? root,
+  Size size = const Size(390, 844),
+  double pixelRatio = 3,
+}) async {
+  tester.view.physicalSize = size * pixelRatio;
+  tester.view.devicePixelRatio = pixelRatio;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(root ?? app());
+  await tester.pump();
+  await tester.tap(find.bySemanticsLabel('Abrir menú'));
+  await pumpFor(tester, 500);
+  await tester.tap(find.bySemanticsLabel(section));
+  await pumpFor(tester, 600);
+}
