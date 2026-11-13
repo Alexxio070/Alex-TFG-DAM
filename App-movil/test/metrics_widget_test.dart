@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -9,17 +11,14 @@ import 'package:sysmote/features/settings/settings_viewmodel.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
-  Future<void> openMetrics(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(700 * 3, 1400 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Métricas'));
-    await pumpFor(tester, 600);
-  }
+  Future<void> openMetrics(WidgetTester tester, {MetricsRepository? repository, Size? size}) =>
+      openSection(
+        tester,
+        'Métricas',
+        root: app(metricsRepository: repository),
+        size: size ?? const Size(700, 1400),
+        pixelRatio: size == null ? 3 : 2,
+      );
 
   Future<void> closeApp(WidgetTester tester) => tester.pumpWidget(const SizedBox());
 
@@ -78,16 +77,7 @@ void main() {
   });
 
   testWidgets('el punto de montaje largo no desborda en un móvil estrecho', (tester) async {
-    tester.view.physicalSize = const Size(360 * 2, 800 * 2);
-    tester.view.devicePixelRatio = 2;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app(metricsRepository: _LongMountMetricsRepository()));
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Métricas'));
-    await pumpFor(tester, 600);
-
+    await openMetrics(tester, repository: _StaticMetricsRepository(), size: const Size(360, 800));
     expect(tester.takeException(), isNull);
 
     final gesture = await tester.startGesture(tester.getCenter(find.text('Uso de disco')));
@@ -96,52 +86,64 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(tester.takeException(), isNull);
-
-    final screenWidth = tester.view.physicalSize.width / tester.view.devicePixelRatio;
     final mountRect = tester.getRect(find.text('/home/juegos-y-apss'));
-    expect(mountRect.right, lessThanOrEqualTo(screenWidth));
-
+    expect(mountRect.right, lessThanOrEqualTo(360));
     await closeApp(tester);
   });
 
   testWidgets('las tarjetas de CPU, temperatura y RAM no desbordan en un móvil estrecho', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(360 * 2, 800 * 2);
-    tester.view.devicePixelRatio = 2;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Métricas'));
-    await pumpFor(tester, 600);
+    await openMetrics(tester, size: const Size(360, 800));
 
     expect(tester.takeException(), isNull);
     await closeApp(tester);
   });
 
   testWidgets('avisa cuando no hay sensor de temperatura', (tester) async {
-    tester.view.physicalSize = const Size(700 * 3, 1400 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app(metricsRepository: _NoTempMetricsRepository()));
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Métricas'));
-    await pumpFor(tester, 600);
+    await openMetrics(tester, repository: _StaticMetricsRepository());
 
     expect(find.text('No se ha podido mostrar la temperatura'), findsOneWidget);
     await closeApp(tester);
   });
+
+  testWidgets('avisa cuando no hay particiones y sigue mostrando el resto', (tester) async {
+    await openMetrics(tester, repository: _StaticMetricsRepository(partitions: const []));
+
+    expect(find.text('Uso de CPU'), findsOneWidget);
+    expect(find.text('El agente no ha encontrado ninguna partición'), findsOneWidget);
+    await closeApp(tester);
+  });
+
+  testWidgets('muestra un indicador mientras conecta con el agente', (tester) async {
+    final pending = Completer<MachineInfo>();
+    await openMetrics(tester, repository: _StaticMetricsRepository(info: pending.future));
+
+    expect(find.text('Conectando con el agente…'), findsOneWidget);
+    await closeApp(tester);
+  });
+
+  testWidgets('avisa si se pierde la conexión sin borrar los últimos datos', (tester) async {
+    final samples = StreamController<MetricSample>();
+    addTearDown(samples.close);
+    await openMetrics(tester, repository: _StaticMetricsRepository(samples: samples.stream));
+
+    // El aviso llega por el stream de forma asíncrona: hace falta un fotograma más.
+    samples.addError(AgentUnavailableException('El agente no respondió a tiempo'));
+    await pumpFor(tester, 200);
+    expect(find.text('Conexión perdida. Reintentando…'), findsOneWidget);
+    expect(find.text('Uso de CPU'), findsOneWidget);
+
+    samples.add(const MetricSample(cpu: 20, tempC: null, ramGb: 15));
+    await pumpFor(tester, 200);
+    expect(find.text('Conexión perdida. Reintentando…'), findsNothing);
+    await closeApp(tester);
+  });
 }
 
-class _LongMountMetricsRepository implements MetricsRepository {
-  @override
-  Future<MachineInfo> loadInfo() async => const MachineInfo(
-    ramTotalGb: 34,
-    partitions: [
+class _StaticMetricsRepository implements MetricsRepository {
+  _StaticMetricsRepository({
+    this.partitions = const [
       Partition(id: 'root', mount: '/', device: '/dev/nvme0n1p6', usedGb: 70, totalGb: 380),
       Partition(
         id: 'home',
@@ -151,29 +153,22 @@ class _LongMountMetricsRepository implements MetricsRepository {
         totalGb: 983,
       ),
     ],
-  );
+    this.info,
+    this.samples = const Stream.empty(),
+  });
+
+  final List<Partition> partitions;
+  final Future<MachineInfo>? info;
+  final Stream<MetricSample> samples;
+
+  @override
+  Future<MachineInfo> loadInfo() =>
+      info ?? Future.value(MachineInfo(ramTotalGb: 34, partitions: partitions));
 
   @override
   Future<List<MetricSample>> loadHistory() async =>
-      List.generate(60, (_) => const MetricSample(cpu: 10, tempC: null, ramGb: 15));
+      List.generate(kHistoryLength, (_) => const MetricSample(cpu: 10, tempC: null, ramGb: 15));
 
   @override
-  Stream<MetricSample> watch() => const Stream.empty();
-}
-
-class _NoTempMetricsRepository implements MetricsRepository {
-  @override
-  Future<MachineInfo> loadInfo() async => const MachineInfo(
-        ramTotalGb: 16,
-        partitions: [
-          Partition(id: 'root', mount: '/', device: 'nvme0n1p2', usedGb: 64.2, totalGb: 120),
-        ],
-      );
-
-  @override
-  Future<List<MetricSample>> loadHistory() async =>
-      List.generate(60, (_) => const MetricSample(cpu: 10, tempC: null, ramGb: 9));
-
-  @override
-  Stream<MetricSample> watch() => const Stream.empty();
+  Stream<MetricSample> watch() => samples;
 }
