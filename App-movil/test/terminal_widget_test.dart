@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:sysmote/app.dart';
@@ -15,15 +14,7 @@ void main() {
       );
 
   Future<TerminalViewModel> openTerminal(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Terminal'));
-    await pumpFor(tester, 600);
+    await openSection(tester, 'Terminal');
     await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
     await pumpFor(tester, 700);
     return tabsOf(tester).active;
@@ -32,15 +23,7 @@ void main() {
   String screen(TerminalViewModel vm) => vm.terminal.buffer.getText();
 
   testWidgets('empieza vacía con el aviso y pasa al prompt real al tocarla', (tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Terminal'));
-    await pumpFor(tester, 600);
+    await openSection(tester, 'Terminal');
 
     expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
 
@@ -56,15 +39,7 @@ void main() {
   });
 
   testWidgets('las teclas escritas mientras se crea la sesión no se pierden', (tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Terminal'));
-    await pumpFor(tester, 600);
+    await openSection(tester, 'Terminal');
 
     await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
     await tester.pump();
@@ -206,15 +181,7 @@ void main() {
   });
 
   testWidgets('cerrar una pestaña mientras se crea la sesión no falla', (tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.text('Terminal'));
-    await pumpFor(tester, 600);
+    await openSection(tester, 'Terminal');
     await tester.tap(find.text('Toca para abrir una terminal en tu PC'));
     await tester.pump();
 
