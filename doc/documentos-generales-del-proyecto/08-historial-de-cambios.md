@@ -57,6 +57,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/11/2026 | Plan | Iroh probado en una red restrictiva real: la duda de la red del centro queda cerrada | Aplicado en la documentación |
 | 12/11/2026 | Interfaz | `shared_preferences` 2.5.x no guardaba nada en dispositivo real (`NoSuchMethodError`); fijada una pareja de versiones anterior | Aplicado en código |
 | 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
+| 13/11/2026 | Interfaz | Métricas avisa de la conexión perdida con datos ya cargados, de la carga y de la ausencia de particiones; los repositorios HTTP e iroh comparten una clase base | Aplicado |
 
 ---
 
@@ -493,3 +494,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** el autor da la fase por cerrada y la implementación ya existe en el código (`App-movil/pubspec.yaml`, `doc/iroh/02-implementacion.md`).
 - **Afecta a:** `01` (§4.1 y §4.4), `02` (§4.2), `04` (fase 2 y beta), `07` (§3.1 y §3.8) y `doc/iroh/README.md`. De la prueba 5 solo se reinició el proceso del agente, no el PC entero; consta en `04` y en `doc/iroh/`.
 - **Estado:** aplicado en la documentación.
+
+### 13/11/2026 — Métricas avisa de la conexión perdida; repositorios de métricas con base común
+
+- **Qué era:** si el agente dejaba de responder con la pantalla de Métricas ya cargada, las gráficas se quedaban congeladas con los últimos valores y sin ningún aviso (el error solo se mostraba si todavía no había datos). Mientras cargaba, la pantalla se quedaba en blanco, y si el agente no devolvía ninguna partición desaparecían también CPU, temperatura y RAM. Además, `HttpMetricsRepository` e `IrohMetricsRepository` duplicaban unas 40 líneas, existía una pantalla aislada de prueba de iroh (`lib/debug/`) y el agente medía la CPU con un bloqueo de 100 ms en cada petición.
+- **Qué es ahora:** Métricas muestra «Conectando con el agente…» mientras carga; «Conexión perdida. Reintentando…» encima de los últimos datos, que desaparece sola cuando vuelve a llegar una muestra; y «El agente no ha encontrado ninguna partición» en lugar de la tarjeta de disco, sin ocultar el resto. Los dos repositorios heredan de `AgentMetricsRepository` y solo implementan cómo traer el JSON; la pantalla aislada se ha borrado (Ajustes → iroh hace lo mismo); `cpu_percent` se mide sin intervalo bloqueante, sobre el tiempo transcurrido desde la llamada anterior.
+- **Por qué:** auditoría del código del 13/11/2026. Los fallos se encontraron leyendo el código; el aviso de conexión perdida se comprobó después en un móvil real parando el agente.
+- **Afecta a:** `doc/ui/interfaz-app.md` (§4), `doc/ui/estructura-app.md`, `doc/ui/tests.md`, `doc/agente/tests.md`, `doc/agente/ESTRUCTURA.md` y `doc/iroh/`. Código: `App-movil/lib/features/metrics/`, `App-movil/lib/data/` y `agent/sysmote/`.
+- **Estado:** aplicado en código y en la documentación.
