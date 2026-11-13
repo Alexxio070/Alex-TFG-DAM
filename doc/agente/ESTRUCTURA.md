@@ -9,6 +9,8 @@ agent/sysmote/
   repositories/   acceso a datos (psutil, SQLite cuando exista)
   models/         modelos Pydantic
   tui/            interfaz de terminal `sysmote` (Textual)
+  iroh_tunnel.py  túnel iroh (fase 2): fuera de las capas, reenvía las conexiones iroh al puerto local del agente
+agent/scripts/    arranque manual del agente con el túnel iroh (prueba de concepto de la fase 2)
 ```
 
 ## Qué entra en cada carpeta, por fase
@@ -25,3 +27,5 @@ agent/sysmote/
 | 9 | espacio de notas, registro QR | notas | `nota` | `Nota` | activa Notas y la subpestaña Dispositivo (QR real, datos del dispositivo emparejado) |
 
 Cada fase solo añade un archivo en la capa que le toca; las carpetas vacías de la fase 1 (`repositories/` sobre todo) se van llenando a partir de la fase 3, cuando aparece la primera tabla. La estructura y el comportamiento completos de la TUI están en [`tui.md`](tui.md).
+
+**Fase 2 (iroh).** `iroh_tunnel.py` vive directamente en `agent/sysmote/`, fuera de las capas, porque no es parte de la API ni toca datos: acepta conexiones iroh y copia los bytes de cada flujo al puerto local donde escucha FastAPI, sin mirarlos. `agent/scripts/iroh_poc.py` arranca a mano el agente y el túnel juntos e imprime el identificador iroh; el arranque automático llegará con `sysmote serve` (fase 5). Detalle en `doc/iroh/`.
