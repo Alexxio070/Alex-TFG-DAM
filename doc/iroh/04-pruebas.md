@@ -10,12 +10,11 @@ Abreviaturas: `04` [plan de fases](../documentos-generales-del-proyecto/04-plan-
 
 ### Agente: `agent/tests/test_iroh_tunnel.py`
 
-Usan el binding de Python real de iroh (sin mocks): un `Endpoint` servidor y uno cliente conectados por loopback, sin relés ni red externa.
+Usan el binding de Python real de iroh (sin mocks): un `Endpoint` servidor y uno cliente conectados por loopback, sin relés ni red externa. La fixture `open_stream` monta los dos `Endpoint`s y devuelve un *stream* hacia el túnel.
 
 | Test | Qué comprueba |
 |---|---|
-| `test_tunnel_forwards_bytes_to_local_server` | El túnel reenvía bytes arbitrarios (no HTTP) entre un *stream* iroh y un servidor TCP local, en los dos sentidos |
-| `test_tunnel_forwards_a_real_metrics_request` | Con un servidor Uvicorn real sirviendo `sysmote.main:app`, una petición `GET /metrics` completa llega y vuelve bien a través del túnel |
+| `test_tunnel_forwards_a_real_metrics_request` | Con un servidor Uvicorn real sirviendo `sysmote.main:app`, una petición `GET /metrics` completa llega y vuelve bien a través del túnel (los dos sentidos del reenvío) |
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si no hay nada escuchando en el puerto local, el *stream* se cierra (`reset`) enseguida en vez de colgarse hasta un *timeout* |
 
 ### App: `App-movil/test/connection_mode_metrics_repository_test.dart`
@@ -24,7 +23,11 @@ Comprueba que `ConnectionModeMetricsRepository` elige el repositorio correcto se
 
 ### Pendiente de test automático
 
-Las partes de `IrohMetricsRepository` que dependen de una conexión iroh real (*timeouts* de conexión y de petición, reconexión tras un fallo) solo están probadas a mano, no con un test automático — habría que levantar un `Endpoint` iroh real dentro del entorno de test de Flutter (viable en Linux con `iroh_quic`, no intentado todavía por tiempo). El fallo al aceptar una conexión entrante en el agente (`_accept_one`) tampoco tiene test automático, por la misma razón: forzar un fallo de *handshake* real.
+Las partes de `IrohMetricsRepository` que dependen de una conexión iroh real (*timeouts* de conexión y de petición, reconexión tras un fallo) solo están probadas a mano, no con un test automático. El fallo al aceptar una conexión entrante en el agente (bucle de `run()`) tampoco tiene test automático: requeriría forzar un fallo de *handshake* real.
+
+**Intentado el 13/11/2026 y descartado por ahora:** sí es viable levantar un `Endpoint` iroh real dentro de `flutter test` en Linux (`dart run iroh_quic:setup` instala la librería nativa de escritorio; `Iroh.init()` y `Endpoint.bind()` funcionan). Pero `IrohMetricsRepository` construye la dirección del agente solo a partir del identificador (hex), igual que en producción, confiando en el descubrimiento de iroh (DNS/pkarr) para resolver direcciones — y esa resolución **falla dentro del proceso `flutter_tester`** en esta máquina, aunque la propia máquina sí tiene DNS e internet (confirmado con `curl`/`nslookup` desde la terminal). No se ha investigado la causa exacta; podría ser una limitación de cómo ese proceso resuelve DNS, no del código. Sin eso, un test así no es fiable: cualquier `connect()` falla por este motivo antes de probar nada del *timeout* o la reconexión que se quería cubrir.
+
+**Lo que sí se encontró y arregló durante el intento** (sin relación con el problema de DNS, visto reproduciendo la reconexión con direcciones directas en vez de descubrimiento): `IrohMetricsRepository` creaba un `Endpoint` nuevo en cada reconexión sin cerrar el anterior (fuga de recursos nativos), y descartaba la conexión muerta sin cerrarla (`connection.close()`) — sin cerrarla, el `Endpoint` del cliente la seguía viendo como activa y una reconexión al mismo agente se quedaba colgada para siempre. Arreglado: un solo `Endpoint` se reutiliza para todas las conexiones, y `fetch()` cierra la conexión muerta antes de olvidarla. Ver `03-problemas-y-soluciones.md`.
 
 ---
 
@@ -34,8 +37,6 @@ Mismos cinco casos que define `04`. El túnel iroh del agente
 (`agent/sysmote/iroh_tunnel.py`, patrón dumbpipe) ya está integrado en la
 app real: el selector Local/iroh de Ajustes elige entre `HttpMetricsRepository`
 e `IrohMetricsRepository` (`App-movil/lib/data/connection_mode_metrics_repository.dart`).
-La pantalla aislada (`lib/debug/iroh_poc_main.dart`) se mantiene solo para
-probar el túnel sin pasar por Ajustes.
 
 | # | Caso | Estado | Resultado |
 |---|---|---|---|
@@ -47,8 +48,9 @@ probar el túnel sin pasar por Ajustes.
 
 **Cómo se hizo la prueba 2:** agente real (FastAPI + túnel iroh) arrancado a
 mano en el PC con `agent/scripts/iroh_poc.py`; identificador iroh copiado a
-mano en la pantalla de prueba de la app (antes de integrarla en Ajustes),
-instalada desde un APK de *debug*.
+mano en una pantalla de prueba aislada de la app (antes de integrar iroh en
+Ajustes; esa pantalla se borró el 13/11/2026 por redundante), instalada desde
+un APK de *debug*.
 
 **Cómo se hizo la prueba 3:** mismo agente ya arrancado; regla de `iptables`
 añadida a mano en el PC y retirada al terminar la prueba
@@ -57,7 +59,10 @@ añadida a mano en el PC y retirada al terminar la prueba
 **Cómo se hizo la prueba 1:** se añadió un diagnóstico temporal a
 `iroh_tunnel.py` (`_watch_path`, usa `connection.paths()`) que imprime por
 consola cada vez que la ruta seleccionada cambia entre relé y directa, con
-el RTT y la dirección remota.
+el RTT y la dirección remota. Se quitó el 13/11/2026: era solo para esta
+prueba y lanzaba un bucle por cada conexión. Para repetirla, basta con
+volver a añadir un bucle que lea `connection.paths()` y mire `is_relay`
+del camino con `is_selected`.
 
 **Pendiente antes de dar por cerrada la prueba 5:** reiniciar también el PC,
 no solo el proceso del agente.
@@ -81,12 +86,12 @@ describe esta fila (12/11/2026).
 | # | Fallo | Qué debería pasar | Estado |
 |---|---|---|---|
 | 1 | Si el agente FastAPI no está arrancado (o se cae) y llega una conexión iroh, el reenvío de esa conexión lanzaba una excepción sin capturar dentro de una tarea en segundo plano: se perdía en silencio y el móvil se quedaba colgado sin aviso | La conexión iroh de esa petición se cierra con `reset` en cuanto falla la conexión al puerto local; el resto del túnel sigue funcionando | **Hecho.** Cubierto por `tests/test_iroh_tunnel.py::test_tunnel_resets_the_stream_when_the_local_agent_is_down` |
-| 2 | Un fallo al aceptar una conexión entrante (`accept`/`connect`) tumbaba el túnel entero | El túnel sigue aceptando conexiones nuevas aunque una falle al aceptarse (`_accept_one` captura `iroh.IrohError` y sigue el bucle) | **Hecho**, revisado por lógica. Sin test automático (requeriría forzar un fallo de *handshake* real); se confirmó en la práctica el 12/11/2026 al caerse el túnel por este motivo antes del arreglo |
+| 2 | Un fallo al aceptar una conexión entrante (`accept`/`connect`) tumbaba el túnel entero | El túnel sigue aceptando conexiones nuevas aunque una falle al aceptarse (el bucle de `run()` captura `iroh.IrohError` y sigue) | **Hecho**, revisado por lógica. Sin test automático (requeriría forzar un fallo de *handshake* real); se confirmó en la práctica el 12/11/2026 al caerse el túnel por este motivo antes del arreglo |
 
 ### En la app (`App-movil/lib/data/iroh/iroh_metrics_repository.dart`)
 
 | # | Fallo | Qué debería pasar | Estado |
 |---|---|---|---|
-| 3 | Conectar no tenía límite de tiempo: si el identificador no era alcanzable, se quedaba esperando para siempre | A los 5 s, `AgentUnavailableException` en vez de quedarse colgado | **Hecho** (`_connectTimeout` en `_ensureConnection`). Sin test automático: requeriría una conexión iroh real en el entorno de test de Flutter |
-| 4 | Cada petición de métricas tampoco tenía límite de tiempo: si el agente se colgaba a medias, la gráfica se quedaba congelada sin avisar | A los 3 s (mismo tiempo que `HttpMetricsRepository`) se muestra el error en vez de quedarse congelada | **Hecho** (`_fetchTimeout` en `_fetch`). Mismo motivo: sin test automático |
-| 5 | Reintentar reintentaba sobre la misma conexión QUIC; si esa conexión ya había muerto (agente reiniciado, cambio de red), reintentaba para siempre sin poder recuperarse | Reintentar abre una conexión nueva desde cero si la anterior falló, y recupera las métricas si el agente vuelve a estar disponible | **Hecho** (`_connection` se pone a `null` en cualquier fallo de `_ensureConnection` o `_exchange`, así el siguiente intento reconecta). Confirmado a mano en la prueba 4 de la matriz (cambio de red en caliente). Sin test automático |
+| 3 | Conectar no tenía límite de tiempo: si el identificador no era alcanzable, se quedaba esperando para siempre | A los 5 s, `AgentUnavailableException` en vez de quedarse colgado | **Hecho** (`_connectTimeout` en `_connect`). Sin test automático: requeriría una conexión iroh real en el entorno de test de Flutter |
+| 4 | Cada petición de métricas tampoco tenía límite de tiempo: si el agente se colgaba a medias, la gráfica se quedaba congelada sin avisar | A los 3 s (mismo tiempo que `HttpMetricsRepository`) se muestra el error en vez de quedarse congelada | **Hecho** (`_fetchTimeout` en `fetch`). Hasta el 13/11/2026 el error solo se veía si la pantalla aún no tenía datos; con datos ya cargados la gráfica se congelaba sin avisar (ver `03-problemas-y-soluciones.md` §7). El *timeout* sigue sin test automático; el aviso en pantalla sí lo tiene (`metrics_widget_test.dart`) |
+| 5 | Reintentar reintentaba sobre la misma conexión QUIC; si esa conexión ya había muerto (agente reiniciado, cambio de red), reintentaba para siempre sin poder recuperarse | Reintentar abre una conexión nueva desde cero si la anterior falló, y recupera las métricas si el agente vuelve a estar disponible | **Hecho** (si falla la petición, `fetch` cierra la conexión y pone `_connection` a `null`, así el siguiente intento reconecta). Confirmado a mano en la prueba 4 de la matriz (cambio de red en caliente). Sin test automático |
