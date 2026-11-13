@@ -2,30 +2,30 @@ import 'dart:convert';
 
 import 'package:iroh_flutter/iroh_flutter.dart';
 
-import '../models/metrics.dart';
+import '../agent_metrics_repository.dart';
 import '../repositories/metrics_repository.dart';
 
 const _alpn = 'sysmote/tunnel/0';
 const _connectTimeout = Duration(seconds: 5);
 const _fetchTimeout = Duration(seconds: 3);
 
-/// Pide /metrics al agente a través de un túnel iroh, igual que
-/// [HttpMetricsRepository] lo pide por HTTP directo.
-class IrohMetricsRepository implements MetricsRepository {
+/// Pide `/metrics` al agente a través de un túnel iroh: la misma petición
+/// HTTP que [HttpMetricsRepository], enviada por un *stream* de iroh.
+class IrohMetricsRepository extends AgentMetricsRepository {
   IrohMetricsRepository(this._endpointId);
 
   final String Function() _endpointId;
+  Endpoint? _endpoint;
   Connection? _connection;
 
-  Future<Connection> _ensureConnection() async {
-    final existing = _connection;
-    if (existing != null) return existing;
+  // Un solo Endpoint para todas las conexiones: crear uno por reconexión
+  // los iba dejando sin cerrar.
+  Future<Connection> _connect() async {
+    if (_connection case final connection?) return connection;
     await Iroh.init();
-    final endpoint = await Endpoint.bind(alpns: [utf8.encode(_alpn)]);
+    final endpoint = _endpoint ??= await Endpoint.bind(alpns: [utf8.encode(_alpn)]);
     final addr = EndpointAddr(PublicKey.fromHex(_endpointId()));
-    final connection = await endpoint.connect(addr, utf8.encode(_alpn)).timeout(_connectTimeout);
-    _connection = connection;
-    return connection;
+    return _connection = await endpoint.connect(addr, utf8.encode(_alpn)).timeout(_connectTimeout);
   }
 
   Future<String> _exchange(Connection connection) async {
@@ -37,22 +37,24 @@ class IrohMetricsRepository implements MetricsRepository {
     return utf8.decode(await recv.readToEnd(1000000));
   }
 
-  Future<Map<String, dynamic>> _fetch() async {
-    Connection connection;
+  @override
+  Future<Map<String, dynamic>> fetch() async {
+    final Connection connection;
     try {
-      connection = await _ensureConnection();
+      connection = await _connect();
     } catch (_) {
-      _connection = null;
       throw AgentUnavailableException('No se pudo conectar con el agente por iroh');
     }
 
-    String text;
+    final String text;
     try {
       text = await _exchange(connection).timeout(_fetchTimeout);
     } catch (_) {
-      // La conexión puede haber muerto (agente reiniciado, cambio de red):
-      // se descarta para que el próximo intento abra una nueva.
+      // La conexión puede haber muerto (agente reiniciado, cambio de red). Hay
+      // que cerrarla, no solo olvidarla: si no, el Endpoint la sigue viendo
+      // activa y la reconexión al mismo agente se queda colgada.
       _connection = null;
+      connection.close();
       throw AgentUnavailableException('El agente no respondió a tiempo');
     }
 
@@ -66,47 +68,4 @@ class IrohMetricsRepository implements MetricsRepository {
       throw AgentUnavailableException('Respuesta del agente con formato inesperado');
     }
   }
-
-  Future<T> _parsed<T>(T Function(Map<String, dynamic>) parse) async {
-    final json = await _fetch();
-    try {
-      return parse(json);
-    } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
-    }
-  }
-
-  Partition _partition(Map<String, dynamic> json) => Partition(
-    id: json['id'] as String,
-    mount: json['mount'] as String,
-    device: json['device'] as String,
-    usedGb: (json['used_gb'] as num).toDouble(),
-    totalGb: (json['total_gb'] as num).toDouble(),
-  );
-
-  MetricSample _sample(Map<String, dynamic> json) => MetricSample(
-    cpu: (json['cpu_percent'] as num).toDouble(),
-    tempC: (json['cpu_temp_c'] as num?)?.toDouble(),
-    ramGb: (json['ram_used_gb'] as num).toDouble(),
-  );
-
-  @override
-  Future<MachineInfo> loadInfo() => _parsed(
-    (json) => MachineInfo(
-      ramTotalGb: (json['ram_total_gb'] as num).toDouble(),
-      partitions: [
-        for (final p in json['partitions'] as List) _partition(p as Map<String, dynamic>),
-      ],
-    ),
-  );
-
-  @override
-  Future<List<MetricSample>> loadHistory() async {
-    final sample = await _parsed(_sample);
-    return List.generate(kHistoryLength, (_) => sample);
-  }
-
-  @override
-  Stream<MetricSample> watch() =>
-      Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => _parsed(_sample));
 }
