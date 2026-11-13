@@ -5,6 +5,7 @@ from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Static
 
+from sysmote.tui.sections import select_section
 from sysmote.tui.widgets.database_section import DatabaseSection
 from sysmote.tui.widgets.history_section import HistorySection
 from sysmote.tui.widgets.notes_section import NotesSection
@@ -19,7 +20,7 @@ BANNER_ART = [
     "╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝ ╚═════╝    ╚═╝   ╚══════╝",
 ]
 BANNER = "\n".join(BANNER_ART)
-BANNER_MIN_WIDTH = max(len(line) for line in BANNER.split("\n")) + 4
+BANNER_MIN_WIDTH = max(len(line) for line in BANNER_ART) + 4
 BANNER_FALLBACK = "SYSMOTE"
 
 SECTION_IDS = {
@@ -108,9 +109,4 @@ class MainScreen(Screen):
         self.query_one("#banner-text", Static).update(text)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        section = SECTION_IDS.get(event.button.id)
-        if section is None:
-            return
-        self.query_one("#sections", ContentSwitcher).current = section
-        for button in self.query("#buttons Button"):
-            button.variant = "primary" if button is event.button else "default"
+        select_section(self, SECTION_IDS, "#sections", "#buttons Button", event.button)
