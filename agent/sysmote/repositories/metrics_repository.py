@@ -7,9 +7,13 @@ GB = 1000**3
 # Nombres de sensor habituales para la temperatura de CPU, por fabricante.
 CPU_TEMP_SENSORS = ("k10temp", "coretemp", "cpu_thermal", "zenpower")
 
+# Sin intervalo, psutil mide el uso desde la llamada anterior sin bloquear, pero
+# la primera llamada devuelve un 0.0 sin sentido: se hace aquí para descartarla.
+psutil.cpu_percent(interval=None)
+
 
 def read_cpu_percent() -> float:
-    return psutil.cpu_percent(interval=0.1)
+    return psutil.cpu_percent(interval=None)
 
 
 def read_cpu_temp_c() -> float | None:
