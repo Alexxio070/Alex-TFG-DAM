@@ -3,16 +3,17 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../models/metrics.dart';
+import '../agent_metrics_repository.dart';
 import '../repositories/metrics_repository.dart';
 
-class HttpMetricsRepository implements MetricsRepository {
+class HttpMetricsRepository extends AgentMetricsRepository {
   HttpMetricsRepository(this.address, {http.Client? client}) : _client = client ?? http.Client();
 
   final String Function() address;
   final http.Client _client;
 
-  Future<Map<String, dynamic>> _fetch() async {
+  @override
+  Future<Map<String, dynamic>> fetch() async {
     http.Response response;
     try {
       response = await _client
@@ -32,47 +33,4 @@ class HttpMetricsRepository implements MetricsRepository {
       throw AgentUnavailableException('Respuesta del agente con formato inesperado');
     }
   }
-
-  Future<T> _parsed<T>(T Function(Map<String, dynamic>) parse) async {
-    final json = await _fetch();
-    try {
-      return parse(json);
-    } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
-    }
-  }
-
-  Partition _partition(Map<String, dynamic> json) => Partition(
-        id: json['id'] as String,
-        mount: json['mount'] as String,
-        device: json['device'] as String,
-        usedGb: (json['used_gb'] as num).toDouble(),
-        totalGb: (json['total_gb'] as num).toDouble(),
-      );
-
-  MetricSample _sample(Map<String, dynamic> json) => MetricSample(
-        cpu: (json['cpu_percent'] as num).toDouble(),
-        tempC: (json['cpu_temp_c'] as num?)?.toDouble(),
-        ramGb: (json['ram_used_gb'] as num).toDouble(),
-      );
-
-  @override
-  Future<MachineInfo> loadInfo() => _parsed(
-        (json) => MachineInfo(
-          ramTotalGb: (json['ram_total_gb'] as num).toDouble(),
-          partitions: [
-            for (final p in json['partitions'] as List) _partition(p as Map<String, dynamic>),
-          ],
-        ),
-      );
-
-  @override
-  Future<List<MetricSample>> loadHistory() async {
-    final sample = await _parsed(_sample);
-    return List.generate(kHistoryLength, (_) => sample);
-  }
-
-  @override
-  Stream<MetricSample> watch() =>
-      Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => _parsed(_sample));
 }
