@@ -1,6 +1,6 @@
 # Problemas encontrados y cómo se resolvieron
 
-Fallos reales encontrados implementando y probando iroh en la fase 2, por orden cronológico. Dos de ellos (los dos últimos) no son de iroh en sí, pero se descubrieron probándolo y se arreglaron en la misma rama.
+Fallos reales encontrados implementando y probando iroh en la fase 2, por orden cronológico. Dos de ellos (el 4 y el 5) no son de iroh en sí, pero se descubrieron probándolo y se arreglaron en la misma rama.
 
 ## 1. El agente cortaba la respuesta al medio cerrar el socket local
 
@@ -16,7 +16,7 @@ Fallos reales encontrados implementando y probando iroh en la fase 2, por orden 
 
 **Causa:** el bucle principal de `run()` llamaba a `incoming.accept()` / `accepting.connect()` sin capturar errores. Un fallo en el *handshake* de **una sola** conexión entrante (por ejemplo, un cliente que se desconecta a mitad del saludo) propagaba la excepción hasta `run()`, que entonces ejecutaba su `finally` y cerraba el `Endpoint` — matando el túnel para todo el mundo, no solo para esa conexión.
 
-**Solución:** aislar el aceptado de cada conexión en su propia función (`_accept_one`), con un `try/except iroh.IrohError` que registra el fallo y **sigue** en el bucle de aceptación. Un fallo de una conexión ya no afecta a las demás.
+**Solución:** envolver el aceptado de cada conexión, dentro del bucle de `run()`, en un `try/except iroh.IrohError` que registra el fallo y **sigue** escuchando. Un fallo de una conexión ya no afecta a las demás.
 
 ## 3. Una conexión al agente local caído se quedaba colgada
 
@@ -49,3 +49,34 @@ Fallos reales encontrados implementando y probando iroh en la fase 2, por orden 
 **Solución:** envolver el texto en `Flexible`/`Expanded` con `overflow: TextOverflow.ellipsis` en los tres sitios afectados: el chip de la cabecera, la lista del menú de particiones y la fila "Usado/Libre". De paso se encontró y arregló el mismo problema en las tarjetas de CPU, Temperatura y RAM (`metric_card.dart`), con la misma solución.
 
 Reproducido con un test de Flutter en una pantalla de 360 px de ancho (la del móvil real) antes y después del arreglo — ver `04-pruebas.md`.
+
+## 6. Reconectar se quedaba colgado para siempre tras un fallo
+
+**Encontrado el 13/11/2026** intentando escribir un test automático para la reconexión (punto 5 del blindaje), reproduciéndola con direcciones directas en vez de descubrimiento por DNS, para aislarla del problema del punto 0 de `04-pruebas.md`.
+
+**Síntoma:** tras un fallo (conexión muerta, agente reiniciado), `IrohMetricsRepository` reintentaba conectar al mismo agente y se quedaba esperando para siempre — ni éxito ni el error que se esperaba (`AgentUnavailableException`).
+
+**Causa:** dos cosas, ambas en el código de conexión de `IrohMetricsRepository`:
+1. Cada reconexión creaba un `Endpoint` **nuevo** (`Endpoint.bind(...)`) sin cerrar el anterior — una fuga de recursos nativos que se acumulaba con cada fallo.
+2. Al descartar la conexión muerta, solo se ponía `_connection = null`, sin llamar a `connection.close()`. Sin ese cierre explícito, el `Endpoint` del cliente seguía considerando esa conexión activa por su lado, y una conexión nueva al mismo agente no llegaba nunca a completarse — se quedaba esperando indefinidamente.
+
+**Solución:** un único `Endpoint` se crea una vez y se reutiliza para todas las conexiones (`_connect()`); y `fetch()` cierra la conexión muerta (`connection.close()`) antes de olvidarla.
+
+**Simplificado después (13/11/2026):** en el primer arreglo se añadió también un guardia para peticiones simultáneas, pensando que `watch()` podía solaparlas si una tardaba más de 1 s. No es así: `asyncMap` pausa el `Stream.periodic` hasta que termina cada petición (comprobado en el código fuente del SDK de Dart 3.13.4), así que el guardia sobraba y se quitó.
+
+**Por qué no se vio en las pruebas manuales:** la prueba 4 de la matriz (cambio de red en caliente) sí reconectó bien en el móvil real — probablemente porque, al cambiar de red, iroh detecta el cambio y cierra la conexión vieja por su cuenta en algún punto del proceso, sin que la app tuviera que descartarla explícitamente del mismo modo que en el experimento aislado. No se ha confirmado el motivo exacto.
+
+## 7. Con datos ya cargados, perder la conexión no se avisaba
+
+**Encontrado el 13/11/2026** en la auditoría del código, leyéndolo; no se llegó a ver en el móvil.
+
+**Síntoma:** si el agente dejaba de responder con la pantalla de Métricas ya cargada, las gráficas se quedaban congeladas con los últimos valores y sin ningún aviso. La prueba 4 de la matriz no lo destapó porque la reconexión fue casi inmediata.
+
+**Causa:** `MetricsViewModel` sí guardaba el error, pero `metrics_view.dart` solo lo mostraba si todavía no había datos (`!metrics.ready`). Además, la pantalla se quedaba en blanco mientras cargaba (sin indicador) y para siempre si el agente no devolvía ninguna partición (desaparecían también CPU, temperatura y RAM).
+
+**Solución:** la pantalla muestra:
+- un indicador «Conectando con el agente…» mientras carga;
+- un aviso «Conexión perdida. Reintentando…» encima de los últimos datos mientras haya error, que desaparece solo cuando vuelve a llegar una muestra (el repositorio sigue pidiendo una cada segundo);
+- una tarjeta «El agente no ha encontrado ninguna partición» en lugar de la de disco, sin ocultar el resto.
+
+Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.

@@ -11,19 +11,11 @@ void main() {
   late SettingsViewModel settings;
 
   Future<void> openSettings(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 1600 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await openSection(tester, 'Ajustes', size: const Size(390, 1600));
     settings = Provider.of<SettingsViewModel>(
       tester.element(find.byType(SysmoteApp)),
       listen: false,
     );
-    await tester.tap(find.bySemanticsLabel('Abrir menú'));
-    await pumpFor(tester, 500);
-    await tester.tap(find.bySemanticsLabel('Ajustes'));
-    await pumpFor(tester, 600);
   }
 
   testWidgets('muestra todos los grupos', (tester) async {

@@ -44,15 +44,10 @@ class TerminalTabsViewModel extends ChangeNotifier {
   // Si la sesión de una pestaña termina (exit o Ctrl+D), la pestaña se cierra
   // sola, sin pedir confirmación: ya fue una acción explícita del usuario.
   void _onTabChanged(TerminalViewModel vm) {
-    if (vm.state == TerminalSessionState.empty) {
-      final index = _tabs.indexOf(vm);
-      if (index != -1) {
-        _tabs.removeAt(index);
-        if (_activeIndex >= _tabs.length) {
-          _activeIndex = _tabs.isEmpty ? 0 : _tabs.length - 1;
-        }
-        scheduleMicrotask(vm.dispose);
-      }
+    if (vm.state == TerminalSessionState.empty && _removeTab(vm)) {
+      // Se libera después: no se puede liberar un ChangeNotifier desde su
+      // propio listener.
+      scheduleMicrotask(vm.dispose);
     }
     notifyListeners();
   }
@@ -63,14 +58,17 @@ class TerminalTabsViewModel extends ChangeNotifier {
   }
 
   void closeTab(TerminalViewModel vm) {
-    final index = _tabs.indexOf(vm);
-    if (index == -1) return;
-    _tabs.removeAt(index);
+    if (!_removeTab(vm)) return;
     vm.dispose();
+    notifyListeners();
+  }
+
+  bool _removeTab(TerminalViewModel vm) {
+    if (!_tabs.remove(vm)) return false;
     if (_activeIndex >= _tabs.length) {
       _activeIndex = _tabs.isEmpty ? 0 : _tabs.length - 1;
     }
-    notifyListeners();
+    return true;
   }
 
   @override

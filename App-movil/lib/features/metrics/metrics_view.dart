@@ -38,12 +38,14 @@ class _MetricsViewState extends State<MetricsView> {
   Widget build(BuildContext context) {
     final metrics = context.watch<MetricsViewModel>();
     final settings = context.watch<SettingsViewModel>();
-    if (metrics.error != null && !metrics.ready) {
-      return _ErrorState(message: metrics.error!, onRetry: metrics.retry);
+    final error = metrics.error;
+    if (!metrics.ready) {
+      return error == null
+          ? const _LoadingState()
+          : _ErrorState(message: error, onRetry: metrics.retry);
     }
-    final partition = metrics.partition;
-    if (!metrics.ready || partition == null) return const SizedBox.shrink();
 
+    final partition = metrics.partition;
     final history = metrics.history;
     final ramTotal = metrics.info!.ramTotalGb;
     final unit = settings.storageUnit;
@@ -55,6 +57,12 @@ class _MetricsViewState extends State<MetricsView> {
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 32 + MediaQuery.paddingOf(context).bottom),
       children: [
+        // El repositorio sigue reintentando cada segundo: el aviso desaparece
+        // solo en cuanto vuelve a llegar una muestra.
+        if (error != null) ...[
+          _ConnectionLostBanner(message: error),
+          const SizedBox(height: 16),
+        ],
         MetricCard(
           title: 'Uso de CPU',
           value: MetricValue(number: formatNumber(history.last.cpu, 0), unit: '%'),
@@ -65,7 +73,10 @@ class _MetricsViewState extends State<MetricsView> {
         ),
         const SizedBox(height: 16),
         if (tempDisplay == null)
-          const _UnavailableTempCard()
+          const _UnavailableCard(
+            title: 'Temperatura de CPU',
+            message: 'No se ha podido mostrar la temperatura',
+          )
         else
           MetricCard(
             title: 'Temperatura de CPU',
@@ -102,19 +113,28 @@ class _MetricsViewState extends State<MetricsView> {
               'Escala 0–${formatNumber(ramTotal * unit.factor, unit == StorageUnit.gb ? 0 : 1)} ${unit.label}',
         ),
         const SizedBox(height: 16),
-        DiskCard(
-          partitions: metrics.info!.partitions,
-          selected: partition,
-          unit: unit,
-          onSelect: metrics.selectPartition,
-        ),
+        if (partition == null)
+          const _UnavailableCard(
+            title: 'Uso de disco',
+            message: 'El agente no ha encontrado ninguna partición',
+          )
+        else
+          DiskCard(
+            partitions: metrics.info!.partitions,
+            selected: partition,
+            unit: unit,
+            onSelect: metrics.selectPartition,
+          ),
       ],
     );
   }
 }
 
-class _UnavailableTempCard extends StatelessWidget {
-  const _UnavailableTempCard();
+class _UnavailableCard extends StatelessWidget {
+  const _UnavailableCard({required this.title, required this.message});
+
+  final String title;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +145,77 @@ class _UnavailableTempCard extends StatelessWidget {
         spacing: 6,
         children: [
           Text(
-            'Temperatura de CPU',
+            title,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.muted2),
           ),
-          Text(
-            'No se ha podido mostrar la temperatura',
-            style: TextStyle(fontSize: 13, color: t.muted),
-          ),
+          Text(message, style: TextStyle(fontSize: 13, color: t.muted)),
         ],
+      ),
+    );
+  }
+}
+
+class _LoadingState extends StatelessWidget {
+  const _LoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 12,
+        children: [
+          CircularProgressIndicator(color: t.accent),
+          Text('Conectando con el agente…', style: TextStyle(fontSize: 13, color: t.muted)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConnectionLostBanner extends StatelessWidget {
+  const _ConnectionLostBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: t.surface,
+          border: Border.all(color: kRed),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          spacing: 12,
+          children: [
+            SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: kRed),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 2,
+                children: [
+                  Text(
+                    'Conexión perdida. Reintentando…',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: t.ink),
+                  ),
+                  Text(
+                    '$message. Los datos de abajo son los últimos recibidos.',
+                    style: TextStyle(fontSize: 12, color: t.muted),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
