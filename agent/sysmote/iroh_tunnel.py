@@ -15,6 +15,16 @@ _CHUNK_SIZE = 64 * 1024
 
 logger = logging.getLogger(__name__)
 
+# El bucle de eventos solo guarda referencias débiles a las tareas: sin una
+# referencia propia, una tarea puede desaparecer a medio ejecutarse.
+_tasks: set[asyncio.Task] = set()
+
+
+def _spawn(coro) -> None:
+    task = asyncio.create_task(coro)
+    _tasks.add(task)
+    task.add_done_callback(_tasks.discard)
+
 
 def _load_or_create_secret_key(path: Path) -> iroh.SecretKey:
     if path.exists():
@@ -67,46 +77,13 @@ async def _forward_stream(stream: iroh.BiStream, local_port: int) -> None:
         writer.close()
 
 
-async def _watch_path(connection: iroh.Connection) -> None:
-    """Diagnóstico de la prueba 1 de la matriz: imprime si la conexión va
-    por el relé o directa, y avisa cuando cambia de una a otra."""
-    last_is_relay = None
-    while True:
-        try:
-            paths = connection.paths()
-        except iroh.IrohError:
-            break
-        selected = next((p for p in paths if p.is_selected), None)
-        if selected is not None and selected.is_relay != last_is_relay:
-            last_is_relay = selected.is_relay
-            via = "RELÉ" if selected.is_relay else "DIRECTA"
-            print(f"[ruta] conexión {via} ({selected.remote_addr}, rtt={selected.rtt_ms} ms)")
-        await asyncio.sleep(2)
-
-
 async def _handle_connection(connection: iroh.Connection, local_port: int) -> None:
-    asyncio.create_task(_watch_path(connection))
     while True:
         try:
             stream = await connection.accept_bi()
         except iroh.IrohError:
             break
-        asyncio.create_task(_forward_stream(stream, local_port))
-
-
-async def _accept_one(endpoint: iroh.Endpoint, local_port: int) -> bool:
-    """Acepta la siguiente conexión entrante. Devuelve False si el endpoint se cerró."""
-    incoming = await endpoint.accept_next()
-    if incoming is None:
-        return False
-    try:
-        accepting = await incoming.accept()
-        connection = await accepting.connect()
-    except iroh.IrohError:
-        logger.warning("Fallo al aceptar una conexión entrante; se ignora y se sigue escuchando")
-        return True
-    asyncio.create_task(_handle_connection(connection, local_port))
-    return True
+        _spawn(_forward_stream(stream, local_port))
 
 
 async def run(local_port: int, secret_key_path: Path) -> None:
@@ -116,7 +93,13 @@ async def run(local_port: int, secret_key_path: Path) -> None:
     endpoint = await iroh.Endpoint.bind(options)
     print(f"Túnel iroh activo. Identificador: {endpoint.id()}")
     try:
-        while await _accept_one(endpoint, local_port):
-            pass
+        while (incoming := await endpoint.accept_next()) is not None:
+            try:
+                connection = await (await incoming.accept()).connect()
+            except iroh.IrohError:
+                # Un fallo en el saludo de una conexión no debe tumbar el túnel.
+                logger.warning("Fallo al aceptar una conexión entrante; se sigue escuchando")
+                continue
+            _spawn(_handle_connection(connection, local_port))
     finally:
         await endpoint.close()
