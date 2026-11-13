@@ -3,8 +3,8 @@
 Uso:
     .venv/bin/python scripts/iroh_poc.py
 
-Imprime el identificador iroh del agente. Pégalo en la pantalla de prueba de
-la app (lib/debug/iroh_poc_main.dart) para pedirle /metrics a través del túnel.
+Imprime el identificador iroh del agente. Pégalo en Ajustes de la app (modo
+iroh) para ver las métricas a través del túnel.
 """
 
 import asyncio
