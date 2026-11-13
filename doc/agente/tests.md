@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 16 tests, todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 15 tests, todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -13,7 +13,7 @@ cd agent && .venv/bin/pytest -q
 | [`test_metrics.py`](../../agent/tests/test_metrics.py) | 1 | El endpoint `GET /metrics` completo | Integración |
 | [`test_metrics_repository.py`](../../agent/tests/test_metrics_repository.py) | 6 | El repositorio de métricas, con `psutil` simulado | Unitario |
 | [`test_tui.py`](../../agent/tests/test_tui.py) | 6 | La TUI `sysmote`, sin terminal real | Interfaz (arnés de Textual) |
-| [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 3 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
+| [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 2 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
 
 ## `test_metrics.py`: endpoint `GET /metrics`
 
@@ -51,10 +51,9 @@ Usa el arnés de pruebas sin terminal de Textual.
 
 ## `test_iroh_tunnel.py`: túnel iroh
 
-Prueba de concepto del túnel: cliente y servidor iroh viven en el mismo proceso y se conectan por sus direcciones directas en loopback, sin red ni relés. Los tests dependen del paquete `iroh` instalado en el entorno.
+Prueba de concepto del túnel: cliente y servidor iroh viven en el mismo proceso y se conectan por sus direcciones directas en loopback, sin red ni relés. Los tests dependen del paquete `iroh` instalado en el entorno. La fixture `open_stream` monta los dos `Endpoint` y devuelve un flujo hacia el túnel, de modo que cada test solo escribe lo que envía y lo que espera recibir.
 
 | Test | Qué comprueba | Qué fallo detecta |
 |---|---|---|
-| `test_tunnel_forwards_bytes_to_local_server` | Los bytes enviados por el túnel llegan a un servidor local de eco y vuelven (`ping`) | Que el túnel no reenvíe datos entre el flujo QUIC y el puerto local |
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si nada escucha en el puerto local, el flujo se cierra enseguida con un reset, sin quedarse colgado hasta un timeout | Que el cliente espere sin fin cuando el agente real está caído |
-| `test_tunnel_forwards_a_real_metrics_request` | Una petición HTTP real a `/metrics` a través del túnel contra el agente en marcha responde `HTTP/1.1 200 OK` con `"cpu_percent"` | Que el túnel rompa el acceso real a las métricas del agente |
+| `test_tunnel_forwards_a_real_metrics_request` | Una petición HTTP real a `/metrics` a través del túnel contra el agente en marcha responde `HTTP/1.1 200 OK` con `"cpu_percent"` | Que el túnel deje de reenviar datos entre el flujo QUIC y el puerto local (en los dos sentidos), o rompa el acceso real a las métricas del agente |
