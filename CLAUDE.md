@@ -68,7 +68,7 @@ Usar librerías/paquetes como infraestructura normal está permitido, incluso pa
 
 ## Documentación
 
-La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/); la interfaz, en [`doc/ui/`](doc/ui/) — referencia vigente: `doc/ui/interfaz-app.md` y `doc/ui/estructura-app.md` (`doc/ui/historico/` son las versiones descartadas); y la documentación específica del agente de Python, en [`doc/agente/`](doc/agente/) (`doc/agente/tui.md` para la TUI). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`; el historial de cambios de diseño, en `08-historial-de-cambios.md`.
+La documentación está en [`doc/`](doc/): los documentos generales del proyecto, en [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/); la interfaz, en [`doc/ui/`](doc/ui/) — referencia vigente: `doc/ui/interfaz-app.md` y `doc/ui/estructura-app.md` (`doc/ui/historico/` son las versiones descartadas); y la documentación específica del agente de Python, en [`doc/agente/`](doc/agente/) (`doc/agente/tui.md` para la TUI); y la de la conexión remota con iroh, en [`doc/iroh/`](doc/iroh/). El plan de fases y el calendario, en `04-plan-de-fases.md`; las decisiones tomadas y pendientes, en `07-resumen-decisiones-y-contexto.md`; el historial de cambios de diseño, en `08-historial-de-cambios.md`.
 - `01-memoria-tecnica.md`
 - `02-necesidades-tecnologicas.md`
 - `03-vision-general-del-proyecto.md`
