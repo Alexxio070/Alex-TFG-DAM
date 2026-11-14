@@ -58,6 +58,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/11/2026 | Interfaz | `shared_preferences` 2.5.x no guardaba nada en dispositivo real (`NoSuchMethodError`); fijada una pareja de versiones anterior | Aplicado en código |
 | 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
 | 13/11/2026 | Interfaz | Métricas avisa de la conexión perdida con datos ya cargados, de la carga y de la ausencia de particiones; los repositorios HTTP e iroh comparten una clase base | Aplicado |
+| 14/11/2026 | Plan | La red del centro vuelve a ser una duda abierta: la red restrictiva probada no era la del centro | Aplicado en la documentación |
 
 ---
 
@@ -502,3 +503,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** auditoría del código del 13/11/2026. Los fallos se encontraron leyendo el código; el aviso de conexión perdida se comprobó después en un móvil real parando el agente.
 - **Afecta a:** `doc/ui/interfaz-app.md` (§4), `doc/ui/estructura-app.md`, `doc/ui/tests.md`, `doc/agente/tests.md`, `doc/agente/ESTRUCTURA.md` y `doc/iroh/`. Código: `App-movil/lib/features/metrics/`, `App-movil/lib/data/` y `agent/sysmote/`.
 - **Estado:** aplicado en código y en la documentación.
+
+### 14/11/2026 — La red del centro vuelve a ser una duda abierta
+
+- **Qué era:** la entrada del 12/11/2026 («Iroh probado en una red restrictiva real») daba por cerrada la duda de si la red del centro deja salir el tráfico hacia los relés de iroh, y la sacaba de `07` §3.8.
+- **Qué es ahora:** la red restrictiva probada no era la del centro, así que esa duda vuelve a `07` §3.8. Forma prevista de probarlo, si el centro lo permite: el agente en marcha en el PC de casa, vigilado desde el centro con una sesión de AnyDesk, y el móvil conectado por iroh desde la Wi-Fi del centro.
+- **Por qué:** el autor aún no sabe en qué condiciones le dejarán hacer la prueba en el centro.
+- **Afecta a:** `04` (fase 2 y «Entorno de pruebas»), `07` (§3.1 y §3.8) y `doc/iroh/04-pruebas.md`.
+- **Estado:** aplicado en la documentación.

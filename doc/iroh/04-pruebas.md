@@ -68,8 +68,9 @@ del camino con `is_selected`.
 no solo el proceso del agente.
 
 **Red restrictiva real:** repetida la conexión desde una red restrictiva real;
-probada y funciona (confirmado por el autor, 12/11/2026). Cierra la duda sobre
-si la red del centro deja salir el tráfico hacia los relés (`02` §3.3).
+probada y funciona (confirmado por el autor, 12/11/2026). No era la red del
+centro: si esa red deja salir el tráfico hacia los relés sigue pendiente, y la
+forma prevista de probarlo está en `07` §3.8.
 
 ---
 

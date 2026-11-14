@@ -23,21 +23,24 @@ Funciones principales (solo las que tienen sentido estando lejos del PC): termin
 ├── App-movil/              Cliente Flutter
 │   ├── lib/
 │   │   ├── core/           Tema, widgets y utilidades compartidas
-│   │   ├── data/           Modelos y repositorios (uno real + uno simulado por dato)
-│   │   │   ├── fake/       Repositorios simulados (desarrollar sin el agente)
-│   │   │   ├── http/       Repositorios reales (llaman al agente)
+│   │   ├── data/           Modelos, interfaces de repositorio y sus implementaciones
+│   │   │   ├── fake/       Repositorios simulados (lo que aún no tiene agente)
+│   │   │   ├── http/       Métricas del agente por HTTP (modo Local)
+│   │   │   ├── iroh/       Métricas del agente por un túnel iroh (modo iroh)
 │   │   │   └── local/      Persistencia local (ajustes)
 │   │   └── features/       Una carpeta por pantalla: home, metrics, notes, settings,
 │   │                       shell (navegación), terminal
 │   └── test/
 │
 ├── agent/                  Agente Python
-│   └── sysmote/
-│       ├── api/            Rutas de FastAPI
-│       ├── services/       Lógica de negocio
-│       ├── repositories/   Acceso a datos (psutil, SQLite cuando exista)
-│       ├── models/         Modelos Pydantic
-│       └── tui/            Interfaz de terminal `sysmote` (Textual)
+│   ├── sysmote/
+│   │   ├── api/            Rutas de FastAPI
+│   │   ├── services/       Lógica de negocio
+│   │   ├── repositories/   Acceso a datos (psutil, SQLite cuando exista)
+│   │   ├── models/         Modelos Pydantic
+│   │   ├── tui/            Interfaz de terminal `sysmote` (Textual)
+│   │   └── iroh_tunnel.py  Túnel iroh hacia la API local
+│   └── scripts/            Arranque manual del agente con el túnel iroh
 │
 └── doc/                     Documentación del proyecto
     ├── documentos-generales-del-proyecto/   Memoria técnica, plan de fases, decisiones…
@@ -78,6 +81,14 @@ python3 -m venv .venv
 ```
 
 Por defecto escucha solo en `127.0.0.1:8443`. **No usar `--host 0.0.0.0` todavía:** dejaría `/metrics` y `/docs` abiertos a toda la red local sin TLS ni login (llegan en la fase 3). Todavía no hay servicio systemd (llega en la fase 5).
+
+Acceso remoto con iroh (arranque manual, en lugar del `uvicorn` de arriba):
+
+```bash
+.venv/bin/python scripts/iroh_poc.py
+```
+
+Arranca la API y el túnel iroh, e imprime el identificador iroh del agente. En la app, Ajustes → modo iroh: se pega ese identificador y se pulsa «Guardar». Hasta que exista el login (fase 3), cualquiera que conozca el identificador llega al agente: no compartirlo y arrancarlo solo para probar. Detalle en [`doc/iroh/`](doc/iroh/).
 
 Pruebas:
 

@@ -91,7 +91,7 @@ Según los requisitos mínimos del proyecto final de DAM (apartados generales y 
 | Control de versiones con Git, ramas y commits | Git con rama `main` y una `feature/<nombre>` por tarea o fase, commits convencionales |
 | Manual de instalación y ejecución | README del repositorio |
 | Interfaz gráfica funcional y usable | Interfaz definitiva de la app, con sus seis pantallas |
-| Navegación fluida entre pantallas | Menú lateral (drawer) entre Inicio, Métricas, Terminal, Notas y Ajustes |
+| Navegación fluida entre pantallas | Menú lateral (drawer) entre Inicio, Métricas, Procesos, Terminal y Notas, con Ajustes en el pie del menú |
 | Validaciones en formularios | Validaciones en el login, en el formulario de acciones rápidas y en los ajustes |
 | Gestión de usuarios y autenticación (registro/login) | Emparejamiento por QR, login con token de sesión, contraseña con Argon2 |
 | CRUD de al menos dos entidades relacionadas | Grupos y acciones rápidas (fase 7); reforzado con reglas de alerta/notificaciones y notas |
@@ -100,7 +100,7 @@ Según los requisitos mínimos del proyecto final de DAM (apartados generales y 
 | Base de datos con mínimo 3-4 tablas y relaciones | 9 tablas relacionadas en `schema.sql` |
 | Acceso a datos mediante clases o funciones estructuradas | Patrón repository, una clase por tabla, sin ORM |
 | Script de creación o exportación de la base de datos | `schema.sql`, más exportación de datos y estructura desde la TUI |
-| Documentación completa (introducción, planificación, tecnologías, BD, pruebas, manual, estado del arte) | `doc/documentos-generales-del-proyecto/` (01-08) |
+| Documentación completa (introducción, planificación, tecnologías, BD, pruebas, manual, estado del arte) | `doc/documentos-generales-del-proyecto/` (01-09) |
 | Elemento diferenciador — uso de sensores del dispositivo | Cámara para escanear el QR de emparejamiento y registro |
 | Elemento diferenciador — notificaciones push o servicios en segundo plano | Servicio en primer plano del móvil con notificaciones locales del PC (sin Firebase: conexión P2P propia con iroh) |
 | Elemento diferenciador — integración con Firebase | Descartado a propósito: el proyecto evita servidores de terceros; el P2P con iroh cubre el mismo papel sin depender de Google |

@@ -91,7 +91,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
   3. Bloquear el UDP saliente en el cortafuegos del PC (red restrictiva simulada): todo el tráfico debe ir por el relé.
   4. Cambiar de Wi-Fi a datos móviles en mitad del uso: comprobar la reconexión.
   5. Reiniciar el agente y el PC: el identificador iroh debe ser el mismo.
-- Después, repetir la conexión desde una red restrictiva real (centro o Wi-Fi pública): probada y funciona (12/11/2026).
+- Después, repetir la conexión desde una red restrictiva real (centro o Wi-Fi pública): probada y funciona (12/11/2026). No era la red del centro, que sigue pendiente (`07` §3.8).
 
 Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 
@@ -344,9 +344,9 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 | Método | Cómo funciona | Cuándo usarlo |
 |---|---|---|
 | **USB + `adb reverse`** (principal) | `adb reverse tcp:8443 tcp:8443`: la app se conecta a `127.0.0.1:8443` en el móvil y llega al agente del portátil por el cable | Desarrollo diario, en cualquier sitio |
-| **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: oficialmente solo ARM (aarch64, armv7); x86_64 se puede compilar pero no está soportado, así que iroh se prueba en el móvil físico |
+| **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: iroh se prueba en el móvil físico (no se ha comprobado si `iroh_flutter` funciona en el emulador x86_64) |
 | **Punto de acceso del móvil** | El portátil se conecta al punto de acceso del móvil; ambos quedan en una red privada propia | Probar como LAN real (incluido mDNS). Puede requerir abrir el puerto en el cortafuegos del portátil |
 | **Repositorio simulado** | Versión falsa del repositorio de la app que devuelve datos inventados | Trabajar en pantallas sin el agente arrancado |
-| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02-necesidades-tecnologicas.md` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico* |
+| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02-necesidades-tecnologicas.md` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico (forma prevista de probarlo: `07` §3.8)* |
 
 **Para la defensa:** USB o punto de acceso como opción principal y un vídeo grabado como respaldo. No depender de la red del tribunal.

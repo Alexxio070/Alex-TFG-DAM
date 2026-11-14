@@ -17,7 +17,7 @@ agent/scripts/    arranque manual del agente con el túnel iroh (prueba de conce
 
 | Fase | `api/` | `services/` | `repositories/` | `models/` | `tui/` |
 |---|---|---|---|---|---|
-| 1 | `GET /metrics` | métricas (llama a `psutil`) | — (datos en vivo, no se guardan) | `MetricsResponse` | TUI completa: banner, cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas), la mayoría vacías o deshabilitadas hasta sus fases |
+| 1 | `GET /metrics` | métricas (llama a `psutil`) | — (datos en vivo, no se guardan) | `Metrics`, `Partition` | TUI completa: banner, cuatro secciones fijas (Emparejamiento, Historial, Base de datos, Notas), la mayoría vacías o deshabilitadas hasta sus fases |
 | 3 | login/sesión | autenticación (Argon2, token de sesión) | usuarios/sesiones | `LoginRequest`, `SessionToken` | activa la subpestaña Seguridad de Emparejamiento (configuración inicial, cambiar contraseña, cerrar sesiones) |
 | 4 | `WS /ws/terminal` | terminal (PTY sobre tmux con `$SHELL -l`, asyncio) | — | — | — (la terminal es de la app; la TUI no tiene botón propio para ella) |
 | 5 | — | — | — | — | activa la subpestaña Servicio de Emparejamiento (instalar/quitar servicio, estado) |

@@ -150,7 +150,7 @@ Cada bloque sigue el mismo esquema:
 - **Necesidad:** conectar desde 4G/5G u otra red sin abrir puertos del router, sin VPN y sin instalar nada más en el móvil.
 - **Tipo de tecnología:** librería P2P con travesía de NAT y relé de respaldo.
 - **Elección:** **iroh (1.x).** Identifica cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después iroh intenta convertirla en directa atravesando el NAT; si no lo consigue, sigue por el relé. Ofrece bindings oficiales para Python (agente) y Kotlin y relés públicos gratuitos (según iroh, solo para desarrollo y uso personal, con límite de tráfico; suficientes para el TFG). Licencia MIT/Apache-2.0.
-  - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El paquete de Kotlin publicado en Maven no incluye Android: para Android hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). Oficialmente solo se soportan aarch64 y armv7; x86_64 se puede compilar pero no está soportado, así que la prueba de concepto se hace en el móvil físico. El de Python, en Linux, solo tiene paquetes `manylinux_2_28` (glibc 2.28 o superior, x86_64 y aarch64): no hay versión para musl ni para ARM de 32 bits.
+  - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El agente usa ya el binding de Python 1.2.0 (`agent/pyproject.toml` exige `iroh>=1.2.0`, desde la fase 2). El paquete de Kotlin publicado en Maven no incluye Android: para Android hay que compilarlo desde el código fuente con Rust y el NDK (docs.iroh.computer/languages/kotlin). Oficialmente solo se soportan aarch64 y armv7; x86_64 se puede compilar pero no está soportado, así que la prueba de concepto se hace en el móvil físico. El de Python, en Linux, solo tiene paquetes `manylinux_2_28` (glibc 2.28 o superior, x86_64 y aarch64): no hay versión para musl ni para ARM de 32 bits.
 - **Alternativas descartadas:**
   - *Tailscale / WireGuard:* obliga a instalar y configurar una app VPN en el móvil.
   - *WebRTC con STUN/TURN propios:* exige programar la señalización y alojar y pagar servidores. Queda como **respaldo** solo si iroh da problemas reales (decisión del 27/09/2026).
@@ -273,6 +273,6 @@ Cada bloque sigue el mismo esquema:
 - **Tipo de tecnología:** conexión directa entre dispositivos sin red externa.
 - **Elección:**
   - **`adb reverse`** por USB (método principal): la app se conecta a `127.0.0.1` y llega al agente del portátil por el cable;
-  - **emulador de Android Studio** (`10.0.2.2` apunta al anfitrión; no sirve para probar iroh, ver 3.3);
+  - **emulador de Android Studio** (`10.0.2.2` apunta al anfitrión); iroh se prueba en el móvil físico (no se ha comprobado si `iroh_flutter` funciona en el emulador);
   - **punto de acceso del móvil** para probar como LAN real.
 - **Alternativas descartadas:** *usar la red del centro:* no garantizada; *máquina virtual accesible por red:* mismo problema de red.

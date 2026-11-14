@@ -1,6 +1,6 @@
 # Resumen de la conversación de diseño: decisiones y contexto
 
-Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qué** es el proyecto; este recoge **por qué** se ha llegado a cada decisión, qué se descartó y con qué motivo, qué queda pendiente y cómo quiere trabajar el autor. Sirve como contexto para cualquier conversación futura sobre el proyecto.
+Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen **qué** es el proyecto; este recoge **por qué** se ha llegado a cada decisión, qué se descartó y con qué motivo, qué queda pendiente y cómo quiere trabajar el autor. Sirve como contexto para cualquier conversación futura sobre el proyecto.
 
 ---
 
@@ -41,7 +41,7 @@ Este documento complementa a los archivos 01–06 y 08. Aquellos describen **qu�
 | Agente PC | Python 3.11 + FastAPI | Mejores librerías de sistema; asíncrono | Go, Rust (curva), Flask (síncrono) |
 | Acceso remoto | **iroh**, túnel local (patrón dumbpipe), **fase 2 (principios de noviembre – mediados de diciembre)**, adelantado el 02/10/2026 por ser la parte más crítica | Cero configuración para el usuario, sin servidores propios, y si falla se cae automáticamente a "solo LAN" | Tailscale (obliga a app VPN en el móvil), relé propio (el peor: cifrado propio y servidor que pagar), Cloudflare Tunnel. WebRTC con STUN/TURN (servidores propios) **queda como respaldo** solo si iroh da problemas reales (27/09/2026) |
 | Puente Flutter ↔ iroh | Plugin **`iroh_flutter`** (pub.dev) llamado desde Dart, sin puente en Kotlin | La app tiene un `IrohMetricsRepository` con la misma interfaz que el repositorio HTTP; `ConnectionModeMetricsRepository` elige uno u otro según Ajustes, así que ViewModels y vistas no cambian | Platform channel con módulo Kotlin sobre el binding oficial: el binding publicado no incluye Android y habría que compilarlo con Rust y el NDK igualmente |
-| Red restrictiva real | Probado en una red restrictiva real: iroh conecta y funciona (confirmado por el autor, 12/11/2026) | Era la duda sobre si la red del centro deja salir el tráfico hacia los relés; ya no hay decisión abierta | — |
+| Red restrictiva real | Probado en una red restrictiva real, que no era la del centro: iroh conecta y funciona (confirmado por el autor, 12/11/2026) | Confirma que iroh funciona por el relé en una red restrictiva. La red del centro sigue sin probarse (§3.8) | — |
 | Tokens | Opacos, con hash en SQLite | Revocables al instante (botón «Cerrar todas las sesiones») | JWT (no revocables; innecesarios con un solo dispositivo) |
 | BD | SQLite con `sqlite3` + patrón repositorio + `schema.sql` | Sencillo, sin servidor, cumple la normativa. El tutor confirmó que SQLite local es válido (28/09/2026) | SQLAlchemy (excesivo), MySQL, Firebase |
 | Instalación del agente | **pipx** | Usa el Python de la distro; evita atar el agente a la glibc con la que se compila, aunque iroh exige glibc ≥ 2.28 | PyInstaller (atado a la glibc de compilación), pip directo (bloqueado en distros modernas), Flatpak (su aislamiento impide PTY y D-Bus) |
@@ -104,6 +104,7 @@ Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la secci�
 | Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
 | Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
 | Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
+| ¿La red del centro deja salir el tráfico de iroh hacia los relés? Aún no se sabe en qué condiciones se podrá probar en el centro. **Forma prevista, si el centro la permite:** dejar el agente en marcha en el PC de casa, vigilarlo desde el centro con una sesión de AnyDesk y conectar el móvil por iroh desde la Wi-Fi del centro. AnyDesk también sale por la red del centro, así que, aunque funcione, no garantiza que funcione iroh: lo que cuenta es la conexión del móvil | **Pendiente de revisión** (14/11/2026) | Antes de la defensa |
 | ¿Entra el control de energía (apagar, reiniciar, suspender, hibernar, bloquear) en el proyecto? **Por qué está:** encaja con el criterio de alcance (tiene sentido sin estar delante del PC), forma parte del valor diferencial (`01` §2) y cuenta como elemento diferenciador de integración con el sistema (D-Bus / systemd-logind, `01` §12), aunque quedan otros (cámara/QR, servicio en segundo plano, P2P con iroh). **Por qué se duda:** sin sesión activa polkit puede denegarla y la solución exige una regla manual con sudo (fila siguiente); apagado el PC no se puede volver a encender desde el móvil (Wake-on-LAN descartado); hibernar suele no estar configurado y es el primer recorte; su pantalla no tiene sitio decidido en la app. *Otros motivos del autor: pendientes de anotar.* | **Pendiente de decidir** | Antes de la fase 6 |
 | Energía sin sesión activa: apagar/reiniciar/suspender/hibernar vía logind puede necesitar una regla de polkit (instalación manual con sudo, el agente no puede escribirla) para funcionar sin una sesión gráfica activa | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de seguridad de esa regla antes de decidir si se añade | Antes de la fase 6 |
 
@@ -166,7 +167,7 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 ## 7. Forma de trabajar con Claude
 
 - **Proyecto de Claude (organización actual):**
-  - la fuente de los documentos 01–08 es `doc/` en el repositorio de GitHub (Alexxio070/Alex-TFG-DAM); la carpeta "Documentacion TFG" del proyecto de Claude es un espejo que se actualiza desde el repo;
+  - la fuente de los documentos 01–09 es `doc/` en el repositorio de GitHub (Alexxio070/Alex-TFG-DAM); la carpeta "Documentacion TFG" del proyecto de Claude es un espejo que se actualiza desde el repo;
   - el trabajo se organiza en hilos con prefijo **PROYECTO:** (desarrollo del TFG), **APRENDIZAJE:** (unidades de estudio) y **PREGUNTAS:** (dudas sueltas);
   - alex abre una sesión de Claude Code por rama `feature/*` o por tarea de documentación; cada sesión propone sus commits antes de hacerlos.
 - **Regla de confirmación previa (01/10/2026):** antes de generar o crear nada, Claude explica cómo ha entendido la petición y su plan (qué, cómo y por qué), y espera mi confirmación explícita. Nunca toca el repositorio salvo que yo lo pida.
