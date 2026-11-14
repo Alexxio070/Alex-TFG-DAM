@@ -136,7 +136,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 ### Módulo H — Conectividad
 - **En red local:** conexión directa, con autodescubrimiento del PC por **mDNS**.
 - **Emparejamiento por QR:** la app escanea con la cámara el código que muestra la TUI del agente (ver 5.1).
-- **Desde fuera de casa:** túnel P2P cifrado con **iroh** (ver 4.3).
+- **Desde fuera de casa:** túnel P2P cifrado con **iroh** (ver 4.4).
 - El resto de la app no distingue entre ambos modos: usa exactamente el mismo código de comunicación.
 
 ### Navegación y pantallas de la app
@@ -258,7 +258,7 @@ Hasta que llegue el registro por QR (fase 9), el botón de configuración inicia
 | Acceso desde Internet a través de iroh | Conexiones no autorizadas | El túnel solo da acceso al servidor de la aplicación, que sigue exigiendo TLS con huella fijada y login (desde la fase 3) |
 | Acceso al agente durante la beta (hasta la fase 3, sin TLS de aplicación ni login) | Cualquiera que conozca el identificador iroh llega al agente | El agente solo expone métricas de solo lectura, el identificador no se comparte y el agente se arranca a mano solo para probar |
 | Acciones rápidas con comandos maliciosos | Ejecución de comandos arbitrarios | Solo las crea y ejecuta un usuario autenticado, con sus propios permisos; no amplía lo que ya permite la terminal |
-| Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/sysmote` y `~/.local/share/sysmote` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600` |
+| Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/sysmote` y `~/.local/share/sysmote` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600`. Hoy solo está implementada la clave secreta de iroh con `0600` (fase 2); las carpetas `0700` y el resto llegan con la fase 3 |
 | Escalada de privilegios mediante la app | Control de root | El agente no tiene más permisos que el usuario; nunca eleva privilegios |
 
 Sin 2FA, a propósito (motivo en `02-necesidades-tecnologicas.md` §5.2).

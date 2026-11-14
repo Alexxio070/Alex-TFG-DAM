@@ -46,9 +46,9 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 - **Repositorio:** github.com/futpib/iroh-ssh-android
 
 ### iroh_flutter / iroh_quic
-- **Qué es:** paquetes comunitarios (no de n0) para iroh 1.0, construidos sobre el núcleo Rust con flutter_rust_bridge. `iroh_flutter` es el plugin de Flutter: compila el núcleo durante la compilación de la app con cargokit (que instala Rust si falta; en Android necesita el NDK r28 o superior y `minSdk` 24) y expone la API de iroh en Dart. `iroh_quic` es el binding en Dart puro para escritorio, con bibliotecas precompiladas. Versión 1.0.3 (07/08/2026).
-- **Te aporta:** alternativa al módulo Kotlin para la fase 2 *(pendiente de revisión)*.
-- **Uso:** posible dependencia directa si se elige esa vía.
+- **Qué es:** paquetes comunitarios (no de n0) para iroh 1.0, construidos sobre el núcleo Rust con flutter_rust_bridge. `iroh_flutter` es el plugin de Flutter: compila el núcleo durante la compilación de la app con cargokit (que instala Rust si falta; en Android necesita el NDK r28 o superior y `minSdk` 24) y expone la API de iroh en Dart. `iroh_quic` es el binding en Dart puro para escritorio, con bibliotecas precompiladas. Versión 1.0.3 (07/08/2026); el proyecto usa la 1.3.0 (`App-movil/pubspec.yaml`).
+- **Te aporta:** el acceso a iroh desde la app, elegido en la fase 2 en lugar del módulo Kotlin (`07` §3.1).
+- **Uso:** dependencia directa de la app (`IrohMetricsRepository`, ver `doc/iroh/02-implementacion.md`).
 - **Licencia:** Apache-2.0.
 - **Repositorio:** github.com/snowpinelabs/iroh_dart · pub.dev/packages/iroh_flutter
 
@@ -157,7 +157,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 |---|---|
 | 0 (Preparación y Flutter) | Tutorial oficial de Flutter, documentación de adb y del emulador |
 | 1 (Interfaz y métricas) | psutil, Glances |
-| 2 (Conexión remota con iroh) | iroh, iroh-ffi, dumbpipe, iroh-ssh-android, iroh-android-native |
+| 2 (Conexión remota con iroh) | iroh, iroh-ffi, iroh_flutter, dumbpipe, iroh-ssh-android, iroh-android-native |
 | 3 (Seguridad) | LocalSend (HTTPS con certificados autofirmados en Flutter) |
 | 4 (Terminal) | xterm.dart, pyxtermjs, terminado, ConnectBot |
 | 5 (Instalación y servicio) | Documentación de pipx y systemd |
