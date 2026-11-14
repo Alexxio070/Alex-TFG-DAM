@@ -1,11 +1,11 @@
 # Diseño final de la interfaz
 
-> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026. Sustituye a [`historico/ui-v1/DESIGN.md`](historico/ui-v1/DESIGN.md) y [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
+> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026; Métricas y la conexión de Ajustes, revisadas de nuevo el 14/11/2026. Sustituye a [`historico/ui-v1/DESIGN.md`](historico/ui-v1/DESIGN.md) y [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
 
 ## 0. Cómo leer este documento
 
 - Cada pantalla se describe tal como está implementada hoy, no como se planeó. Donde el código y un diseño anterior discrepaban, gana el código, y se anota el porqué.
-- **Qué es simulado y qué no:** Inicio, Terminal, Notas y el emparejado siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas y Ajustes ya hablan con implementaciones reales:** `HttpMetricsRepository` pide los datos al agente por HTTP (ver sección 4 y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
+- **Qué es simulado y qué no:** Inicio, Terminal, Notas y el emparejado siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas y Ajustes ya hablan con implementaciones reales:** `HttpMetricsRepository` pide los datos al agente por HTTP e `IrohMetricsRepository` por un túnel iroh, según el modo de Ajustes (ver sección 4 y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
 - El diseño de la terminal del agente (sesiones con tmux) vive en `../agente/terminal-sesiones-tmux.md` y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que todavía no tiene esa parte); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
 
 ## 1. Estructura general
@@ -143,7 +143,7 @@ Lista de grupos (`SettingsGroup`, radio 20, cabecera 13 sp `muted`), cada fila c
 
 Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppSegmented`, `AppStepper` (botones 44×44).
 
-**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador a mano — sin conexión real todavía (fase 2). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección se aplica la próxima vez que se abre la app, no en caliente (misma simplificación que las particiones de disco, sección 4).
+**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador iroh del agente, que usa `IrohMetricsRepository` para conectar (ver `doc/iroh/`). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección, el identificador o el modo se aplica en caliente: los repositorios de métricas los leen en cada petición, sin reiniciar la app.
 
 **Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Sysmote» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
 
@@ -160,7 +160,7 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 
 **Repositorios ya no simulados:**
 - `SettingsRepository`: `SharedPreferencesSettingsRepository` (persistencia local con `shared_preferences`), además de `InMemorySettingsRepository` para los tests.
-- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app; `main.dart` lo construye con la dirección ya guardada en Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`) y, ya cerrada la fase 1, por USB con `adb reverse` contra el agente real y con el APK release.
+- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app. `main.dart` lo envuelve, junto con `IrohMetricsRepository`, en `ConnectionModeMetricsRepository`, que usa uno u otro según el modo de Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`) y, ya cerrada la fase 1, por USB con `adb reverse` contra el agente real y con el APK release.
 
 ## 9. Pendientes conocidos
 

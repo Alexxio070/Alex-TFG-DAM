@@ -1,6 +1,6 @@
 # Estructura de la app Flutter
 
-Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 20/10/2026.
+Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 14/11/2026.
 
 La interfaz sigue [`interfaz-app.md`](interfaz-app.md), que refleja el código real de cada pantalla. `historico/ui-v1` y `historico/ui-v2` se conservan como historial (el prototipo inicial y la primera especificación de Notas).
 
@@ -47,7 +47,8 @@ lib/
     settings/                    ajustes
 test/
   fakes/                         implementaciones en memoria que solo usan los tests
-  *_test.dart                    un archivo por repositorio/ViewModel, más widget_test.dart
+  helpers/                       app_harness.dart: monta la app con repositorios falsos (app, pumpFor, openSection)
+  *_test.dart                    un archivo por repositorio, ViewModel o pantalla (ver tests.md)
 ```
 
 ## Las cuatro capas
@@ -75,7 +76,7 @@ Cada sección sigue el mismo patrón:
 Terminal es la única sección con dos niveles: `TerminalTabsViewModel` gestiona la lista de pestañas, y cada pestaña tiene su propio `TerminalViewModel` (ver `XTERM_DART.md`).
 
 ### main.dart y app_providers.dart
-`app_providers.dart` tiene la única lista de providers y ViewModels de la app (`buildProviders`), para no duplicarla entre `main.dart` y los tests (`test/widget_test.dart` la reutiliza con repositorios falsos). `main.dart` es el único sitio donde se decide qué implementación real de cada repositorio se usa.
+`app_providers.dart` tiene la única lista de providers y ViewModels de la app (`buildProviders`), para no duplicarla entre `main.dart` y los tests (`test/helpers/app_harness.dart` la reutiliza con repositorios falsos). `main.dart` es el único sitio donde se decide qué implementación real de cada repositorio se usa.
 
 ## Qué es un repositorio
 
