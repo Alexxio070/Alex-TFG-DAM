@@ -14,7 +14,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 |---|---|---|
 | **Terminal remota** (sesiones persistentes con tmux) | En el proyecto | `01` §3 Módulo A · `02` §1.2, §2.2, §2.2.1 · `03` §2 «Terminal remota» · `04` fase 4 · `07` §3.3 · [terminal-sesiones-tmux](../agente/terminal-sesiones-tmux.md) · [interfaz-app](../ui/interfaz-app.md) §5 · [XTERM_DART](../ui/XTERM_DART.md) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
 | ↳ Pestañas de terminal | En el proyecto | [terminal-sesiones-tmux](../agente/terminal-sesiones-tmux.md) §10 · [interfaz-app](../ui/interfaz-app.md) §5 · `04` fase 4 |
-| ↳ Historial de comandos de terminal | En el proyecto | [tui](../agente/tui.md) «Historial de comandos de terminal» · `07` §3.2 |
+| ↳ Historial de comandos de terminal | En el proyecto | [tui](../agente/tui.md) «Historial de comandos de terminal» · `07` §3.7 |
 | **Monitorización** (CPU, temperatura, RAM, discos) | En el proyecto | `01` §3 Módulo B · `02` §2.3 · `03` §2 «Monitorización» · `04` fase 1 · [interfaz-app](../ui/interfaz-app.md) §4 · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
 | **Procesos** (lista, búsqueda por nombre o PID, finalizar y congelar) | En el proyecto | `01` §3 Módulo D, navegación, §7 · `03` §1 y §2 «Procesos» · `04` fase 6 · `08` entradas del 21/10/2026 |
 | **Energía** (apagar, reiniciar, suspender, hibernar, bloquear) | Pendiente de decidir | `07` §3.8 · `01` §3 Módulo C, §10 · `02` §2.4 · `03` §2 «Energía» · `04` fase 6 y demo · `06` §6 (modo sin sesión, biométrico) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
@@ -30,7 +30,7 @@ Abreviaturas: `01` [memoria técnica](01-memoria-tecnica.md), `02` [necesidades 
 | **Login, sesiones y seguridad** (TLS, Argon2, tokens, límite de intentos) | En el proyecto | `01` §5.2, §5.3 · `02` §5 · `03` §2 «Iniciar sesión» · `04` fase 3 · `07` §3.2 · `06` §6 (2FA, biométrico) |
 | **Ajustes de la app** | En el proyecto | `01` §3 «Navegación y pantallas» · [interfaz-app](../ui/interfaz-app.md) §7 |
 | **Exportación de datos y estructura de la BD** | En el proyecto | `01` §6.3 · `04` fase 7 · `07` §3.7 · [tui](../agente/tui.md) «Base de datos» |
-| **TUI `sysmote`** (Emparejamiento, Historial, Base de datos, Notas) | En el proyecto | `01` §8.1 · `02` §2.6 · `04` fase 1 · `07` §3.1 · [tui](../agente/tui.md) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
+| **TUI `sysmote`** (Emparejamiento, Historial, Base de datos, Notas) | En el proyecto | `01` §8.1 · `02` §2.6 · `04` fase 1 · `07` §3.1, §3.7 · [tui](../agente/tui.md) · [ESTRUCTURA agente](../agente/ESTRUCTURA.md) |
 
 ## 2. Partes técnicas
 
