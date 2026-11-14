@@ -9,7 +9,7 @@
 5. **Dos hitos intermedios:** una beta mínima en Navidad y una versión funcional en febrero (ver sus apartados más abajo).
 6. **Se parte de cero en desarrollo móvil.** Las estimaciones incluyen tiempo de aprendizaje y asumen dedicación a tiempo parcial, compaginada con clases.
 
-*Fechas orientativas desde finales de septiembre de 2026; las fases 9–10 coinciden con la redacción de la memoria en mayo y la defensa es la primera semana de junio de 2027. **Pendiente de revisión:** la fecha exacta del hito de febrero y la de entrega de la memoria; ajustar el plan cuando se conozcan, junto con el calendario de exámenes.*
+*Fechas orientativas desde finales de septiembre de 2026; las fases 9–10 coinciden con la redacción de la memoria en mayo y la defensa es la primera semana de junio de 2027. **Pendiente de revisión:** la fecha exacta del hito de febrero y la de entrega de la memoria (`07-resumen-decisiones-y-contexto.md` §3.8); ajustar el plan cuando se conozcan, junto con el calendario de exámenes.*
 
 **Leyenda de dificultad:** 🟢 fácil · 🟡 media · 🔴 difícil
 
@@ -25,14 +25,14 @@
 | **Beta v0.1** | Interfaz + métricas por iroh, sin login | | **Mediados de diciembre – Navidad** |
 | 3 | Seguridad (login, dentro de la TUI ya construida en la fase 1) | 🔴 | Dic – Ene |
 | 4 | Terminal (v0.2) | 🔴 | Ene – Feb |
-| **Hito** | iroh + terminal + gráficas | | **Febrero** (fecha pendiente de revisión) |
+| **Hito** | iroh + terminal + gráficas | | **Febrero** |
 | 5 | Instalación y servicio | 🟡 | Feb |
 | 6 | Procesos y energía (energía pendiente de decidir) | 🟢🟡 | Mar |
 | 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
 | 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
 | 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | Abr – May |
 | 10 | Pulido | 🟢 | May |
-| Memoria | Redacción final | | May (entrega pendiente de revisión) |
+| Memoria | Redacción final | | May |
 | **Defensa** | | | **Primera semana de junio** |
 | Extra | Temas de terminal (`06-ideas-de-futuro.md`) | 🟢 | Si da tiempo |
 
@@ -108,7 +108,6 @@ Detalle técnico: `02-necesidades-tecnologicas.md` §3.3 y §4.2.
 ### ✅ Qué es la beta v0.1 (mediados de diciembre – Navidad)
 > Una app Android con la interfaz definitiva (lo que aún no está hecho muestra *placeholders*) que se conecta al PC de casa desde cualquier red a través de iroh y muestra las métricas en vivo con gráficas. Sin login: el agente solo expone métricas de solo lectura y se arranca a mano.
 
-
 La conexión por iroh ya está hecha (fase 2); queda publicar la release `v0.1-beta`.
 
 La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase cubre cada uno: «Cobertura de los requisitos mínimos», al final).
@@ -129,7 +128,7 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 - App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro.
 - Comprobar que todo funciona igual por USB y por iroh.
 
-Detalle técnico: `01-memoria-tecnica.md` §5 (Seguridad).
+Detalle técnico: `01` §5 (Seguridad).
 
 **Terminada cuando:** sin login no se puede hacer nada (tampoco por iroh), un certificado distinto es rechazado y «Cerrar todas las sesiones» expulsa al móvil.
 
@@ -147,7 +146,7 @@ Detalle técnico: `01-memoria-tecnica.md` §5 (Seguridad).
 - Pruebas con Zsh, un prompt tipo Starship y programas a pantalla completa (`htop`, `vim`), por USB y por iroh (incluido por relé).
 - Pruebas de persistencia: dejar un comando largo en marcha, cerrar la app y cortar la red; comprobar que sigue y se recupera al volver.
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo A) y `doc/agente/terminal-sesiones-tmux.md`.
+Detalle técnico: `01` §3 (Módulo A) y `doc/agente/terminal-sesiones-tmux.md`.
 
 **Terminada cuando:** puedes trabajar con tu shell real desde el móvil, incluidos `htop` y `vim`, desde fuera de casa, y un comando largo sigue ejecutándose tras cerrar la app y se recupera al volver a abrirla.
 
@@ -158,7 +157,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo A) y `doc/agente/terminal
 ### 🎯 Hito de febrero
 > La app se conecta al agente Python del PC a través de iroh y ofrece la terminal y las gráficas de rendimiento.
 
-Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 4). *Pendiente de revisión: fecha exacta;* si es antes de mediados de febrero, la terminal no llega y hay que ajustar.
+Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 4). Si la fecha es antes de mediados de febrero, la terminal no llega y hay que ajustar.
 
 ---
 
@@ -171,7 +170,7 @@ Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 
 - Completar el README (ya tiene una guía de instalación manual) con la instalación por `pipx`, el uso básico y la prueba por USB y por iroh.
 - Probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio) y hacer capturas para la memoria.
 
-Detalle técnico: `01-memoria-tecnica.md` §8 (Despliegue) y `02-necesidades-tecnologicas.md` §7.
+Detalle técnico: `01` §8 (Despliegue) y `02` §7.
 
 **Terminada cuando:** en un equipo limpio, con `pipx install`, la TUI y el APK, todo funciona, también por iroh, y sobrevive a un reinicio.
 
@@ -180,13 +179,13 @@ Detalle técnico: `01-memoria-tecnica.md` §8 (Despliegue) y `02-necesidades-tec
 ### Fase 6 — Procesos y energía 🟢🟡
 **Duración:** ~2 semanas (principios – mediados de marzo)
 
-**Estado:** el control de energía está pendiente de decidir (`07-resumen-decisiones-y-contexto.md` §3.8); si no entra, la fase queda solo con Procesos.
+**Estado:** el control de energía está pendiente de decidir (`07` §3.8); si no entra, la fase queda solo con Procesos.
 
 **Objetivos:**
 - Procesos. Agente: lista con consumo (CPU y memoria), búsqueda por nombre o PID, finalizar (SIGTERM → SIGKILL) y congelar. App: sección «Procesos» en el menú lateral, con confirmación al finalizar o congelar.
 - Energía (si entra). Agente: apagar, reiniciar, suspender, hibernar y bloquear sesión vía systemd-logind. App: botones con confirmación y mensajes claros cuando falta permiso.
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulos C y D). Decisiones abiertas sobre energía: `07` §3.8.
+Detalle técnico: `01` §3 (Módulos C y D). Decisiones abiertas sobre energía: `07` §3.8.
 
 **Terminada cuando:** puedes ver qué procesos consumen más, buscar uno, congelarlo y finalizarlo desde el móvil (y, si la energía entra, apagar, reiniciar y bloquear el portátil).
 
@@ -205,7 +204,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulos C y D). Decisiones abier
 - App: cuadrícula de inicio conectada al agente (crear, editar, borrar, reordenar), ficha de acción con estadísticas, historial de ejecuciones.
 - Exportaciones desde la TUI (datos y estructura de la BD).
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo E) y §6.3 (exportaciones).
+Detalle técnico: `01` §3 (Módulo E) y §6.3 (exportaciones).
 
 **Terminada cuando:** puedes crear el grupo "Proyecto", añadirle la acción "Actualizar repo", ejecutarla desde el móvil, ver su salida, consultar su historial y estadísticas, editarla y borrarla, y los dos botones de exportación dejan sus archivos en el escritorio.
 
@@ -222,7 +221,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo E) y §6.3 (exportaciones
 - App: servicio en primer plano (mantiene el túnel iroh y la conexión de eventos) y notificaciones locales. *Cubre el elemento diferenciador "notificaciones / servicios en segundo plano".*
 - Opción "notificar al terminar" en las acciones rápidas de la fase 7.
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo G) y `02-necesidades-tecnologicas.md` §4.1 (tipo del servicio en primer plano, decisión abierta en `07` §3.8).
+Detalle técnico: `01` §3 (Módulo G) y `02` §4.1 (tipo del servicio en primer plano, decisión abierta en `07` §3.8).
 
 **Terminada cuando:** con el móvil bloqueado y fuera de casa recibes un aviso al terminar un comando en el PC y cuando salta una regla de alerta.
 
@@ -236,7 +235,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo G) y `02-necesidades-tecn
 - QR de emparejamiento y registro (sustituye a la creación del usuario desde la TUI de la fase 3): la TUI muestra el QR, la app lo escanea y crea la cuenta. *Cubre el elemento diferenciador "uso de sensores/cámara".*
 - Espacio compartido: BD y CRUD de notas, sección «Notas» de la TUI y pantalla de notas de la app conectada al agente (la interfaz ya existe con datos simulados).
 
-Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo F) y §5.1 (registro por QR). Decisión abierta sobre imágenes en el espacio compartido: `07` §3.8.
+Detalle técnico: `01` §3 (Módulo F) y §5.1 (registro por QR). Decisión abierta sobre imágenes en el espacio compartido: `07` §3.8.
 
 **Terminada cuando:** una instalación nueva se empareja y crea la cuenta escaneando un QR, y una nota guardada desde el móvil aparece en el PC al consultarla (y al revés).
 
@@ -268,26 +267,6 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 4. **Registro por QR** (fase 9): mantener la creación del usuario desde la TUI.
 
 **Nunca se recortan:** conexión por iroh (o su plan B documentado), terminal (función estrella), CRUD de acciones rápidas (requisito mínimo), login y TLS, y pulido mínimo de errores.
-
----
-
-## Redacción y defensa (mayo – primera semana de junio)
-
-**Memoria final** (*pendiente de revisión: fecha oficial de entrega*): introducción y justificación, planificación, tecnologías, diagrama E/R, diagrama de casos de uso, capturas, pruebas (incluida la matriz de iroh), manual de instalación y uso, estado del arte y decisiones de cada fase.
-
-**Demo recomendada:**
-1. Instalar el agente.
-2. Emparejar por QR.
-3. Mostrar las métricas.
-4. Usar la terminal.
-5. Ejecutar una acción rápida y ver su historial.
-6. Buscar y finalizar un proceso.
-7. Recibir una notificación al terminar un comando.
-8. Apagar el PC (solo si el control de energía se mantiene).
-
-Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a través de iroh.
-
-**Respaldo:** conexión por USB o punto de acceso y vídeo grabado de la demo.
 
 ---
 
@@ -323,6 +302,26 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 
 ---
 
+## Redacción y defensa (mayo – primera semana de junio)
+
+**Memoria final:** introducción y justificación, planificación, tecnologías, diagrama E/R, diagrama de casos de uso, capturas, pruebas (incluida la matriz de iroh), manual de instalación y uso, estado del arte y decisiones de cada fase.
+
+**Demo recomendada:**
+1. Instalar el agente.
+2. Emparejar por QR.
+3. Mostrar las métricas.
+4. Usar la terminal.
+5. Ejecutar una acción rápida y ver su historial.
+6. Buscar y finalizar un proceso.
+7. Recibir una notificación al terminar un comando.
+8. Apagar el PC (solo si el control de energía se mantiene).
+
+Si la red lo permite, hacerlo todo desde datos móviles contra el PC de casa a través de iroh.
+
+**Respaldo:** conexión por USB o punto de acceso y vídeo grabado de la demo.
+
+---
+
 ## Apéndice: referencia transversal
 
 Material que se consulta desde varias fases, no narrativa del plan en sí.
@@ -332,9 +331,9 @@ Material que se consulta desde varias fases, no narrativa del plan en sí.
 Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del proyecto.
 
 - **Git y ramas:** ver `CLAUDE.md`.
-- **Arquitectura en capas** (App MVVM, Agente por capas): ver `01-memoria-tecnica.md` §4.2.
-- **Base de datos:** `agent/schema.sql`, acceso siempre a través de repositorios (ver `01-memoria-tecnica.md` §6).
-- **Pruebas:** pytest en el agente, `flutter_test` en la app (ver `02-necesidades-tecnologicas.md` §8.3), más una tabla de casos de prueba manuales por fase.
+- **Arquitectura en capas** (App MVVM, Agente por capas): ver `01` §4.2.
+- **Base de datos:** `agent/schema.sql`, acceso siempre a través de repositorios (ver `01` §6).
+- **Pruebas:** pytest en el agente, `flutter_test` en la app (ver `02` §8.3), más una tabla de casos de prueba manuales por fase.
 - **Material para la memoria:** al cerrar cada fase, capturas de pantalla, casos de prueba realizados y decisiones tomadas.
 
 ### Entorno de pruebas
@@ -347,6 +346,6 @@ La red del centro puede bloquear la comunicación entre el móvil y el PC, así 
 | **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: iroh se prueba en el móvil físico (no se ha comprobado si `iroh_flutter` funciona en el emulador x86_64) |
 | **Punto de acceso del móvil** | El portátil se conecta al punto de acceso del móvil; ambos quedan en una red privada propia | Probar como LAN real (incluido mDNS). Puede requerir abrir el puerto en el cortafuegos del portátil |
 | **Repositorio simulado** | Versión falsa del repositorio de la app que devuelve datos inventados | Trabajar en pantallas sin el agente arrancado |
-| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02-necesidades-tecnologicas.md` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico (forma prevista de probarlo: `07` §3.8)* |
+| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. Primero en casa con la matriz de pruebas de la fase 2 y después en una red restrictiva (centro o Wi-Fi pública). *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico (forma prevista de probarlo: `07` §3.8)* |
 
 **Para la defensa:** USB o punto de acceso como opción principal y un vídeo grabado como respaldo. No depender de la red del tribunal.

@@ -12,17 +12,17 @@
 
 Sysmote es una herramienta de código abierto para **administrar un PC con GNU/Linux desde el móvil cuando no estás delante de él**, tanto desde la red de casa como desde fuera (4G/5G u otra Wi-Fi), sin configurar el router ni instalar nada más en el móvil.
 
-El sistema tiene dos piezas: **una app Android** hecha con Flutter y **un agente en el PC** escrito en Python (FastAPI) que se ejecuta como servicio de usuario de systemd. Sus funciones (terminal remota, monitorización, procesos, energía, acciones rápidas, espacio compartido de notas y notificaciones) se detallan en la sección 3.
+El sistema tiene dos piezas: **una app Android** hecha con Flutter y **un agente en el PC** escrito en Python (FastAPI) que se ejecuta como servicio de usuario de systemd. Sus funciones (terminal remota, monitorización, procesos, energía, acciones rápidas, espacio compartido de notas y notificaciones) se detallan en §3.
 
-La filosofía de diseño es: **solo se incluyen funciones que tienen sentido estando lejos del equipo**. Lo que únicamente es útil delante del PC (control multimedia, portapapeles, personalización del escritorio…) queda fuera del alcance y se recoge en *06-ideas-de-futuro.md*.
+La filosofía de diseño es: **solo se incluyen funciones que tienen sentido estando lejos del equipo**. Lo que únicamente es útil delante del PC (control multimedia, portapapeles, personalización del escritorio…) queda fuera del alcance y se recoge en `06-ideas-de-futuro.md`.
 
-El desarrollo es incremental: una primera **beta (v0.1)** con la interfaz definitiva, las métricas y la conexión por iroh, y versiones posteriores que amplían el sistema sobre esa base (*04-plan-de-fases.md*).
+El desarrollo es incremental: una primera **beta (v0.1)** con la interfaz definitiva, las métricas y la conexión por iroh, y versiones posteriores que amplían el sistema sobre esa base (`04`).
 
 ---
 
 ## 2. Motivación y valor diferencial
 
-Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve completo: KDE Connect solo sirve cerca del PC y en la misma red; los clientes SSH móviles exigen exponer el PC a Internet y no monitorizan ni avisan; Cockpit no es una app móvil. Comparativa completa en la sección 11.
+Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve completo: KDE Connect solo sirve cerca del PC y en la misma red; los clientes SSH móviles exigen exponer el PC a Internet y no monitorizan ni avisan; Cockpit no es una app móvil. Comparativa completa en §11.
 
 **Valor diferencial:** una única app que combina terminal real, monitorización, procesos, energía, acciones rápidas, espacio compartido y avisos, y que funciona desde cualquier sitio con una configuración mínima.
 
@@ -50,11 +50,11 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - Ampliación opcional: CPU por núcleo, swap, carga del sistema y tiempo encendido (psutil ya los da, pero ni el endpoint ni la pantalla los muestran hoy).
 
 ### Módulo C — Energía y sesión
-- **Estado: pendiente de decidir si entra en el proyecto.** Motivos y contexto: `07-resumen-decisiones-y-contexto.md` §3.8.
+- **Estado: pendiente de decidir si entra en el proyecto.** Motivos y contexto: `07` §3.8.
 - Apagar, reiniciar, suspender e hibernar mediante **systemd-logind por D-Bus**.
 - Bloquear la sesión gráfica abierta, por si se dejó el PC desbloqueado. Se usa `Session.Lock()` (o `LockSession(id)`) sobre la sesión del propio usuario, que no pide autorización; `LockSessions()` bloquea todas las sesiones y polkit exige permisos de administrador.
 - Todas las acciones destructivas piden confirmación en la app.
-- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `07-resumen-decisiones-y-contexto.md` §3.8.
+- **Limitación sin sesión activa:** ver §10. Posible solución y sus riesgos de seguridad: pendiente de investigar, ver `07` §3.8.
 
 ### Módulo D — Gestión de procesos
 - Sección propia de la app, «Procesos», en el menú lateral.
@@ -115,7 +115,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 - La app pide las notas al agente al abrir la pantalla del espacio compartido y al deslizar hacia abajo para recargar; no hace falta actualización al momento, porque es una app pensada para usarla lejos del PC.
 - Si los dos lados editan la misma nota a la vez, se guarda el último cambio.
 - *Imágenes en el espacio compartido: **aún pensándolo**.* No forman parte del alcance confirmado.
-- El explorador y la transferencia de archivos quedan fuera del alcance (ver *06-ideas-de-futuro.md*).
+- El explorador y la transferencia de archivos quedan fuera del alcance (ver `06`).
 
 Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
@@ -129,7 +129,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 - En el móvil, un **servicio en primer plano** mantiene la conexión abierta y muestra los avisos como notificaciones de Android. No se usa Firebase ni ningún servidor externo.
 - **Requisitos de Android:**
   - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
-  - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1. *Pendiente de revisión:* se confirma en la fase 8.
+  - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1; se confirma en la fase 8.
 
 Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
@@ -144,7 +144,7 @@ La app se organiza con un **menú lateral (drawer)** con cinco secciones: **Inic
 
 - **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis), modo de conexión **Local / iroh** con la dirección del agente (`host:puerto` en Local, identificador a mano en iroh) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
 - **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
-- **Aún sin ubicación decidida:** energía (Módulo C), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y sección 5). *Ubicación pendiente de revisión.*
+- **Aún sin ubicación decidida:** energía (Módulo C), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y §5). *Ubicación pendiente de revisión.*
 
 ### API REST (resumen)
 Rutas ya definidas para los módulos con CRUD completo (grupos y acciones rápidas, notas, reglas y notificaciones). El resto de módulos aún no tiene rutas concretas documentadas.
@@ -193,7 +193,7 @@ Agente PC (Python): Rutas API (FastAPI) → Servicios → Repositorios → SQLit
 GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 ```
 
-*(\*) Pendiente de revisión:* la implementación del servicio en primer plano, en la fase 8.
+*(\*) La implementación del servicio en primer plano se decide en la fase 8 (`02` §4.1).*
 
 ### 4.2 Arquitectura en capas
 
@@ -218,7 +218,7 @@ GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 Para no duplicar código entre LAN y WAN, el acceso remoto funciona como un **túnel transparente**, siguiendo el patrón de la herramienta *dumbpipe* del proyecto iroh:
 
 1. **En el PC,** el agente crea un punto de conexión iroh que reenvía todo lo que recibe a su propio servidor FastAPI local.
-2. **En el móvil,** la app usa el plugin `iroh_flutter` desde Dart, sin puente en Kotlin: `IrohMetricsRepository` abre una conexión iroh con el identificador del PC y, por cada petición, un *stream* en el que escribe la petición HTTP y lee la respuesta. Detalle en `doc/iroh/02-implementacion.md` y `02-necesidades-tecnologicas.md` §4.2.
+2. **En el móvil,** la app usa el plugin `iroh_flutter` desde Dart, sin puente en Kotlin: `IrohMetricsRepository` abre una conexión iroh con el identificador del PC y, por cada petición, un *stream* en el que escribe la petición HTTP y lee la respuesta. Detalle en `doc/iroh/02-implementacion.md` y `02` §4.2.
 3. **El resto de la app** no cambia: `ConnectionModeMetricsRepository` elige entre el repositorio HTTP (LAN) y el de iroh según el modo de Ajustes, y los ViewModels y vistas usan la misma interfaz. De momento solo las métricas viajan por iroh; el resto de funciones, en sus fases (TLS y login desde la fase 3).
 
 iroh identifica a cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después intenta pasar a directa atravesando el NAT; si no lo consigue, sigue por el relé. Se usan los relés públicos del proyecto (límites en §10). Cada arranque genera una identidad nueva por defecto, así que el agente guarda su clave secreta (`SecretKey`) y la carga al arrancar para conservar el mismo identificador.
@@ -261,13 +261,13 @@ Hasta que llegue el registro por QR (fase 9), el botón de configuración inicia
 | Otro usuario local del PC | Uso del agente ajeno, lectura de la base de datos o de las claves | El agente crea `~/.config/sysmote` y `~/.local/share/sysmote` con permisos `0700`, y la base de datos, la clave privada TLS y la clave secreta de iroh con `0600` (la especificación XDG no garantiza por sí misma que esas carpetas sean privadas); socket Unix `0600`. Hoy solo está implementada la clave secreta de iroh con `0600` (fase 2); las carpetas `0700` y el resto llegan con la fase 3 |
 | Escalada de privilegios mediante la app | Control de root | El agente no tiene más permisos que el usuario; nunca eleva privilegios |
 
-Sin 2FA, a propósito (motivo en `02-necesidades-tecnologicas.md` §5.2).
+Sin 2FA, a propósito (motivo en `02` §5.2).
 
 ---
 
 ## 6. Diseño de la base de datos
 
-Base de datos **SQLite** en el agente (`~/.local/share/sysmote/sysmote.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02-necesidades-tecnologicas.md` §6.1).
+Base de datos **SQLite** en el agente (`~/.local/share/sysmote/sysmote.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02` §6.1).
 
 El historial de comandos de terminal **no** vive en esta base de datos: va en un archivo de log aparte (ver `../agente/tui.md`, «Historial de comandos de terminal»).
 
@@ -372,7 +372,7 @@ Solo quedan como comandos de terminal (con **Typer**) `sysmote serve`, que es lo
 
 **Dependencias del sistema** (las instala el gestor de paquetes de la distribución, no `pipx`): `tmux` y una terminal gráfica (kitty, Konsole…) para la ventana del PC. La TUI comprueba al arrancar si están y avisa si faltan.
 
-Elección de **pipx** y límites de compatibilidad del binding de iroh (glibc, arquitecturas): ver `02-necesidades-tecnologicas.md` §7.2.
+Elección de **pipx** y límites de compatibilidad del binding de iroh (glibc, arquitecturas): ver `02` §7.2.
 
 ### 8.2 Servicio systemd
 El botón «Instalar servicio» de la TUI crea `~/.config/systemd/user/sysmote.service`:
@@ -412,7 +412,7 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 Un repositorio Git con `App-movil/` (Flutter) y `agent/` (Python). Ramas y convención de commits: `CLAUDE.md`.
 
 ### 9.2 Entorno de pruebas
-Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04-plan-de-fases.md`, «Entorno de pruebas».
+Métodos y alternativas descartadas: `02` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04`, «Entorno de pruebas».
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).
@@ -427,10 +427,10 @@ Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tab
 - **Distribución:** cualquier distribución con systemd, Python 3.11+ y D-Bus. El entorno de pruebas oficial es KDE Plasma 6. El bloqueo de sesión depende de que el escritorio responda a la señal de logind (Plasma lo hace).
 - **Temperaturas:** dependen de los sensores que exponga el kernel en `/sys/class/hwmon`. Las GPU NVIDIA con controlador propietario no aparecen ahí; su soporte (vía `nvidia-smi`) es opcional.
 - **Hibernación:** muchas instalaciones no la tienen configurada. La app la ofrece solo si logind indica que está disponible.
-- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `07-resumen-decisiones-y-contexto.md` §3.8.
+- **Apagado o reinicio sin sesión activa:** con la política por defecto de systemd, polkit lo permite si el usuario tiene una sesión activa (aunque haya otras abiertas), pero pide autorización si no la tiene (por ejemplo, con *linger* y nadie conectado) o si la distribución endurece la política. Posible solución (una regla de polkit que lo permita sin sesión) y sus riesgos de seguridad: **pendiente de investigar**, ver `07` §3.8.
 - **Batería del móvil:** el servicio en primer plano consume algo de batería y muestra una notificación persistente, que es el comportamiento estándar de Android. Desde Android 14 el usuario puede descartarla, y sin el permiso `POST_NOTIFICATIONS` solo aparece en el gestor de tareas.
 - **Relés públicos de iroh:** gratuitos pero con límites de tráfico que pueden cambiar y sin garantía de disponibilidad; el propio proyecto iroh los considera aptos solo para desarrollo y uso aficionado (para un producto real recomienda relés gestionados o propios). Se puede configurar un relé propio.
-- **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36, así que de momento no aplica; cuando se suba a 37 habrá que pedir este permiso en la pantalla de conexión. El móvil de pruebas usa Android 15, donde no se exige. Las conexiones a `127.0.0.1` (USB y túnel iroh) previsiblemente no se ven afectadas, porque la definición oficial de red local no incluye el *loopback*. *Pendiente de confirmar.*
+- **Android 17 y red local:** las apps que declaren `targetSdk` 37 o superior deben pedir el permiso `ACCESS_LOCAL_NETWORK` para conectar con equipos de la red local y usar mDNS. Flutter 3.47 declara `targetSdk` 36 y el móvil de pruebas usa Android 15, así que de momento no aplica; al subir a 37 habrá que pedirlo en la pantalla de conexión. *Pendiente de confirmar:* que no afecta a `127.0.0.1` (USB con `adb reverse`) y si afecta a iroh cuando la conexión pasa a directa dentro de la red local.
 
 ---
 
@@ -463,4 +463,4 @@ El proyecto incluye varias funcionalidades no vistas en clase, entre ellas algun
 ---
 
 ## 13. Trabajo futuro
-Las funciones descartadas del alcance y las ideas de evolución posterior se recogen en **06-ideas-de-futuro.md**.
+Las funciones descartadas del alcance y las ideas de evolución posterior se recogen en `06`.

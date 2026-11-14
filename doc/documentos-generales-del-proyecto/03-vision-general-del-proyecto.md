@@ -6,7 +6,7 @@ Descripción del proyecto en lenguaje llano, sin tecnicismos: qué es, cómo fun
 
 ## 1. Qué es el proyecto
 
-**Sysmote** es una aplicación para controlar y vigilar un PC con Linux desde el móvil, cuando no se está delante de él: fuera de casa, en otra habitación o simplemente sin querer sentarse al ordenador.
+**Sysmote** es una aplicación para controlar y vigilar un PC con Linux desde el móvil, cuando no se está delante de él: fuera de casa o en cualquier sitio donde no se tenga el PC a mano.
 
 El sistema tiene dos partes que se instalan por separado y se hablan entre ellas:
 
