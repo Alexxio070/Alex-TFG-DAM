@@ -2,7 +2,7 @@
 
 El **agente** es el programa que corre en el PC Linux del usuario y hace todo el trabajo: abre las terminales, mide el sistema, ejecuta acciones y guarda los datos. La app del móvil es solo el cliente que lo muestra y le manda órdenes.
 
-**Estado:** ver `04-plan-de-fases.md` (fase 1).
+**Estado:** ver `04-plan-de-fases.md` (fases 1 y 2 cerradas).
 
 ## Stack (resumen)
 
@@ -36,6 +36,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 | Base de datos y esquema | `01-memoria-tecnica.md`, §6 |
 | API REST y WebSocket | `01-memoria-tecnica.md`, §3 (rutas de cada módulo) |
 | Seguridad | `01-memoria-tecnica.md`, §5 |
+| Acceso remoto con iroh (túnel del agente, `iroh_tunnel.py`) | `doc/iroh/` |
 | Instalación y servicio systemd | `01-memoria-tecnica.md`, §8 · `02-necesidades-tecnologicas.md`, §7 |
 | Fases de implementación | `04-plan-de-fases.md` |
 
