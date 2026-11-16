@@ -72,7 +72,7 @@ La TUI tiene la estructura completa, pero casi todos sus botones están deshabil
 
 ## Estado actual
 
-Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver las métricas reales del PC en el móvil, tanto por red local (USB) como desde otra red a través de iroh. Esa conexión se ha probado en casa, con datos móviles y desde una red restrictiva real. El resto de pantallas tienen la interfaz definitiva con datos de ejemplo. Aún no hay APK publicado ni instalador del agente: la instalación actual es manual (ver más abajo).
+Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver las métricas reales del PC en el móvil, tanto por red local (USB) como desde otra red a través de iroh. Esa conexión se ha probado en casa, con datos móviles y desde una red restrictiva real. El resto de pantallas tienen la interfaz definitiva con datos de ejemplo. Hay un APK de prueba en las [releases](https://github.com/Alexxio070/Alex-TFG-DAM/releases). El agente aún no tiene instalador: se arranca a mano desde el código (ver más abajo).
 
 ## Roadmap
 
@@ -91,26 +91,44 @@ Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver
 ## Instalación y uso
 
 > [!NOTE]
-> **Esta no es la instalación final.** Todavía no hay APK ni instalador del agente. Esta guía sirve para probar el estado actual compilando todo a mano.
+> **Esta no es la instalación final.** Todavía no hay instalador del agente. Esta guía sirve para probar el estado actual del proyecto.
 
-**Requisitos:** Linux de 64 bits (glibc 2.28 o superior), Python 3.11 o superior, Git, [Flutter](https://docs.flutter.dev/get-started/install), Android SDK con el NDK `29.0.14206865` y [Rust](https://rustup.rs/) (para compilar iroh). Un móvil Android con la depuración por USB activada, o un emulador.
+### Instalación rápida
+
+La app se instala desde un APK ya compilado. El agente aún se arranca desde el código fuente.
+
+**Requisitos:** un PC Linux de 64 bits (glibc 2.28 o superior) con Python 3.11 o superior y Git, y un móvil Android 7 o superior (arm64). Para conectarlos por USB, `adb` y la depuración por USB activada.
+
+**1. La app.** Descarga `sysmote-v0.1-beta-arm64.apk` desde [Releases](https://github.com/Alexxio070/Alex-TFG-DAM/releases) e instálalo en el móvil. Android avisará porque el APK está firmado con la clave de depuración y viene de fuera de la tienda: hay que permitir la instalación desde esa fuente.
+
+**2. El agente.** En el PC:
 
 ```bash
-git clone https://github.com/Alexxio070/Alex-TFG-DAM.git && cd Alex-TFG-DAM
-
-# Agente (en una terminal)
-cd agent && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+git clone https://github.com/Alexxio070/Alex-TFG-DAM.git && cd Alex-TFG-DAM/agent
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/uvicorn sysmote.main:app --port 8443
-
-# App (en otra terminal, con el móvil conectado)
-cd App-movil && flutter pub get && flutter run
-adb reverse tcp:8443 tcp:8443
 ```
 
 > [!IMPORTANT]
 > El comando `.venv/bin/uvicorn sysmote.main:app --port 8443` es el que **levanta el servicio del agente**. Debe estar en marcha mientras uses la app.
 
-La app busca el agente en `127.0.0.1:8443`, así que las métricas aparecen sin más. Para conectarte desde otra red, arranca el agente con `.venv/bin/python scripts/iroh_poc.py` en lugar de `uvicorn`, y en Ajustes de la app elige el modo **iroh** y pega el identificador que imprime (ten presente el aviso de seguridad de arriba). Las pruebas se ejecutan con `.venv/bin/pytest` (agente) y `flutter test` (app).
+**3. Conectar la app con el agente.**
+
+- **Por USB (red local):** con el móvil conectado, ejecuta `adb reverse tcp:8443 tcp:8443`. La app busca el agente en `127.0.0.1:8443`, así que las métricas aparecen sin más.
+- **Desde otra red, por iroh:** arranca el agente con `.venv/bin/python scripts/iroh_poc.py` en lugar de `uvicorn`. Imprime el identificador del agente: en Ajustes de la app, elige el modo **iroh** y pégalo. Ten presente el aviso de seguridad de arriba.
+
+### Compilar desde el código fuente
+
+Para compilar la app tú mismo, además de lo anterior necesitas [Flutter](https://docs.flutter.dev/get-started/install) (Dart `^3.13.4`), el Android SDK con el NDK `29.0.14206865` y [Rust](https://rustup.rs/), porque el plugin `iroh_flutter` compila su núcleo en Rust la primera vez y tarda unos minutos.
+
+```bash
+cd App-movil
+flutter pub get
+flutter run                                          # móvil conectado o emulador
+flutter build apk --release --target-platform android-arm64   # genera el APK
+```
+
+El agente se arranca y se conecta igual que en la instalación rápida. Las pruebas se ejecutan con `.venv/bin/pytest` (en `agent/`) y `flutter test` (en `App-movil/`).
 
 > [!NOTE]
 > La TUI (`sysmote`) todavía no sirve para nada: sus botones están deshabilitados. Si aun así quieres instalarla, desde la raíz del repositorio:
