@@ -41,8 +41,8 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
       }
       await s.setAgentAddress(value);
     } else {
-      if (value.isEmpty) {
-        setState(() => _error = 'Introduce el identificador iroh');
+      if (!isValidIrohId(value)) {
+        setState(() => _error = kInvalidIrohIdMessage);
         return;
       }
       await s.setIrohId(value);

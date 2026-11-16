@@ -2,6 +2,12 @@ import '../../core/format.dart';
 
 const kDefaultAgentAddress = '127.0.0.1:8443';
 
+final _irohIdFormat = RegExp(r'^[0-9a-fA-F]{64}$');
+
+bool isValidIrohId(String value) => _irohIdFormat.hasMatch(value);
+
+const kInvalidIrohIdMessage = 'El identificador iroh no es válido: son 64 caracteres hexadecimales';
+
 enum TempUnit {
   celsius,
   fahrenheit;

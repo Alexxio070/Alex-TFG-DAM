@@ -6,6 +6,7 @@ del agente ni la modifica: cualquier servidor TCP local puede exponerse así.
 
 import asyncio
 import logging
+import os
 from pathlib import Path
 
 import iroh
@@ -28,11 +29,16 @@ def _spawn(coro) -> None:
 
 def _load_or_create_secret_key(path: Path) -> iroh.SecretKey:
     if path.exists():
-        return iroh.SecretKey.from_bytes(path.read_bytes())
+        try:
+            return iroh.SecretKey.from_bytes(path.read_bytes())
+        except iroh.IrohError as error:
+            raise ValueError(f"La clave secreta {path} no es válida: bórrala para generar otra") from error
     secret_key = iroh.SecretKey.generate()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(secret_key.to_bytes())
-    path.chmod(0o600)
+    # Con 0o600 desde la creación: escribir primero y hacer chmod después deja
+    # el archivo legible por otros usuarios durante unos instantes.
+    with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "wb") as file:
+        file.write(secret_key.to_bytes())
     return secret_key
 
 

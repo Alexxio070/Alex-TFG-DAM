@@ -80,3 +80,37 @@ Reproducido con un test de Flutter en una pantalla de 360 px de ancho (la del m�
 - una tarjeta «El agente no ha encontrado ninguna partición» en lugar de la de disco, sin ocultar el resto.
 
 Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.
+
+## 8. Cambiar el identificador en Ajustes no cambiaba de agente
+
+**Encontrado el 16/11/2026** releyendo el código en una revisión de blindaje; no se vio en el móvil.
+
+**Síntoma:** con una conexión ya abierta, pegar en Ajustes el identificador de otro agente no surtía efecto: la app seguía hablando con el anterior hasta que esa conexión moría.
+
+**Causa:** `_connect()` devolvía la conexión guardada sin volver a leer el identificador de Ajustes.
+
+**Solución:** el repositorio recuerda el identificador de la conexión abierta; si el de Ajustes es otro, la cierra y abre una nueva. Dos peticiones simultáneas comparten el mismo intento de conexión. Para poder probarlo, la conexión nativa va tras una interfaz mínima (`IrohLink`) que los tests sustituyen por una falsa. La documentación de la interfaz decía que el identificador se aplicaba «en caliente» antes de que fuera cierto con una conexión abierta; ahora lo es.
+
+## 9. Un identificador mal pegado daba el aviso genérico de conexión
+
+**Encontrado el 16/11/2026** en la misma revisión.
+
+**Síntoma:** Ajustes solo comprobaba que el identificador no estuviera vacío. Uno mal pegado fallaba al conectar y la pantalla decía «No se pudo conectar con el agente por iroh», sin indicar que el problema era el identificador.
+
+**Solución:** Ajustes rechaza al guardar un identificador que no sean 64 caracteres hexadecimales («El identificador iroh no es válido: son 64 caracteres hexadecimales»). Si aun así llega uno inválido al repositorio (por ejemplo, guardado por una versión anterior), este avisa con el mismo mensaje sin intentar conectar.
+
+## 10. Dos refrescos de Métricas a la vez
+
+**Encontrado el 16/11/2026** leyendo `MetricsViewModel`; deducido del código, no visto en el móvil.
+
+**Síntoma probable:** salir de Métricas y volver enseguida, o pulsar «Reintentar» con una carga en curso, lanzaba un segundo refresco sin descartar el primero. Los dos terminaban creando su suscripción a `watch()`: una quedaba sin cancelar y se hacían peticiones por duplicado.
+
+**Solución:** un contador de generación que suben cada refresco y cada parada; un refresco que termina cuando ya hay otro más nuevo se descarta. Cubierto por dos tests del ViewModel.
+
+## 11. La clave secreta del agente: permisos tardíos y archivo corrupto
+
+**Encontrado el 16/11/2026** en la misma revisión.
+
+**Síntoma probable:** `_load_or_create_secret_key` escribía el archivo con los permisos por defecto y hacía `chmod 0600` después, así que durante unos instantes otro usuario del PC podía leerlo. Y un archivo de clave con un tamaño erróneo tumbaba el agente con un fallo interno de iroh.
+
+**Solución:** el archivo se crea ya con `0600` (`os.open` con modo y `O_EXCL`), y un archivo corrupto da un `ValueError` que dice qué archivo borrar para que se genere otro.

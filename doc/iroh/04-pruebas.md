@@ -17,13 +17,40 @@ Usan el binding de Python real de iroh (sin mocks): un `Endpoint` servidor y uno
 | `test_tunnel_forwards_a_real_metrics_request` | Con un servidor Uvicorn real sirviendo `sysmote.main:app`, una petición `GET /metrics` completa llega y vuelve bien a través del túnel (los dos sentidos del reenvío) |
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si no hay nada escuchando en el puerto local, el *stream* se cierra (`reset`) enseguida en vez de colgarse hasta un *timeout* |
 
+### Agente: `agent/tests/test_iroh_secret_key.py`
+
+| Test | Qué comprueba |
+|---|---|
+| `test_creates_the_key_with_private_permissions` | La clave secreta se crea con permisos `0600` |
+| `test_reuses_the_stored_key_so_the_identifier_survives_restarts` | Cargarla dos veces da el mismo identificador (la base de la prueba 5) |
+| `test_rejects_a_corrupt_key_file_with_a_clear_message` | Un archivo de clave corrupto da un `ValueError` con un mensaje claro en vez de un fallo interno de iroh |
+
 ### App: `App-movil/test/connection_mode_metrics_repository_test.dart`
 
 Comprueba que `ConnectionModeMetricsRepository` elige el repositorio correcto según `settings.connectionMode`, y que lo reevalúa en cada llamada (no solo al construirse) — con repositorios de prueba (*fakes*), sin red real.
 
+### App: `App-movil/test/iroh_metrics_repository_test.dart`
+
+La conexión se aparta tras una interfaz mínima (`IrohLink`) que estos tests sustituyen por una falsa: prueban la lógica del repositorio, no iroh.
+
+| Test | Qué comprueba |
+|---|---|
+| devuelve el JSON y reutiliza la conexión | Dos peticiones seguidas abren una sola conexión |
+| identificador inválido | Avisa con «El identificador iroh no es válido…» y no intenta conectar |
+| cambia el identificador de Ajustes | Cierra la conexión del agente anterior y abre otra con el identificador nuevo |
+| la petición falla | Cierra la conexión muerta y la siguiente petición reconecta |
+| falla al conectar | Avisa con «No se pudo conectar…» y la siguiente petición lo vuelve a intentar |
+| dos peticiones a la vez | Comparten el mismo intento de conexión |
+| límite de conexión (5 s) y de petición (3 s) | Con reloj simulado, ambos acaban en `AgentUnavailableException`; el segundo cierra la conexión |
+
+### App: otros tests relacionados
+
+- `settings_widget_test.dart`: Ajustes rechaza un identificador iroh que no son 64 caracteres hexadecimales y no lo guarda.
+- `metrics_viewmodel_test.dart`: salir y volver rápido a Métricas, o «Reintentar» con una carga en curso, no deja dos suscripciones a `watch()`.
+
 ### Pendiente de test automático
 
-Las partes de `IrohMetricsRepository` que dependen de una conexión iroh real (*timeouts* de conexión y de petición, reconexión tras un fallo) solo están probadas a mano, no con un test automático. El fallo al aceptar una conexión entrante en el agente (bucle de `run()`) tampoco tiene test automático: requeriría forzar un fallo de *handshake* real.
+Sigue sin test automático la conexión iroh real de `IrohMetricsRepository` (el `Endpoint` y la conexión de `iroh_flutter`): los tests anteriores usan una conexión falsa. El fallo al aceptar una conexión entrante en el agente (bucle de `run()`) tampoco tiene test automático: requeriría forzar un fallo de *handshake* real.
 
 **Intentado el 13/11/2026 y descartado por ahora:** sí es viable levantar un `Endpoint` iroh real dentro de `flutter test` en Linux (`dart run iroh_quic:setup` instala la librería nativa de escritorio; `Iroh.init()` y `Endpoint.bind()` funcionan). Pero `IrohMetricsRepository` construye la dirección del agente solo a partir del identificador (hex), igual que en producción, confiando en el descubrimiento de iroh (DNS/pkarr) para resolver direcciones — y esa resolución **falla dentro del proceso `flutter_tester`** en esta máquina, aunque la propia máquina sí tiene DNS e internet (confirmado con `curl`/`nslookup` desde la terminal). No se ha investigado la causa exacta; podría ser una limitación de cómo ese proceso resuelve DNS, no del código. Sin eso, un test así no es fiable: cualquier `connect()` falla por este motivo antes de probar nada del *timeout* o la reconexión que se quería cubrir.
 
@@ -88,11 +115,24 @@ describe esta fila (12/11/2026).
 |---|---|---|---|
 | 1 | Si el agente FastAPI no está arrancado (o se cae) y llega una conexión iroh, el reenvío de esa conexión lanzaba una excepción sin capturar dentro de una tarea en segundo plano: se perdía en silencio y el móvil se quedaba colgado sin aviso | La conexión iroh de esa petición se cierra con `reset` en cuanto falla la conexión al puerto local; el resto del túnel sigue funcionando | **Hecho.** Cubierto por `tests/test_iroh_tunnel.py::test_tunnel_resets_the_stream_when_the_local_agent_is_down` |
 | 2 | Un fallo al aceptar una conexión entrante (`accept`/`connect`) tumbaba el túnel entero | El túnel sigue aceptando conexiones nuevas aunque una falle al aceptarse (el bucle de `run()` captura `iroh.IrohError` y sigue) | **Hecho**, revisado por lógica. Sin test automático (requeriría forzar un fallo de *handshake* real); se confirmó en la práctica el 12/11/2026 al caerse el túnel por este motivo antes del arreglo |
+| 6 | La clave secreta se escribía con los permisos por defecto y solo después se hacía `chmod`, y un archivo de clave corrupto tumbaba el agente con un fallo interno | Se crea ya con `0600` (`os.open`), y un archivo corrupto da un error con mensaje claro | **Hecho (16/11/2026)**. Cubierto por `tests/test_iroh_secret_key.py`. Ver `03-problemas-y-soluciones.md` §11 |
 
 ### En la app (`App-movil/lib/data/iroh/iroh_metrics_repository.dart`)
 
 | # | Fallo | Qué debería pasar | Estado |
 |---|---|---|---|
-| 3 | Conectar no tenía límite de tiempo: si el identificador no era alcanzable, se quedaba esperando para siempre | A los 5 s, `AgentUnavailableException` en vez de quedarse colgado | **Hecho** (`_connectTimeout` en `_connect`). Sin test automático: requeriría una conexión iroh real en el entorno de test de Flutter |
-| 4 | Cada petición de métricas tampoco tenía límite de tiempo: si el agente se colgaba a medias, la gráfica se quedaba congelada sin avisar | A los 3 s (mismo tiempo que `HttpMetricsRepository`) se muestra el error en vez de quedarse congelada | **Hecho** (`_fetchTimeout` en `fetch`). Hasta el 13/11/2026 el error solo se veía si la pantalla aún no tenía datos; con datos ya cargados la gráfica se congelaba sin avisar (ver `03-problemas-y-soluciones.md` §7). El *timeout* sigue sin test automático; el aviso en pantalla sí lo tiene (`metrics_widget_test.dart`) |
-| 5 | Reintentar reintentaba sobre la misma conexión QUIC; si esa conexión ya había muerto (agente reiniciado, cambio de red), reintentaba para siempre sin poder recuperarse | Reintentar abre una conexión nueva desde cero si la anterior falló, y recupera las métricas si el agente vuelve a estar disponible | **Hecho** (si falla la petición, `fetch` cierra la conexión y pone `_connection` a `null`, así el siguiente intento reconecta). Confirmado a mano en la prueba 4 de la matriz (cambio de red en caliente). Sin test automático |
+| 3 | Conectar no tenía límite de tiempo: si el identificador no era alcanzable, se quedaba esperando para siempre | A los 5 s, `AgentUnavailableException` en vez de quedarse colgado | **Hecho** (`_connectTimeout` en `_open`). Cubierto por `iroh_metrics_repository_test.dart`, con una conexión falsa |
+| 4 | Cada petición de métricas tampoco tenía límite de tiempo: si el agente se colgaba a medias, la gráfica se quedaba congelada sin avisar | A los 3 s (mismo tiempo que `HttpMetricsRepository`) se muestra el error en vez de quedarse congelada | **Hecho** (`_fetchTimeout` en `fetch`). Hasta el 13/11/2026 el error solo se veía si la pantalla aún no tenía datos; con datos ya cargados la gráfica se congelaba sin avisar (ver `03-problemas-y-soluciones.md` §7). El *timeout* y el aviso en pantalla están cubiertos por tests (`iroh_metrics_repository_test.dart` y `metrics_widget_test.dart`) |
+| 5 | Reintentar reintentaba sobre la misma conexión QUIC; si esa conexión ya había muerto (agente reiniciado, cambio de red), reintentaba para siempre sin poder recuperarse | Reintentar abre una conexión nueva desde cero si la anterior falló, y recupera las métricas si el agente vuelve a estar disponible | **Hecho** (si falla la petición, `fetch` cierra la conexión y pone `_connection` a `null`, así el siguiente intento reconecta). Confirmado a mano en la prueba 4 de la matriz (cambio de red en caliente) y cubierto por test con una conexión falsa |
+| 7 | Cambiar el identificador en Ajustes con una conexión ya abierta: el repositorio seguía hablando con el agente anterior | Cierra la conexión vieja y abre otra con el identificador nuevo | **Hecho (16/11/2026)** (`_connect`). Cubierto por test. Detalle en `03-problemas-y-soluciones.md` §8 |
+| 8 | Un identificador mal pegado solo daba el aviso genérico «No se pudo conectar» | Ajustes lo rechaza al guardar si no son 64 caracteres hexadecimales, y el repositorio avisa con un mensaje propio sin intentar conectar | **Hecho (16/11/2026)**. Cubierto por tests de Ajustes y del repositorio. Ver `03-problemas-y-soluciones.md` §9 |
+| 9 | Salir y volver rápido a Métricas, o «Reintentar» con una carga en curso, podía dejar dos suscripciones a `watch()` y dos conexiones a la vez *(deducido leyendo el código; no se vio en el móvil)* | Solo cuenta el último refresco: un contador de generación descarta los anteriores | **Hecho (16/11/2026)** (`MetricsViewModel`). Cubierto por tests. Ver `03-problemas-y-soluciones.md` §10 |
+
+### Aplazado a la fase 3 (cuando exista el login)
+
+Detectados el 16/11/2026. Sin login, cualquiera que conozca el identificador llega al agente, así que endurecerlo ahora no cambia quién puede llegar; se hace junto con el resto de la seguridad (`04-plan-de-fases.md`, fase 3).
+
+| # | Fallo | Qué debería pasar | Estado |
+|---|---|---|---|
+| 10 | El túnel no limita las conexiones ni los *streams* simultáneos, y no corta un *stream* que no envía nada *(deducido leyendo el código)* | Un límite de conexiones y de *streams*, y un *timeout* de inactividad | **Aplazado a la fase 3** |
+| 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 5 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Aplazado a la fase 3** |
