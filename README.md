@@ -1,5 +1,7 @@
 # Sysmote
 
+[English](README.en.md) | **Español**
+
 [![Licencia: GPL-3.0](https://img.shields.io/badge/licencia-GPL--3.0-blue.svg)](LICENSE)
 ![Flutter](https://img.shields.io/badge/app-Flutter-02569B.svg)
 ![Python 3.11+](https://img.shields.io/badge/agente-Python%203.11%2B-3776AB.svg)
