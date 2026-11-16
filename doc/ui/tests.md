@@ -1,6 +1,6 @@
 # Tests de la app
 
-Documentación de los tests de [`App-movil/test/`](../../App-movil/test/): qué prueba cada archivo y para qué sirve. Hay 115 tests, todos automáticos; ninguno depende de un móvil, de la red ni del agente real.
+Documentación de los tests de [`App-movil/test/`](../../App-movil/test/): qué prueba cada archivo y para qué sirve. Hay 119 tests, todos automáticos; ninguno depende de un móvil, de la red ni del agente real.
 
 ```bash
 cd App-movil && flutter test                    # todos
@@ -17,13 +17,13 @@ Casi todos usan repositorios falsos o en memoria: prueban la app, no su conexió
 | [`fakes/fake_metrics_repository.dart`](../../App-movil/test/fakes/fake_metrics_repository.dart) | Métricas aleatorias (CPU, RAM, temperatura) y 3 particiones de ejemplo (`/`, `/home`, `/mnt/datos`) |
 | [`fakes/in_memory_settings_repository.dart`](../../App-movil/test/fakes/in_memory_settings_repository.dart) | Guarda los ajustes en una variable en memoria en vez de en `shared_preferences` |
 
-## Lógica sin interfaz (49 tests)
+## Lógica sin interfaz (53 tests)
 
 | Archivo | Tests | Qué comprueba | Qué fallo detecta |
 |---|---|---|---|
 | [`http_metrics_repository_test.dart`](../../App-movil/test/http_metrics_repository_test.dart) | 9 | `HttpMetricsRepository` contra un `MockClient`: parsea partición y RAM; muestra actual en `loadHistory`; temperatura `null`; `watch()` pide `/metrics` en cada tick; URL desde Ajustes; código distinto de 200, JSON malformado, una respuesta que tarda más del límite de 3 s o tipo inesperado dan `AgentUnavailableException` | Que la app se quede colgada o muestre datos erróneos si el agente responde mal, tarde o con datos corruptos |
 | [`connection_mode_metrics_repository_test.dart`](../../App-movil/test/connection_mode_metrics_repository_test.dart) | 2 | `ConnectionModeMetricsRepository`: usa el repositorio local cuando el modo es local; tras cambiar el modo a iroh, la siguiente llamada usa el repositorio iroh | Que el selector local/iroh de Ajustes no cambie de verdad la fuente de las métricas |
-| [`iroh_metrics_repository_test.dart`](../../App-movil/test/iroh_metrics_repository_test.dart) | 8 | `IrohMetricsRepository` con una conexión falsa (`IrohLink`): reutiliza la conexión; un identificador inválido avisa sin conectar; si cambia el identificador cierra la conexión vieja y abre otra; tras un fallo de la petición cierra la conexión y reconecta; un fallo al conectar se reintenta; dos peticiones a la vez comparten la conexión; límite de 5 s al conectar y de 3 s en la petición | Que cambiar de agente en Ajustes no surta efecto, que una conexión muerta deje la pantalla colgada o que haya conexiones duplicadas |
+| [`iroh_metrics_repository_test.dart`](../../App-movil/test/iroh_metrics_repository_test.dart) | 12 | `IrohMetricsRepository` con una conexión falsa (`IrohLink`): reutiliza la conexión; un identificador inválido avisa sin conectar; si cambia el identificador cierra la conexión vieja y abre otra; tras un fallo de la petición cierra la conexión y reconecta; un fallo al conectar se reintenta; dos peticiones a la vez comparten la conexión; límite de 5 s al conectar y de 3 s en la petición; pasado el límite de 5 s, la siguiente petición espera el mismo intento en vez de lanzar otro; una conexión que llega tarde se aprovecha, o se cierra si el identificador cambió; tras 20 conexiones muertas solo queda abierta la última | Que cambiar de agente en Ajustes no surta efecto, que una conexión muerta deje la pantalla colgada o que se acumulen intentos y conexiones sin cerrar |
 | [`metrics_viewmodel_test.dart`](../../App-movil/test/metrics_viewmodel_test.dart) | 4 | Si el repositorio falla al arrancar, pasa a estado de error (`error` con mensaje, `ready=false`); `retry()` se recupera cuando el agente vuelve; salir y volver rápido, o `retry()` con una carga en curso, no deja dos suscripciones a `watch()` | Que la pantalla de error con reintento no funcione de verdad, o que se acumulen suscripciones |
 | [`home_viewmodel_test.dart`](../../App-movil/test/home_viewmodel_test.dart) | 4 | `moveItem` cambia el orden; `mergeInto` de dos macros crea una carpeta; `mergeInto` sobre una carpeta existente añade dentro; `ungroupFolder` deja las macros sueltas | Errores de reordenado y agrupado de la cuadrícula de Inicio, sin simular arrastres |
 | [`notes_viewmodel_test.dart`](../../App-movil/test/notes_viewmodel_test.dart) | 1 | Una respuesta lenta de una búsqueda antigua no pisa la de la más reciente (condición de carrera) | Que al escribir rápido en el buscador aparezcan resultados de una búsqueda ya abandonada |
