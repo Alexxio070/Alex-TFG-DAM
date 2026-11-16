@@ -23,28 +23,41 @@ Es un proyecto de fin de grado de Desarrollo de Aplicaciones Multiplataforma (DA
 
 ### App
 
+<div align="center">
+
 <table>
   <tr>
     <td align="center"><img src="doc/img/app-inicio.png" width="200" alt="Inicio"><br><sub>Inicio (acciones rápidas)</sub></td>
     <td align="center"><img src="doc/img/app-metricas.png" width="200" alt="Métricas"><br><sub>Métricas en vivo</sub></td>
-    <td align="center"><img src="doc/img/app-terminal.png" width="200" alt="Terminal"><br><sub>Terminal</sub></td>
   </tr>
   <tr>
+    <td align="center"><img src="doc/img/app-terminal.png" width="200" alt="Terminal"><br><sub>Terminal</sub></td>
     <td align="center"><img src="doc/img/app-notas.png" width="200" alt="Notas"><br><sub>Notas</sub></td>
-    <td align="center"><img src="doc/img/app-ajustes.png" width="200" alt="Ajustes"><br><sub>Ajustes</sub></td>
-    <td></td>
   </tr>
 </table>
 
-Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todavía no están conectadas al agente. Las de Métricas y Ajustes sí funcionan con el agente real.
+</div>
+
+Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todavía no están conectadas al agente. La de Métricas sí funciona con el agente real.
 
 ### TUI del PC (`sysmote`)
 
-| Inicio | Emparejamiento | Seguridad |
-|---|---|---|
-| ![Inicio de la TUI](doc/img/tui-inicio.png) | ![Emparejamiento](doc/img/tui-emparejamiento.png) | ![Seguridad](doc/img/tui-seguridad.png) |
+<div align="center">
 
-La TUI tiene la estructura completa (Emparejamiento, Historial, Base de datos y Notas), pero casi todos sus botones están deshabilitados hasta que se implementen sus funciones.
+<table>
+  <tr>
+    <td align="center"><img src="doc/img/tui-emparejamiento.png" width="420" alt="Emparejamiento"><br><sub>Emparejamiento (con Seguridad y Servicio)</sub></td>
+    <td align="center"><img src="doc/img/tui-historial.png" width="420" alt="Historial"><br><sub>Historial</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="doc/img/tui-base-de-datos.png" width="420" alt="Base de datos"><br><sub>Base de datos</sub></td>
+    <td align="center"><img src="doc/img/tui-notas.png" width="420" alt="Notas"><br><sub>Notas</sub></td>
+  </tr>
+</table>
+
+</div>
+
+La TUI tiene la estructura completa, pero casi todos sus botones están deshabilitados hasta que se implementen sus funciones.
 
 ## Funciones
 
@@ -56,11 +69,6 @@ La TUI tiene la estructura completa (Emparejamiento, Historial, Base de datos y 
 | Terminal remota con la shell real del usuario (sesiones persistentes con tmux) | Interfaz hecha, falta conectarla al agente |
 | Acciones rápidas (comandos guardados, con historial) | Interfaz hecha, falta conectarla al agente |
 | Espacio compartido de notas y enlaces entre móvil y PC | Interfaz hecha, falta conectarla al agente |
-| Login, emparejamiento seguro y cifrado | Previsto |
-| Instalación del agente como servicio del sistema | Previsto |
-| Procesos: lista, búsqueda, finalizar y congelar | Previsto |
-| Notificaciones y reglas de alerta | Previsto |
-| Control de energía (apagar, reiniciar, suspender, bloquear) | En estudio |
 
 ## Estado actual
 
@@ -71,7 +79,6 @@ Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver
 - [x] Interfaz de la app completa, con datos de ejemplo
 - [x] Agente con métricas reales y TUI
 - [x] Acceso remoto por iroh
-- [ ] APK de prueba publicado en las releases
 - [ ] Login, emparejamiento seguro y cifrado (TLS)
 - [ ] Terminal remota real
 - [ ] Instalación del agente como servicio del sistema
@@ -80,74 +87,38 @@ Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver
 - [ ] Notificaciones y reglas de alerta
 - [ ] Notas compartidas entre móvil y PC
 - [ ] Descubrimiento automático en red local y emparejamiento por QR
-- [ ] Control de energía (en estudio)
 
 ## Instalación y uso
 
 > [!NOTE]
-> **Esta no es la instalación final.** Todavía no hay APK publicado ni instalador del agente (no hay `pipx install`, ni servicio de systemd). Esta guía sirve para probar el estado actual del proyecto compilando todo a mano. Cambiará cuando exista el instalador.
+> **Esta no es la instalación final.** Todavía no hay APK ni instalador del agente. Esta guía sirve para probar el estado actual compilando todo a mano.
 
-### 1. Requisitos
-
-- **PC:** Linux de 64 bits con glibc 2.28 o superior (el paquete de iroh para Python solo existe para `manylinux_2_28`), Python 3.11 o superior y Git.
-- **Para compilar la app:** [Flutter](https://docs.flutter.dev/get-started/install) estable (Dart `^3.13.4`), Android SDK con el NDK `29.0.14206865` y [Rust](https://rustup.rs/) (el plugin `iroh_flutter` compila su núcleo en Rust la primera vez, lo que tarda unos minutos).
-- **Para probarla:** un móvil Android con la depuración por USB activada, o un emulador.
-
-### 2. Descargar el proyecto
+**Requisitos:** Linux de 64 bits (glibc 2.28 o superior), Python 3.11 o superior, Git, [Flutter](https://docs.flutter.dev/get-started/install), Android SDK con el NDK `29.0.14206865` y [Rust](https://rustup.rs/) (para compilar iroh). Un móvil Android con la depuración por USB activada, o un emulador.
 
 ```bash
-git clone https://github.com/Alexxio070/Alex-TFG-DAM.git
-cd Alex-TFG-DAM
-```
+git clone https://github.com/Alexxio070/Alex-TFG-DAM.git && cd Alex-TFG-DAM
 
-### 3. Arrancar el agente
-
-```bash
-cd agent
-python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
+# Agente (en una terminal)
+cd agent && python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/uvicorn sysmote.main:app --port 8443
-```
 
-Comprueba que funciona abriendo `http://127.0.0.1:8443/metrics` en el navegador del PC: debe devolver un JSON con las métricas. El agente escucha solo en `127.0.0.1`. Para abrir la interfaz de terminal del PC, en otra terminal: `.venv/bin/sysmote`.
-
-### 4. Compilar e instalar la app
-
-Con el móvil conectado por USB (o el emulador arrancado):
-
-```bash
-cd App-movil
-flutter pub get
-flutter run
-```
-
-La primera compilación es lenta porque se compila iroh. Si prefieres generar un APK e instalarlo tú: `flutter build apk --release` y luego `adb install build/app/outputs/flutter-apk/app-release.apk`.
-
-### 5. Conectar la app con el agente
-
-**Opción A: por USB (red local).** Es lo más sencillo para probar. Con el agente arrancado y el móvil conectado:
-
-```bash
+# App (en otra terminal, con el móvil conectado)
+cd App-movil && flutter pub get && flutter run
 adb reverse tcp:8443 tcp:8443
 ```
 
-La app busca por defecto el agente en `127.0.0.1:8443`, así que las métricas aparecen sin tocar nada. La dirección se cambia en Ajustes.
+> [!IMPORTANT]
+> El comando `.venv/bin/uvicorn sysmote.main:app --port 8443` es el que **levanta el servicio del agente**. Debe estar en marcha mientras uses la app.
 
-**Opción B: desde cualquier red, por iroh.** Sustituye el paso 3 por este arranque, que levanta la API y el túnel iroh a la vez:
+La app busca el agente en `127.0.0.1:8443`, así que las métricas aparecen sin más. Para conectarte desde otra red, arranca el agente con `.venv/bin/python scripts/iroh_poc.py` en lugar de `uvicorn`, y en Ajustes de la app elige el modo **iroh** y pega el identificador que imprime (ten presente el aviso de seguridad de arriba). Las pruebas se ejecutan con `.venv/bin/pytest` (agente) y `flutter test` (app).
 
-```bash
-cd agent
-.venv/bin/python scripts/iroh_poc.py
-```
-
-Imprime el identificador iroh del agente (se conserva entre arranques). En la app, ve a Ajustes, elige el modo **iroh**, pega el identificador y pulsa «Guardar». Recuerda el aviso de seguridad de arriba: sin login, quien conozca ese identificador llega al agente.
-
-### 6. Ejecutar las pruebas
-
-```bash
-cd agent && .venv/bin/pytest
-cd App-movil && flutter test
-```
+> [!NOTE]
+> La TUI (`sysmote`) todavía no sirve para nada: sus botones están deshabilitados. Si aun así quieres instalarla, desde la raíz del repositorio:
+>
+> ```bash
+> pipx install ./agent
+> sysmote
+> ```
 
 ## Cómo funciona
 
@@ -178,7 +149,7 @@ Todo el diseño está en [`doc/`](doc/):
 
 ## Contribuir
 
-Es un proyecto de fin de grado y todavía no tiene una guía de contribución formal. Las ideas y los fallos que encuentres se pueden comentar abriendo una incidencia (*issue*). Las ramas son `main` (estable) y `feature/<nombre>` para cada tarea, y los mensajes de commit siguen el formato convencional (`feat:`, `fix:`, `docs:`...).
+Lee la [guía de contribución](CONTRIBUTING.md).
 
 ## Licencia
 
