@@ -10,7 +10,7 @@ import iroh
 import pytest
 import uvicorn
 
-from sysmote.iroh_tunnel import ALPN, _handle_connection
+from sysmote.iroh_tunnel import ALPN, _handle_connection, _tasks
 from sysmote.main import app
 
 
@@ -71,3 +71,23 @@ async def test_tunnel_resets_the_stream_when_the_local_agent_is_down(open_stream
     # Debe cerrarse enseguida (reset), no quedarse colgado hasta un timeout.
     with pytest.raises(iroh.IrohError):
         await asyncio.wait_for(stream.recv().read_to_end(1024), timeout=2)
+
+
+async def test_tunnel_leaves_no_background_tasks_behind(running_agent, open_stream):
+    # Con el agente en marcha y con el agente caído: cada petición lanza una tarea
+    # de reenvío que debe desaparecer al terminar, no acumularse.
+    for port in [running_agent] * 10 + [1] * 5:
+        stream = await open_stream(port)
+        await stream.send().write_all(b"GET /metrics HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n")
+        await stream.send().finish()
+        try:
+            await asyncio.wait_for(stream.recv().read_to_end(1_000_000), timeout=2)
+        except iroh.IrohError:
+            pass  # el reset del agente caído
+
+    for _ in range(40):
+        if not _tasks:
+            break
+        await asyncio.sleep(0.05)
+
+    assert not _tasks
