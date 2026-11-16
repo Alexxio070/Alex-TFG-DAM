@@ -2,7 +2,7 @@
 
 Todo lo específico de la conexión remota P2P con **iroh** (fase 2, `../documentos-generales-del-proyecto/04-plan-de-fases.md`): qué es, cómo se ha implementado, qué problemas dio y cómo se solucionaron, y qué pruebas hay.
 
-**Estado:** fase 2 cerrada (12/11/2026). Integrado en la app real (modo iroh de Ajustes) y probado, incluida una red restrictiva real. De la prueba 5 solo se reinició el proceso del agente, no el PC entero — ver `04-pruebas.md`.
+**Estado:** fase 2 cerrada (12/11/2026). Integrado en la app real (modo iroh de Ajustes) y probado, incluida una red restrictiva real. Matriz de pruebas completa en `04-pruebas.md`.
 
 ## Documentos de esta carpeta
 
@@ -28,6 +28,7 @@ Para no duplicar, estas cosas siguen en los documentos generales:
 
 ## Por hacer
 
-- Opcional: completar la prueba 5 de la matriz (`04-pruebas.md`) con un reinicio real del PC, no solo del proceso del agente.
+- Fase 3 (con el login): límite de conexiones y de *streams* simultáneos, *timeout* de inactividad y captura de cualquier excepción en el bucle del túnel (`04-pruebas.md` §2, puntos 10 y 11).
+- Medir a mano las fugas de recursos nativos de iroh en el móvil (procedimiento en `04-pruebas.md`, «Limitaciones conocidas»).
 - Arranque automático del túnel junto a `sysmote serve` — correctamente aplazado a la fase 5, no es una carencia de esta fase.
-- Decidir si vale la pena montar un `Endpoint` iroh real dentro del entorno de test de Flutter para cubrir con tests automáticos lo que hoy solo está probado a mano (ver `04-pruebas.md` §0).
+- Decidir si vale la pena montar un `Endpoint` iroh real dentro del entorno de test de Flutter: hoy la lógica del repositorio se prueba con una conexión falsa, y la conexión iroh real solo está probada a mano (ver `04-pruebas.md` §0).

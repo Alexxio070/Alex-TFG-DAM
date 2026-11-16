@@ -16,7 +16,7 @@ El modo iroh no cambia nada de la API del agente: `iroh_tunnel.py` reenvía byte
 
 Patrón *dumbpipe* (ver `01-que-es-y-como-funciona.md` §5). Piezas:
 
-- **`_load_or_create_secret_key(path)`**: lee la clave secreta de un archivo si existe, o la genera y la guarda (permisos `0o600`). Así el identificador iroh del agente sobrevive a los reinicios (prueba 5 de `04-pruebas.md`).
+- **`_load_or_create_secret_key(path)`**: lee la clave secreta de un archivo si existe, o la genera y la guarda, creándola ya con permisos `0o600`; un archivo corrupto da un `ValueError` con un mensaje claro. Así el identificador iroh del agente sobrevive a los reinicios (prueba 5 de `04-pruebas.md`).
 - **`run(local_port, secret_key_path)`**: punto de entrada. Crea el `Endpoint` con el preset `n0` (relés de producción) y el ALPN `b"sysmote/tunnel/0"`, imprime el identificador y entra en el bucle de aceptación. Si falla el *handshake* de una conexión concreta, lo registra y **sigue escuchando** — no tumba el túnel entero (ver `03-problemas-y-soluciones.md`).
 - **`_handle_connection(connection, local_port)`**: por cada conexión aceptada, acepta *streams* bidireccionales en bucle y lanza una tarea (`_forward_stream`) por cada uno.
 - **`_spawn(coro)`**: lanza las tareas en segundo plano guardando una referencia a cada una hasta que terminan; el bucle de eventos de `asyncio` solo guarda referencias débiles, y una tarea sin referencia puede desaparecer a medio ejecutarse.
@@ -34,11 +34,12 @@ Patrón *dumbpipe* (ver `01-que-es-y-como-funciona.md` §5). Piezas:
 
 En `IrohMetricsRepository`:
 
-- **`_connect()`**: si ya hay una conexión abierta, la reutiliza. Si no, crea el `Endpoint` la primera vez (`Iroh.init()` + `Endpoint.bind(alpns: [...])`) y lo reutiliza después, parsea el identificador (texto hex) con `PublicKey.fromHex` y conecta con `endpoint.connect(addr, alpn)`.
-- **`_exchange(connection)`**: abre un *stream* bidireccional (`connection.openBi()`), escribe una petición `GET /metrics HTTP/1.1` cruda y lee la respuesta hasta el final (`readToEnd`).
-- **`fetch()`**: junta las dos funciones anteriores, con *timeouts* (ver tabla abajo). Si la petición falla, cierra la conexión y la olvida, para que el siguiente intento abra una nueva — detalle en `03-problemas-y-soluciones.md`.
+- **`IrohLink` e `IrohConnector`**: la conexión abierta con un agente va tras una interfaz mínima (`exchange(petición)` y `close()`). La implementación real envuelve la `Connection` de `iroh_flutter`; los tests usan una falsa.
+- **`_connectNative(id)`**: crea el `Endpoint` la primera vez (`Iroh.init()` + `Endpoint.bind(alpns: [...])`) y lo reutiliza después, parsea el identificador (texto hex) con `PublicKey.fromHex` y conecta con `endpoint.connect(addr, alpn)`. El envío de la petición (`exchange`) abre un *stream* bidireccional (`connection.openBi()`), escribe una petición `GET /metrics HTTP/1.1` cruda y lee la respuesta hasta el final (`readToEnd`).
+- **`_connect(id)`**: reutiliza la conexión abierta si es del identificador actual de Ajustes; si el identificador cambió, la cierra y abre otra. El intento de conexión nativo no se puede cancelar, así que solo hay uno a la vez: si pasa de 5 s sigue vivo por debajo, y las peticiones siguientes lo esperan (cada una con su propio límite) en vez de lanzar otro. Si acaba conectando tarde, la conexión se aprovecha; si mientras tanto cambió el identificador, se cierra al llegar.
+- **`fetch()`**: comprueba que el identificador sean 64 caracteres hexadecimales (si no, avisa con su propio mensaje y no conecta), conecta y envía la petición, con *timeouts* (ver tabla abajo). Si la petición falla, cierra la conexión y la olvida, para que el siguiente intento abra una nueva — detalle en `03-problemas-y-soluciones.md`.
 
-`watch()` nunca solapa peticiones: `asyncMap` pausa el `Stream.periodic` hasta que termina cada una (comprobado en el código fuente del SDK de Dart 3.13.4), así que no hace falta proteger la conexión frente a peticiones simultáneas.
+`watch()` nunca solapa peticiones: `asyncMap` pausa el `Stream.periodic` hasta que termina cada una (comprobado en el código fuente del SDK de Dart 3.13.4). Lo que sí podía solaparse eran los refrescos de `MetricsViewModel` (salir y volver rápido, «Reintentar»): ahora descarta los anteriores con un contador de generación, y el intento de conexión compartido cubre que dos de ellos coincidan al conectar.
 
 | Timeout | Valor | Para qué |
 |---|---|---|
