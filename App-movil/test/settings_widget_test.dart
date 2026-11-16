@@ -8,6 +8,7 @@ import 'package:sysmote/features/settings/settings_viewmodel.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
+  final validIrohId = 'a' * 64;
   late SettingsViewModel settings;
 
   Future<void> openSettings(WidgetTester tester) async {
@@ -138,12 +139,26 @@ void main() {
     await pumpFor(tester, 200);
     expect(find.text('127.0.0.1:8443'), findsNothing);
 
-    await tester.enterText(find.byType(TextField), 'nodeid-de-prueba');
+    await tester.enterText(find.byType(TextField), validIrohId);
     await tester.tap(find.text('Guardar'));
     await pumpFor(tester, 200);
 
     expect(settings.connectionMode, ConnectionMode.iroh);
-    expect(settings.irohId, 'nodeid-de-prueba');
+    expect(settings.irohId, validIrohId);
+  });
+
+  testWidgets('rechaza un identificador iroh que no son 64 caracteres hexadecimales', (tester) async {
+    await openSettings(tester);
+    await tester.tap(find.text('iroh'));
+    await pumpFor(tester, 200);
+
+    await tester.enterText(find.byType(TextField), 'nodeid-de-prueba');
+    await tester.tap(find.text('Guardar'));
+    await pumpFor(tester, 200);
+
+    expect(find.text(kInvalidIrohIdMessage), findsOneWidget);
+    expect(find.text('Guardado'), findsNothing);
+    expect(settings.irohId, '');
   });
 
   testWidgets('desemparejar pide confirmación y actualiza el estado', (tester) async {

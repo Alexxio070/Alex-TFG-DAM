@@ -138,12 +138,12 @@ Lista de grupos (`SettingsGroup`, radio 20, cabecera 13 sp `muted`), cada fila c
 | Apariencia | Tema | Segmentado Claro / Oscuro |
 | Apariencia | Color de acento | Botón que abre una hoja inferior con los 6 colores |
 | Dispositivo | Modo de conexión | Segmentado Local / iroh (`ConnectionFields`) |
-| Dispositivo | Dirección del agente (modo Local) o identificador (modo iroh) | Campo de texto monoespaciado + botón «Guardar»; en Local valida el formato `host:puerto` |
+| Dispositivo | Dirección del agente (modo Local) o identificador (modo iroh) | Campo de texto monoespaciado + botón «Guardar»; en Local valida el formato `host:puerto` y en iroh que sean 64 caracteres hexadecimales |
 | Dispositivo | Emparejar / Desemparejar | Botón; desemparejar pide confirmación |
 
 Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppSegmented`, `AppStepper` (botones 44×44).
 
-**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador iroh del agente, que usa `IrohMetricsRepository` para conectar (ver `doc/iroh/`). Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección, el identificador o el modo se aplica en caliente: los repositorios de métricas los leen en cada petición, sin reiniciar la app.
+**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador iroh del agente, que usa `IrohMetricsRepository` para conectar (ver `doc/iroh/`); solo se guarda si son 64 caracteres hexadecimales, y si no avisa con «El identificador iroh no es válido: son 64 caracteres hexadecimales». Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección, el identificador o el modo se aplica en caliente: los repositorios de métricas los leen en cada petición, sin reiniciar la app (si el identificador cambia con una conexión iroh abierta, el repositorio la cierra y abre otra).
 
 **Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Sysmote» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
 
