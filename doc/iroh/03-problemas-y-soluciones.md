@@ -114,3 +114,11 @@ Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.
 **Síntoma probable:** `_load_or_create_secret_key` escribía el archivo con los permisos por defecto y hacía `chmod 0600` después, así que durante unos instantes otro usuario del PC podía leerlo. Y un archivo de clave con un tamaño erróneo tumbaba el agente con un fallo interno de iroh.
 
 **Solución:** el archivo se crea ya con `0600` (`os.open` con modo y `O_EXCL`), y un archivo corrupto da un `ValueError` que dice qué archivo borrar para que se genere otro.
+
+## 12. Un intento de conexión que pasa de 5 s no se cancela
+
+**Encontrado el 16/11/2026** al revisar si podían quedar conexiones sin cerrar. Comprobado en el código de `iroh_flutter` 1.3.0: `Endpoint.connect` no tiene parámetro de cancelación ni de límite de tiempo. Las consecuencias son deducidas, no observadas.
+
+**Síntoma probable:** el límite de 5 s (`Future.timeout`) solo dejaba de esperar; el intento nativo seguía vivo. La siguiente petición lanzaba otro, y si el viejo acababa conectando, esa conexión quedaba sin cerrar. Con el relé caído, los intentos se irían acumulando mientras iroh no los diera por fallidos.
+
+**Solución:** solo hay un intento nativo a la vez. Las peticiones que llegan mientras sigue en marcha lo esperan, cada una con su propio límite de 5 s, en vez de lanzar otro. Si acaba conectando tarde, la conexión se aprovecha; si mientras tanto cambió el identificador, se cierra al llegar. Además, un test del agente comprueba con iroh real que las tareas de reenvío del túnel no se acumulan.

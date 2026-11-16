@@ -50,7 +50,9 @@ class IrohMetricsRepository extends AgentMetricsRepository {
   Endpoint? _endpoint;
   IrohLink? _link;
   String? _linkId;
-  Future<IrohLink>? _connecting;
+  Future<IrohLink>? _attempt;
+  String? _attemptId;
+  Object? _attemptToken;
 
   // Un solo Endpoint para todas las conexiones: crear uno por reconexión
   // los iba dejando sin cerrar.
@@ -61,20 +63,39 @@ class IrohMetricsRepository extends AgentMetricsRepository {
     return _NativeIrohLink(await endpoint.connect(addr, utf8.encode(_alpn)));
   }
 
-  // Si el identificador de Ajustes cambió, la conexión abierta es de otro
-  // agente: se cierra y se abre una nueva. Dos peticiones a la vez comparten
-  // el mismo intento de conexión.
+  // El intento de conexión nativo no se puede cancelar: si pasa de
+  // [_connectTimeout], sigue vivo por debajo. Por eso solo hay uno a la vez: las
+  // peticiones que llegan mientras sigue en marcha lo esperan, cada una con su
+  // propio límite, en vez de lanzar otro; y si acaba conectando tarde, la
+  // conexión se aprovecha. Si el identificador de Ajustes cambió, la conexión
+  // abierta es de otro agente: se cierra y se abre una nueva.
   Future<IrohLink> _connect(String endpointId) {
     if (_link != null && _linkId != endpointId) _drop();
     if (_link case final link?) return Future.value(link);
-    return _connecting ??= _open(endpointId).whenComplete(() => _connecting = null);
+    if (_attemptId != endpointId) _attempt = _open(endpointId);
+    return _attempt!.timeout(_connectTimeout);
   }
 
   Future<IrohLink> _open(String endpointId) async {
-    final link = await _connector(endpointId).timeout(_connectTimeout);
-    _link = link;
-    _linkId = endpointId;
-    return link;
+    final token = _attemptToken = Object();
+    _attemptId = endpointId;
+    try {
+      final link = await _connector(endpointId);
+      if (!identical(_attemptToken, token)) {
+        // Otro identificador lo sustituyó mientras conectaba: nadie lo necesita.
+        link.close();
+        throw StateError('Intento de conexión sustituido por otro identificador');
+      }
+      _link = link;
+      _linkId = endpointId;
+      return link;
+    } finally {
+      if (identical(_attemptToken, token)) {
+        _attempt = null;
+        _attemptId = null;
+        _attemptToken = null;
+      }
+    }
   }
 
   void _drop() {

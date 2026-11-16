@@ -147,4 +147,98 @@ void main() {
     expect(error, isA<AgentUnavailableException>());
     expect(link.closed, isTrue);
   });
+
+  testWidgets('pasado el límite de 5 s, la siguiente petición espera el mismo intento', (tester) async {
+    final connecting = Completer<IrohLink>();
+    final harness = _Harness(connect: (_) => connecting.future);
+    final errors = <Object>[];
+    Map<String, dynamic>? result;
+
+    harness.repository.fetch().then<void>((_) {}, onError: errors.add);
+    await tester.pump(const Duration(seconds: 5));
+    expect(errors, hasLength(1));
+
+    harness.repository.fetch().then<void>((value) {
+      result = value;
+    }, onError: errors.add);
+    await tester.pump();
+    expect(harness.connectedIds, [_idA]);
+
+    connecting.complete(_FakeLink());
+    await tester.pump();
+
+    expect(result, {'cpu_percent': 10});
+    expect(errors, hasLength(1));
+  });
+
+  testWidgets('si el intento conecta cuando ya nadie espera, la conexión se aprovecha', (tester) async {
+    final connecting = Completer<IrohLink>();
+    final link = _FakeLink();
+    final harness = _Harness(connect: (_) => connecting.future);
+    Map<String, dynamic>? result;
+
+    harness.repository.fetch().then<void>((_) {}, onError: (Object _) {});
+    await tester.pump(const Duration(seconds: 5));
+    connecting.complete(link);
+    await tester.pump();
+
+    harness.repository.fetch().then<void>((value) {
+      result = value;
+    });
+    await tester.pump();
+
+    expect(result, {'cpu_percent': 10});
+    expect(harness.connectedIds, [_idA]);
+    expect(link.closed, isFalse);
+  });
+
+  testWidgets('si cambia el identificador con un intento en marcha, el viejo se cierra al llegar', (
+    tester,
+  ) async {
+    final attempts = {_idA: Completer<IrohLink>(), _idB: Completer<IrohLink>()};
+    final harness = _Harness(connect: (id) => attempts[id]!.future);
+    final linkA = _FakeLink();
+    final linkB = _FakeLink();
+    Map<String, dynamic>? result;
+
+    harness.repository.fetch().then<void>((_) {}, onError: (Object _) {});
+    await tester.pump(const Duration(seconds: 5));
+
+    harness.id = _idB;
+    harness.repository.fetch().then<void>((value) {
+      result = value;
+    }, onError: (Object _) {});
+    await tester.pump();
+    expect(harness.connectedIds, [_idA, _idB]);
+
+    attempts[_idB]!.complete(linkB);
+    await tester.pump();
+    attempts[_idA]!.complete(linkA);
+    await tester.pump();
+
+    expect(result, {'cpu_percent': 10});
+    expect(linkA.closed, isTrue);
+    expect(linkB.closed, isFalse);
+  });
+
+  test('tras muchas conexiones muertas seguidas solo queda abierta la última', () async {
+    final links = <_FakeLink>[];
+    final harness = _Harness(
+      connect: (_) async {
+        final link = links.length < 20
+            ? _FakeLink(() async => throw StateError('conexión muerta'))
+            : _FakeLink();
+        links.add(link);
+        return link;
+      },
+    );
+
+    for (var i = 0; i < 20; i++) {
+      await expectLater(harness.repository.fetch(), throwsA(isA<AgentUnavailableException>()));
+    }
+    expect(await harness.repository.fetch(), {'cpu_percent': 10});
+
+    expect(links, hasLength(21));
+    expect(links.where((link) => !link.closed), [links.last]);
+  });
 }

@@ -59,6 +59,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
 | 13/11/2026 | Interfaz | Métricas avisa de la conexión perdida con datos ya cargados, de la carga y de la ausencia de particiones; los repositorios HTTP e iroh comparten una clase base | Aplicado |
 | 14/11/2026 | Plan | La red del centro vuelve a ser una duda abierta: la red restrictiva probada no era la del centro | Aplicado en la documentación |
+| 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 
 ---
@@ -520,3 +521,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** pregunta del autor sobre si la fase 2 estaba «blindada»; la respuesta honesta era que solo lo estaba frente a los fallos ya vistos, y se revisó el código contra esa lista.
 - **Afecta a:** `04` (fase 3), `doc/iroh/` (§2 de `04-pruebas.md`, `03-problemas-y-soluciones.md` §8–11, `02-implementacion.md`), `doc/ui/interfaz-app.md` §7, `doc/ui/tests.md` y `doc/agente/tests.md`. Código: `App-movil/lib/data/iroh/`, `App-movil/lib/data/models/settings.dart`, `App-movil/lib/features/metrics/` y `agent/sysmote/iroh_tunnel.py`.
 - **Estado:** aplicado en código y en la documentación. La prueba 5 de la matriz sigue parcial.
+
+### 16/11/2026 — Un solo intento de conexión iroh a la vez
+
+- **Qué era:** el límite de 5 s al conectar solo dejaba de esperar; el intento nativo no se cancela (`Endpoint.connect` de `iroh_flutter` no lo permite) y seguía vivo. La siguiente petición lanzaba otro intento, y si el viejo conectaba tarde, esa conexión quedaba sin cerrar. Consecuencias deducidas, no vistas en el móvil.
+- **Qué es ahora:** `IrohMetricsRepository` mantiene un solo intento nativo a la vez. Las peticiones que llegan mientras sigue en marcha lo esperan, cada una con su límite de 5 s; si conecta tarde se aprovecha, y si el identificador cambió se cierra al llegar. Un test del agente comprueba con iroh real que las tareas de reenvío del túnel no se acumulan. IPv6 y el relé caído quedan como limitaciones conocidas que el autor no puede reproducir, y la medición de fugas nativas en el móvil, como procedimiento manual pendiente.
+- **Por qué:** duda abierta tras el blindaje de la entrada anterior: no se podía afirmar que no quedaran conexiones sin cerrar.
+- **Afecta a:** `doc/iroh/` (`02-implementacion.md`, `03-problemas-y-soluciones.md` §12, `04-pruebas.md`, `README.md`), `doc/ui/tests.md` y `doc/agente/tests.md`. Código: `App-movil/lib/data/iroh/iroh_metrics_repository.dart` y los tests.
+- **Estado:** aplicado en código y en la documentación.

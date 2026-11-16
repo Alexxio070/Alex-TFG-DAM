@@ -16,6 +16,7 @@ Usan el binding de Python real de iroh (sin mocks): un `Endpoint` servidor y uno
 |---|---|
 | `test_tunnel_forwards_a_real_metrics_request` | Con un servidor Uvicorn real sirviendo `sysmote.main:app`, una petición `GET /metrics` completa llega y vuelve bien a través del túnel (los dos sentidos del reenvío) |
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si no hay nada escuchando en el puerto local, el *stream* se cierra (`reset`) enseguida en vez de colgarse hasta un *timeout* |
+| `test_tunnel_leaves_no_background_tasks_behind` | Tras 15 peticiones (10 con el agente en marcha y 5 con él caído) no queda ninguna tarea de reenvío viva: no se acumulan |
 
 ### Agente: `agent/tests/test_iroh_secret_key.py`
 
@@ -42,6 +43,10 @@ La conexión se aparta tras una interfaz mínima (`IrohLink`) que estos tests su
 | falla al conectar | Avisa con «No se pudo conectar…» y la siguiente petición lo vuelve a intentar |
 | dos peticiones a la vez | Comparten el mismo intento de conexión |
 | límite de conexión (5 s) y de petición (3 s) | Con reloj simulado, ambos acaban en `AgentUnavailableException`; el segundo cierra la conexión |
+| pasado el límite de 5 s | La siguiente petición espera el mismo intento y no lanza otro |
+| el intento conecta cuando ya nadie espera | La conexión tardía se aprovecha y no se cierra |
+| cambia el identificador con un intento en marcha | Al llegar, la conexión del identificador viejo se cierra y la nueva sigue en uso |
+| 20 conexiones muertas seguidas | Cada una se cierra y solo queda abierta la última (protege contra regresiones) |
 
 ### App: otros tests relacionados
 
@@ -116,6 +121,7 @@ describe esta fila (12/11/2026).
 | 1 | Si el agente FastAPI no está arrancado (o se cae) y llega una conexión iroh, el reenvío de esa conexión lanzaba una excepción sin capturar dentro de una tarea en segundo plano: se perdía en silencio y el móvil se quedaba colgado sin aviso | La conexión iroh de esa petición se cierra con `reset` en cuanto falla la conexión al puerto local; el resto del túnel sigue funcionando | **Hecho.** Cubierto por `tests/test_iroh_tunnel.py::test_tunnel_resets_the_stream_when_the_local_agent_is_down` |
 | 2 | Un fallo al aceptar una conexión entrante (`accept`/`connect`) tumbaba el túnel entero | El túnel sigue aceptando conexiones nuevas aunque una falle al aceptarse (el bucle de `run()` captura `iroh.IrohError` y sigue) | **Hecho**, revisado por lógica. Sin test automático (requeriría forzar un fallo de *handshake* real); se confirmó en la práctica el 12/11/2026 al caerse el túnel por este motivo antes del arreglo |
 | 6 | La clave secreta se escribía con los permisos por defecto y solo después se hacía `chmod`, y un archivo de clave corrupto tumbaba el agente con un fallo interno | Se crea ya con `0600` (`os.open`), y un archivo corrupto da un error con mensaje claro | **Hecho (16/11/2026)**. Cubierto por `tests/test_iroh_secret_key.py`. Ver `03-problemas-y-soluciones.md` §11 |
+| 13 | Las tareas de reenvío del túnel podían acumularse con el uso *(deducido; no se vio)* | No queda ninguna tarea viva al terminar las peticiones | **Hecho (16/11/2026)**. Cubierto por `test_tunnel_leaves_no_background_tasks_behind` |
 
 ### En la app (`App-movil/lib/data/iroh/iroh_metrics_repository.dart`)
 
@@ -127,6 +133,7 @@ describe esta fila (12/11/2026).
 | 7 | Cambiar el identificador en Ajustes con una conexión ya abierta: el repositorio seguía hablando con el agente anterior | Cierra la conexión vieja y abre otra con el identificador nuevo | **Hecho (16/11/2026)** (`_connect`). Cubierto por test. Detalle en `03-problemas-y-soluciones.md` §8 |
 | 8 | Un identificador mal pegado solo daba el aviso genérico «No se pudo conectar» | Ajustes lo rechaza al guardar si no son 64 caracteres hexadecimales, y el repositorio avisa con un mensaje propio sin intentar conectar | **Hecho (16/11/2026)**. Cubierto por tests de Ajustes y del repositorio. Ver `03-problemas-y-soluciones.md` §9 |
 | 9 | Salir y volver rápido a Métricas, o «Reintentar» con una carga en curso, podía dejar dos suscripciones a `watch()` y dos conexiones a la vez *(deducido leyendo el código; no se vio en el móvil)* | Solo cuenta el último refresco: un contador de generación descarta los anteriores | **Hecho (16/11/2026)** (`MetricsViewModel`). Cubierto por tests. Ver `03-problemas-y-soluciones.md` §10 |
+| 12 | Un intento de conexión que pasa de 5 s no se cancela (la API de `iroh_flutter` no lo permite) y se lanzaba otro en cada petición; si el viejo conectaba tarde, la conexión quedaba sin cerrar *(deducido; no se vio)* | Un solo intento nativo a la vez: las peticiones lo esperan y, si conecta tarde, se aprovecha o se cierra | **Hecho (16/11/2026)**. Cubierto por tests con la conexión falsa. Ver `03-problemas-y-soluciones.md` §12 |
 
 ### Aplazado a la fase 3 (cuando exista el login)
 
@@ -136,3 +143,8 @@ Detectados el 16/11/2026. Sin login, cualquiera que conozca el identificador lle
 |---|---|---|---|
 | 10 | El túnel no limita las conexiones ni los *streams* simultáneos, y no corta un *stream* que no envía nada *(deducido leyendo el código)* | Un límite de conexiones y de *streams*, y un *timeout* de inactividad | **Aplazado a la fase 3** |
 | 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 5 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Aplazado a la fase 3** |
+
+### Limitaciones conocidas y medición pendiente
+
+- **IPv6 y relé caído:** no comprobados. El autor no puede reproducirlos (ni su red ni el relé público se pueden manipular), así que se dejan como limitaciones conocidas: con el relé caído, la app agotaría el límite de 5 s y mostraría el aviso de conexión perdida (deducido).
+- **Fugas de memoria o de recursos nativos de iroh en el móvil:** no se pueden medir con un test automático. Procedimiento manual propuesto, **sin ejecutar todavía**: con la app en Métricas por iroh, anotar el uso de memoria con `adb shell dumpsys meminfo io.github.alexxio070.sysmote` (fila *Native Heap*); cortar y recuperar la conexión unas 20 veces (por ejemplo, parando y arrancando el agente); volver a medir tras unos minutos. Un crecimiento que no se estabiliza indicaría una fuga.
