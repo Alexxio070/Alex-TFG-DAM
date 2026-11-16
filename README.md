@@ -1,66 +1,119 @@
 # Sysmote
 
-Proyecto final de DAM: administrar un PC con GNU/Linux desde el móvil, estando o no en casa, sin configurar el router ni instalar una VPN.
+[![Licencia: GPL-3.0](https://img.shields.io/badge/licencia-GPL--3.0-blue.svg)](LICENSE)
+![Flutter](https://img.shields.io/badge/app-Flutter-02569B.svg)
+![Python 3.11+](https://img.shields.io/badge/agente-Python%203.11%2B-3776AB.svg)
+![Estado: en desarrollo](https://img.shields.io/badge/estado-en%20desarrollo-orange.svg)
 
-El sistema tiene dos piezas que se desarrollan juntas pero por separado:
+**Administra tu PC Linux desde el móvil, estés donde estés, sin abrir puertos en el router ni montar una VPN.**
 
-- **Una app Android** (Flutter) que es el cliente: muestra el estado del PC y manda órdenes.
-- **Un agente en el PC** (Python) que hace todo el trabajo real: abre terminales, mide el sistema, ejecuta acciones y guarda los datos.
+> [!WARNING]
+> **Proyecto en desarrollo: todavía no es seguro exponerlo.** Aún no hay login ni cifrado propio. Con el acceso remoto por iroh activado, **cualquiera que conozca el identificador del agente puede conectarse a él**. Hoy solo expone métricas de solo lectura, pero no compartas el identificador y usa el agente solo para probar. No arranques el agente en `0.0.0.0`: dejaría la API abierta a toda tu red local.
 
-Funciones principales (solo las que tienen sentido estando lejos del PC): terminal remota con la shell real del usuario, monitorización del sistema en vivo, energía y sesión, acciones rápidas (comandos guardados, con historial), un espacio compartido de notas entre el móvil y el PC, y notificaciones con reglas de alerta configurables.
+Sysmote tiene dos piezas que se desarrollan juntas:
 
-## Componentes
+- **Una app Android** (Flutter) que es el cliente: muestra el estado del PC y le manda órdenes.
+- **Un agente en el PC** (Python) que hace el trabajo real: mide el sistema, abre terminales, ejecuta acciones y guarda los datos. Incluye una interfaz de terminal (`sysmote`) para configurarlo.
 
-| Carpeta | Qué es | Stack |
+Para llegar al PC desde fuera de casa usa [iroh](https://www.iroh.computer/), una librería de conexión directa entre equipos (P2P) que atraviesa routers y cortafuegos sin configurarlos.
+
+Es un proyecto de fin de grado de Desarrollo de Aplicaciones Multiplataforma (DAM), de código abierto.
+
+## Capturas
+
+### App
+
+<table>
+  <tr>
+    <td align="center"><img src="doc/img/app-inicio.png" width="200" alt="Inicio"><br><sub>Inicio (acciones rápidas)</sub></td>
+    <td align="center"><img src="doc/img/app-metricas.png" width="200" alt="Métricas"><br><sub>Métricas en vivo</sub></td>
+    <td align="center"><img src="doc/img/app-terminal.png" width="200" alt="Terminal"><br><sub>Terminal</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="doc/img/app-notas.png" width="200" alt="Notas"><br><sub>Notas</sub></td>
+    <td align="center"><img src="doc/img/app-ajustes.png" width="200" alt="Ajustes"><br><sub>Ajustes</sub></td>
+    <td></td>
+  </tr>
+</table>
+
+Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todavía no están conectadas al agente. Las de Métricas y Ajustes sí funcionan con el agente real.
+
+### TUI del PC (`sysmote`)
+
+| Inicio | Emparejamiento | Seguridad |
 |---|---|---|
-| [`App-movil/`](App-movil/) | Cliente Android | Flutter/Dart, MVVM + `provider`, `xterm.dart` para la terminal |
-| [`agent/`](agent/) | Agente del PC | Python 3.11+, FastAPI + Uvicorn, Textual (TUI `sysmote`), `psutil` |
+| ![Inicio de la TUI](doc/img/tui-inicio.png) | ![Emparejamiento](doc/img/tui-emparejamiento.png) | ![Seguridad](doc/img/tui-seguridad.png) |
 
-## Estructura de carpetas
+La TUI tiene la estructura completa (Emparejamiento, Historial, Base de datos y Notas), pero casi todos sus botones están deshabilitados hasta que se implementen sus funciones.
 
-```
-.
-├── App-movil/              Cliente Flutter
-│   ├── lib/
-│   │   ├── core/           Tema, widgets y utilidades compartidas
-│   │   ├── data/           Modelos, interfaces de repositorio y sus implementaciones
-│   │   │   ├── fake/       Repositorios simulados (lo que aún no tiene agente)
-│   │   │   ├── http/       Métricas del agente por HTTP (modo Local)
-│   │   │   ├── iroh/       Métricas del agente por un túnel iroh (modo iroh)
-│   │   │   └── local/      Persistencia local (ajustes)
-│   │   └── features/       Una carpeta por pantalla: home, metrics, notes, settings,
-│   │                       shell (navegación), terminal
-│   └── test/
-│
-├── agent/                  Agente Python
-│   ├── sysmote/
-│   │   ├── api/            Rutas de FastAPI
-│   │   ├── services/       Lógica de negocio
-│   │   ├── repositories/   Acceso a datos (psutil, SQLite cuando exista)
-│   │   ├── models/         Modelos Pydantic
-│   │   ├── tui/            Interfaz de terminal `sysmote` (Textual)
-│   │   └── iroh_tunnel.py  Túnel iroh hacia la API local
-│   └── scripts/            Arranque manual del agente con el túnel iroh
-│
-└── doc/                     Documentación del proyecto
-    ├── documentos-generales-del-proyecto/   Memoria técnica, plan de fases, decisiones…
-    ├── ui/                                  Especificación y prototipos de la interfaz
-    ├── agente/                              Especificación del agente y su TUI
-    └── iroh/                                Qué es iroh, implementación, problemas y pruebas
-```
+## Funciones
+
+| Función | Estado |
+|---|---|
+| Métricas del PC en vivo: CPU, temperatura, RAM y discos, con gráficas | Disponible |
+| Acceso desde fuera de casa por iroh (relé y conexión directa) | Disponible, sin login |
+| Ajustes de la app (unidades, tema, modo de conexión) | Disponible |
+| Terminal remota con la shell real del usuario (sesiones persistentes con tmux) | Interfaz hecha, falta conectarla al agente |
+| Acciones rápidas (comandos guardados, con historial) | Interfaz hecha, falta conectarla al agente |
+| Espacio compartido de notas y enlaces entre móvil y PC | Interfaz hecha, falta conectarla al agente |
+| Login, emparejamiento seguro y cifrado | Previsto |
+| Instalación del agente como servicio del sistema | Previsto |
+| Procesos: lista, búsqueda, finalizar y congelar | Previsto |
+| Notificaciones y reglas de alerta | Previsto |
+| Control de energía (apagar, reiniciar, suspender, bloquear) | En estudio |
 
 ## Estado actual
 
-El estado por fase, con lo hecho y lo pendiente, está en [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md).
+Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver las métricas reales del PC en el móvil, tanto por red local (USB) como desde otra red a través de iroh. Esa conexión se ha probado en casa, con datos móviles y desde una red restrictiva real. El resto de pantallas tienen la interfaz definitiva con datos de ejemplo. Aún no hay APK publicado ni instalador del agente: la instalación actual es manual (ver más abajo).
 
-## Manual de instalación
+## Roadmap
 
-### Requisitos
+- [x] Interfaz de la app completa, con datos de ejemplo
+- [x] Agente con métricas reales y TUI
+- [x] Acceso remoto por iroh
+- [ ] APK de prueba publicado en las releases
+- [ ] Login, emparejamiento seguro y cifrado (TLS)
+- [ ] Terminal remota real
+- [ ] Instalación del agente como servicio del sistema
+- [ ] Procesos
+- [ ] Acciones rápidas
+- [ ] Notificaciones y reglas de alerta
+- [ ] Notas compartidas entre móvil y PC
+- [ ] Descubrimiento automático en red local y emparejamiento por QR
+- [ ] Control de energía (en estudio)
 
-- **App:** Flutter (SDK de Dart `^3.13.4`, ver `App-movil/pubspec.yaml`) y un dispositivo o emulador Android.
-- **Agente:** Python 3.11 o superior.
+## Instalación y uso
 
-### App (Flutter)
+> [!NOTE]
+> **Esta no es la instalación final.** Todavía no hay APK publicado ni instalador del agente (no hay `pipx install`, ni servicio de systemd). Esta guía sirve para probar el estado actual del proyecto compilando todo a mano. Cambiará cuando exista el instalador.
+
+### 1. Requisitos
+
+- **PC:** Linux de 64 bits con glibc 2.28 o superior (el paquete de iroh para Python solo existe para `manylinux_2_28`), Python 3.11 o superior y Git.
+- **Para compilar la app:** [Flutter](https://docs.flutter.dev/get-started/install) estable (Dart `^3.13.4`), Android SDK con el NDK `29.0.14206865` y [Rust](https://rustup.rs/) (el plugin `iroh_flutter` compila su núcleo en Rust la primera vez, lo que tarda unos minutos).
+- **Para probarla:** un móvil Android con la depuración por USB activada, o un emulador.
+
+### 2. Descargar el proyecto
+
+```bash
+git clone https://github.com/Alexxio070/Alex-TFG-DAM.git
+cd Alex-TFG-DAM
+```
+
+### 3. Arrancar el agente
+
+```bash
+cd agent
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/uvicorn sysmote.main:app --port 8443
+```
+
+Comprueba que funciona abriendo `http://127.0.0.1:8443/metrics` en el navegador del PC: debe devolver un JSON con las métricas. El agente escucha solo en `127.0.0.1`. Para abrir la interfaz de terminal del PC, en otra terminal: `.venv/bin/sysmote`.
+
+### 4. Compilar e instalar la app
+
+Con el móvil conectado por USB (o el emulador arrancado):
 
 ```bash
 cd App-movil
@@ -68,43 +121,65 @@ flutter pub get
 flutter run
 ```
 
-Por defecto la app busca el agente en `127.0.0.1:8443` (pensado para depurar por USB con `adb reverse tcp:8443 tcp:8443`); la dirección se cambia desde Ajustes.
+La primera compilación es lenta porque se compila iroh. Si prefieres generar un APK e instalarlo tú: `flutter build apk --release` y luego `adb install build/app/outputs/flutter-apk/app-release.apk`.
 
-### Agente (Python)
+### 5. Conectar la app con el agente
+
+**Opción A: por USB (red local).** Es lo más sencillo para probar. Con el agente arrancado y el móvil conectado:
+
+```bash
+adb reverse tcp:8443 tcp:8443
+```
+
+La app busca por defecto el agente en `127.0.0.1:8443`, así que las métricas aparecen sin tocar nada. La dirección se cambia en Ajustes.
+
+**Opción B: desde cualquier red, por iroh.** Sustituye el paso 3 por este arranque, que levanta la API y el túnel iroh a la vez:
 
 ```bash
 cd agent
-python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
-.venv/bin/sysmote                                          # TUI
-.venv/bin/uvicorn sysmote.main:app --reload --port 8443    # API REST
-```
-
-Por defecto escucha solo en `127.0.0.1:8443`. **No usar `--host 0.0.0.0` todavía:** dejaría `/metrics` y `/docs` abiertos a toda la red local sin TLS ni login (llegan en la fase 3). Todavía no hay servicio systemd (llega en la fase 5).
-
-Acceso remoto con iroh (arranque manual, en lugar del `uvicorn` de arriba):
-
-```bash
 .venv/bin/python scripts/iroh_poc.py
 ```
 
-Arranca la API y el túnel iroh, e imprime el identificador iroh del agente. En la app, Ajustes → modo iroh: se pega ese identificador y se pulsa «Guardar». Hasta que exista el login (fase 3), cualquiera que conozca el identificador llega al agente: no compartirlo y arrancarlo solo para probar. Detalle en [`doc/iroh/`](doc/iroh/).
+Imprime el identificador iroh del agente (se conserva entre arranques). En la app, ve a Ajustes, elige el modo **iroh**, pega el identificador y pulsa «Guardar». Recuerda el aviso de seguridad de arriba: sin login, quien conozca ese identificador llega al agente.
 
-Pruebas:
+### 6. Ejecutar las pruebas
 
 ```bash
-.venv/bin/pytest
+cd agent && .venv/bin/pytest
+cd App-movil && flutter test
 ```
+
+## Cómo funciona
+
+```
+ Móvil Android            Internet / red local              PC Linux
+ (app Flutter)   <---- iroh (QUIC cifrado) ---->   agente Python (FastAPI)
+                                                    métricas, terminal, notas...
+```
+
+La app no sabe por qué vía llega la información: un mismo repositorio de datos elige entre conexión local (HTTP) y conexión por iroh según los Ajustes. En el PC, el agente expone una API local y un pequeño túnel iroh que reenvía las peticiones recibidas a esa API. iroh empieza usando un relé cifrado y, cuando puede, pasa a una conexión directa entre móvil y PC.
 
 ## Documentación
 
-Toda la documentación de diseño está en [`doc/`](doc/):
+Todo el diseño está en [`doc/`](doc/):
 
-- [`doc/documentos-generales-del-proyecto/01-memoria-tecnica.md`](doc/documentos-generales-del-proyecto/01-memoria-tecnica.md) — diseño completo del sistema.
-- [`doc/documentos-generales-del-proyecto/04-plan-de-fases.md`](doc/documentos-generales-del-proyecto/04-plan-de-fases.md) — plan de fases y calendario.
-- [`doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md`](doc/documentos-generales-del-proyecto/07-resumen-decisiones-y-contexto.md) — decisiones tomadas y pendientes.
-- [`doc/ui/`](doc/ui/) — especificación de la interfaz de la app.
-- [`doc/agente/`](doc/agente/) — especificación del agente y de su TUI.
-- [`doc/iroh/`](doc/iroh/) — qué es iroh, cómo está implementado, problemas encontrados y pruebas.
+- [`doc/documentos-generales-del-proyecto/`](doc/documentos-generales-del-proyecto/): memoria técnica, necesidades tecnológicas, plan de fases, decisiones tomadas e ideas de futuro.
+- [`doc/ui/`](doc/ui/): especificación de la interfaz y estructura de la app.
+- [`doc/agente/`](doc/agente/): especificación del agente y de su TUI, y sus tests.
+- [`doc/iroh/`](doc/iroh/): qué es iroh, cómo está implementado, los problemas encontrados y las pruebas.
 
-Ramas: `main` (estable) y una `feature/<nombre>` por tarea o fase; sin `develop`; las etiquetas de versión solo para publicar el APK en las releases.
+## Estructura del repositorio
+
+| Carpeta | Contenido | Stack |
+|---|---|---|
+| [`App-movil/`](App-movil/) | Cliente Android | Flutter/Dart, MVVM con `provider`, `xterm.dart` |
+| [`agent/`](agent/) | Agente del PC | Python, FastAPI, Textual, `psutil`, iroh |
+| [`doc/`](doc/) | Documentación | Markdown |
+
+## Contribuir
+
+Es un proyecto de fin de grado y todavía no tiene una guía de contribución formal. Las ideas y los fallos que encuentres se pueden comentar abriendo una incidencia (*issue*). Las ramas son `main` (estable) y `feature/<nombre>` para cada tarea, y los mensajes de commit siguen el formato convencional (`feat:`, `fix:`, `docs:`...).
+
+## Licencia
+
+Sysmote se distribuye bajo la licencia [GNU GPL v3.0](LICENSE).
