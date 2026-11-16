@@ -15,6 +15,9 @@ class MetricsViewModel extends ChangeNotifier {
   String? _partitionId;
   String? _error;
   bool _active = false;
+  // Cada refresco y cada parada lo incrementan: un refresco que sigue cargando
+  // cuando llega otro (volver rápido a la pantalla, «Reintentar») se descarta.
+  int _generation = 0;
 
   List<MetricSample> get history => _history;
   MachineInfo? get info => _info;
@@ -38,6 +41,7 @@ class MetricsViewModel extends ChangeNotifier {
 
   void stop() {
     _active = false;
+    _generation++;
     _subscription?.cancel();
     _subscription = null;
   }
@@ -48,12 +52,13 @@ class MetricsViewModel extends ChangeNotifier {
   }
 
   Future<void> _refresh() async {
+    final generation = ++_generation;
     await _subscription?.cancel();
     _error = null;
     try {
       final info = await _repository.loadInfo();
       final history = await _repository.loadHistory();
-      if (!_active) return;
+      if (!_active || generation != _generation) return;
       _info = info;
       _history = history;
       notifyListeners();
@@ -71,7 +76,7 @@ class MetricsViewModel extends ChangeNotifier {
         },
       );
     } catch (error) {
-      if (!_active) return;
+      if (!_active || generation != _generation) return;
       _error = _messageFor(error);
       notifyListeners();
     }
