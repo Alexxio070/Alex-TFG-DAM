@@ -127,6 +127,7 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 - Agente: HTTPS, login con token de sesión, todas las rutas protegidas, límite de intentos.
 - App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro.
 - Comprobar que todo funciona igual por USB y por iroh.
+- Endurecer el túnel iroh del agente (aplazado de la fase 2): límite de conexiones y de *streams* simultáneos, *timeout* de inactividad y captura de cualquier excepción en el bucle de `run()` (`doc/iroh/04-pruebas.md` §2, puntos 10 y 11).
 
 Detalle técnico: `01` §5 (Seguridad).
 

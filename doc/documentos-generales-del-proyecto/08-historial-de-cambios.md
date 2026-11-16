@@ -59,6 +59,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
 | 13/11/2026 | Interfaz | Métricas avisa de la conexión perdida con datos ya cargados, de la carga y de la ausencia de particiones; los repositorios HTTP e iroh comparten una clase base | Aplicado |
 | 14/11/2026 | Plan | La red del centro vuelve a ser una duda abierta: la red restrictiva probada no era la del centro | Aplicado en la documentación |
+| 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 
 ---
 
@@ -511,3 +512,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** el autor aún no sabe en qué condiciones le dejarán hacer la prueba en el centro.
 - **Afecta a:** `04` (fase 2 y «Entorno de pruebas»), `07` (§3.1 y §3.8) y `doc/iroh/04-pruebas.md`.
 - **Estado:** aplicado en la documentación.
+
+### 16/11/2026 — Blindaje de iroh tras una revisión del código
+
+- **Qué era:** cambiar el identificador iroh en Ajustes no surtía efecto mientras la conexión abierta siguiera viva; un identificador mal pegado solo daba el aviso genérico «No se pudo conectar»; salir y volver rápido a Métricas, o «Reintentar» con una carga en curso, podía dejar dos suscripciones a `watch()`; y la clave secreta del agente se escribía con los permisos por defecto antes del `chmod 0600`. `doc/ui/interfaz-app.md` decía que el identificador se aplicaba «en caliente», lo que no era cierto con una conexión abierta.
+- **Qué es ahora:** el repositorio cierra la conexión y abre otra si cambia el identificador; Ajustes rechaza un identificador que no sean 64 caracteres hexadecimales y el repositorio avisa con un mensaje propio; `MetricsViewModel` descarta los refrescos anteriores con un contador de generación; la clave secreta se crea ya con `0600` y un archivo corrupto da un error claro. Para probarlo, la conexión iroh va tras una interfaz mínima (`IrohLink`) que los tests sustituyen por una falsa: la reconexión y los dos *timeouts* pasan a tener test automático. El límite de conexiones y de *streams* del túnel, el *timeout* de inactividad y la captura de cualquier excepción del bucle de `run()` se aplazan a la fase 3, cuando exista el login.
+- **Por qué:** pregunta del autor sobre si la fase 2 estaba «blindada»; la respuesta honesta era que solo lo estaba frente a los fallos ya vistos, y se revisó el código contra esa lista.
+- **Afecta a:** `04` (fase 3), `doc/iroh/` (§2 de `04-pruebas.md`, `03-problemas-y-soluciones.md` §8–11, `02-implementacion.md`), `doc/ui/interfaz-app.md` §7, `doc/ui/tests.md` y `doc/agente/tests.md`. Código: `App-movil/lib/data/iroh/`, `App-movil/lib/data/models/settings.dart`, `App-movil/lib/features/metrics/` y `agent/sysmote/iroh_tunnel.py`.
+- **Estado:** aplicado en código y en la documentación. La prueba 5 de la matriz sigue parcial.
