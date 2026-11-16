@@ -19,3 +19,6 @@ agent/*.key
 .idea/
 .vscode/
 *.iml
+
+# Instrucciones locales de Claude Code
+CLAUDE.md
