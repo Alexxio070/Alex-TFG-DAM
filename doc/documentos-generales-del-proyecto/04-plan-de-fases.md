@@ -78,7 +78,7 @@ Detalle técnico: `01-memoria-tecnica.md` §3 (Módulo B) y `doc/agente/tui.md`.
 ### Fase 2 — Conexión remota con iroh 🔴
 **Duración:** ~6 semanas (principios de noviembre – mediados de diciembre)
 
-**Estado (12/11/2026): fase cerrada.** Túnel iroh en el agente, repositorio iroh en la app con el selector local/iroh de Ajustes, matriz de pruebas 1 a 4 hecha en casa y conexión probada en una red restrictiva real. La prueba 5 solo se hizo reiniciando el proceso del agente, no el PC entero. Detalle y resultados: `doc/iroh/`.
+**Estado (12/11/2026): fase cerrada.** Túnel iroh en el agente, repositorio iroh en la app con el selector local/iroh de Ajustes, matriz de pruebas hecha en casa (los 5 casos) y conexión probada en una red restrictiva real. Detalle y resultados: `doc/iroh/`.
 
 **Por qué va aquí:** es la parte más crítica y con más incertidumbre del proyecto. Hacerla pronto deja margen para resolver problemas o aplicar el plan B sin poner en riesgo la beta ni el hito de febrero.
 

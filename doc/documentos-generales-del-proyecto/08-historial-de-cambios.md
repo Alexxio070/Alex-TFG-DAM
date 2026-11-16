@@ -59,6 +59,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 12/11/2026 | Plan | Fase 2 (iroh) cerrada; el acceso desde Flutter pasa a `iroh_flutter` y se actualizan 01, 02, 04 y 07 | Aplicado en la documentación |
 | 13/11/2026 | Interfaz | Métricas avisa de la conexión perdida con datos ya cargados, de la carga y de la ausencia de particiones; los repositorios HTTP e iroh comparten una clase base | Aplicado |
 | 14/11/2026 | Plan | La red del centro vuelve a ser una duda abierta: la red restrictiva probada no era la del centro | Aplicado en la documentación |
+| 16/11/2026 | Plan | Prueba 5 de la matriz de iroh completada: el identificador sobrevive al reinicio del PC | Aplicado en la documentación |
 | 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 
@@ -529,3 +530,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** duda abierta tras el blindaje de la entrada anterior: no se podía afirmar que no quedaran conexiones sin cerrar.
 - **Afecta a:** `doc/iroh/` (`02-implementacion.md`, `03-problemas-y-soluciones.md` §12, `04-pruebas.md`, `README.md`), `doc/ui/tests.md` y `doc/agente/tests.md`. Código: `App-movil/lib/data/iroh/iroh_metrics_repository.dart` y los tests.
 - **Estado:** aplicado en código y en la documentación.
+
+### 16/11/2026 — Prueba 5 de la matriz de iroh completada
+
+- **Qué era:** la prueba 5 (reiniciar el agente y el PC: el identificador iroh debe ser el mismo) constaba como parcial, porque el 12/11/2026 solo se había reiniciado el proceso del agente, no el PC entero.
+- **Qué es ahora:** el autor confirma que la prueba funciona: el identificador iroh es el mismo tras reiniciar el PC. Se quitan de `doc/iroh/` y de `04` las menciones a que estaba parcial o pendiente. Las entradas anteriores de este historial conservan lo que era cierto en su fecha.
+- **Por qué:** la prueba se completó.
+- **Afecta a:** `04` (estado de la fase 2), `doc/iroh/04-pruebas.md` y `doc/iroh/README.md`. No se han anotado la fecha ni los detalles del reinicio, solo la confirmación del autor. Queda como está la repetición de esta prueba en la fase 5, con el servicio instalado.
+- **Estado:** aplicado en la documentación.

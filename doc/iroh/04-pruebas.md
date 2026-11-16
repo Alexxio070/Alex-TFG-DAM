@@ -76,7 +76,7 @@ e `IrohMetricsRepository` (`App-movil/lib/data/connection_mode_metrics_repositor
 | 2 | Móvil con datos móviles y PC en casa: empieza por el relé y debe intentar pasar a directa | **Hecha (12/11/2026)** | Éxito: las métricas reales del PC llegaron al móvil con datos móviles, con el widget real de la app (gráficas en vivo, actualización cada 1 s) |
 | 3 | Bloquear el UDP saliente en el cortafuegos del PC (red restrictiva simulada): todo el tráfico debe ir por el relé | **Hecha (12/11/2026)** | Éxito: con `sudo iptables -I OUTPUT -p udp -j REJECT` en el PC, las métricas siguieron llegando por iroh (modo Ajustes → iroh), confirmando que cae al relé (TCP/HTTPS) cuando no hay UDP saliente |
 | 4 | Cambiar de Wi-Fi a datos móviles en mitad del uso: comprobar la reconexión | **Hecha (12/11/2026)** | Éxito: con la app ya conectada por Wi-Fi, se apagó el Wi-Fi del móvil (pasa a datos móviles) sin cerrar la app; el repositorio reconectó solo (blindaje del punto 5) y la conexión incluso pasó a directa hacia la IP pública nueva del móvil (RTT ~93-103 ms), sin que la pantalla se quedara congelada |
-| 5 | Reiniciar el agente y el PC: el identificador iroh debe ser el mismo | **Parcial (12/11/2026)** | Éxito reiniciando solo el *proceso* del agente (mismo identificador, la clave secreta se conserva en disco); falta reiniciar el PC entero para dar la prueba por completa |
+| 5 | Reiniciar el agente y el PC: el identificador iroh debe ser el mismo | **Hecha (confirmada por el autor, 16/11/2026)** | Éxito: el identificador iroh es el mismo tras reiniciar el PC. El 12/11/2026 ya se había comprobado reiniciando solo el *proceso* del agente (la clave secreta se conserva en disco) |
 
 **Cómo se hizo la prueba 2:** agente real (FastAPI + túnel iroh) arrancado a
 mano en el PC con `agent/scripts/iroh_poc.py`; identificador iroh copiado a
@@ -95,9 +95,6 @@ el RTT y la dirección remota. Se quitó el 13/11/2026: era solo para esta
 prueba y lanzaba un bucle por cada conexión. Para repetirla, basta con
 volver a añadir un bucle que lea `connection.paths()` y mire `is_relay`
 del camino con `is_selected`.
-
-**Pendiente antes de dar por cerrada la prueba 5:** reiniciar también el PC,
-no solo el proceso del agente.
 
 **Red restrictiva real:** repetida la conexión desde una red restrictiva real;
 probada y funciona (confirmado por el autor, 12/11/2026). No era la red del
