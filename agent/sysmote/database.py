@@ -13,7 +13,9 @@ def connect() -> sqlite3.Connection:
         # 0600 desde la creación: escribir primero y hacer chmod después deja
         # el archivo legible por otros usuarios durante unos instantes.
         os.close(os.open(DB_PATH, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600))
-    connection = sqlite3.connect(DB_PATH)
+    # FastAPI puede ejecutar la dependencia y el endpoint en hilos distintos; cada
+    # petición usa su propia conexión, así que no hay acceso concurrente.
+    connection = sqlite3.connect(DB_PATH, check_same_thread=False)
     connection.execute("PRAGMA foreign_keys = ON")
     connection.executescript(_SCHEMA_PATH.read_text())
     return connection
