@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 175 tests, todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 181 tests, todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -19,14 +19,14 @@ cd agent && .venv/bin/pytest -q
 | [`test_iroh_secret_key.py`](../../agent/tests/test_iroh_secret_key.py) | 3 | La clave secreta del túnel, que fija el identificador iroh | Unitario |
 | [`test_database.py`](../../agent/tests/test_database.py) | 4 | La conexión a SQLite: permisos, claves foráneas y tablas | Unitario |
 | [`test_auth_repositories.py`](../../agent/tests/test_auth_repositories.py) | 15 | Repositorios de usuario, sesión, intento de login y solicitud de login | Unitario (SQLite en memoria) |
-| [`test_codigo_registro_repository.py`](../../agent/tests/test_codigo_registro_repository.py) | 4 | Repositorio de códigos de registro | Unitario (SQLite en memoria) |
+| [`test_codigo_registro_repository.py`](../../agent/tests/test_codigo_registro_repository.py) | 5 | Repositorio de códigos de registro | Unitario (SQLite en memoria) |
 | [`test_password_service.py`](../../agent/tests/test_password_service.py) | 5 | Hashing de contraseñas con Argon2 | Unitario |
 | [`test_token_service.py`](../../agent/tests/test_token_service.py) | 6 | Tokens de sesión y su caducidad | Unitario |
 | [`test_tls_service.py`](../../agent/tests/test_tls_service.py) | 5 | Certificado TLS autofirmado y su huella | Unitario |
 | [`test_limite_service.py`](../../agent/tests/test_limite_service.py) | 12 | Límite de intentos de login y su configuración | Unitario |
 | [`test_pairing_service.py`](../../agent/tests/test_pairing_service.py) | 7 | URI de emparejamiento y QR en texto | Unitario + lector real |
-| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 48 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite en memoria) |
-| [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 18 | Las rutas de autenticación y la protección de `/metrics` | Integración |
+| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 52 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite en memoria) |
+| [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 19 | Las rutas de autenticación y la protección de `/metrics` | Integración |
 | [`test_server.py`](../../agent/tests/test_server.py) | 10 | Los servidores reales (HTTPS, HTTP interno, iroh) y su ciclo de vida | Integración |
 | [`test_tui_security.py`](../../agent/tests/test_tui_security.py) | 22 | Las subpestañas Seguridad y Dispositivo de la TUI | Interfaz (arnés de Textual) |
 
@@ -106,7 +106,7 @@ Usan SQLite en memoria con el `schema.sql` real.
 | Sesiones | Crear activa, buscar por hash de token, ignorar las revocadas, guardar el motivo, revocar todas las de un usuario sin tocar las de otro, renovar el último acceso | Que una revocación afecte a otra cuenta o no se registre el motivo (necesario para `401 desemparejado`) |
 | Intentos de login | Registrar, listar desde una fecha y borrar los de una cuenta | Que el límite de intentos cuente intentos antiguos o de otra cuenta |
 | Solicitudes de login | Crear pendiente, obtener, cambiar de estado, borrar | Que una solicitud resuelta siga apareciendo como pendiente |
-| Códigos de registro | Crear, buscar por hash, saber si hay uno vigente (no usado ni caducado), borrar todos | Que un código usado o caducado siga abriendo el registro |
+| Códigos de registro | Crear, buscar por hash, saber si hay uno vigente (no usado ni caducado), saber si hay alguno guardado (también caducados y usados), borrar todos | Que un código usado o caducado siga abriendo el registro, o que no se pueda reconocer uno caducado |
 
 ### `test_password_service.py` y `test_token_service.py`
 
@@ -153,7 +153,7 @@ Usa SQLite en memoria.
 |---|---|---|
 | Estado | `configurado`, `registro_abierto` y `sesion_activa` en cada situación | Que la app muestre la pantalla equivocada |
 | Contraseña débil | Mínimo 5 caracteres, un número y una mayúscula, con un motivo por cada regla incumplida | Aceptar contraseñas que no cumplen |
-| Registro | Crea la cuenta con Argon2 y devuelve una sesión; `registro_cerrado` sin modo registro o con cuenta; `codigo_invalido` si es equivocado o está caducado; una contraseña débil no gasta el código | Registrar sin código o gastar el código sin crear cuenta |
+| Registro | Crea la cuenta con Argon2 y devuelve una sesión; `registro_cerrado` con cuenta o si nunca se abrió el registro; `codigo_caducado` si el código enviado es el que caducó; `codigo_invalido` si no coincide con ninguno guardado (también cuando solo hay uno caducado), si ya se usó o si pertenece a un registro anterior; una contraseña débil no gasta el código | Registrar sin código, gastar el código sin crear cuenta o confundir al usuario con el error equivocado |
 | Login | Abre sesión; credenciales incorrectas o usuario inexistente dan `credenciales_invalidas` | Mensajes que revelen qué cuentas existen |
 | Solicitud de login | Con sesión activa no se abre sesión y se crea una solicitud pendiente (5 minutos); una nueva solicitud sustituye a la anterior; aprobar entrega el token una sola vez y revoca la sesión anterior; rechazar la mantiene; sin respuesta caduca | Que un login correcto eche a otro dispositivo sin confirmar en la TUI |
 | Sesión | Una sesión sin uso 30 días caduca y deja de contar como activa; autenticar renueva el último acceso; logout revoca; desemparejar da `401 desemparejado` | Errores de sesión equivocados en la app |
@@ -168,7 +168,7 @@ Usa el cliente de pruebas de FastAPI con una base de datos en memoria.
 |---|---|---|
 | Protección | `/metrics`, `/sesion`, `/capacidades`, `/logout` y `/desemparejar` sin token dan `401 no_autenticado`; un esquema distinto de `Bearer` también | Una ruta que quede abierta |
 | Rutas públicas | `/estado` responde sin token | Que la app no pueda ni consultar el estado |
-| Registro y login | `201` con token; `422 contrasena_debil` con motivos; `403 codigo_invalido` y `registro_cerrado`; `401 credenciales_invalidas`; `200` o `202` en el login según haya sesión activa | Códigos HTTP que la app no espera |
+| Registro y login | `201` con token; `422 contrasena_debil` con motivos; `403 codigo_invalido`, `codigo_caducado` y `registro_cerrado`; `401 credenciales_invalidas`; `200` o `202` en el login según haya sesión activa | Códigos HTTP que la app no espera |
 | Solicitud de login | Flujo completo: `202`, consulta pendiente, aprobación desde la TUI, token entregado una vez y `404` después | Cualquier paso roto del flujo de una sola sesión |
 | Sesión | `/sesion` devuelve usuario, dispositivo y fecha con zona horaria; logout da `204` y el token deja de valer; desemparejar da `204` y luego `401 desemparejado` | Que la app no se entere de que fue desemparejada |
 | Errores | Los `422` de FastAPI y los `404` usan el formato `{"error","mensaje"}`; `/docs` y `/openapi.json` están desactivados | Errores sin el formato del contrato o documentación abierta sin login |
