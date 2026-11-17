@@ -55,6 +55,10 @@ def asegurar_certificado() -> tuple[Path, Path]:
     return CERT_PATH, KEY_PATH
 
 
+def certificado_existe() -> bool:
+    return CERT_PATH.exists() and KEY_PATH.exists()
+
+
 def huella_sha256() -> str:
     certificado = x509.load_pem_x509_certificate(CERT_PATH.read_bytes())
     return hashlib.sha256(certificado.public_bytes(serialization.Encoding.DER)).hexdigest()
