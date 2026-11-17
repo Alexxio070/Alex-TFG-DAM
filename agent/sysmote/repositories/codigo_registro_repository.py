@@ -27,6 +27,10 @@ def obtener_por_hash(connection: sqlite3.Connection, hash_codigo: str) -> Codigo
     return _to_codigo(row) if row else None
 
 
+def existe_alguno(connection: sqlite3.Connection) -> bool:
+    return connection.execute("SELECT 1 FROM codigo_registro LIMIT 1").fetchone() is not None
+
+
 def existe_vigente(connection: sqlite3.Connection, ahora: str) -> bool:
     row = connection.execute(
         "SELECT 1 FROM codigo_registro WHERE usado = 0 AND caduca_en > ? LIMIT 1", (ahora,)

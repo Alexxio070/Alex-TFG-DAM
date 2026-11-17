@@ -10,6 +10,7 @@ _ESTADO_DE_AUTH = {
     "desemparejado": 401,
     "credenciales_invalidas": 401,
     "codigo_invalido": 403,
+    "codigo_caducado": 403,
     "registro_cerrado": 403,
     "contrasena_debil": 422,
     "solicitud_desconocida": 404,

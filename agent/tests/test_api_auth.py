@@ -94,6 +94,15 @@ def test_registro_con_codigo_equivocado_da_403_codigo_invalido(client, connectio
     assert respuesta.json()["error"] == "codigo_invalido"
 
 
+def test_registro_con_codigo_caducado_da_403_codigo_caducado(client, connection):
+    codigo_registro_repository.crear(
+        connection, auth_service.hash_codigo(CODIGO), (datetime.now(UTC) - timedelta(minutes=1)).isoformat()
+    )
+    respuesta = client.post("/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"})
+    assert respuesta.status_code == 403
+    assert respuesta.json() == {"error": "codigo_caducado", "mensaje": "El código de registro ha caducado"}
+
+
 def test_registro_cerrado_da_403(client):
     respuesta = client.post("/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"})
     assert respuesta.status_code == 403

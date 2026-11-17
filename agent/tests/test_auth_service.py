@@ -89,9 +89,32 @@ def test_registrar_con_codigo_equivocado_da_codigo_invalido(connection):
     assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", None)) == "codigo_invalido"
 
 
-def test_registrar_con_codigo_caducado_da_codigo_invalido(connection):
+def test_registrar_con_el_codigo_caducado_da_codigo_caducado(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_caducado"
+
+
+def test_registrar_con_otro_codigo_cuando_solo_hay_uno_caducado_da_codigo_invalido(connection):
+    _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", None)) == "codigo_invalido"
+
+
+def test_registrar_con_un_codigo_ya_usado_da_codigo_invalido(connection):
+    _abrir_registro(connection)
+    codigo = codigo_registro_repository.obtener_por_hash(connection, auth_service.hash_codigo(CODIGO))
+    codigo_registro_repository.marcar_usado(connection, codigo.id)
     assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_invalido"
+
+
+def test_el_codigo_caducado_deja_de_reconocerse_al_abrir_un_registro_nuevo(connection):
+    _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
+    auth_service.abrir_registro(connection)
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_invalido"
+
+
+def test_el_codigo_caducado_se_distingue_antes_que_la_contrasena_debil(connection):
+    _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "abc", None)) == "codigo_caducado"
 
 
 def test_registrar_con_contrasena_debil_no_consume_el_codigo(connection):

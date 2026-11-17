@@ -78,15 +78,16 @@ def registrar(
 ) -> dict:
     ahora = _ahora().isoformat()
     cerrado = AuthError("registro_cerrado", "El registro no está abierto")
+    invalido = AuthError("codigo_invalido", "El código de registro no es válido")
     if usuario_repository.existe_alguno(connection):
         raise cerrado
     registro = codigo_registro_repository.obtener_por_hash(connection, hash_codigo(codigo))
     if registro is None:
-        if not codigo_registro_repository.existe_vigente(connection, ahora):
-            raise cerrado
-        raise AuthError("codigo_invalido", "El código de registro no es válido")
-    if registro.usado or registro.caduca_en <= ahora:
-        raise AuthError("codigo_invalido", "El código de registro no es válido")
+        raise invalido if codigo_registro_repository.existe_alguno(connection) else cerrado
+    if registro.usado:
+        raise invalido
+    if registro.caduca_en <= ahora:
+        raise AuthError("codigo_caducado", "El código de registro ha caducado")
     motivos = motivos_contrasena_debil(contrasena)
     if motivos:
         raise AuthError("contrasena_debil", "La contraseña es demasiado débil", motivos=motivos)

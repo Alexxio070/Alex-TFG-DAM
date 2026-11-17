@@ -42,6 +42,12 @@ def test_existe_vigente_solo_si_no_usado_ni_caducado(connection):
     assert codigo_registro_repository.existe_vigente(connection, ahora) is False
 
 
+def test_existe_alguno_cuenta_tambien_los_caducados_y_los_usados(connection):
+    assert codigo_registro_repository.existe_alguno(connection) is False
+    codigo_registro_repository.crear(connection, "h-caducado", caduca_en="2025-01-01T00:00:00+00:00")
+    assert codigo_registro_repository.existe_alguno(connection) is True
+
+
 def test_borrar_todos(connection):
     codigo_registro_repository.crear(connection, "hash-1", caduca_en="2030-01-01T00:00:00+00:00")
     codigo_registro_repository.borrar_todos(connection)
