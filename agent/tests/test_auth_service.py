@@ -1,4 +1,4 @@
-import hashlib
+import re
 import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -27,9 +27,7 @@ def _en(delta: timedelta) -> str:
 
 
 def _abrir_registro(connection, caduca_en=None):
-    codigo_registro_repository.crear(
-        connection, hashlib.sha256(CODIGO.encode()).hexdigest(), caduca_en or _en(timedelta(minutes=10))
-    )
+    codigo_registro_repository.crear(connection, auth_service.hash_codigo(CODIGO), caduca_en or _en(timedelta(minutes=10)))
 
 
 def _cuenta(connection, contrasena="Clave1"):
@@ -108,7 +106,7 @@ def test_registrar_con_contrasena_debil_no_consume_el_codigo(connection):
 
 def test_registrar_dos_veces_da_registro_cerrado(connection):
     _cuenta(connection)
-    codigo_registro_repository.crear(connection, hashlib.sha256(b"NUEVO").hexdigest(), _en(timedelta(minutes=10)))
+    codigo_registro_repository.crear(connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10)))
     assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", None)) == "registro_cerrado"
 
 
@@ -295,3 +293,88 @@ def test_reiniciar_intentos_permite_volver_a_entrar(connection):
     _fallar(connection, 5)
     limite_service.reiniciar(connection, "alex")
     assert auth_service.login(connection, "alex", "Clave1", "Tablet")["estado"] == "pendiente"
+
+
+def test_abrir_registro_genera_un_codigo_de_16_caracteres_base32_con_guiones(connection):
+    codigo, caduca_en = auth_service.abrir_registro(connection)
+
+    assert re.fullmatch(r"[A-Z2-7]{4}(-[A-Z2-7]{4}){3}", codigo)
+    assert 540 < (datetime.fromisoformat(caduca_en) - datetime.now(UTC)).total_seconds() <= 600
+    assert auth_service.estado(connection)["registro_abierto"] is True
+
+
+def test_abrir_registro_guarda_solo_el_hash(connection):
+    codigo, _ = auth_service.abrir_registro(connection)
+    guardado = connection.execute("SELECT hash_codigo FROM codigo_registro").fetchone()[0]
+    assert codigo not in guardado
+    assert guardado == auth_service.hash_codigo(codigo)
+
+
+def test_abrir_registro_invalida_el_codigo_anterior(connection):
+    primero, _ = auth_service.abrir_registro(connection)
+    auth_service.abrir_registro(connection)
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, primero, "alex", "Clave1", None)) == "codigo_invalido"
+
+
+def test_el_codigo_sirve_escrito_sin_guiones_y_en_minusculas(connection):
+    codigo, _ = auth_service.abrir_registro(connection)
+    escrito_a_mano = codigo.replace("-", "").lower()
+    assert auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", None)["usuario"] == "alex"
+
+
+def test_abrir_registro_con_cuenta_creada_falla(connection):
+    _cuenta(connection)
+    assert _codigo_de_error(lambda: auth_service.abrir_registro(connection)) == "ya_configurado"
+
+
+def test_cambiar_contrasena_actualiza_el_hash_y_revoca_las_sesiones(connection):
+    resultado = _cuenta(connection)
+
+    auth_service.cambiar_contrasena(connection, "Nueva123")
+
+    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "no_autenticado"
+    assert auth_service.login(connection, "alex", "Nueva123", "Tablet")["usuario"] == "alex"
+    assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "Clave1", "Tablet")) == "credenciales_invalidas"
+
+
+def test_cambiar_contrasena_debil_no_cambia_nada(connection):
+    resultado = _cuenta(connection)
+
+    with pytest.raises(AuthError) as error:
+        auth_service.cambiar_contrasena(connection, "abc")
+
+    assert error.value.codigo == "contrasena_debil"
+    assert auth_service.autenticar(connection, resultado["token"]).dispositivo == "Pixel 8"
+
+
+def test_cerrar_todas_las_sesiones(connection):
+    resultado = _cuenta(connection)
+    auth_service.cerrar_todas_las_sesiones(connection)
+    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "no_autenticado"
+    assert "token" in auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+
+def test_solicitud_pendiente_la_devuelve_y_ignora_las_caducadas(connection):
+    _cuenta(connection)
+    assert auth_service.solicitud_pendiente(connection) is None
+
+    solicitud = auth_service.login(connection, "alex", "Clave1", "Tablet")["solicitud"]
+    assert auth_service.solicitud_pendiente(connection).id == solicitud
+
+    connection.execute("UPDATE solicitud_login SET caduca_en = ?", (_en(timedelta(seconds=-1)),))
+    assert auth_service.solicitud_pendiente(connection) is None
+    assert auth_service.consultar_solicitud(connection, solicitud) == {"estado": "caducada"}
+
+
+def test_desemparejar_sesion_activa_desde_la_tui(connection):
+    resultado = _cuenta(connection)
+    assert auth_service.sesion_activa(connection).dispositivo == "Pixel 8"
+
+    auth_service.desemparejar_sesion_activa(connection)
+
+    assert auth_service.sesion_activa(connection) is None
+    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
+
+
+def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
+    auth_service.desemparejar_sesion_activa(connection)

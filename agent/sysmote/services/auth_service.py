@@ -3,7 +3,7 @@ import secrets
 import sqlite3
 from datetime import UTC, datetime, timedelta
 
-from sysmote.models.auth import Sesion
+from sysmote.models.auth import Sesion, SolicitudLogin
 from sysmote.repositories import (
     codigo_registro_repository,
     sesion_repository,
@@ -15,11 +15,18 @@ from sysmote.services.auth_error import AuthError
 
 API_VERSION = 1
 CADUCIDAD_SOLICITUD = timedelta(minutes=5)
+CADUCIDAD_CODIGO = timedelta(minutes=10)
+ALFABETO_CODIGO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 DISPOSITIVO_POR_DEFECTO = "Móvil"
 
 
 def _ahora() -> datetime:
     return datetime.now(UTC)
+
+
+def hash_codigo(codigo: str) -> str:
+    normalizado = codigo.replace("-", "").replace(" ", "").upper()
+    return hashlib.sha256(normalizado.encode()).hexdigest()
 
 
 def _sesion_vigente(sesion: Sesion | None) -> Sesion | None:
@@ -72,7 +79,7 @@ def registrar(
     cerrado = AuthError("registro_cerrado", "El registro no está abierto")
     if usuario_repository.existe_alguno(connection):
         raise cerrado
-    registro = codigo_registro_repository.obtener_por_hash(connection, hashlib.sha256(codigo.encode()).hexdigest())
+    registro = codigo_registro_repository.obtener_por_hash(connection, hash_codigo(codigo))
     if registro is None:
         if not codigo_registro_repository.existe_vigente(connection, ahora):
             raise cerrado
@@ -167,3 +174,46 @@ def cerrar_sesion(connection: sqlite3.Connection, sesion: Sesion) -> None:
 
 def desemparejar(connection: sqlite3.Connection, sesion: Sesion) -> None:
     sesion_repository.revocar(connection, sesion.id, "desemparejado")
+
+
+def sesion_activa(connection: sqlite3.Connection) -> Sesion | None:
+    return _sesion_activa_vigente(connection)
+
+
+def desemparejar_sesion_activa(connection: sqlite3.Connection) -> None:
+    activa = _sesion_activa_vigente(connection)
+    if activa is not None:
+        desemparejar(connection, activa)
+
+
+def abrir_registro(connection: sqlite3.Connection) -> tuple[str, str]:
+    if usuario_repository.existe_alguno(connection):
+        raise AuthError("ya_configurado", "Ya existe una cuenta")
+    caracteres = "".join(secrets.choice(ALFABETO_CODIGO) for _ in range(16))
+    codigo = "-".join(caracteres[i : i + 4] for i in range(0, 16, 4))
+    caduca_en = (_ahora() + CADUCIDAD_CODIGO).isoformat()
+    codigo_registro_repository.borrar_todos(connection)
+    codigo_registro_repository.crear(connection, hash_codigo(codigo), caduca_en)
+    return codigo, caduca_en
+
+
+def cambiar_contrasena(connection: sqlite3.Connection, nueva: str) -> None:
+    motivos = motivos_contrasena_debil(nueva)
+    if motivos:
+        raise AuthError("contrasena_debil", "La contraseña es demasiado débil", motivos=motivos)
+    cuenta = usuario_repository.obtener_primero(connection)
+    usuario_repository.actualizar_contrasena(connection, cuenta.id, password_service.hashear(nueva))
+    sesion_repository.revocar_todas_de_usuario(connection, cuenta.id, "contrasena_cambiada")
+
+
+def cerrar_todas_las_sesiones(connection: sqlite3.Connection) -> None:
+    cuenta = usuario_repository.obtener_primero(connection)
+    sesion_repository.revocar_todas_de_usuario(connection, cuenta.id, "cerrar_todas")
+
+
+def solicitud_pendiente(connection: sqlite3.Connection) -> SolicitudLogin | None:
+    solicitud = solicitud_login_repository.obtener_pendiente(connection)
+    if solicitud is not None and solicitud.caduca_en <= _ahora().isoformat():
+        solicitud_login_repository.actualizar_estado(connection, solicitud.id, "caducada")
+        return None
+    return solicitud

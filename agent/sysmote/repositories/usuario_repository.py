@@ -22,6 +22,13 @@ def obtener_por_nombre(connection: sqlite3.Connection, nombre_usuario: str) -> U
     return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3]) if row else None
 
 
+def obtener_primero(connection: sqlite3.Connection) -> Usuario | None:
+    row = connection.execute(
+        "SELECT id, nombre_usuario, hash_contrasena, creado_en FROM usuario ORDER BY id LIMIT 1"
+    ).fetchone()
+    return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3]) if row else None
+
+
 def obtener_por_id(connection: sqlite3.Connection, usuario_id: int) -> Usuario | None:
     row = connection.execute(
         "SELECT id, nombre_usuario, hash_contrasena, creado_en FROM usuario WHERE id = ?", (usuario_id,)
