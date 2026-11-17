@@ -39,3 +39,14 @@ CREATE TABLE IF NOT EXISTS solicitud_login (
     estado TEXT NOT NULL DEFAULT 'pendiente',
     caduca_en TEXT NOT NULL
 );
+
+-- Efímera: el código de registro de un solo uso que la TUI genera en la
+-- configuración inicial. Solo se guarda su SHA-256; el código en claro se
+-- muestra únicamente en la TUI.
+CREATE TABLE IF NOT EXISTS codigo_registro (
+    id INTEGER PRIMARY KEY,
+    hash_codigo TEXT NOT NULL UNIQUE,
+    creado TEXT NOT NULL,
+    caduca_en TEXT NOT NULL,
+    usado INTEGER NOT NULL DEFAULT 0
+);

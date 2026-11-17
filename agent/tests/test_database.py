@@ -22,12 +22,12 @@ def test_connect_activa_claves_foraneas(tmp_path, monkeypatch):
     connection.close()
 
 
-def test_connect_crea_las_cuatro_tablas(tmp_path, monkeypatch):
+def test_connect_crea_las_cinco_tablas(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", tmp_path / "sysmote.db")
     connection = database.connect()
     tablas = {r[0] for r in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     connection.close()
-    assert tablas == {"usuario", "sesion", "intento_login", "solicitud_login"}
+    assert tablas == {"usuario", "sesion", "intento_login", "solicitud_login", "codigo_registro"}
 
 
 def test_connect_es_idempotente(tmp_path, monkeypatch):

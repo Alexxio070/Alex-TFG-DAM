@@ -35,3 +35,11 @@ class SolicitudLogin(BaseModel):
     creada: str
     estado: str
     caduca_en: str
+
+
+class CodigoRegistro(BaseModel):
+    id: int
+    hash_codigo: str
+    creado: str
+    caduca_en: str
+    usado: bool
