@@ -185,7 +185,7 @@ Cada bloque sigue el mismo esquema:
 ### 5.1 Cifrado del tráfico
 - **Necesidad:** que nadie pueda leer ni modificar el tráfico, incluida la terminal.
 - **Tipo de tecnología:** TLS con certificado autofirmado y fijado (*certificate pinning*).
-- **Elección:** **TLS 1.3** con un certificado generado desde la TUI en la configuración inicial (librería `cryptography`). La app guarda su huella al escanear el QR. Dentro del túnel iroh (que ya cifra con QUIC) se mantiene el mismo TLS, así que la seguridad no depende del modo de conexión.
+- **Elección:** **TLS 1.3** con un certificado generado desde la TUI en la configuración inicial (librería `cryptography`). La app guarda su huella al escanear el QR. Dentro del túnel iroh no se añade este TLS: iroh ya cifra con QUIC (TLS 1.3) y autentica al agente por su clave pública, así que el identificador iroh cumple el papel de la huella y el login sigue siendo obligatorio. Se descartó repetir el TLS dentro del túnel porque `SecureSocket` de Dart está pensado para sockets y no para un *stream* arbitrario como el de iroh (no se ha comprobado con una prueba).
 - **Alternativas descartadas:** *certificados de una autoridad pública (Let's Encrypt):* requieren dominio público; no aplica a un PC doméstico.
 
 ### 5.2 Autenticación

@@ -538,3 +538,27 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** la prueba se completó.
 - **Afecta a:** `04` (estado de la fase 2), `doc/iroh/04-pruebas.md` y `doc/iroh/README.md`. No se han anotado la fecha ni los detalles del reinicio, solo la confirmación del autor. Queda como está la repetición de esta prueba en la fase 5, con el servicio instalado.
 - **Estado:** aplicado en la documentación.
+
+### 17/11/2026 — Sin TLS propio dentro del túnel iroh
+
+- **Qué era:** la memoria decía que el mismo TLS autofirmado con certificate pinning se mantendría dentro del túnel iroh, para que la seguridad no dependiera del modo de conexión.
+- **Qué es ahora:** HTTPS con huella fijada en la conexión por red local (USB o LAN). Por iroh no hay TLS propio: el cifrado y la autenticación del agente los pone iroh (QUIC con TLS 1.3 y clave pública), con el login obligatorio en los dos casos. El túnel reenvía a un puerto HTTP interno que solo escucha en `127.0.0.1`.
+- **Por qué:** `SecureSocket` de Dart está pensado para sockets y no para un *stream* arbitrario como el de iroh (no se ha comprobado con una prueba), y repetir el cifrado complicaba la app sin aportar protección extra. La documentación oficial de iroh (FAQ, consultada el 17/11/2026) confirma el cifrado y la autenticación por clave pública; indica además que prevé cambiar al tipo de certificado de clave pública en bruto, un detalle del mecanismo.
+- **Afecta a:** `01` (§4.4, §5.1, §5.3), `02` §5.1, `07`, `doc/iroh/01-que-es-y-como-funciona.md` y el contrato de la fase 3 (`doc/agente/contrato-api-fase3.md`).
+- **Estado:** aplicado en la documentación; sin implementar.
+
+### 17/11/2026 — Una sesión activa solo se sobrescribe con confirmación en la TUI
+
+- **Qué era:** el contrato de la fase 3 proponía que un login nuevo sustituyera la sesión anterior sin más.
+- **Qué es ahora:** con una sesión activa, un login correcto crea una solicitud pendiente y no abre sesión hasta que el usuario lo confirma en la TUI del PC («Hay una sesión activa en {dispositivo}, ¿quieres cerrarla e iniciar una nueva?», con «Sí, sobrescribir la sesión» y «No, mantener la sesión anterior»). La app avisa antes del login con el campo `sesion_activa` de `GET /estado` y espera la decisión con `GET /login/solicitud/{id}`. La solicitud caduca a los 5 minutos.
+- **Por qué:** decisión del autor: quien conozca la contraseña pero no esté delante del PC no debe poder echar al dispositivo conectado.
+- **Afecta a:** `01` §5.2, `doc/agente/tui.md` (subpestaña Seguridad) y `doc/agente/contrato-api-fase3.md`.
+- **Estado:** aplicado en la documentación; sin implementar.
+
+### 17/11/2026 — Desemparejamiento: TUI, app y limitación al desinstalar
+
+- **Qué era:** «Desemparejar» en la TUI no tenía efecto definido en la app, y no se había decidido qué pasa si se desinstala la app o el agente.
+- **Qué es ahora:** al desemparejar en la TUI, la app recibe `401 desemparejado` y olvida el equipo. La app tiene además su propio botón «Desemparejar» (`POST /desemparejar`). La sesión caduca a los 30 días sin uso, la TUI muestra la última conexión y «Quitar servicio» avisa a la app si está conectada. **Desinstalar la app o el agente no desempareja automáticamente**: Android no avisa a una app cuando se desinstala y la app no puede distinguir un agente desinstalado de un PC apagado. La limitación queda documentada en `01` §10 y en el README.
+- **Por qué:** petición del autor de un desemparejamiento automático también al desinstalar; no es viable, así que se adoptaron las alternativas fiables.
+- **Afecta a:** `01` §10, `04` (fases 3 y 5), `doc/agente/tui.md` y `doc/agente/contrato-api-fase3.md`; nota en `README.md` y `README.en.md`.
+- **Estado:** aplicado en la documentación; sin implementar.

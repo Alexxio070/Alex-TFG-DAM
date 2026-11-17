@@ -125,7 +125,7 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 - Activar dentro de «Emparejamiento» (TUI ya construida en la fase 1): configuración inicial (certificado TLS, usuario y contraseña), cambiar contraseña, cerrar todas las sesiones.
 - Base de datos: primeras tablas (`usuario`, `sesion`, `intento_login`).
 - Agente: HTTPS, login con token de sesión, todas las rutas protegidas, límite de intentos.
-- App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro.
+- App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro y botón «Desemparejar» en Ajustes.
 - Comprobar que todo funciona igual por USB y por iroh.
 - Endurecer el túnel iroh del agente (aplazado de la fase 2): límite de conexiones y de *streams* simultáneos, *timeout* de inactividad y captura de cualquier excepción en el bucle de `run()` (`doc/iroh/04-pruebas.md` §2, puntos 10 y 11).
 
@@ -167,7 +167,7 @@ Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 
 
 **Objetivos:**
 - Empaquetar el agente para instalarlo con `pipx install`; comprobar las dependencias del sistema (`tmux`, terminal gráfica).
-- Activar dentro de «Emparejamiento» los botones «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario con el punto de conexión iroh activo desde el arranque.
+- Activar dentro de «Emparejamiento» los botones «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario con el punto de conexión iroh activo desde el arranque. «Quitar servicio» avisa a la app si está conectada, para que olvide el equipo.
 - Completar el README (ya tiene una guía de instalación manual) con la instalación por `pipx`, el uso básico y la prueba por USB y por iroh.
 - Probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio) y hacer capturas para la memoria.
 

@@ -92,6 +92,10 @@ November 2026. You can build the app and start the agent by hand to see the PC's
 - [ ] Shared notes between phone and PC
 - [ ] Automatic discovery on the local network and pairing by QR
 
+## Known limitations
+
+- **Unpairing on uninstall:** uninstalling the app from the phone or the agent from the PC does not unpair them automatically. Android does not notify an app when it is uninstalled, and the app cannot tell an uninstalled agent from a PC that is switched off or offline. Use the "Unpair" button (in the TUI or in the app); the session also expires by itself after 30 days without use. Pairing and login are not implemented yet.
+
 ## Installation and usage
 
 > [!NOTE]

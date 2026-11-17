@@ -33,9 +33,10 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 #### Dispositivo
 - Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`,
   dependencia obligatoria del agente).
-- Derecha: nombre del dispositivo, fecha y hora de conexión, estado de conexión — datos de `sesion`.
+- Derecha: nombre del dispositivo, fecha y hora de conexión, **última conexión** y estado de conexión — datos de `sesion`.
 - Debajo de los datos del dispositivo: botón rojo **Desemparejar**.
-  Está desactivado si no hay ningún dispositivo emparejado.
+  Está desactivado si no hay ningún dispositivo emparejado. Al pulsarlo, la app del móvil olvida el
+  equipo en su próxima conexión (contrato: `contrato-api-fase3.md`).
 
 #### Seguridad (fase 3)
 - Texto: dirección del agente, huella del certificado TLS, identificador iroh (cuando exista).
@@ -44,6 +45,11 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
   registro por QR.
 - Botones **Cambiar contraseña** y **Cerrar todas las sesiones**: deshabilitados hasta que existe
   una cuenta creada.
+- **Solicitud de nueva sesión:** si la app intenta iniciar sesión mientras hay otra sesión activa,
+  la TUI muestra un diálogo (al instante si está abierta, o al abrirla): «Hay una sesión activa en
+  {dispositivo}. ¿Quieres cerrarla e iniciar una nueva?», con los botones **Sí, sobrescribir la
+  sesión** y **No, mantener la sesión anterior**, y el nombre del dispositivo que lo solicita.
+  Contrato: `contrato-api-fase3.md`.
 
 #### Servicio (fase 5)
 - Botones **Instalar servicio**, **Quitar servicio** y **Estado**: gestionan el servicio systemd

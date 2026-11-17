@@ -90,6 +90,10 @@ Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver
 - [ ] Notas compartidas entre móvil y PC
 - [ ] Descubrimiento automático en red local y emparejamiento por QR
 
+## Limitaciones conocidas
+
+- **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 30 días sin uso. El emparejamiento y el login todavía no están implementados.
+
 ## Instalación y uso
 
 > [!NOTE]
