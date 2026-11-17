@@ -44,3 +44,8 @@ def actualizar_estado(connection: sqlite3.Connection, id: str, estado: str) -> N
 def borrar(connection: sqlite3.Connection, id: str) -> None:
     connection.execute("DELETE FROM solicitud_login WHERE id = ?", (id,))
     connection.commit()
+
+
+def borrar_de_usuario(connection: sqlite3.Connection, usuario_id: int) -> None:
+    connection.execute("DELETE FROM solicitud_login WHERE usuario_id = ?", (usuario_id,))
+    connection.commit()

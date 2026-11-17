@@ -53,6 +53,13 @@ def obtener_activa_de_usuario(connection: sqlite3.Connection, usuario_id: int) -
     return _to_sesion(row) if row else None
 
 
+def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
+    row = connection.execute(
+        f"SELECT {_COLUMNS} FROM sesion WHERE revocada = 0 ORDER BY id DESC LIMIT 1"
+    ).fetchone()
+    return _to_sesion(row) if row else None
+
+
 def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
     connection.execute(
         "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (datetime.now(UTC).isoformat(), sesion_id)
