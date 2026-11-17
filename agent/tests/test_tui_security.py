@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from textual.widgets import Button, Input, Static
 
-from sysmote.services import auth_service, tls_service
+from sysmote.services import auth_service, pairing_service, tls_service
+from sysmote.tui import app as tui_app
 from sysmote.tui.app import SysmoteApp
 from sysmote.tui.widgets import pairing_section
 
@@ -311,3 +312,63 @@ async def test_el_dialogo_no_se_repite_mientras_esta_abierto(connection):
         await pilot.pause(0.5)
 
         assert [type(s).__name__ for s in app.screen_stack].count("LoginRequestScreen") == 1
+
+
+class _ServidoresFalsos:
+    def __init__(self, estado):
+        self._estado = estado
+        self.iniciado = False
+        self.detenido = False
+
+    def iniciar(self):
+        self.iniciado = True
+
+    def detener(self):
+        self.detenido = True
+
+    def estado(self):
+        return self._estado
+
+
+async def test_la_tui_arranca_y_detiene_los_servidores(connection):
+    servidores = _ServidoresFalsos({"https": "activo", "interno": "activo", "iroh": "en marcha"})
+    app = SysmoteApp(connection=connection, servidores=servidores)
+    async with app.run_test(size=SIZE):
+        assert servidores.iniciado is True
+        assert servidores.detenido is False
+    assert servidores.detenido is True
+
+
+async def test_seguridad_muestra_el_identificador_iroh_y_el_estado_de_cada_servidor(connection):
+    servidores = _ServidoresFalsos({"https": "activo", "interno": "activo", "iroh": "error: sin red"})
+    app = SysmoteApp(connection=connection, servidores=servidores)
+    async with app.run_test(size=SIZE) as pilot:
+        await _abrir_pestana(pilot, "tab-security")
+
+        info = _texto(app, "#security-info")
+        assert f"Identificador iroh: {pairing_service.identificador_iroh()}" in info
+        assert "HTTPS (USB/LAN): activo" in info
+        assert "HTTP interno: activo" in info
+        assert "iroh: error: sin red" in info
+
+
+async def test_un_servidor_con_error_se_avisa_con_una_notificacion(connection, monkeypatch):
+    monkeypatch.setattr(tui_app, "ESPERA_AVISO_SEGUNDOS", 0.05)
+    servidores = _ServidoresFalsos({"https": "error: puerto en uso", "interno": "activo"})
+    app = SysmoteApp(connection=connection, servidores=servidores)
+    avisos = []
+    app.notify = lambda mensaje, **kwargs: avisos.append((mensaje, kwargs["severity"]))
+    async with app.run_test(size=SIZE) as pilot:
+        await pilot.pause(0.3)
+
+    assert avisos == [("HTTPS (USB/LAN): error: puerto en uso", "error")]
+
+
+async def test_el_qr_lleva_el_identificador_iroh(connection):
+    _crear_cuenta(connection)
+    tls_service.asegurar_certificado()
+    app = SysmoteApp(connection=connection)
+    async with app.run_test(size=SIZE) as pilot:
+        await _abrir_pestana(pilot, "tab-device")
+
+        assert f"iroh={pairing_service.identificador_iroh()}" in _texto(app, "#uri")

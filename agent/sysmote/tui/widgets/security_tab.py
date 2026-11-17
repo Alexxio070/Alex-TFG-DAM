@@ -7,7 +7,7 @@ from textual.widgets import Button, Static
 from sysmote.models.auth import SolicitudLogin
 from sysmote.services import auth_service, pairing_service, tls_service
 from sysmote.tui.screens.dialogs import ChangePasswordScreen, LoginRequestScreen
-from sysmote.tui.widgets.formato import codigo_vigente, hora_local
+from sysmote.tui.widgets.formato import ETIQUETAS_SERVIDORES, codigo_vigente, hora_local
 
 
 class SecurityTab(Vertical):
@@ -24,6 +24,7 @@ class SecurityTab(Vertical):
         yield Static("", id="security-status", markup=False)
 
     def on_mount(self) -> None:
+        self._iroh = pairing_service.identificador_iroh()
         self.refrescar()
 
     def refrescar(self) -> None:
@@ -31,8 +32,11 @@ class SecurityTab(Vertical):
         lineas = [
             f"Dirección: {pairing_service.direccion_lan()}",
             f"Huella del certificado: {huella}",
-            "Identificador iroh: —",
+            f"Identificador iroh: {self._iroh}",
         ]
+        if self.app.servidores is not None:
+            for nombre, estado in self.app.servidores.estado().items():
+                lineas.append(f"{ETIQUETAS_SERVIDORES[nombre]}: {estado}")
         abierto = codigo_vigente(self.app)
         if abierto:
             lineas.append(f"Código de registro: {abierto[0]} (caduca a las {hora_local(abierto[1])})")

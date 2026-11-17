@@ -56,6 +56,7 @@ class DeviceTab(VerticalScroll):
                 yield Button("Desemparejar", id="unpair", variant="error", disabled=True)
 
     def on_mount(self) -> None:
+        self._iroh = pairing_service.identificador_iroh()
         self.refrescar()
 
     def refrescar(self) -> None:
@@ -80,11 +81,11 @@ class DeviceTab(VerticalScroll):
         direccion = pairing_service.direccion_lan()
         huella = tls_service.huella_sha256()
         if configurado:
-            return pairing_service.uri_emparejamiento(direccion, huella)
+            return pairing_service.uri_emparejamiento(direccion, huella, iroh=self._iroh)
         abierto = codigo_vigente(self.app)
         if abierto is None:
             return None
-        return pairing_service.uri_emparejamiento(direccion, huella, codigo=abierto[0])
+        return pairing_service.uri_emparejamiento(direccion, huella, codigo=abierto[0], iroh=self._iroh)
 
     def _mostrar_qr(self, uri: str | None) -> None:
         if uri == self._uri_mostrada:
