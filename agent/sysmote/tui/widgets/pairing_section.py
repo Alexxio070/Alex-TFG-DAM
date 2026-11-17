@@ -2,9 +2,13 @@
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Button, ContentSwitcher, Static
+from textual.widgets import Button, ContentSwitcher
 
 from sysmote.tui.sections import select_section
+from sysmote.tui.widgets.device_tab import DeviceTab
+from sysmote.tui.widgets.security_tab import SecurityTab
+
+POLL_SEGUNDOS = 1
 
 TAB_IDS = {
     "tab-device": "device",
@@ -40,28 +44,24 @@ class PairingSection(Container):
             yield SecurityTab(id="security")
             yield ServiceTab(id="service")
 
+    def on_mount(self) -> None:
+        self.set_interval(POLL_SEGUNDOS, self._sondear)
+
+    def _sondear(self) -> None:
+        if not self.display:
+            return
+        dispositivo = self.query_one(DeviceTab)
+        seguridad = self.query_one(SecurityTab)
+        if dispositivo.display:
+            dispositivo.refrescar()
+        if seguridad.display:
+            seguridad.refrescar()
+            seguridad.comprobar_solicitud()
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         select_section(self, TAB_IDS, "#pairing-tabs", "#tabs Button", event.button)
-
-
-class DeviceTab(Vertical):
-    """QR de emparejamiento y datos del dispositivo conectado."""
-
-    def compose(self) -> ComposeResult:
-        # TODO: código QR real con `qrcode` y datos de `sesion` (fase 9).
-        yield Static("Sin dispositivo emparejado.")
-        yield Button("Desemparejar", id="unpair", variant="error", disabled=True)
-
-
-class SecurityTab(Vertical):
-    """Configuración inicial, cambiar contraseña, cerrar sesiones (fase 3)."""
-
-    def compose(self) -> ComposeResult:
-        # TODO: dirección, huella TLS e identificador iroh reales.
-        yield Static("Dirección: —\nHuella del certificado: —\nIdentificador iroh: —")
-        yield Button("Configuración inicial", id="initial-setup", disabled=True)
-        yield Button("Cambiar contraseña", id="change-password", disabled=True)
-        yield Button("Cerrar todas las sesiones", id="close-sessions", disabled=True)
+        if event.button.id in TAB_IDS:
+            self._sondear()
 
 
 class ServiceTab(Vertical):
