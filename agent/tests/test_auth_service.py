@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from sysmote.repositories import codigo_registro_repository, sesion_repository, solicitud_login_repository, usuario_repository
-from sysmote.services import auth_service, password_service
+from sysmote.services import auth_service, limite_service, password_service
 from sysmote.services.auth_service import AuthError
 
 SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
@@ -237,3 +237,61 @@ def test_desemparejar_hace_que_la_siguiente_peticion_reciba_desemparejado(connec
     auth_service.desemparejar(connection, sesion)
 
     assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
+
+
+def _fallar(connection, veces, usuario="alex"):
+    for _ in range(veces):
+        _codigo_de_error(lambda: auth_service.login(connection, usuario, "mala", "Tablet"))
+
+
+def test_cinco_fallos_bloquean_el_login_incluso_con_la_contrasena_correcta(connection):
+    _cuenta(connection)
+    _fallar(connection, 5)
+
+    with pytest.raises(AuthError) as error:
+        auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+    assert error.value.codigo == "demasiados_intentos"
+    assert 0 < error.value.extra["espera_s"] <= 600
+
+
+def test_el_quinto_fallo_aun_da_credenciales_invalidas(connection):
+    _cuenta(connection)
+    _fallar(connection, 4)
+    assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet")) == "credenciales_invalidas"
+
+
+def test_un_login_correcto_pone_el_contador_a_cero(connection):
+    _cuenta(connection)
+    _fallar(connection, 4)
+    auth_service.login(connection, "alex", "Clave1", "Tablet")
+    _fallar(connection, 4)
+
+    assert auth_service.login(connection, "alex", "Clave1", "Tablet")["estado"] == "pendiente"
+
+
+def test_el_login_con_solicitud_pendiente_no_cuenta_como_fallo(connection):
+    _cuenta(connection)
+    for _ in range(6):
+        assert auth_service.login(connection, "alex", "Clave1", "Tablet")["estado"] == "pendiente"
+
+
+def test_un_usuario_inexistente_tambien_se_bloquea(connection):
+    _fallar(connection, 5, usuario="nadie")
+    assert _codigo_de_error(lambda: auth_service.login(connection, "nadie", "x", "Tablet")) == "demasiados_intentos"
+
+
+def test_cada_intento_queda_registrado_con_su_origen(connection):
+    _cuenta(connection)
+    _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet", origen="127.0.0.1"))
+    auth_service.login(connection, "alex", "Clave1", "Tablet", origen="127.0.0.1")
+
+    filas = connection.execute("SELECT origen, exito FROM intento_login ORDER BY id").fetchall()
+    assert filas == [("127.0.0.1", 0), ("127.0.0.1", 1)]
+
+
+def test_reiniciar_intentos_permite_volver_a_entrar(connection):
+    _cuenta(connection)
+    _fallar(connection, 5)
+    limite_service.reiniciar(connection, "alex")
+    assert auth_service.login(connection, "alex", "Clave1", "Tablet")["estado"] == "pendiente"

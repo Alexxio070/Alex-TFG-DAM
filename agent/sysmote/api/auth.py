@@ -1,6 +1,6 @@
 import sqlite3
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from sysmote.api.deps import get_connection, requiere_sesion
@@ -23,8 +23,11 @@ def post_registro(datos: RegistroRequest, connection: sqlite3.Connection = Depen
 
 
 @publico.post("/login")
-def post_login(datos: LoginRequest, connection: sqlite3.Connection = Depends(get_connection)) -> JSONResponse:
-    resultado = auth_service.login(connection, datos.usuario, datos.contrasena, datos.dispositivo)
+def post_login(
+    datos: LoginRequest, request: Request, connection: sqlite3.Connection = Depends(get_connection)
+) -> JSONResponse:
+    origen = request.client.host if request.client else "desconocido"
+    resultado = auth_service.login(connection, datos.usuario, datos.contrasena, datos.dispositivo, origen)
     return JSONResponse(status_code=202 if "solicitud" in resultado else 200, content=resultado)
 
 

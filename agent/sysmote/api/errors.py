@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from sysmote.services.auth_service import AuthError
+from sysmote.services.auth_error import AuthError
 
 _ESTADO_DE_AUTH = {
     "no_autenticado": 401,
@@ -13,6 +13,7 @@ _ESTADO_DE_AUTH = {
     "registro_cerrado": 403,
     "contrasena_debil": 422,
     "solicitud_desconocida": 404,
+    "demasiados_intentos": 429,
 }
 _CODIGO_DE_HTTP = {404: "no_encontrado", 405: "metodo_no_permitido"}
 
@@ -24,7 +25,10 @@ def _respuesta(estado: int, error: str, mensaje: str, **extra) -> JSONResponse:
 def registrar_manejadores(app: FastAPI) -> None:
     @app.exception_handler(AuthError)
     async def _auth(request: Request, exc: AuthError) -> JSONResponse:
-        return _respuesta(_ESTADO_DE_AUTH[exc.codigo], exc.codigo, exc.mensaje, **exc.extra)
+        respuesta = _respuesta(_ESTADO_DE_AUTH[exc.codigo], exc.codigo, exc.mensaje, **exc.extra)
+        if exc.codigo == "demasiados_intentos":
+            respuesta.headers["Retry-After"] = str(exc.extra["espera_s"])
+        return respuesta
 
     @app.exception_handler(RequestValidationError)
     async def _validacion(request: Request, exc: RequestValidationError) -> JSONResponse:

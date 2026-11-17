@@ -176,3 +176,22 @@ def test_ruta_inexistente_usa_el_formato_de_error(client):
 def test_documentacion_automatica_desactivada(client):
     assert client.get("/docs").status_code == 404
     assert client.get("/openapi.json").status_code == 404
+
+
+def test_cinco_fallos_dan_429_con_retry_after_y_espera(client, connection):
+    _registrar(client, connection)
+    for _ in range(5):
+        client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
+
+    respuesta = client.post("/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"})
+
+    assert respuesta.status_code == 429
+    assert respuesta.json()["error"] == "demasiados_intentos"
+    assert 0 < respuesta.json()["espera_s"] <= 600
+    assert respuesta.headers["Retry-After"] == str(respuesta.json()["espera_s"])
+
+
+def test_el_origen_del_intento_se_guarda(client, connection):
+    _registrar(client, connection)
+    client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
+    assert connection.execute("SELECT origen FROM intento_login").fetchone()[0]

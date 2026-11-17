@@ -10,19 +10,12 @@ from sysmote.repositories import (
     solicitud_login_repository,
     usuario_repository,
 )
-from sysmote.services import password_service, token_service
+from sysmote.services import limite_service, password_service, token_service
+from sysmote.services.auth_error import AuthError
 
 API_VERSION = 1
 CADUCIDAD_SOLICITUD = timedelta(minutes=5)
 DISPOSITIVO_POR_DEFECTO = "Móvil"
-
-
-class AuthError(Exception):
-    def __init__(self, codigo: str, mensaje: str, **extra):
-        super().__init__(mensaje)
-        self.codigo = codigo
-        self.mensaje = mensaje
-        self.extra = extra
 
 
 def _ahora() -> datetime:
@@ -96,10 +89,15 @@ def registrar(
     return {"token": token, "usuario": nuevo.nombre_usuario}
 
 
-def login(connection: sqlite3.Connection, usuario: str, contrasena: str, dispositivo: str) -> dict:
+def login(
+    connection: sqlite3.Connection, usuario: str, contrasena: str, dispositivo: str, origen: str = "local"
+) -> dict:
+    limite_service.comprobar(connection, usuario)
     cuenta = usuario_repository.obtener_por_nombre(connection, usuario)
     if cuenta is None or not password_service.verificar(cuenta.hash_contrasena, contrasena):
+        limite_service.registrar(connection, usuario, cuenta.id if cuenta else None, origen, exito=False)
         raise AuthError("credenciales_invalidas", "Usuario o contraseña incorrectos")
+    limite_service.registrar(connection, usuario, cuenta.id, origen, exito=True)
 
     solicitud_login_repository.borrar_de_usuario(connection, cuenta.id)
     activa = _sesion_activa_vigente(connection)
