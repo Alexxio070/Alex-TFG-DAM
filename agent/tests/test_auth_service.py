@@ -322,6 +322,10 @@ def test_el_codigo_sirve_escrito_sin_guiones_y_en_minusculas(connection):
     assert auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", None)["usuario"] == "alex"
 
 
+def test_el_codigo_sirve_si_se_teclea_cero_por_o_y_uno_por_i(connection):
+    assert auth_service.hash_codigo("AB0I-1OAB") == auth_service.hash_codigo("ABOI-IOAB")
+
+
 def test_abrir_registro_con_cuenta_creada_falla(connection):
     _cuenta(connection)
     assert _codigo_de_error(lambda: auth_service.abrir_registro(connection)) == "ya_configurado"
