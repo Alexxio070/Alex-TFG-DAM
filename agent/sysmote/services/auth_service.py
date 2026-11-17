@@ -25,7 +25,8 @@ def _ahora() -> datetime:
 
 
 def hash_codigo(codigo: str) -> str:
-    normalizado = codigo.replace("-", "").replace(" ", "").upper()
+    # El alfabeto base32 no tiene 0 ni 1: al teclear a mano se leen como O e I.
+    normalizado = codigo.replace("-", "").replace(" ", "").upper().replace("0", "O").replace("1", "I")
     return hashlib.sha256(normalizado.encode()).hexdigest()
 
 
@@ -209,6 +210,11 @@ def cambiar_contrasena(connection: sqlite3.Connection, nueva: str) -> None:
 def cerrar_todas_las_sesiones(connection: sqlite3.Connection) -> None:
     cuenta = usuario_repository.obtener_primero(connection)
     sesion_repository.revocar_todas_de_usuario(connection, cuenta.id, "cerrar_todas")
+
+
+def reiniciar_intentos(connection: sqlite3.Connection) -> None:
+    cuenta = usuario_repository.obtener_primero(connection)
+    limite_service.reiniciar(connection, cuenta.nombre_usuario)
 
 
 def solicitud_pendiente(connection: sqlite3.Connection) -> SolicitudLogin | None:
