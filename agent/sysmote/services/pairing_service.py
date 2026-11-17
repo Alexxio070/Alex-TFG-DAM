@@ -1,9 +1,13 @@
 import socket
+from pathlib import Path
 from urllib.parse import urlencode
 
 import qrcode
 
+from sysmote.iroh_tunnel import _load_or_create_secret_key
+
 PUERTO_HTTPS = 8443
+IROH_KEY_PATH = Path.home() / ".local" / "share" / "sysmote" / "iroh_secret_key.bin"
 _BLOQUES = {(True, True): "█", (True, False): "▀", (False, True): "▄", (False, False): " "}
 
 
@@ -15,6 +19,10 @@ def direccion_lan() -> str:
         except OSError:
             host = "127.0.0.1"
     return f"{host}:{PUERTO_HTTPS}"
+
+
+def identificador_iroh() -> str:
+    return str(_load_or_create_secret_key(IROH_KEY_PATH).public())
 
 
 def uri_emparejamiento(direccion: str, huella: str, codigo: str | None = None, iroh: str | None = None) -> str:
