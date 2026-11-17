@@ -53,14 +53,14 @@ async def running_agent():
     await server_task
 
 
-async def test_tunnel_forwards_a_real_metrics_request(running_agent, open_stream):
+async def test_tunnel_forwards_a_real_request(running_agent, open_stream):
     stream = await open_stream(running_agent)
-    await stream.send().write_all(b"GET /metrics HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n")
+    await stream.send().write_all(b"GET /estado HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n")
     await stream.send().finish()
     reply = await stream.recv().read_to_end(1_000_000)
 
     assert reply.startswith(b"HTTP/1.1 200 OK")
-    assert b'"cpu_percent"' in reply
+    assert b'"api"' in reply
 
 
 async def test_tunnel_resets_the_stream_when_the_local_agent_is_down(open_stream):
