@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Usuario(BaseModel):
@@ -43,3 +43,16 @@ class CodigoRegistro(BaseModel):
     creado: str
     caduca_en: str
     usado: bool
+
+
+class RegistroRequest(BaseModel):
+    codigo: str = Field(min_length=1)
+    usuario: str = Field(min_length=1)
+    contrasena: str = Field(min_length=1)
+    dispositivo: str | None = None
+
+
+class LoginRequest(BaseModel):
+    usuario: str = Field(min_length=1)
+    contrasena: str = Field(min_length=1)
+    dispositivo: str = "Móvil"
