@@ -62,6 +62,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 16/11/2026 | Plan | Prueba 5 de la matriz de iroh completada: el identificador sobrevive al reinicio del PC | Aplicado en la documentación |
 | 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
+| 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
 
 ---
 
@@ -569,4 +570,20 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué es ahora:** la TUI no crea la cuenta. Abre el modo registro y muestra el QR (con la dirección, la huella y el identificador iroh, que va siempre) y un código de registro de un solo uso (16 caracteres en base32, 10 minutos). La cuenta la crea la app con `POST /registro`. La contraseña exige como mínimo 5 caracteres, un número y una mayúscula. `POST /registro` distingue tres errores `403`: `registro_cerrado`, `codigo_caducado` y `codigo_invalido`. La TUI y el agente se comunican solo por SQLite: la tabla efímera `solicitud_login` lleva las solicitudes de login pendientes y `codigo_registro` los códigos. Con la fase 3 se añaden también el HTTPS autofirmado con huella, Argon2, los tokens opacos con caducidad de 30 días sin uso y el límite de intentos (5 permitidos; el 6.º ya recibe `429`). El comando `sysmote` abre la TUI y arranca el agente (HTTPS en 8443, HTTP interno en `127.0.0.1:8444` y túnel iroh). El QR pasa de la fase 9 a la 3; el escáner en la app sigue en la fase 9.
 - **Por qué:** decisión del autor: el QR de la TUI se adelanta de la fase 9 a la 3. El resto son los detalles que se cerraron al implementar el contrato.
 - **Afecta a:** `01` (§5.1, §6.2), `02` (§5.1, §5.2: `cryptography` 50.0 y `argon2-cffi` 25.1, comprobadas en PyPI el 18/11/2026), `04` (fases 3 y 9, recortes y cobertura) y `doc/agente/contrato-api-fase3.md`.
-- **Estado:** implementado y probado en el agente (175 tests); la app todavía no tiene los clientes reales.
+- **Estado:** implementado y probado en el agente. La parte de la app está en la entrada siguiente.
+
+### 18/11/2026 — App: login, registro y token de sesión (fase 3)
+
+- **Qué era:** la app no pedía login: iba directa a la pantalla principal. El estado de «emparejado» lo simulaba un `PairingRepository` con datos de ejemplo.
+- **Qué es ahora:** sin sesión, la app solo muestra el login, guiado por `GET /estado` (agente inalcanzable, sin cuenta, registro, login, bloqueo con cuenta atrás, espera de confirmación en la TUI). Tiene registro con código, token en el Keystore, «Cerrar sesión» y «Desemparejar» en Ajustes, y un campo de huella del certificado. En modo Local usa HTTPS con un cliente sin ninguna CA pública que solo acepta el certificado cuyo SHA-256 coincide con la huella guardada; por iroh, HTTP por el túnel con `Bearer`. Métricas también va con `Bearer`. Se retira `PairingRepository`, y el doble de pruebas de autenticación vive solo en `test/`.
+- **Por qué:** consecuencias de implementar el contrato. Dos decisiones de diseño nuevas: el login ofrece «Conexión con el PC» porque la dirección y la huella se configuran en Ajustes, dentro de la app, y sin esa salida el usuario quedaría atrapado; y si el agente no responde, un token guardado no se borra, porque puede ser solo un fallo de red.
+- **Afecta a:** `App-movil/lib/data`, `features/auth`, `features/settings`, `doc/ui/` y `doc/agente/contrato-api-fase3.md` (su estado).
+- **Estado:** implementado. 223 tests y análisis limpio; probado contra el agente real por HTTPS. Sin probar en un móvil físico ni por iroh.
+
+### 18/11/2026 — Túnel iroh endurecido y puerto HTTP interno de referencia
+
+- **Qué era:** el túnel no limitaba conexiones ni *streams*, no cortaba un *stream* inactivo y cualquier excepción que no fuera de iroh en su bucle lo tumbaba. Estaba aplazado a la fase 3 (`doc/iroh/04-pruebas.md`, puntos 10 y 11). El túnel reenviaba al puerto que le pasaba quien lo arrancaba (8443 en `iroh_poc.py`).
+- **Qué es ahora:** `Limits` fija 4 conexiones simultáneas (al llegar al límite se cierra la más antigua, no la nueva), 8 *streams* por conexión (los sobrantes se rechazan) y 60 s de inactividad por *stream* (contando las dos direcciones juntas). Cualquier excepción del bucle se registra y el túnel sigue. `INTERNAL_HTTP_PORT = 8444` documenta el puerto HTTP interno propuesto para el destino, según la decisión del 17/11/2026 (sin TLS propio por iroh), que no fija el número; el túnel solo reenvía a `127.0.0.1`.
+- **Por qué:** con el login de la fase 3, el túnel pasa a exponer algo más que métricas. El límite de *streams* se cuenta en el túnel porque el de iroh no se aplica tras aceptar la conexión (comprobado con una prueba).
+- **Afecta a:** `doc/iroh/` (`02-implementacion.md` §2, `03-problemas-y-soluciones.md` §13, `04-pruebas.md`, `README.md`) y `04` (se quita el punto de la fase 3). Código: `agent/sysmote/iroh_tunnel.py` y `agent/tests/test_iroh_tunnel.py`. Pendiente de revisar en la fase 4: 60 s cortarían una terminal inactiva.
+- **Estado:** aplicado en código y en la documentación.

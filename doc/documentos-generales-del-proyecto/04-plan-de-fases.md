@@ -127,13 +127,14 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 - Agente: HTTPS, login con token de sesión, todas las rutas protegidas, límite de intentos.
 - App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro y botón «Desemparejar» en Ajustes.
 - Comprobar que todo funciona igual por USB y por iroh.
-- Endurecer el túnel iroh del agente (aplazado de la fase 2): límite de conexiones y de *streams* simultáneos, *timeout* de inactividad y captura de cualquier excepción en el bucle de `run()` (`doc/iroh/04-pruebas.md` §2, puntos 10 y 11).
 
 Detalle técnico: `01` §5 (Seguridad).
 
 **Terminada cuando:** sin login no se puede hacer nada (tampoco por iroh), un certificado distinto es rechazado y «Cerrar todas las sesiones» expulsa al móvil.
 
 **Lo que no se recorta:** el login y el TLS.
+
+**Estado (18/11/2026):** el agente y la parte de la app (login, registro, token en el Keystore, huella fijada, «Cerrar sesión» y «Desemparejar») están implementados y la app se ha probado contra el agente real por HTTPS. Falta probarla en un móvil físico y por iroh, y el endurecimiento del túnel iroh está en curso.
 
 ---
 

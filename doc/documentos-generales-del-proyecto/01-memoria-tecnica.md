@@ -234,7 +234,7 @@ El usuario escribe `sysmote` en el PC y se abre la **TUI** (interfaz de texto co
 - genera un certificado TLS autofirmado propio del equipo;
 - abre el **modo registro** y muestra en la terminal un **código QR** con la dirección, la huella del certificado, el identificador iroh (cuando exista) y un **código de registro de un solo uso** con caducidad corta.
 
-La app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
+Con el escáner de la fase 9, la app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
 
 A partir de entonces la app solo confía en ese certificado. Esto vale para la conexión por red local (USB o LAN). **Por iroh no se añade un TLS propio:** la conexión de iroh ya va cifrada de extremo a extremo (QUIC con TLS 1.3) y autentica al agente por su clave pública, el identificador iroh, que viaja en el QR. El identificador cumple así el papel de la huella, y el login sigue siendo obligatorio. El túnel reenvía a un puerto HTTP interno que solo escucha en `127.0.0.1`. Para volver a emparejar la app (por ejemplo, reinstalada), la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
 
@@ -242,10 +242,10 @@ La TUI no crea la cuenta: solo abre el modo registro. La cuenta la crea la app c
 
 ### 5.2 Autenticación
 - Login con usuario y contraseña; el agente devuelve un **token de sesión** aleatorio que se guarda con hash en SQLite.
-- El token se guarda en el móvil en almacenamiento cifrado (Android Keystore).
+- El token se guarda en el móvil en almacenamiento cifrado (Android Keystore) y en memoria para las peticiones. Sin sesión, la app solo muestra el login. Si el agente no responde, un token guardado no se borra (puede ser solo un fallo de red); sí se borra con un `401`.
 - **Una sola sesión activa:** si ya hay una, un nuevo login no la sobrescribe hasta que el usuario lo confirme en la TUI del PC (diálogo «Hay una sesión activa en…, ¿quieres cerrarla e iniciar una nueva?»).
 - **Revocación:** el botón «Cerrar todas las sesiones» de la TUI invalida todas las sesiones; cambiar la contraseña desde la TUI también.
-- **Límite de intentos:** tras varios fallos seguidos, el agente impone esperas crecientes.
+- **Límite de intentos:** se permiten 5 intentos fallidos seguidos y el 6.º queda bloqueado (`429`) durante 10 minutos por defecto, configurable (`doc/agente/contrato-api-fase3.md` §5).
 - **Mínimo privilegio:** el agente se ejecuta como servicio de usuario, nunca como root ni con `sudo`.
 
 ### 5.3 Modelo de amenazas

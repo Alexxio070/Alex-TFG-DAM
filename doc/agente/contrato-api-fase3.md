@@ -1,6 +1,6 @@
 # Contrato de la API: seguridad (fase 3)
 
-**Estado: implementado en el agente** (rama `feature/agent`, 175 tests en verde el 18/11/2026); la app lo cumple contra un repositorio falso y todavía no tiene los clientes reales. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
+**Estado: implementado en el agente y en la app** (18/11/2026). La app, con sus clientes reales por HTTPS con huella fijada y por iroh, se ha probado contra el agente real por HTTPS; falta probarla en un móvil físico y por iroh. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
 
 ## Emparejamiento y login son cosas distintas
 
@@ -12,9 +12,9 @@
 
 - HTTP/JSON en UTF-8. El contrato (rutas, cuerpos, errores) es el mismo por USB/LAN y por iroh, pero el cifrado es distinto:
   - **USB o red local:** HTTPS con un certificado autofirmado del equipo, con la huella fijada por la app (§6).
-  - **Por iroh:** sin TLS propio. La conexión de iroh ya va cifrada de extremo a extremo (QUIC con TLS 1.3) y autentica al agente por su clave pública, el identificador iroh. El túnel reenvía a un puerto HTTP interno que escucha **solo en `127.0.0.1`**, nunca en `0.0.0.0`.
+  - **Por iroh:** sin TLS propio. La conexión de iroh ya va cifrada de extremo a extremo (QUIC con TLS 1.3) y autentica al agente por su clave pública, el identificador iroh. El túnel reenvía al puerto HTTP interno **`8444`**, que escucha **solo en `127.0.0.1`**, nunca en `0.0.0.0`.
   - El login es obligatorio en los dos casos.
-- Puerto por defecto: `8443`.
+- Puerto por defecto: `8443` (HTTPS, USB y red local). El puerto interno para iroh es el `8444` (HTTP, solo en `127.0.0.1`).
 - Fechas en ISO 8601 con zona horaria (`2026-12-20T18:30:00+01:00`).
 - La app ignora los campos de las respuestas que no conoce.
 

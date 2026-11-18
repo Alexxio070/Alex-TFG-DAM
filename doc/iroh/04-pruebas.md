@@ -17,6 +17,12 @@ Usan el binding de Python real de iroh (sin mocks): un `Endpoint` servidor y uno
 | `test_tunnel_forwards_a_real_metrics_request` | Con un servidor Uvicorn real sirviendo `sysmote.main:app`, una petición `GET /metrics` completa llega y vuelve bien a través del túnel (los dos sentidos del reenvío) |
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si no hay nada escuchando en el puerto local, el *stream* se cierra (`reset`) enseguida en vez de colgarse hasta un *timeout* |
 | `test_tunnel_leaves_no_background_tasks_behind` | Tras 15 peticiones (10 con el agente en marcha y 5 con él caído) no queda ninguna tarea de reenvío viva: no se acumulan |
+| `test_tunnel_closes_the_oldest_connection_beyond_the_limit` | Con el límite en 2 y 3 conexiones, la más antigua se cierra con el motivo «too many connections» y las otras dos siguen sirviendo métricas |
+| `test_tunnel_refuses_streams_beyond_the_limit` | Con el límite en 2, el tercer *stream* se corta enseguida y los dos primeros siguen abiertos |
+| `test_tunnel_frees_a_stream_slot_when_the_stream_ends` | Con el límite en 2, diez peticiones seguidas por la misma conexión funcionan: el hueco se libera al terminar cada *stream* |
+| `test_tunnel_resets_a_stream_that_stays_idle` | Un *stream* que no mueve datos se corta pasado el límite de inactividad (0,3 s en el test) |
+| `test_tunnel_keeps_a_stream_that_keeps_moving_data` | Un *stream* que tarda más que el límite pero nunca está parado (un byte cada 0,1 s) no se corta |
+| `test_tunnel_keeps_serving_after_an_unexpected_error` | Una excepción que no es de iroh, al esperar conexiones o al aceptar una, se registra y el túnel sigue sirviendo (dos casos) |
 
 ### Agente: `agent/tests/test_iroh_secret_key.py`
 
@@ -132,14 +138,14 @@ describe esta fila (12/11/2026).
 | 9 | Salir y volver rápido a Métricas, o «Reintentar» con una carga en curso, podía dejar dos suscripciones a `watch()` y dos conexiones a la vez *(deducido leyendo el código; no se vio en el móvil)* | Solo cuenta el último refresco: un contador de generación descarta los anteriores | **Hecho (16/11/2026)** (`MetricsViewModel`). Cubierto por tests. Ver `03-problemas-y-soluciones.md` §10 |
 | 12 | Un intento de conexión que pasa de 5 s no se cancela (la API de `iroh_flutter` no lo permite) y se lanzaba otro en cada petición; si el viejo conectaba tarde, la conexión quedaba sin cerrar *(deducido; no se vio)* | Un solo intento nativo a la vez: las peticiones lo esperan y, si conecta tarde, se aprovecha o se cierra | **Hecho (16/11/2026)**. Cubierto por tests con la conexión falsa. Ver `03-problemas-y-soluciones.md` §12 |
 
-### Aplazado a la fase 3 (cuando exista el login)
+### Endurecimiento del túnel (aplazado en la fase 2, hecho el 18/11/2026)
 
-Detectados el 16/11/2026. Sin login, cualquiera que conozca el identificador llega al agente, así que endurecerlo ahora no cambia quién puede llegar; se hace junto con el resto de la seguridad (`04-plan-de-fases.md`, fase 3).
+Detectados el 16/11/2026 y aplazados a la fase 3, porque sin login endurecerlo no cambiaba quién podía llegar. Hechos al empezar esa fase.
 
 | # | Fallo | Qué debería pasar | Estado |
 |---|---|---|---|
-| 10 | El túnel no limita las conexiones ni los *streams* simultáneos, y no corta un *stream* que no envía nada *(deducido leyendo el código)* | Un límite de conexiones y de *streams*, y un *timeout* de inactividad | **Aplazado a la fase 3** |
-| 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 5 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Aplazado a la fase 3** |
+| 10 | El túnel no limita las conexiones ni los *streams* simultáneos, y no corta un *stream* que no envía nada *(deducido leyendo el código)* | Un límite de conexiones y de *streams*, y un *timeout* de inactividad | **Hecho (18/11/2026)**. Cubierto por los tests de conexiones, *streams* e inactividad de `test_iroh_tunnel.py`. Ver `03-problemas-y-soluciones.md` §13 |
+| 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 5 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Hecho (18/11/2026)**. Cubierto por `test_tunnel_keeps_serving_after_an_unexpected_error` |
 
 ### Limitaciones conocidas y medición pendiente
 

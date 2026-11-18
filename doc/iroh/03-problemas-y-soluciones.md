@@ -122,3 +122,20 @@ Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.
 **Síntoma probable:** el límite de 5 s (`Future.timeout`) solo dejaba de esperar; el intento nativo seguía vivo. La siguiente petición lanzaba otro, y si el viejo acababa conectando, esa conexión quedaba sin cerrar. Con el relé caído, los intentos se irían acumulando mientras iroh no los diera por fallidos.
 
 **Solución:** solo hay un intento nativo a la vez. Las peticiones que llegan mientras sigue en marcha lo esperan, cada una con su propio límite de 5 s, en vez de lanzar otro. Si acaba conectando tarde, la conexión se aprovecha; si mientras tanto cambió el identificador, se cierra al llegar. Además, un test del agente comprueba con iroh real que las tareas de reenvío del túnel no se acumulan.
+
+## 13. Un túnel sin límites ni tolerancia a errores inesperados
+
+**Detectado el 16/11/2026** leyendo el código (deducido, no visto en el móvil) y **corregido el 18/11/2026**, al empezar la fase 3.
+
+**Síntomas probables:**
+- Sin límite de conexiones ni de *streams* simultáneos, cualquiera que conociera el identificador podía saturar el agente.
+- Un *stream* que no enviaba nada se quedaba abierto sin límite de tiempo.
+- Cualquier excepción que no fuera `iroh.IrohError` en el bucle de `run()` tumbaba el túnel entero, y nada lo reiniciaba hasta el servicio de la fase 5.
+
+**Solución:** `Limits` (4 conexiones, 8 *streams* por conexión, 60 s de inactividad) y un bucle `_serve` que registra cualquier excepción y sigue escuchando. Detalle en `02-implementacion.md` §2.
+
+**Dos decisiones:**
+- **Al llegar al límite de conexiones se cierra la más antigua, no la nueva.** Si el móvil se reconecta, su conexión muerta puede seguir contando hasta que el agente la detecte; rechazar la nueva dejaría al propio usuario fuera.
+- **El límite de *streams* se cuenta en el túnel.** `Connection.set_max_concurrent_bi_streams` no se aplica si se llama después de aceptar la conexión: en una prueba (18/11/2026) el límite estaba en 2 y el cliente abrió 4 *streams*, todos aceptados. Cerrar una conexión con `Connection.close(código, motivo)` sí funciona: el cliente ve el código y el motivo.
+
+**Pendiente de revisar en la fase 4:** la terminal irá por un *stream* largo (WebSocket) y 60 s de inactividad la cortarían si está quieta. Habrá que subir el valor o añadir *keepalive*, que ya consta como pendiente en `04-plan-de-fases.md`. Los valores (4, 8 y 60 s) son propuestas razonadas, no medidas.
