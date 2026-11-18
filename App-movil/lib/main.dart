@@ -58,11 +58,7 @@ Future<void> main() async {
               () => settings.fingerprint,
               () => auth.token,
             ),
-            iroh: IrohMetricsRepository(
-              () => settings.irohId,
-              () => auth.token,
-              connection: connectionFor(settings),
-            ),
+            iroh: IrohMetricsRepository(connectionFor(settings), () => auth.token),
           );
         },
       ),
