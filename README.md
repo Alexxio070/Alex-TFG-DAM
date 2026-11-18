@@ -10,7 +10,7 @@
 **Administra tu PC Linux desde el móvil, estés donde estés, sin abrir puertos en el router ni montar una VPN.**
 
 > [!WARNING]
-> **Proyecto en desarrollo: todavía no es seguro exponerlo.** Aún no hay login ni cifrado propio. Con el acceso remoto por iroh activado, **cualquiera que conozca el identificador del agente puede conectarse a él**. Hoy solo expone métricas de solo lectura, pero no compartas el identificador y usa el agente solo para probar. No arranques el agente en `0.0.0.0`: dejaría la API abierta a toda tu red local.
+> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro y el login.
 
 Sysmote tiene dos piezas que se desarrollan juntas:
 
@@ -40,7 +40,7 @@ Es un proyecto de fin de grado de Desarrollo de Aplicaciones Multiplataforma (DA
 
 </div>
 
-Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todavía no están conectadas al agente. La de Métricas sí funciona con el agente real.
+Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todavía no están conectadas al agente. La de Métricas sí funciona con el agente real, tras iniciar sesión.
 
 ### TUI del PC (`sysmote`)
 
@@ -59,14 +59,15 @@ Las pantallas de Inicio, Terminal y Notas muestran hoy datos de ejemplo: todaví
 
 </div>
 
-La TUI tiene la estructura completa, pero casi todos sus botones están deshabilitados hasta que se implementen sus funciones.
+La TUI tiene la estructura completa. Emparejamiento (Seguridad y Dispositivo) ya funciona; el resto de botones siguen deshabilitados hasta que se implementen sus funciones.
 
 ## Funciones
 
 | Función | Estado |
 |---|---|
 | Métricas del PC en vivo: CPU, temperatura, RAM y discos, con gráficas | Disponible |
-| Acceso desde fuera de casa por iroh (relé y conexión directa) | Disponible, sin login |
+| Acceso desde fuera de casa por iroh (relé y conexión directa) | Disponible |
+| Login, registro con código de un solo uso, sesión única y desemparejar | Disponible, sin probar en un móvil físico |
 | Ajustes de la app (unidades, tema, modo de conexión) | Disponible |
 | Terminal remota con la shell real del usuario (sesiones persistentes con tmux) | Interfaz hecha, falta conectarla al agente |
 | Acciones rápidas (comandos guardados, con historial) | Interfaz hecha, falta conectarla al agente |
@@ -74,25 +75,29 @@ La TUI tiene la estructura completa, pero casi todos sus botones están deshabil
 
 ## Estado actual
 
-Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver las métricas reales del PC en el móvil, tanto por red local (USB) como desde otra red a través de iroh. Esa conexión se ha probado en casa, con datos móviles y desde una red restrictiva real. El resto de pantallas tienen la interfaz definitiva con datos de ejemplo. Hay un APK de prueba en las [releases](https://github.com/Alexxio070/Alex-TFG-DAM/releases). El agente aún no tiene instalador: se arranca a mano desde el código (ver más abajo).
+Noviembre de 2026. La app y el agente ya tienen login: se crea la cuenta con un código de un solo uso que da la TUI, y las métricas reales del PC solo se ven con la sesión iniciada, tanto por red local (USB, con HTTPS) como desde otra red a través de iroh. La app se ha probado contra el agente real por HTTPS; **todavía no se ha probado en un móvil físico con esta versión ni el camino por iroh con el login**. La conexión por iroh sí se probó, antes del login, en casa, con datos móviles y desde una red restrictiva real. El resto de pantallas tienen la interfaz definitiva con datos de ejemplo. El agente aún no tiene instalador: se arranca a mano desde el código fuente (ver más abajo).
+
+> [!IMPORTANT]
+> El APK de la release `v0.1-beta` es **anterior al login** y no funciona con el agente actual. Hasta que se publique uno nuevo, compila la app desde el código fuente (ver más abajo).
 
 ## Roadmap
 
 - [x] Interfaz de la app completa, con datos de ejemplo
 - [x] Agente con métricas reales y TUI
 - [x] Acceso remoto por iroh
-- [ ] Login, emparejamiento seguro y cifrado (TLS)
+- [x] Login, emparejamiento seguro y cifrado (TLS)
 - [ ] Terminal remota real
 - [ ] Instalación del agente como servicio del sistema
 - [ ] Procesos
 - [ ] Acciones rápidas
 - [ ] Notificaciones y reglas de alerta
 - [ ] Notas compartidas entre móvil y PC
-- [ ] Descubrimiento automático en red local y emparejamiento por QR
+- [ ] Escáner de QR en la app y descubrimiento automático en red local (la TUI ya muestra el QR)
 
 ## Limitaciones conocidas
 
-- **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 30 días sin uso. El emparejamiento y el login todavía no están implementados.
+- **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 30 días sin uso.
+- **Sin escáner de QR:** la TUI muestra el QR de emparejamiento, pero la app aún no lo escanea. La dirección, la huella del certificado, el identificador de iroh y el código de registro se escriben a mano en la app.
 
 ## Instalación y uso
 
@@ -101,27 +106,36 @@ Noviembre de 2026. Se puede compilar la app y arrancar el agente a mano para ver
 
 ### Instalación rápida
 
-La app se instala desde un APK ya compilado. El agente aún se arranca desde el código fuente.
+La app se instala desde un APK y el agente se arranca desde el código fuente.
+
+> [!IMPORTANT]
+> El APK de la release `v0.1-beta` es anterior al login y no funciona con el agente actual. Hasta que se publique uno nuevo en [Releases](https://github.com/Alexxio070/Alex-TFG-DAM/releases), compila la app (ver «Compilar desde el código fuente»). El agente sí se instala como se indica aquí.
 
 **Requisitos:** un PC Linux de 64 bits (glibc 2.28 o superior) con Python 3.11 o superior y Git, y un móvil Android 7 o superior (arm64). Para conectarlos por USB, `adb` y la depuración por USB activada.
 
-**1. La app.** Descarga `sysmote-v0.1-beta-arm64.apk` desde [Releases](https://github.com/Alexxio070/Alex-TFG-DAM/releases) e instálalo en el móvil. Android avisará porque el APK está firmado con la clave de depuración y viene de fuera de la tienda: hay que permitir la instalación desde esa fuente.
+**1. La app.** Cuando haya un APK con login en Releases, descárgalo e instálalo en el móvil. Android avisará porque el APK está firmado con la clave de depuración y viene de fuera de la tienda: hay que permitir la instalación desde esa fuente.
 
 **2. El agente.** En el PC:
 
 ```bash
 git clone https://github.com/Alexxio070/Alex-TFG-DAM.git && cd Alex-TFG-DAM/agent
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-.venv/bin/uvicorn sysmote.main:app --port 8443
+.venv/bin/sysmote
 ```
 
 > [!IMPORTANT]
-> El comando `.venv/bin/uvicorn sysmote.main:app --port 8443` es el que **levanta el servicio del agente**. Debe estar en marcha mientras uses la app.
+> El comando `.venv/bin/sysmote` abre la TUI y **levanta el servicio del agente**: HTTPS en el puerto 8443, un HTTP interno solo en `127.0.0.1:8444` y el túnel iroh. Debe estar abierto mientras uses la app; al salir de la TUI se paran los servidores.
 
-**3. Conectar la app con el agente.**
+**3. Crear la cuenta y conectar la app.**
 
-- **Por USB (red local):** con el móvil conectado, ejecuta `adb reverse tcp:8443 tcp:8443`. La app busca el agente en `127.0.0.1:8443`, así que las métricas aparecen sin más.
-- **Desde otra red, por iroh:** arranca el agente con `.venv/bin/python scripts/iroh_poc.py` en lugar de `uvicorn`. Imprime el identificador del agente: en Ajustes de la app, elige el modo **iroh** y pégalo. Ten presente el aviso de seguridad de arriba.
+1. En la TUI, ve a **Emparejamiento → Seguridad** y pulsa **Configuración inicial**. Muestra un código de registro de un solo uso que caduca a los 10 minutos. La huella del certificado y el identificador de iroh aparecen en el texto bajo el QR de **Dispositivo**.
+2. Conecta la app con el agente. En la pantalla de login, **Conexión con el PC** (o en Ajustes) pide la dirección, la huella y el identificador de iroh:
+   - **Por USB (red local):** con el móvil conectado, ejecuta `adb reverse tcp:8443 tcp:8443`. La dirección por defecto es `127.0.0.1:8443`. Escribe la huella de 64 caracteres comparándola con la de la TUI.
+   - **Desde otra red, por iroh:** en Ajustes elige el modo **iroh** y pega el identificador.
+3. En la app, regístrate con el código, un usuario y una contraseña (mínimo 5 caracteres, un número y una mayúscula). Después ya puedes iniciar sesión.
+
+> [!NOTE]
+> Este flujo está tomado del código y de la documentación, y la app se ha probado contra el agente real por HTTPS. Todavía no se ha probado con un móvil físico ni por iroh con el login.
 
 ### Compilar desde el código fuente
 
@@ -137,7 +151,7 @@ flutter build apk --release --target-platform android-arm64   # genera el APK
 El agente se arranca y se conecta igual que en la instalación rápida. Las pruebas se ejecutan con `.venv/bin/pytest` (en `agent/`) y `flutter test` (en `App-movil/`).
 
 > [!NOTE]
-> La TUI (`sysmote`) todavía no sirve para nada: sus botones están deshabilitados. Si aun así quieres instalarla, desde la raíz del repositorio:
+> Si quieres el comando `sysmote` sin entorno virtual, desde la raíz del repositorio:
 >
 > ```bash
 > pipx install ./agent
