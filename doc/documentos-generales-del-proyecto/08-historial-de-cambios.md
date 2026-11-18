@@ -562,3 +562,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** petición del autor de un desemparejamiento automático también al desinstalar; no es viable, así que se adoptaron las alternativas fiables.
 - **Afecta a:** `01` §10, `04` (fases 3 y 5), `doc/agente/tui.md` y `doc/agente/contrato-api-fase3.md`; nota en `README.md` y `README.en.md`.
 - **Estado:** aplicado en la documentación; sin implementar.
+
+### 18/11/2026 — Fase 3 implementada en el agente: registro con código y QR en la TUI
+
+- **Qué era:** el plan decía que en la fase 3 la TUI crearía el usuario y que el QR de emparejamiento y registro llegaría en la fase 9.
+- **Qué es ahora:** la TUI no crea la cuenta. Abre el modo registro y muestra el QR (con la dirección, la huella y el identificador iroh, que va siempre) y un código de registro de un solo uso (16 caracteres en base32, 10 minutos). La cuenta la crea la app con `POST /registro`. La contraseña exige como mínimo 5 caracteres, un número y una mayúscula. `POST /registro` distingue tres errores `403`: `registro_cerrado`, `codigo_caducado` y `codigo_invalido`. La TUI y el agente se comunican solo por SQLite: la tabla efímera `solicitud_login` lleva las solicitudes de login pendientes y `codigo_registro` los códigos. Con la fase 3 se añaden también el HTTPS autofirmado con huella, Argon2, los tokens opacos con caducidad de 30 días sin uso y el límite de intentos (5 permitidos; el 6.º ya recibe `429`). El comando `sysmote` abre la TUI y arranca el agente (HTTPS en 8443, HTTP interno en `127.0.0.1:8444` y túnel iroh). El QR pasa de la fase 9 a la 3; el escáner en la app sigue en la fase 9.
+- **Por qué:** decisión del autor: el QR de la TUI se adelanta de la fase 9 a la 3. El resto son los detalles que se cerraron al implementar el contrato.
+- **Afecta a:** `01` (§5.1, §6.2), `02` (§5.1, §5.2: `cryptography` 50.0 y `argon2-cffi` 25.1, comprobadas en PyPI el 18/11/2026), `04` (fases 3 y 9, recortes y cobertura) y `doc/agente/contrato-api-fase3.md`.
+- **Estado:** implementado y probado en el agente (175 tests); la app todavía no tiene los clientes reales.
