@@ -238,7 +238,7 @@ La app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del cer
 
 A partir de entonces la app solo confía en ese certificado. Esto vale para la conexión por red local (USB o LAN). **Por iroh no se añade un TLS propio:** la conexión de iroh ya va cifrada de extremo a extremo (QUIC con TLS 1.3) y autentica al agente por su clave pública, el identificador iroh, que viaja en el QR. El identificador cumple así el papel de la huella, y el login sigue siendo obligatorio. El túnel reenvía a un puerto HTTP interno que solo escucha en `127.0.0.1`. Para volver a emparejar la app (por ejemplo, reinstalada), la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
 
-Hasta que llegue el registro por QR (fase 9), el botón de configuración inicial crea directamente el usuario y la huella del certificado se compara a ojo con la de la TUI.
+La TUI no crea la cuenta: solo abre el modo registro. La cuenta la crea la app con `POST /registro` y el código de registro (16 caracteres en base32, un solo uso, 10 minutos; se acepta sin guiones y en minúsculas). La contraseña debe tener como mínimo 5 caracteres, un número y una mayúscula. Hasta que llegue el escáner de QR de la app (fase 9), la dirección, la huella y el código se escriben a mano y la huella se compara a ojo con la de la TUI.
 
 ### 5.2 Autenticación
 - Login con usuario y contraseña; el agente devuelve un **token de sesión** aleatorio que se guarda con hash en SQLite.
@@ -300,7 +300,9 @@ El historial de comandos de terminal **no** vive en esta base de datos: va en un
 | Tabla | Campos principales | Relaciones |
 |---|---|---|
 | **usuario** | id, nombre_usuario (único), hash_contrasena, creado_en | — |
-| **sesion** | id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada | N:1 usuario |
+| **sesion** | id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada, motivo_revocacion (distingue el `401 desemparejado` del `401 no_autenticado`) | N:1 usuario |
+| **solicitud_login** (efímera) | id (32 bytes aleatorios en base64url), usuario_id, dispositivo, creada, estado (pendiente / aprobada / rechazada / caducada), caduca_en. Es el canal entre la TUI y el agente: ambos la leen y la escriben | N:1 usuario |
+| **codigo_registro** (efímera) | id, hash_codigo (SHA-256), creado, caduca_en, usado. Código de 16 caracteres en base32, un solo uso, 10 minutos | — |
 | **intento_login** | id, usuario_id (nulo si el usuario no existe), nombre_usuario, origen, fecha, exito | N:1 usuario |
 | **grupo** | id, usuario_id, nombre, color, orden, creado_en · único (usuario_id, nombre) | N:1 usuario · 1:N accion_rapida |
 | **accion_rapida** | id, usuario_id, grupo_id (nulo = "Sin grupo"), nombre, comando, icono, orden, directorio, timeout_seg, confirmar, notificar_al_terminar, creado_en, actualizado_en | N:1 usuario · N:1 grupo · 1:N ejecucion |
