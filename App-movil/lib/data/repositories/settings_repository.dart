@@ -13,6 +13,7 @@ class SettingsData {
     required this.termFont,
     required this.connectionMode,
     required this.agentAddress,
+    required this.fingerprint,
     required this.irohId,
   });
 
@@ -25,6 +26,7 @@ class SettingsData {
   final int termFont;
   final ConnectionMode connectionMode;
   final String agentAddress;
+  final String fingerprint;
   final String irohId;
 }
 

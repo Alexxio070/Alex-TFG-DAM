@@ -13,6 +13,7 @@ const _keyTempLimit = 'settings_temp_limit';
 const _keyTermFont = 'settings_term_font';
 const _keyConnectionMode = 'settings_connection_mode';
 const _keyAgentAddress = 'settings_agent_address';
+const _keyFingerprint = 'settings_fingerprint';
 const _keyIrohId = 'settings_iroh_id';
 
 class SharedPreferencesSettingsRepository implements SettingsRepository {
@@ -30,6 +31,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
       termFont: prefs.getInt(_keyTermFont) ?? 13,
       connectionMode: ConnectionMode.values[prefs.getInt(_keyConnectionMode) ?? 0],
       agentAddress: prefs.getString(_keyAgentAddress) ?? kDefaultAgentAddress,
+      fingerprint: prefs.getString(_keyFingerprint) ?? '',
       irohId: prefs.getString(_keyIrohId) ?? '',
     );
   }
@@ -46,6 +48,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     await prefs.setInt(_keyTermFont, data.termFont);
     await prefs.setInt(_keyConnectionMode, data.connectionMode.index);
     await prefs.setString(_keyAgentAddress, data.agentAddress);
+    await prefs.setString(_keyFingerprint, data.fingerprint);
     await prefs.setString(_keyIrohId, data.irohId);
   }
 }
