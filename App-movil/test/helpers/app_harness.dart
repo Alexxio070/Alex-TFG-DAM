@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:sysmote/app.dart';
 import 'package:sysmote/app_providers.dart';
 import 'package:sysmote/data/fake/fake_macro_repository.dart';
 import 'package:sysmote/data/fake/fake_notes_repository.dart';
-import 'package:sysmote/data/fake/fake_pairing_repository.dart';
 import 'package:sysmote/data/fake/fake_terminal_repository.dart';
+import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'package:sysmote/data/repositories/metrics_repository.dart';
 import 'package:sysmote/data/repositories/notes_repository.dart';
 
+import '../fakes/fake_auth_repository.dart';
 import '../fakes/fake_metrics_repository.dart';
 import '../fakes/in_memory_settings_repository.dart';
+import '../fakes/in_memory_token_storage.dart';
 
-Widget app({MetricsRepository? metricsRepository, NotesRepository? notesRepository}) =>
+// Por defecto las pantallas se montan con la sesión ya abierta.
+Widget app({
+  MetricsRepository? metricsRepository,
+  NotesRepository? notesRepository,
+  AuthRepository? authRepository,
+}) =>
     MultiProvider(
       providers: buildProviders(
-        pairingRepository: FakePairingRepository(),
+        authRepositoryBuilder: (_) => authRepository ?? FakeAuthRepository.loggedIn(),
+        tokenStorage: authRepository == null
+            ? (InMemoryTokenStorage()..write('token-fake'))
+            : InMemoryTokenStorage(),
         macroRepository: FakeMacroRepository(),
         notesRepository: notesRepository ?? FakeNotesRepository(),
         terminalRepositoryFactory: FakeTerminalRepository.new,

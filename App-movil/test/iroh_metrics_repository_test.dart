@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/iroh/iroh_metrics_repository.dart';
 import 'package:sysmote/data/models/settings.dart';
+import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 final _idA = 'a' * 64;
@@ -15,9 +16,13 @@ class _FakeLink implements IrohLink {
 
   final Future<String> Function() _onExchange;
   bool closed = false;
+  String? lastRequest;
 
   @override
-  Future<String> exchange(String request) => _onExchange();
+  Future<String> exchange(String request) {
+    lastRequest = request;
+    return _onExchange();
+  }
 
   @override
   void close() => closed = true;
@@ -27,6 +32,7 @@ class _Harness {
   _Harness({Future<IrohLink> Function(String id)? connect}) {
     repository = IrohMetricsRepository(
       () => id,
+      () => token,
       connector: (endpointId) {
         connectedIds.add(endpointId);
         return connect != null ? connect(endpointId) : Future.value(_FakeLink());
@@ -36,6 +42,7 @@ class _Harness {
 
   late final IrohMetricsRepository repository;
   String id = _idA;
+  String? token;
   final connectedIds = <String>[];
 }
 
@@ -240,5 +247,33 @@ void main() {
 
     expect(links, hasLength(21));
     expect(links.where((link) => !link.closed), [links.last]);
+  });
+
+  test('manda el token de sesión como Bearer', () async {
+    final link = _FakeLink();
+    final harness = _Harness(connect: (_) async => link)..token = 't0k3n';
+
+    await harness.repository.fetch();
+
+    expect(link.lastRequest, contains('Authorization: Bearer t0k3n\r\n'));
+  });
+
+  test('sin token no manda la cabecera Authorization', () async {
+    final link = _FakeLink();
+    final harness = _Harness(connect: (_) async => link);
+
+    await harness.repository.fetch();
+
+    expect(link.lastRequest, isNot(contains('Authorization')));
+  });
+
+  test('un 401 no_autenticado o desemparejado lanza la excepción de sesión', () async {
+    String respuesta(String error) =>
+        'HTTP/1.1 401 Unauthorized\r\n\r\n{"error": "$error", "mensaje": "x"}';
+    final noAuth = _Harness(connect: (_) async => _FakeLink(() async => respuesta('no_autenticado')));
+    final desemp = _Harness(connect: (_) async => _FakeLink(() async => respuesta('desemparejado')));
+
+    await expectLater(noAuth.repository.fetch(), throwsA(isA<NotAuthenticatedException>()));
+    await expectLater(desemp.repository.fetch(), throwsA(isA<UnpairedException>()));
   });
 }

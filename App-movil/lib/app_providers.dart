@@ -2,12 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
+import 'data/repositories/auth_repository.dart';
 import 'data/repositories/macro_repository.dart';
 import 'data/repositories/metrics_repository.dart';
 import 'data/repositories/notes_repository.dart';
-import 'data/repositories/pairing_repository.dart';
 import 'data/repositories/settings_repository.dart';
 import 'data/repositories/terminal_repository.dart';
+import 'data/repositories/token_storage.dart';
+import 'features/auth/auth_viewmodel.dart';
 import 'features/home/home_viewmodel.dart';
 import 'features/metrics/metrics_viewmodel.dart';
 import 'features/notes/notes_viewmodel.dart';
@@ -16,7 +18,8 @@ import 'features/shell/shell_viewmodel.dart';
 import 'features/terminal/terminal_tabs_viewmodel.dart';
 
 List<SingleChildWidget> buildProviders({
-  required PairingRepository pairingRepository,
+  required AuthRepository Function(BuildContext) authRepositoryBuilder,
+  required TokenStorage tokenStorage,
   required MacroRepository macroRepository,
   required NotesRepository notesRepository,
   required TerminalRepository Function() terminalRepositoryFactory,
@@ -24,7 +27,7 @@ List<SingleChildWidget> buildProviders({
   required MetricsRepository Function(BuildContext) metricsRepositoryBuilder,
 }) {
   return [
-    Provider<PairingRepository>(create: (_) => pairingRepository),
+    Provider<TokenStorage>(create: (_) => tokenStorage),
     Provider<MacroRepository>(create: (_) => macroRepository),
     Provider<NotesRepository>(create: (_) => notesRepository),
     Provider<TerminalRepository Function()>(create: (_) => terminalRepositoryFactory),
@@ -32,20 +35,38 @@ List<SingleChildWidget> buildProviders({
     ChangeNotifierProvider(
       create: (context) => SettingsViewModel(context.read<SettingsRepository>()),
     ),
+    Provider<AuthRepository>(create: authRepositoryBuilder),
+    ChangeNotifierProvider(
+      create: (context) {
+        final settings = context.read<SettingsViewModel>();
+        return AuthViewModel(
+          context.read<AuthRepository>(),
+          context.read<TokenStorage>(),
+          onForgetDevice: () async {
+            await settings.setAgentAddress(kDefaultAgentAddress);
+            await settings.setFingerprint('');
+            await settings.setIrohId('');
+          },
+        );
+      },
+    ),
     Provider<MetricsRepository>(create: metricsRepositoryBuilder),
     ChangeNotifierProvider(
-      create: (context) => ShellViewModel(context.read<PairingRepository>()),
+      create: (context) => ShellViewModel(context.read<AuthViewModel>()),
     ),
     ChangeNotifierProvider(
       create: (context) => HomeViewModel(context.read<MacroRepository>()),
     ),
     ChangeNotifierProvider(
-      create: (context) => MetricsViewModel(context.read<MetricsRepository>()),
+      create: (context) => MetricsViewModel(
+        context.read<MetricsRepository>(),
+        context.read<AuthViewModel>(),
+      ),
     ),
     ChangeNotifierProvider(
       create: (context) => NotesViewModel(
         context.read<NotesRepository>(),
-        context.read<PairingRepository>(),
+        context.read<AuthViewModel>(),
       ),
     ),
     ChangeNotifierProvider(

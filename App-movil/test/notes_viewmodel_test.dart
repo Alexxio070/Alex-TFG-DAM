@@ -1,9 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/note.dart';
 import 'package:sysmote/data/repositories/notes_repository.dart';
-import 'package:sysmote/data/repositories/pairing_repository.dart';
+import 'package:sysmote/features/auth/auth_viewmodel.dart';
 import 'package:sysmote/features/notes/notes_viewmodel.dart';
+
+import 'fakes/fake_auth_repository.dart';
+import 'fakes/in_memory_token_storage.dart';
 
 class _SlowNotesRepository implements NotesRepository {
   final Map<String, Duration> delays;
@@ -35,19 +37,6 @@ class _SlowNotesRepository implements NotesRepository {
   Future<void> delete(String id) async {}
 }
 
-class _AlwaysPaired implements PairingRepository {
-  final _paired = ValueNotifier<bool>(true);
-
-  @override
-  ValueListenable<bool> get paired => _paired;
-
-  @override
-  Future<void> pair() async {}
-
-  @override
-  Future<void> unpair() async {}
-}
-
 void main() {
   test('una respuesta lenta de una búsqueda antigua no pisa la más reciente', () async {
     // "lenta" se dispara primero (tras el debounce de 300 ms) pero tarda
@@ -57,7 +46,11 @@ void main() {
       'lenta': const Duration(milliseconds: 500),
       'rapida': Duration.zero,
     });
-    final vm = NotesViewModel(repository, _AlwaysPaired());
+    final auth = AuthViewModel(
+      FakeAuthRepository.loggedIn(),
+      InMemoryTokenStorage()..write('token-fake'),
+    );
+    final vm = NotesViewModel(repository, auth);
     await Future<void>.delayed(Duration.zero);
 
     vm.search('lenta');

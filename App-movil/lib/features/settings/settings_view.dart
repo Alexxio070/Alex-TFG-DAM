@@ -9,7 +9,7 @@ import '../../core/widgets/app_segmented.dart';
 import '../../core/widgets/app_stepper.dart';
 import '../../core/widgets/app_switch.dart';
 import '../../core/widgets/confirm_card.dart';
-import '../shell/shell_viewmodel.dart';
+import '../auth/auth_viewmodel.dart';
 import 'settings_viewmodel.dart';
 import 'widgets/accent_sheet.dart';
 import 'widgets/connection_fields.dart';
@@ -22,7 +22,7 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<SettingsViewModel>();
-    final shell = context.watch<ShellViewModel>();
+    final auth = context.watch<AuthViewModel>();
     final t = context.tokens;
     final fahrenheit = s.tempUnit == TempUnit.fahrenheit;
     final limit = fahrenheit
@@ -141,17 +141,17 @@ class SettingsView extends StatelessWidget {
                   const ConnectionFields(),
                   Divider(height: 1, color: t.border),
                   Text(
-                    shell.isPaired
-                        ? 'Este móvil está emparejado con el PC.'
-                        : 'Este móvil no está emparejado con ningún PC.',
+                    auth.stage == AuthStage.loggedIn
+                        ? 'Este móvil tiene una sesión abierta con el PC.'
+                        : 'Este móvil no tiene ninguna sesión abierta con el PC.',
                     style: TextStyle(fontSize: 13, color: t.muted),
                   ),
+                  if (auth.stage == AuthStage.loggedIn)
+                    AppButton(label: 'Cerrar sesión', onPressed: auth.logout),
                   AppButton(
-                    label: shell.isPaired ? 'Desemparejar' : 'Emparejar',
-                    fill: shell.isPaired ? kRed : t.accent,
-                    onPressed: shell.isPaired
-                        ? () => _confirmUnpair(context, shell)
-                        : shell.pair,
+                    label: 'Desemparejar',
+                    fill: kRed,
+                    onPressed: () => _confirmUnpair(context, auth),
                   ),
                 ],
               ),
@@ -162,14 +162,14 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmUnpair(BuildContext context, ShellViewModel shell) {
+  Future<void> _confirmUnpair(BuildContext context, AuthViewModel auth) {
     return showConfirmCard(
       context,
       title: '¿Desemparejar este móvil?',
       body: 'Dejarás de controlar el PC desde la app hasta que vuelvas a emparejarlos.',
       confirmLabel: 'Desemparejar',
       semanticsLabel: 'Desemparejar',
-      onConfirm: shell.unpair,
+      onConfirm: auth.unpair,
     );
   }
 }

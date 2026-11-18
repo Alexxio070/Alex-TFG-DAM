@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/models/metrics.dart';
 import '../../data/repositories/metrics_repository.dart';
+import '../auth/auth_viewmodel.dart';
 
 class MetricsViewModel extends ChangeNotifier {
-  MetricsViewModel(this._repository);
+  MetricsViewModel(this._repository, this._auth);
 
   final MetricsRepository _repository;
+  final AuthViewModel _auth;
   StreamSubscription<MetricSample>? _subscription;
   List<MetricSample> _history = const [];
   MachineInfo? _info;
@@ -70,16 +72,24 @@ class MetricsViewModel extends ChangeNotifier {
           notifyListeners();
         },
         onError: (Object error) {
-          if (!_active) return;
+          if (!_active || _sessionLost(error)) return;
           _error = _messageFor(error);
           notifyListeners();
         },
       );
     } catch (error) {
-      if (!_active || generation != _generation) return;
+      if (!_active || generation != _generation || _sessionLost(error)) return;
       _error = _messageFor(error);
       notifyListeners();
     }
+  }
+
+  // Un 401 de sesión no es un fallo de conexión: AuthViewModel lleva al login
+  // (o al estado de sin emparejar) y aquí se deja de sondear.
+  bool _sessionLost(Object error) {
+    if (!_auth.handleSessionError(error)) return false;
+    stop();
+    return true;
   }
 
   String _messageFor(Object error) =>

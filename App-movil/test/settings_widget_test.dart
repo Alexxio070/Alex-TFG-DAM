@@ -26,7 +26,7 @@ void main() {
     for (final title in ['Unidades', 'Métricas', 'Terminal', 'Apariencia', 'Dispositivo']) {
       expect(find.text(title), findsWidgets);
     }
-    expect(find.text('Este móvil está emparejado con el PC.'), findsOneWidget);
+    expect(find.text('Este móvil tiene una sesión abierta con el PC.'), findsOneWidget);
   });
 
   testWidgets('cambia las unidades de temperatura y almacenamiento', (tester) async {
@@ -164,7 +164,7 @@ void main() {
     expect(settings.irohId, '');
   });
 
-  testWidgets('desemparejar pide confirmación y actualiza el estado', (tester) async {
+  testWidgets('desemparejar pide confirmación, olvida el equipo y vuelve al login', (tester) async {
     await openSettings(tester);
 
     await tester.tap(find.text('Desemparejar'));
@@ -174,8 +174,10 @@ void main() {
     await tester.tap(find.text('Desemparejar').last);
     await pumpFor(tester, 300);
 
-    expect(find.text('Este móvil no está emparejado con ningún PC.'), findsOneWidget);
-    expect(find.text('Emparejar'), findsOneWidget);
+    expect(find.text('Iniciar sesión'), findsOneWidget);
+    expect(find.text('Cerrar sesión'), findsNothing);
+    expect(settings.agentAddress, kDefaultAgentAddress);
+    expect(settings.fingerprint, '');
   });
 
   testWidgets('cancelar el diálogo mantiene el emparejado', (tester) async {
@@ -186,6 +188,6 @@ void main() {
     await tester.tap(find.text('Cancelar'));
     await pumpFor(tester, 200);
 
-    expect(find.text('Este móvil está emparejado con el PC.'), findsOneWidget);
+    expect(find.text('Este móvil tiene una sesión abierta con el PC.'), findsOneWidget);
   });
 }

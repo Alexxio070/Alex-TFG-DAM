@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../data/repositories/pairing_repository.dart';
+import '../auth/auth_viewmodel.dart';
 
 enum Section {
   home('Inicio'),
@@ -14,19 +14,15 @@ enum Section {
 }
 
 class ShellViewModel extends ChangeNotifier {
-  ShellViewModel(this._pairing) {
-    _pairing.paired.addListener(notifyListeners);
+  ShellViewModel(this._auth) {
+    _auth.addListener(notifyListeners);
   }
 
-  final PairingRepository _pairing;
+  final AuthViewModel _auth;
   Section _active = Section.home;
 
   Section get active => _active;
-  bool get isPaired => _pairing.paired.value;
-
-  Future<void> pair() => _pairing.pair();
-
-  Future<void> unpair() => _pairing.unpair();
+  bool get isPaired => _auth.stage == AuthStage.loggedIn;
 
   void select(Section section) {
     _active = section;
@@ -35,7 +31,7 @@ class ShellViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _pairing.paired.removeListener(notifyListeners);
+    _auth.removeListener(notifyListeners);
     super.dispose();
   }
 }

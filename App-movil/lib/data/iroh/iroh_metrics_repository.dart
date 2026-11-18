@@ -1,27 +1,36 @@
 import 'dart:convert';
 
 import '../agent_metrics_repository.dart';
+import '../repositories/auth_repository.dart';
 import '../repositories/metrics_repository.dart';
 import 'iroh_connection.dart';
 
 export 'iroh_connection.dart' show IrohConnector, IrohLink;
 
-final _request = buildRawHttpRequest('GET', '/metrics');
-
 /// Pide `/metrics` al agente a través de un túnel iroh: la misma petición
 /// HTTP que [HttpMetricsRepository], enviada por un *stream* de iroh.
 class IrohMetricsRepository extends AgentMetricsRepository {
   IrohMetricsRepository(
-    String Function() endpointId, {
+    String Function() endpointId,
+    this._token, {
     IrohConnector? connector,
     IrohConnection? connection,
   }) : _connection = connection ?? IrohConnection(endpointId, connector: connector);
 
+  final String? Function() _token;
   final IrohConnection _connection;
 
   @override
   Future<Map<String, dynamic>> fetch() async {
-    final response = parseRawHttpResponse(await _connection.request(_request));
+    final request = buildRawHttpRequest('GET', '/metrics', token: _token());
+    final response = parseRawHttpResponse(await _connection.request(request));
+    if (response.status == 401) {
+      try {
+        throwIfSessionError(401, jsonDecode(response.body));
+      } on FormatException {
+        // Un 401 sin cuerpo de sesión se trata como cualquier otro código.
+      }
+    }
     if (response.status != 200) {
       throw AgentUnavailableException('El agente respondió con un formato inesperado');
     }

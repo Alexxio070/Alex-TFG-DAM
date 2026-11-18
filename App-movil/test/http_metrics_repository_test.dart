@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:sysmote/data/http/http_metrics_repository.dart';
+import 'package:sysmote/data/http/pinned_http_client.dart';
+import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 const _body = '''
@@ -30,8 +34,10 @@ void main() {
   test('loadInfo parsea las particiones y la RAM total del agente', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async {
-        expect(request.url.toString(), 'http://127.0.0.1:8443/metrics');
+        expect(request.url.toString(), 'https://127.0.0.1:8443/metrics');
         return http.Response(_body, 200);
       }),
     );
@@ -47,6 +53,8 @@ void main() {
   test('loadHistory parsea la muestra actual del agente', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async => http.Response(_body, 200)),
     );
 
@@ -61,6 +69,8 @@ void main() {
   test('una temperatura null en el agente se traduce a tempC null', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async => http.Response(_bodyWithoutTemp, 200)),
     );
 
@@ -74,6 +84,8 @@ void main() {
     var call = 0;
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async {
         final body = bodies[call];
         call++;
@@ -91,6 +103,8 @@ void main() {
     http.Request? captured;
     final repository = HttpMetricsRepository(
       () => '192.168.1.50:9000',
+      () => '',
+      () => null,
       client: MockClient((request) async {
         captured = request;
         return http.Response(_body, 200);
@@ -99,12 +113,14 @@ void main() {
 
     await repository.loadInfo();
 
-    expect(captured!.url.toString(), 'http://192.168.1.50:9000/metrics');
+    expect(captured!.url.toString(), 'https://192.168.1.50:9000/metrics');
   });
 
   test('un código distinto de 200 lanza AgentUnavailableException', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async => http.Response('error interno', 500)),
     );
 
@@ -114,6 +130,8 @@ void main() {
   test('un JSON malformado lanza AgentUnavailableException', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async => http.Response('no es json', 200)),
     );
 
@@ -123,6 +141,8 @@ void main() {
   test('un timeout lanza AgentUnavailableException', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async {
         await Future<void>.delayed(const Duration(seconds: 5));
         return http.Response(_body, 200);
@@ -135,9 +155,73 @@ void main() {
   test('un campo con un tipo inesperado lanza AgentUnavailableException', () async {
     final repository = HttpMetricsRepository(
       () => '127.0.0.1:8443',
+      () => '',
+      () => null,
       client: MockClient((request) async => http.Response('{"cpu_percent": "no es un número"}', 200)),
     );
 
     await expectLater(repository.loadHistory(), throwsA(isA<AgentUnavailableException>()));
+  });
+
+  test('manda el token de sesión como Bearer', () async {
+    http.Request? captured;
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      () => '',
+      () => 't0k3n',
+      client: MockClient((request) async {
+        captured = request;
+        return http.Response(_body, 200);
+      }),
+    );
+
+    await repository.loadInfo();
+
+    expect(captured!.headers['Authorization'], 'Bearer t0k3n');
+  });
+
+  test('sin token no manda la cabecera Authorization', () async {
+    http.Request? captured;
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      () => '',
+      () => null,
+      client: MockClient((request) async {
+        captured = request;
+        return http.Response(_body, 200);
+      }),
+    );
+
+    await repository.loadInfo();
+
+    expect(captured!.headers.containsKey('Authorization'), isFalse);
+  });
+
+  test('un 401 no_autenticado o desemparejado lanza la excepción de sesión', () async {
+    HttpMetricsRepository con(String error) => HttpMetricsRepository(
+          () => '127.0.0.1:8443',
+          () => '',
+          () => 't0k3n',
+          client: MockClient(
+            (_) async => http.Response('{"error": "$error", "mensaje": "x"}', 401),
+          ),
+        );
+
+    await expectLater(con('no_autenticado').loadInfo(), throwsA(isA<NotAuthenticatedException>()));
+    await expectLater(con('desemparejado').loadInfo(), throwsA(isA<UnpairedException>()));
+  });
+
+  test('un certificado que no coincide con la huella avisa de la huella', () async {
+    final repository = HttpMetricsRepository(
+      () => '127.0.0.1:8443',
+      () => '',
+      () => null,
+      client: MockClient((_) async => throw const HandshakeException('CERTIFICATE_VERIFY_FAILED')),
+    );
+
+    await expectLater(
+      repository.loadInfo(),
+      throwsA(isA<AgentUnavailableException>().having((e) => e.message, 'message', kFingerprintMismatchMessage)),
+    );
   });
 }
