@@ -1,6 +1,6 @@
 # Contrato de la API: seguridad (fase 3)
 
-**Estado: borrador para revisar.** Nada de esto está implementado. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
+**Estado: implementado en el agente** (rama `feature/agent`, 175 tests en verde el 18/11/2026); la app lo cumple contra un repositorio falso y todavía no tiene los clientes reales. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
 
 ## Emparejamiento y login son cosas distintas
 
@@ -40,8 +40,12 @@ Públicas (sin token): `GET /estado`, `POST /registro`, `POST /login` y `GET /lo
 **Para qué sirve:** crear la cuenta del agente la primera vez. Solo se usa una vez en la vida del agente, justo después de escanear el QR de configuración inicial. Solo funciona con el modo registro abierto y con el código de un solo uso.
 
 ```json
-{ "codigo": "K7QX-M2PD-9WTR-4HNB", "usuario": "alex", "contrasena": "..." }
+{ "codigo": "K7QX-M2PD-9WTR-4HNB", "usuario": "alex", "contrasena": "...", "dispositivo": "Pixel 8" }
 ```
+
+- `dispositivo` es opcional (por defecto `"Móvil"`).
+- El código se acepta sin guiones, en minúsculas y con `0`/`1` en lugar de `O`/`I`.
+- La contraseña debe tener como mínimo 5 caracteres, un número y una mayúscula.
 
 Respuesta `201`: igual que el login (devuelve ya una sesión).
 
@@ -49,7 +53,19 @@ Respuesta `201`: igual que el login (devuelve ya una sesión).
 { "token": "<token>", "usuario": "alex" }
 ```
 
-Errores: `403 codigo_invalido` (caducado, ya usado o inexistente), `403 registro_cerrado`, `422 contrasena_debil` (con `"motivos": [...]`).
+Errores: `422 contrasena_debil` (con `"motivos": [...]`) y tres `403` distintos, para que la app pueda decir qué ha pasado. El agente los decide en este orden:
+
+1. Si ya existe una cuenta: `registro_cerrado`.
+2. Si el código enviado coincide con uno guardado: ya usado, `codigo_invalido`; caducado, `codigo_caducado`; vigente, el registro sigue.
+3. Si no coincide con ninguno: si nunca se abrió el registro (no hay ningún código guardado), `registro_cerrado`; si hay códigos guardados (aunque sea uno solo, caducado), `codigo_invalido`.
+
+| `error` | `mensaje` |
+|---|---|
+| `registro_cerrado` | El registro no está abierto |
+| `codigo_caducado` | El código de registro ha caducado |
+| `codigo_invalido` | El código de registro no es válido |
+
+Un código caducado se conserva (solo su hash) hasta la siguiente «Configuración inicial» de la TUI, que borra los anteriores. Por eso el código de un registro ya reemplazado da `codigo_invalido`. La contraseña débil se comprueba después del código: un código caducado se detecta antes y no consume nada.
 
 El agente guarda la contraseña con Argon2 y cierra el modo registro al crear la cuenta.
 
@@ -88,7 +104,7 @@ Errores: `401 credenciales_invalidas`; `429 demasiados_intentos` con la cabecera
 { "estado": "caducada" }
 ```
 
-- `aprobada`: el token se entrega **una sola vez**; después la solicitud se borra.
+- `aprobada`: el token se entrega **una sola vez**; después la solicitud se borra. Lo genera el agente cuando la app consulta, no la TUI al aprobar, para no guardarlo en SQLite.
 - `caducada`: nadie decidió en 5 minutos. Hay que volver a iniciar sesión.
 - Un `id` desconocido devuelve `404 solicitud_desconocida`.
 
@@ -136,7 +152,7 @@ Todo error lleva el mismo cuerpo:
 | 401 | `no_autenticado` | Falta el token, es inválido, caducó o fue revocado | Borra el token y vuelve al login |
 | 401 | `desemparejado` | El usuario pulsó «Desemparejar» en la TUI | Borra dirección, huella, identificador iroh y token, y vuelve a la pantalla inicial de emparejamiento |
 | 401 | `credenciales_invalidas` | Usuario o contraseña incorrectos | Muestra el error en el login |
-| 403 | `codigo_invalido`, `registro_cerrado` | Registro | Mensaje en el diálogo de registro |
+| 403 | `codigo_invalido`, `codigo_caducado`, `registro_cerrado` | Registro | Mensaje específico en el diálogo de registro |
 | 422 | `peticion_invalida`, `contrasena_debil` | Cuerpo mal formado o contraseña floja | Muestra los motivos |
 | 429 | `demasiados_intentos` | Límite de intentos del login | Muestra la cuenta atrás con `espera_s` |
 | 5xx | `error_interno` | Fallo del agente | Aviso genérico con reintento |
@@ -146,7 +162,7 @@ El agente reconvierte los `422` por defecto de FastAPI a este formato.
 ## 5. Límite de intentos
 
 - **Por cuenta, no por IP:** a través de iroh todas las conexiones llegan desde `127.0.0.1`, así que limitar por IP no serviría.
-- A los **5 fallos seguidos** el login se bloquea: durante el bloqueo, cualquier `POST /login`, incluso con la contraseña correcta, devuelve `429` con el tiempo restante. Al terminar el bloqueo el contador vuelve a 0, y un login correcto también lo pone a 0.
+- Se permiten **5 intentos fallidos** seguidos: el 5.º todavía devuelve `401 credenciales_invalidas` y el **6.º ya está bloqueado**. Durante el bloqueo, cualquier `POST /login`, incluso con la contraseña correcta, devuelve `429` con el tiempo restante. Al terminar el bloqueo el contador vuelve a 0, y un login correcto también lo pone a 0.
 - **Duración del bloqueo** (en `~/.config/sysmote/config.toml`, `01` §6.2):
   - **Producción:** 10 minutos (valor por defecto).
   - **Testeo:** 2 minutos.
@@ -176,7 +192,7 @@ El agente reconvierte los `422` por defecto de FastAPI a este formato.
   5. Si nadie decide en **5 minutos**, la solicitud pasa a `caducada`.
 - **Móvil perdido:** «Cerrar todas las sesiones» en la TUI (§5.2 de `01`) elimina la sesión, y desde ese momento el login funciona sin confirmación.
 - El nombre del dispositivo lo envía la app en el login y es solo informativo: no es de fiar para decidir permisos.
-- La TUI y el agente se comunican por un canal local, no por HTTP, que este contrato no define.
+- La TUI y el agente se comunican solo por SQLite, no por HTTP: la TUI lee y escribe la tabla `solicitud_login` (`01` §6.2) y la consulta cada segundo mientras la subpestaña Seguridad está abierta.
 - **[Abierto]** Si sobra tiempo, se revisará cómo adaptarlo a varios ordenadores en una misma app.
 
 ## Desemparejar
@@ -218,7 +234,7 @@ Un URI, para que quepa en un QR legible desde la terminal: **[Decisión 5]**
 sysmote://emparejar?v=1&dir=192.168.1.20:8443&huella=<64 hex>&iroh=<id>&codigo=K7QX-M2PD-9WTR-4HNB
 ```
 
-- `v`: versión del formato. `dir`: dirección del agente en la red local. `iroh`: identificador iroh; es lo que identifica al agente en la conexión remota, así que debe ir en el QR en cuanto el modo iroh esté activo.
+- `v`: versión del formato. `dir`: dirección del agente en la red local. `iroh`: identificador iroh; es lo que identifica al agente en la conexión remota. Va **siempre** en el QR, porque el agente arranca el túnel iroh junto con el resto.
 - `codigo`: código de registro de **un solo uso**, 16 caracteres en base32 (unos 80 bits), con **caducidad de 10 minutos**. Solo aparece en el QR de configuración inicial.
 - El QR para volver a emparejar un móvil (reinstalación) no lleva `codigo`: tras escanearlo, la app fija la huella y pide el login.
 
