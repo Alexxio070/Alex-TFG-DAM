@@ -1,10 +1,19 @@
 """Comprueba el endpoint GET /metrics con datos reales de la máquina."""
 
+import pytest
 from fastapi.testclient import TestClient
 
+from sysmote.api.deps import requiere_sesion
 from sysmote.main import app
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def sin_login():
+    app.dependency_overrides[requiere_sesion] = lambda: None
+    yield
+    app.dependency_overrides.clear()
 
 
 def test_get_metrics_returns_real_data():

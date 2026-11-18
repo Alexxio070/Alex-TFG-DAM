@@ -13,7 +13,8 @@ import uvicorn
 from sysmote.iroh_tunnel import ALPN, Limits, _handle_connection, _serve, _tasks
 from sysmote.main import app
 
-_METRICS_REQUEST = b"GET /metrics HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n"
+# Ruta pública: desde la fase 3 `/metrics` exige sesión y el túnel no la tiene.
+_ESTADO_REQUEST = b"GET /estado HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n"
 
 
 @pytest.fixture
@@ -55,14 +56,14 @@ async def running_agent():
     await server_task
 
 
-async def test_tunnel_forwards_a_real_metrics_request(running_agent, open_stream):
+async def test_tunnel_forwards_a_real_request(running_agent, open_stream):
     stream = await open_stream(running_agent)
-    await stream.send().write_all(_METRICS_REQUEST)
+    await stream.send().write_all(_ESTADO_REQUEST)
     await stream.send().finish()
     reply = await stream.recv().read_to_end(1_000_000)
 
     assert reply.startswith(b"HTTP/1.1 200 OK")
-    assert b'"cpu_percent"' in reply
+    assert b'"api"' in reply
 
 
 async def test_tunnel_resets_the_stream_when_the_local_agent_is_down(open_stream):
@@ -80,7 +81,7 @@ async def test_tunnel_leaves_no_background_tasks_behind(running_agent, open_stre
     # de reenvío que debe desaparecer al terminar, no acumularse.
     for port in [running_agent] * 10 + [1] * 5:
         stream = await open_stream(port)
-        await stream.send().write_all(_METRICS_REQUEST)
+        await stream.send().write_all(_ESTADO_REQUEST)
         await stream.send().finish()
         try:
             await asyncio.wait_for(stream.recv().read_to_end(1_000_000), timeout=2)
@@ -164,9 +165,9 @@ async def _trickle(reader, writer):
         writer.close()
 
 
-async def _get_metrics(connection: iroh.Connection) -> bytes:
+async def _get_estado(connection: iroh.Connection) -> bytes:
     stream = await connection.open_bi()
-    await stream.send().write_all(_METRICS_REQUEST)
+    await stream.send().write_all(_ESTADO_REQUEST)
     await stream.send().finish()
     return await asyncio.wait_for(stream.recv().read_to_end(1_000_000), timeout=5)
 
@@ -184,8 +185,8 @@ async def test_tunnel_closes_the_oldest_connection_beyond_the_limit(lab, running
         await asyncio.sleep(0.05)
 
     assert "too many connections" in str(first.close_reason())
-    assert (await _get_metrics(second)).startswith(b"HTTP/1.1 200 OK")
-    assert (await _get_metrics(third)).startswith(b"HTTP/1.1 200 OK")
+    assert (await _get_estado(second)).startswith(b"HTTP/1.1 200 OK")
+    assert (await _get_estado(third)).startswith(b"HTTP/1.1 200 OK")
 
 
 async def test_tunnel_refuses_streams_beyond_the_limit(lab, start_local_server):
@@ -213,7 +214,7 @@ async def test_tunnel_frees_a_stream_slot_when_the_stream_ends(lab, running_agen
     connection = await lab.connect(server)
 
     for _ in range(10):
-        assert (await _get_metrics(connection)).startswith(b"HTTP/1.1 200 OK")
+        assert (await _get_estado(connection)).startswith(b"HTTP/1.1 200 OK")
 
 
 async def test_tunnel_resets_a_stream_that_stays_idle(lab, start_local_server):
@@ -277,5 +278,5 @@ async def test_tunnel_keeps_serving_after_an_unexpected_error(
 
     connection = await lab.connect(server)
 
-    assert (await _get_metrics(connection)).startswith(b"HTTP/1.1 200 OK")
+    assert (await _get_estado(connection)).startswith(b"HTTP/1.1 200 OK")
     assert "inesperado" in caplog.text
