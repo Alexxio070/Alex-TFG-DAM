@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 188 tests, todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 187 tests, todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -15,7 +15,7 @@ cd agent && .venv/bin/pytest -q
 | [`test_metrics.py`](../../agent/tests/test_metrics.py) | 1 | El endpoint `GET /metrics` completo (con el login saltado) | Integración |
 | [`test_metrics_repository.py`](../../agent/tests/test_metrics_repository.py) | 6 | El repositorio de métricas, con `psutil` simulado | Unitario |
 | [`test_tui.py`](../../agent/tests/test_tui.py) | 6 | La navegación de la TUI `sysmote`, sin terminal real | Interfaz (arnés de Textual) |
-| [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 10 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
+| [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 9 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
 | [`test_iroh_secret_key.py`](../../agent/tests/test_iroh_secret_key.py) | 3 | La clave secreta del túnel, que fija el identificador iroh | Unitario |
 | [`test_database.py`](../../agent/tests/test_database.py) | 4 | La conexión a SQLite: permisos, claves foráneas y tablas | Unitario |
 | [`test_auth_repositories.py`](../../agent/tests/test_auth_repositories.py) | 15 | Repositorios de usuario, sesión, intento de login y solicitud de login | Unitario (SQLite en memoria) |
@@ -66,12 +66,11 @@ Usa el arnés de pruebas sin terminal de Textual.
 
 ## `test_iroh_tunnel.py`: túnel iroh
 
-Prueba de concepto del túnel: cliente y servidor iroh viven en el mismo proceso y se conectan por sus direcciones directas en loopback, sin red ni relés. Los tests dependen del paquete `iroh` instalado en el entorno. La fixture `open_stream` monta los dos `Endpoint` y devuelve un flujo hacia el túnel, de modo que cada test solo escribe lo que envía y lo que espera recibir.
+Túnel real sobre QUIC: cliente y servidor iroh viven en el mismo proceso y se conectan por sus direcciones directas en loopback, sin red ni relés. Los tests dependen del paquete `iroh` instalado en el entorno. La clase `_Lab` monta los `Endpoint` del túnel y de los clientes y los cierra al terminar cada test. El reenvío en los dos sentidos no tiene un test propio: lo comprueban todos los que hacen una petición real.
 
 | Test | Qué comprueba | Qué fallo detecta |
 |---|---|---|
 | `test_tunnel_resets_the_stream_when_the_local_agent_is_down` | Si nada escucha en el puerto local, el flujo se cierra enseguida con un reset, sin quedarse colgado hasta un timeout | Que el cliente espere sin fin cuando el agente real está caído |
-| `test_tunnel_forwards_a_real_request` | Una petición HTTP real a `/estado` (ruta pública) a través del túnel contra el agente en marcha responde `HTTP/1.1 200 OK` con `"api"` | Que el túnel deje de reenviar datos entre el flujo QUIC y el puerto local (en los dos sentidos). Desde la fase 3 se usa `/estado` porque `/metrics` exige sesión |
 | `test_tunnel_leaves_no_background_tasks_behind` | Tras 15 peticiones (10 con el agente en marcha y 5 con él caído) no queda ninguna tarea de reenvío viva | Que las tareas del túnel se acumulen con el uso |
 | `test_tunnel_closes_the_oldest_connection_beyond_the_limit` | Con un máximo de 2 conexiones, la tercera hace que se cierre la más antigua y las otras dos siguen respondiendo | Que el túnel acepte conexiones sin límite |
 | `test_tunnel_refuses_streams_beyond_the_limit` | Con un máximo de 2 flujos por conexión, el tercero se resetea y los dos primeros siguen abiertos | Que una conexión pueda abrir flujos sin límite |
