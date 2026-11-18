@@ -17,7 +17,6 @@ API_VERSION = 1
 CADUCIDAD_SOLICITUD = timedelta(minutes=5)
 CADUCIDAD_CODIGO = timedelta(minutes=10)
 ALFABETO_CODIGO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-DISPOSITIVO_POR_DEFECTO = "Móvil"
 
 
 def _ahora() -> datetime:
@@ -30,14 +29,11 @@ def hash_codigo(codigo: str) -> str:
     return hashlib.sha256(normalizado.encode()).hexdigest()
 
 
-def _sesion_vigente(sesion: Sesion | None) -> Sesion | None:
+def sesion_activa(connection: sqlite3.Connection) -> Sesion | None:
+    sesion = sesion_repository.obtener_activa(connection)
     if sesion is None or token_service.esta_caducada(sesion.ultimo_acceso):
         return None
     return sesion
-
-
-def _sesion_activa_vigente(connection: sqlite3.Connection) -> Sesion | None:
-    return _sesion_vigente(sesion_repository.obtener_activa(connection))
 
 
 def _abrir_sesion(connection: sqlite3.Connection, usuario_id: int, dispositivo: str) -> str:
@@ -69,12 +65,12 @@ def estado(connection: sqlite3.Connection) -> dict:
         "api": API_VERSION,
         "configurado": configurado,
         "registro_abierto": registro_abierto,
-        "sesion_activa": _sesion_activa_vigente(connection) is not None,
+        "sesion_activa": sesion_activa(connection) is not None,
     }
 
 
 def registrar(
-    connection: sqlite3.Connection, codigo: str, usuario: str, contrasena: str, dispositivo: str | None
+    connection: sqlite3.Connection, codigo: str, usuario: str, contrasena: str, dispositivo: str
 ) -> dict:
     ahora = _ahora().isoformat()
     cerrado = AuthError("registro_cerrado", "El registro no está abierto")
@@ -94,7 +90,7 @@ def registrar(
 
     nuevo = usuario_repository.crear(connection, usuario, password_service.hashear(contrasena))
     codigo_registro_repository.marcar_usado(connection, registro.id)
-    token = _abrir_sesion(connection, nuevo.id, dispositivo or DISPOSITIVO_POR_DEFECTO)
+    token = _abrir_sesion(connection, nuevo.id, dispositivo)
     return {"token": token, "usuario": nuevo.nombre_usuario}
 
 
@@ -109,7 +105,7 @@ def login(
     limite_service.registrar(connection, usuario, cuenta.id, origen, exito=True)
 
     solicitud_login_repository.borrar_de_usuario(connection, cuenta.id)
-    activa = _sesion_activa_vigente(connection)
+    activa = sesion_activa(connection)
     if activa is None:
         return {"token": _abrir_sesion(connection, cuenta.id, dispositivo), "usuario": cuenta.nombre_usuario}
 
@@ -178,12 +174,8 @@ def desemparejar(connection: sqlite3.Connection, sesion: Sesion) -> None:
     sesion_repository.revocar(connection, sesion.id, "desemparejado")
 
 
-def sesion_activa(connection: sqlite3.Connection) -> Sesion | None:
-    return _sesion_activa_vigente(connection)
-
-
 def desemparejar_sesion_activa(connection: sqlite3.Connection) -> None:
-    activa = _sesion_activa_vigente(connection)
+    activa = sesion_activa(connection)
     if activa is not None:
         desemparejar(connection, activa)
 

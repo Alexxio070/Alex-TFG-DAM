@@ -46,7 +46,7 @@ def _generar() -> tuple[bytes, bytes]:
 def asegurar_certificado() -> tuple[Path, Path]:
     CONFIG_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(CONFIG_DIR, 0o700)
-    if not (CERT_PATH.exists() and KEY_PATH.exists()):
+    if not certificado_existe():
         cert_pem, key_pem = _generar()
         CERT_PATH.unlink(missing_ok=True)
         KEY_PATH.unlink(missing_ok=True)

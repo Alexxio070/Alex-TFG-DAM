@@ -3,6 +3,12 @@ from datetime import UTC, datetime
 
 from sysmote.models.auth import Usuario
 
+_COLUMNS = "id, nombre_usuario, hash_contrasena, creado_en"
+
+
+def _to_usuario(row: tuple) -> Usuario:
+    return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3])
+
 
 def crear(connection: sqlite3.Connection, nombre_usuario: str, hash_contrasena: str) -> Usuario:
     creado_en = datetime.now(UTC).isoformat()
@@ -15,25 +21,18 @@ def crear(connection: sqlite3.Connection, nombre_usuario: str, hash_contrasena: 
 
 
 def obtener_por_nombre(connection: sqlite3.Connection, nombre_usuario: str) -> Usuario | None:
-    row = connection.execute(
-        "SELECT id, nombre_usuario, hash_contrasena, creado_en FROM usuario WHERE nombre_usuario = ?",
-        (nombre_usuario,),
-    ).fetchone()
-    return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3]) if row else None
+    row = connection.execute(f"SELECT {_COLUMNS} FROM usuario WHERE nombre_usuario = ?", (nombre_usuario,)).fetchone()
+    return _to_usuario(row) if row else None
 
 
 def obtener_primero(connection: sqlite3.Connection) -> Usuario | None:
-    row = connection.execute(
-        "SELECT id, nombre_usuario, hash_contrasena, creado_en FROM usuario ORDER BY id LIMIT 1"
-    ).fetchone()
-    return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3]) if row else None
+    row = connection.execute(f"SELECT {_COLUMNS} FROM usuario ORDER BY id LIMIT 1").fetchone()
+    return _to_usuario(row) if row else None
 
 
 def obtener_por_id(connection: sqlite3.Connection, usuario_id: int) -> Usuario | None:
-    row = connection.execute(
-        "SELECT id, nombre_usuario, hash_contrasena, creado_en FROM usuario WHERE id = ?", (usuario_id,)
-    ).fetchone()
-    return Usuario(id=row[0], nombre_usuario=row[1], hash_contrasena=row[2], creado_en=row[3]) if row else None
+    row = connection.execute(f"SELECT {_COLUMNS} FROM usuario WHERE id = ?", (usuario_id,)).fetchone()
+    return _to_usuario(row) if row else None
 
 
 def existe_alguno(connection: sqlite3.Connection) -> bool:

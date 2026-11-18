@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+DISPOSITIVO_POR_DEFECTO = "Móvil"
+
 
 class Usuario(BaseModel):
     id: int
@@ -49,10 +51,10 @@ class RegistroRequest(BaseModel):
     codigo: str = Field(min_length=1)
     usuario: str = Field(min_length=1)
     contrasena: str = Field(min_length=1)
-    dispositivo: str | None = None
+    dispositivo: str = DISPOSITIVO_POR_DEFECTO
 
 
 class LoginRequest(BaseModel):
     usuario: str = Field(min_length=1)
     contrasena: str = Field(min_length=1)
-    dispositivo: str = "Móvil"
+    dispositivo: str = DISPOSITIVO_POR_DEFECTO
