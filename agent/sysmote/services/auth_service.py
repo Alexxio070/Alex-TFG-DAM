@@ -166,6 +166,11 @@ def autenticar(connection: sqlite3.Connection, token: str | None) -> Sesion:
     return sesion
 
 
+def datos_sesion(connection: sqlite3.Connection, sesion: Sesion) -> dict:
+    cuenta = usuario_repository.obtener_por_id(connection, sesion.usuario_id)
+    return {"usuario": cuenta.nombre_usuario, "dispositivo": sesion.dispositivo, "creada": sesion.creado_en}
+
+
 def cerrar_sesion(connection: sqlite3.Connection, sesion: Sesion) -> None:
     sesion_repository.revocar(connection, sesion.id, "logout")
 

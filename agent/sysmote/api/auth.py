@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 
 from sysmote.api.deps import get_connection, requiere_sesion
 from sysmote.models.auth import LoginRequest, RegistroRequest, Sesion
-from sysmote.repositories import usuario_repository
 from sysmote.services import auth_service
 
 publico = APIRouter()
@@ -56,8 +55,7 @@ def post_desemparejar(
 def get_sesion(
     sesion: Sesion = Depends(requiere_sesion), connection: sqlite3.Connection = Depends(get_connection)
 ) -> dict:
-    cuenta = usuario_repository.obtener_por_id(connection, sesion.usuario_id)
-    return {"usuario": cuenta.nombre_usuario, "dispositivo": sesion.dispositivo, "creada": sesion.creado_en}
+    return auth_service.datos_sesion(connection, sesion)
 
 
 @protegido.get("/capacidades")
