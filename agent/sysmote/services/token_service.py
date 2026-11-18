@@ -13,6 +13,5 @@ def hashear(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def esta_caducada(ultimo_acceso: str, ahora: datetime | None = None) -> bool:
-    ahora = ahora or datetime.now(UTC)
-    return ahora - datetime.fromisoformat(ultimo_acceso) > INACTIVIDAD_MAXIMA
+def esta_caducada(ultimo_acceso: str) -> bool:
+    return datetime.now(UTC) - datetime.fromisoformat(ultimo_acceso) > INACTIVIDAD_MAXIMA

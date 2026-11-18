@@ -28,14 +28,6 @@ def obtener(connection: sqlite3.Connection, id: str) -> SolicitudLogin | None:
     return _to_solicitud(row) if row else None
 
 
-def obtener_pendiente_de_usuario(connection: sqlite3.Connection, usuario_id: int) -> SolicitudLogin | None:
-    row = connection.execute(
-        f"SELECT {_COLUMNS} FROM solicitud_login WHERE usuario_id = ? AND estado = 'pendiente'",
-        (usuario_id,),
-    ).fetchone()
-    return _to_solicitud(row) if row else None
-
-
 def obtener_pendiente(connection: sqlite3.Connection) -> SolicitudLogin | None:
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM solicitud_login WHERE estado = 'pendiente' ORDER BY creada DESC LIMIT 1"

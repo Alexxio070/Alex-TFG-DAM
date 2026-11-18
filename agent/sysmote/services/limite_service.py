@@ -27,7 +27,7 @@ def espera_restante(intentos: list[IntentoLogin], ahora: datetime, duracion: tim
 
 
 def comprobar(connection: sqlite3.Connection, nombre_usuario: str) -> None:
-    intentos = intento_login_repository.listar_recientes_de_usuario(connection, nombre_usuario, desde="")
+    intentos = intento_login_repository.listar_de_usuario(connection, nombre_usuario)
     espera = espera_restante(intentos, datetime.now(UTC), config_service.duracion_bloqueo())
     if espera:
         raise AuthError("demasiados_intentos", "Demasiados intentos fallidos", espera_s=espera)

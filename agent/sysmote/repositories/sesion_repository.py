@@ -46,13 +46,6 @@ def obtener_por_hash_token(connection: sqlite3.Connection, hash_token: str) -> S
     return _to_sesion(row) if row else None
 
 
-def obtener_activa_de_usuario(connection: sqlite3.Connection, usuario_id: int) -> Sesion | None:
-    row = connection.execute(
-        f"SELECT {_COLUMNS} FROM sesion WHERE usuario_id = ? AND revocada = 0", (usuario_id,)
-    ).fetchone()
-    return _to_sesion(row) if row else None
-
-
 def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM sesion WHERE revocada = 0 ORDER BY id DESC LIMIT 1"

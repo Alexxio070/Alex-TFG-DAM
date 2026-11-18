@@ -53,15 +53,6 @@ def test_sesion_se_crea_activa_y_se_encuentra_por_token(connection):
     assert encontrada.id == sesion.id
 
 
-def test_obtener_activa_de_usuario_ignora_las_revocadas(connection):
-    usuario = usuario_repository.crear(connection, "alex", "hash-falso")
-    sesion = sesion_repository.crear(connection, usuario.id, "hash-token", "Pixel 8")
-    assert sesion_repository.obtener_activa_de_usuario(connection, usuario.id).id == sesion.id
-
-    sesion_repository.revocar(connection, sesion.id, "logout")
-    assert sesion_repository.obtener_activa_de_usuario(connection, usuario.id) is None
-
-
 def test_revocar_guarda_el_motivo(connection):
     usuario = usuario_repository.crear(connection, "alex", "hash-falso")
     sesion = sesion_repository.crear(connection, usuario.id, "hash-token", "Pixel 8")
@@ -96,20 +87,14 @@ def test_intento_login_se_registra_y_se_lista(connection):
     intento_login_repository.registrar(connection, usuario.id, "alex", "local", exito=False)
     intento_login_repository.registrar(connection, usuario.id, "alex", "local", exito=True)
 
-    recientes = intento_login_repository.listar_recientes_de_usuario(connection, "alex", desde="2020-01-01")
-    assert [i.exito for i in recientes] == [False, True]
-
-
-def test_listar_recientes_de_usuario_respeta_la_fecha_desde(connection):
-    intento_login_repository.registrar(connection, None, "alex", "local", exito=False)
-    recientes = intento_login_repository.listar_recientes_de_usuario(connection, "alex", desde="2999-01-01")
-    assert recientes == []
+    intentos = intento_login_repository.listar_de_usuario(connection, "alex")
+    assert [i.exito for i in intentos] == [False, True]
 
 
 def test_borrar_de_usuario_quita_sus_intentos(connection):
     intento_login_repository.registrar(connection, None, "alex", "local", exito=False)
     intento_login_repository.borrar_de_usuario(connection, "alex")
-    assert intento_login_repository.listar_recientes_de_usuario(connection, "alex", desde="2020-01-01") == []
+    assert intento_login_repository.listar_de_usuario(connection, "alex") == []
 
 
 def test_solicitud_login_se_crea_pendiente_y_se_obtiene(connection):
@@ -118,7 +103,6 @@ def test_solicitud_login_se_crea_pendiente_y_se_obtiene(connection):
 
     encontrada = solicitud_login_repository.obtener(connection, "id-aleatorio")
     assert encontrada.estado == "pendiente"
-    assert solicitud_login_repository.obtener_pendiente_de_usuario(connection, usuario.id).id == "id-aleatorio"
 
 
 def test_actualizar_estado_de_solicitud(connection):
@@ -128,7 +112,6 @@ def test_actualizar_estado_de_solicitud(connection):
     solicitud_login_repository.actualizar_estado(connection, "id-aleatorio", "aprobada")
 
     assert solicitud_login_repository.obtener(connection, "id-aleatorio").estado == "aprobada"
-    assert solicitud_login_repository.obtener_pendiente_de_usuario(connection, usuario.id) is None
 
 
 def test_borrar_solicitud(connection):

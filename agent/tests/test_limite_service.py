@@ -91,7 +91,7 @@ def test_reiniciar_levanta_el_bloqueo(connection):
     limite_service.reiniciar(connection, "alex")
 
     limite_service.comprobar(connection, "alex")
-    assert intento_login_repository.listar_recientes_de_usuario(connection, "alex", desde="") == []
+    assert intento_login_repository.listar_de_usuario(connection, "alex") == []
 
 
 def test_duracion_por_defecto_son_10_minutos():

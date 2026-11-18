@@ -13,7 +13,3 @@ def verificar(hash_contrasena: str, contrasena: str) -> bool:
         return _hasher.verify(hash_contrasena, contrasena)
     except (VerificationError, InvalidHashError):
         return False
-
-
-def necesita_rehash(hash_contrasena: str) -> bool:
-    return _hasher.check_needs_rehash(hash_contrasena)

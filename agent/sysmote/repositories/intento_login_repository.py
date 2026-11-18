@@ -27,13 +27,11 @@ def registrar(
     )
 
 
-def listar_recientes_de_usuario(
-    connection: sqlite3.Connection, nombre_usuario: str, desde: str
-) -> list[IntentoLogin]:
+def listar_de_usuario(connection: sqlite3.Connection, nombre_usuario: str) -> list[IntentoLogin]:
     rows = connection.execute(
         "SELECT id, usuario_id, nombre_usuario, origen, fecha, exito FROM intento_login "
-        "WHERE nombre_usuario = ? AND fecha >= ? ORDER BY fecha ASC",
-        (nombre_usuario, desde),
+        "WHERE nombre_usuario = ? ORDER BY fecha ASC",
+        (nombre_usuario,),
     ).fetchall()
     return [
         IntentoLogin(id=r[0], usuario_id=r[1], nombre_usuario=r[2], origen=r[3], fecha=r[4], exito=bool(r[5]))
