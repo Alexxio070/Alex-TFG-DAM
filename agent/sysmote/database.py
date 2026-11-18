@@ -1,3 +1,5 @@
+"""Conexión a la base de datos SQLite del agente, con el esquema de `schema.sql` aplicado."""
+
 import os
 import sqlite3
 from pathlib import Path
@@ -8,6 +10,10 @@ _SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema.sql"
 
 
 def connect() -> sqlite3.Connection:
+    """Abre la base de datos, creándola con permisos 0600 si no existe, y aplica el esquema.
+
+    El esquema usa `CREATE TABLE IF NOT EXISTS`, así que aplicarlo en cada conexión es inocuo.
+    """
     db_path = rutas.DB_PATH
     db_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(db_path.parent, 0o700)

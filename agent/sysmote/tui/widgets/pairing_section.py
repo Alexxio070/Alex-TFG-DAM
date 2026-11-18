@@ -48,6 +48,8 @@ class PairingSection(Container):
         self.set_interval(POLL_SEGUNDOS, self._sondear)
 
     def _sondear(self) -> None:
+        # La TUI no recibe avisos de la API: cada segundo vuelve a leer SQLite, y solo para la
+        # pestaña que se está viendo.
         if not self.display:
             return
         dispositivo = self.query_one(DeviceTab)

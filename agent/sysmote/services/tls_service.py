@@ -1,3 +1,8 @@
+"""Certificado TLS autofirmado del agente y su huella, para el HTTPS de USB y red local.
+
+La app guarda la huella al emparejar y solo confía en ese certificado (certificate pinning).
+"""
+
 import hashlib
 import os
 from datetime import UTC, datetime, timedelta
@@ -14,6 +19,7 @@ _VALIDEZ = timedelta(days=3650)
 
 
 def _escribir_privado(path: Path, contenido: bytes) -> None:
+    # Con 0600 desde la creación, para que la clave nunca sea legible por otros usuarios.
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "wb") as archivo:
         archivo.write(contenido)
@@ -43,6 +49,10 @@ def _generar() -> tuple[bytes, bytes]:
 
 
 def asegurar_certificado() -> tuple[Path, Path]:
+    """Genera el certificado y su clave (EC P-256, 10 años) si no existen, y devuelve sus rutas.
+
+    Si ya existen no los toca: regenerarlos cambiaría la huella y la app rechazaría la conexión.
+    """
     carpeta = rutas.CERT_PATH.parent
     carpeta.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(carpeta, 0o700)
@@ -56,9 +66,11 @@ def asegurar_certificado() -> tuple[Path, Path]:
 
 
 def certificado_existe() -> bool:
+    """Indica si ya existen el certificado y su clave."""
     return rutas.CERT_PATH.exists() and rutas.KEY_PATH.exists()
 
 
 def huella_sha256() -> str:
+    """Devuelve la huella del certificado: SHA-256 del DER en hexadecimal minúscula (64 caracteres)."""
     certificado = x509.load_pem_x509_certificate(rutas.CERT_PATH.read_bytes())
     return hashlib.sha256(certificado.public_bytes(serialization.Encoding.DER)).hexdigest()

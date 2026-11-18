@@ -1,3 +1,5 @@
+"""Rutas de autenticación por HTTP: códigos de estado y cuerpos del contrato de la fase 3."""
+
 from datetime import UTC, datetime, timedelta
 
 import pytest

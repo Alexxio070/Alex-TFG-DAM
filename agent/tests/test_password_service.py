@@ -1,3 +1,5 @@
+"""Hash de contraseñas con Argon2: lo que el resto de tests no comprueba."""
+
 from sysmote.services import password_service
 
 

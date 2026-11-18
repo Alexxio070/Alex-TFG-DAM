@@ -1,3 +1,5 @@
+"""Cálculo del bloqueo por intentos fallidos y su duración configurable."""
+
 from datetime import UTC, datetime, timedelta
 
 from sysmote import rutas

@@ -1,3 +1,5 @@
+"""Conexión a SQLite: permisos del archivo y claves foráneas activas."""
+
 import stat
 
 from sysmote import database, rutas

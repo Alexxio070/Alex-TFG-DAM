@@ -1,3 +1,5 @@
+"""Datos de emparejamiento: dirección, URI del contrato y QR en texto (comprobado con un lector real)."""
+
 import re
 import shutil
 import subprocess

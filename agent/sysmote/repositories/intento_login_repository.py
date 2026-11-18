@@ -1,3 +1,5 @@
+"""Acceso a la tabla `intento_login`: el registro de intentos de login que usa el límite de intentos."""
+
 import sqlite3
 from datetime import UTC, datetime
 
@@ -11,6 +13,7 @@ def registrar(
     origen: str,
     exito: bool,
 ) -> IntentoLogin:
+    """Guarda un intento con la fecha actual. `usuario_id` es `None` si el usuario no existe."""
     fecha = datetime.now(UTC).isoformat()
     cursor = connection.execute(
         "INSERT INTO intento_login (usuario_id, nombre_usuario, origen, fecha, exito) VALUES (?, ?, ?, ?, ?)",
@@ -28,6 +31,7 @@ def registrar(
 
 
 def listar_de_usuario(connection: sqlite3.Connection, nombre_usuario: str) -> list[IntentoLogin]:
+    """Devuelve los intentos con ese nombre de usuario, del más antiguo al más reciente."""
     rows = connection.execute(
         "SELECT id, usuario_id, nombre_usuario, origen, fecha, exito FROM intento_login "
         "WHERE nombre_usuario = ? ORDER BY fecha ASC",
@@ -40,5 +44,6 @@ def listar_de_usuario(connection: sqlite3.Connection, nombre_usuario: str) -> li
 
 
 def borrar_de_usuario(connection: sqlite3.Connection, nombre_usuario: str) -> None:
+    """Borra los intentos de ese nombre de usuario (reinicio manual desde la TUI)."""
     connection.execute("DELETE FROM intento_login WHERE nombre_usuario = ?", (nombre_usuario,))
     connection.commit()

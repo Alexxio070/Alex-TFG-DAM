@@ -1,3 +1,5 @@
+"""Tokens de sesión: formato, aleatoriedad, hash y caducidad de 30 días."""
+
 import re
 from datetime import UTC, datetime, timedelta
 

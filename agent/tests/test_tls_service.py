@@ -1,3 +1,5 @@
+"""Certificado TLS: permisos, que no se regenere y que la huella sea la del certificado."""
+
 import hashlib
 import stat
 

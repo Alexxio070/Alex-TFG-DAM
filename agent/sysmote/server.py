@@ -1,4 +1,9 @@
-"""Servidores del agente: HTTPS para USB/LAN, HTTP interno para el túnel iroh y el túnel iroh."""
+"""Servidores del agente: HTTPS para USB/LAN, HTTP interno para el túnel iroh y el túnel iroh.
+
+Los tres sirven la misma app de FastAPI (`main.py`) y corren en un hilo aparte con su propio
+bucle de eventos, para no bloquear la TUI ni quitarle el control de Ctrl+C. Por iroh no hace falta
+TLS propio: iroh ya cifra la conexión y autentica al agente por su identificador.
+"""
 
 import asyncio
 import threading
@@ -13,6 +18,17 @@ PUERTO_INTERNO = 8444
 
 
 class Servidores:
+    """Arranca, para y vigila los servidores del agente.
+
+    Crear el objeto genera el certificado TLS si falta, pero no abre ningún puerto: eso lo hace
+    `iniciar()`. Si un servidor falla (por ejemplo, un puerto ocupado) los demás siguen.
+
+    Args:
+        puerto_https: puerto del HTTPS, que escucha en todas las interfaces (USB y red local).
+        puerto_interno: puerto del HTTP interno, solo en `127.0.0.1`; el túnel iroh reenvía aquí.
+        con_iroh: si arrancar también el túnel iroh (los tests lo desactivan).
+    """
+
     def __init__(
         self,
         puerto_https: int = pairing_service.PUERTO_HTTPS,
@@ -41,10 +57,12 @@ class Servidores:
         self._parar: asyncio.Event | None = None
 
     def iniciar(self) -> None:
+        """Arranca los servidores en un hilo aparte y vuelve enseguida."""
         self._hilo = threading.Thread(target=lambda: asyncio.run(self._servir()), daemon=True)
         self._hilo.start()
 
     def detener(self) -> None:
+        """Para los servidores y espera a que el hilo termine (como mucho 5 segundos)."""
         if self._hilo is None:
             return
         if self._bucle is not None and self._parar is not None:
@@ -52,6 +70,11 @@ class Servidores:
         self._hilo.join(timeout=5)
 
     def estado(self) -> dict[str, str]:
+        """Devuelve el estado de cada servidor para mostrarlo en la TUI.
+
+        Valores: `arrancando`, `activo` o `error: …`. Para iroh, `en marcha` significa que la tarea
+        del túnel está viva, no que se haya confirmado la conexión con la red de iroh.
+        """
         resultado = {
             "https": self._estado_uvicorn("https", self._https),
             "interno": self._estado_uvicorn("interno", self._interno),

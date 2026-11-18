@@ -1,3 +1,5 @@
+"""Lógica de autenticación: registro, login, solicitudes de login, sesiones, límite y acciones de la TUI."""
+
 import re
 from datetime import UTC, datetime, timedelta
 
