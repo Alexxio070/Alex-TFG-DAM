@@ -15,7 +15,7 @@ import uvicorn
 from sysmote.iroh_tunnel import run as run_tunnel
 from sysmote.main import app
 
-LOCAL_PORT = 8443
+LOCAL_PORT = 8444  # HTTP interno solo en 127.0.0.1: iroh ya cifra, el 8443 queda para HTTPS (USB/LAN)
 SECRET_KEY_PATH = Path.home() / ".local" / "share" / "sysmote" / "iroh_secret_key_poc.bin"
 
 

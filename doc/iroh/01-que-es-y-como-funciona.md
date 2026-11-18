@@ -34,7 +34,7 @@ Este comportamiento se verificó de verdad en la fase 2: ver `04-pruebas.md`, ca
 
 ## 4. Qué cifra y qué no
 
-Cada `Connection` va sobre QUIC, que cifra con TLS 1.3 de serie — el tráfico nunca viaja en claro, ni por el relé ni directo. El relé ve el tráfico cifrado pero no puede leerlo. Esto es independiente del TLS propio de Sysmote (certificado autofirmado, fase 3): son dos capas distintas, una la pone iroh, la otra la pone la aplicación.
+Cada `Connection` va sobre QUIC, que cifra con TLS 1.3 de serie — el tráfico nunca viaja en claro, ni por el relé ni directo. El relé ve el tráfico cifrado pero no puede leerlo. Sysmote no añade un TLS propio encima por iroh: el cifrado y la autenticación del agente (por su clave pública, el `EndpointId`) los pone iroh. El TLS propio de Sysmote (certificado autofirmado, fase 3) solo se usa en la conexión por red local.
 
 ## 5. Patrón usado en Sysmote: dumbpipe
 
