@@ -135,6 +135,8 @@ Detalle técnico: `01` §5 (Seguridad).
 
 **Lo que no se recorta:** el login y el TLS.
 
+**Estado (18/11/2026):** el agente y la parte de la app (login, registro, token en el Keystore, huella fijada, «Cerrar sesión» y «Desemparejar») están implementados y la app se ha probado contra el agente real por HTTPS. Falta probarla en un móvil físico y por iroh, y el endurecimiento del túnel iroh está en curso.
+
 ---
 
 ### Fase 4 — Terminal (v0.2) 🔴

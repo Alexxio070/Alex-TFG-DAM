@@ -1,6 +1,6 @@
 # Contrato de la API: seguridad (fase 3)
 
-**Estado: implementado en el agente** (rama `feature/agent`, 175 tests en verde el 18/11/2026); la app lo cumple contra un repositorio falso y todavía no tiene los clientes reales. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
+**Estado: implementado en el agente y en la app** (18/11/2026). La app, con sus clientes reales por HTTPS con huella fijada y por iroh, se ha probado contra el agente real por HTTPS; falta probarla en un móvil físico y por iroh. Define lo que el agente y la app se prometen entre sí en la fase 3; el diseño de fondo (flujo de registro, Argon2, amenazas) está en `01-memoria-tecnica.md` §5, y las tablas en §6.2. Los puntos marcados como **[Decisión]** son propuestas a confirmar y los marcados como **[Abierto]** se deciden más adelante; se recogen al final.
 
 ## Emparejamiento y login son cosas distintas
 
