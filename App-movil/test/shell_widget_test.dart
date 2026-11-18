@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fakes/fake_auth_repository.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
@@ -70,5 +72,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Conectado'), findsNothing);
+  });
+
+  testWidgets('sin sesión, la app solo muestra el login', (tester) async {
+    await tester.pumpWidget(app(authRepository: FakeAuthRepository()));
+    await tester.pump();
+
+    expect(find.text('Iniciar sesión'), findsOneWidget);
+    expect(find.bySemanticsLabel('Abrir menú'), findsNothing);
+  });
+
+  testWidgets('al iniciar sesión pasa a la app y al cerrarla vuelve al login', (tester) async {
+    await tester.pumpWidget(app(authRepository: FakeAuthRepository()));
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField).at(0), 'alex');
+    await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
+    await tester.enterText(find.byType(TextField).at(2), 'Pixel 8');
+    await tester.tap(find.text('Entrar'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.bySemanticsLabel('Abrir menú'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('Abrir menú'));
+    await pumpFor(tester, 500);
+    await tester.tap(find.bySemanticsLabel('Ajustes'));
+    await pumpFor(tester, 600);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -3000));
+    await pumpFor(tester, 300);
+    await tester.tap(find.text('Cerrar sesión'));
+    await pumpFor(tester, 300);
+
+    expect(find.text('Iniciar sesión'), findsOneWidget);
   });
 }

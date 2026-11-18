@@ -2,8 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/metrics.dart';
+import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/features/auth/auth_viewmodel.dart';
 import 'package:sysmote/features/metrics/metrics_viewmodel.dart';
+
+import 'fakes/fake_auth_repository.dart';
+import 'fakes/in_memory_token_storage.dart';
 
 class _FlakyMetricsRepository implements MetricsRepository {
   bool shouldFail = true;
@@ -49,10 +54,28 @@ class _SlowMetricsRepository implements MetricsRepository {
 
 const _info = MachineInfo(ramTotalGb: 16, partitions: []);
 
+AuthViewModel _auth() =>
+    AuthViewModel(FakeAuthRepository.loggedIn(), InMemoryTokenStorage()..write('token-fake'));
+
+class _SessionLostRepository implements MetricsRepository {
+  _SessionLostRepository(this.error);
+
+  final Object error;
+
+  @override
+  Future<MachineInfo> loadInfo() async => throw error;
+
+  @override
+  Future<List<MetricSample>> loadHistory() async => throw error;
+
+  @override
+  Stream<MetricSample> watch() => const Stream.empty();
+}
+
 void main() {
   test('pasa a error si el repositorio falla al arrancar', () async {
     final repository = _FlakyMetricsRepository();
-    final vm = MetricsViewModel(repository);
+    final vm = MetricsViewModel(repository, _auth());
 
     vm.start();
     await Future<void>.delayed(Duration.zero);
@@ -63,7 +86,7 @@ void main() {
 
   test('retry() se recupera cuando el agente vuelve a responder', () async {
     final repository = _FlakyMetricsRepository();
-    final vm = MetricsViewModel(repository);
+    final vm = MetricsViewModel(repository, _auth());
 
     vm.start();
     await Future<void>.delayed(Duration.zero);
@@ -79,7 +102,7 @@ void main() {
 
   test('salir y volver rápido no deja dos suscripciones a watch()', () async {
     final repository = _SlowMetricsRepository();
-    final vm = MetricsViewModel(repository);
+    final vm = MetricsViewModel(repository, _auth());
 
     vm.start();
     await pumpEventQueue();
@@ -97,7 +120,7 @@ void main() {
 
   test('retry() con una carga en curso descarta la anterior', () async {
     final repository = _SlowMetricsRepository();
-    final vm = MetricsViewModel(repository);
+    final vm = MetricsViewModel(repository, _auth());
 
     vm.start();
     await pumpEventQueue();
@@ -109,5 +132,18 @@ void main() {
     await pumpEventQueue();
 
     expect(repository.watchCalls, 1);
+  });
+
+  test('un 401 de sesión no es un error de conexión: lleva al login y deja de sondear', () async {
+    final auth = _auth();
+    await Future<void>.delayed(Duration.zero);
+    final vm = MetricsViewModel(_SessionLostRepository(NotAuthenticatedException()), auth);
+
+    vm.start();
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(vm.error, isNull);
+    expect(auth.stage, AuthStage.needsLogin);
   });
 }

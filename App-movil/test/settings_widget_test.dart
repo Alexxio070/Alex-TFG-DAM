@@ -9,6 +9,7 @@ import 'helpers/app_harness.dart';
 
 void main() {
   final validIrohId = 'a' * 64;
+  final validFingerprint = 'b' * 64;
   late SettingsViewModel settings;
 
   Future<void> openSettings(WidgetTester tester) async {
@@ -25,7 +26,7 @@ void main() {
     for (final title in ['Unidades', 'Métricas', 'Terminal', 'Apariencia', 'Dispositivo']) {
       expect(find.text(title), findsWidgets);
     }
-    expect(find.text('Este móvil está emparejado con el PC.'), findsOneWidget);
+    expect(find.text('Este móvil tiene una sesión abierta con el PC.'), findsOneWidget);
   });
 
   testWidgets('cambia las unidades de temperatura y almacenamiento', (tester) async {
@@ -106,17 +107,19 @@ void main() {
   });
 
   String addressFieldText(WidgetTester tester) =>
-      tester.widget<TextField>(find.byType(TextField)).controller!.text;
+      tester.widget<TextField>(find.byType(TextField).at(0)).controller!.text;
 
   testWidgets('guarda la dirección del agente en modo local', (tester) async {
     await openSettings(tester);
     expect(addressFieldText(tester), '127.0.0.1:8443');
 
-    await tester.enterText(find.byType(TextField), '192.168.1.50:8443');
+    await tester.enterText(find.byType(TextField).at(0), '192.168.1.50:8443');
+    await tester.enterText(find.byType(TextField).at(1), validFingerprint);
     await tester.tap(find.text('Guardar'));
     await pumpFor(tester, 200);
 
     expect(settings.agentAddress, '192.168.1.50:8443');
+    expect(settings.fingerprint, validFingerprint);
     expect(find.text('Formato esperado: host:puerto'), findsNothing);
     expect(find.text('Guardado'), findsOneWidget);
   });
@@ -124,7 +127,7 @@ void main() {
   testWidgets('rechaza una dirección con formato inválido', (tester) async {
     await openSettings(tester);
 
-    await tester.enterText(find.byType(TextField), 'no es una dirección');
+    await tester.enterText(find.byType(TextField).at(0), 'no es una dirección');
     await tester.tap(find.text('Guardar'));
     await pumpFor(tester, 200);
 
@@ -161,7 +164,7 @@ void main() {
     expect(settings.irohId, '');
   });
 
-  testWidgets('desemparejar pide confirmación y actualiza el estado', (tester) async {
+  testWidgets('desemparejar pide confirmación, olvida el equipo y vuelve al login', (tester) async {
     await openSettings(tester);
 
     await tester.tap(find.text('Desemparejar'));
@@ -171,8 +174,10 @@ void main() {
     await tester.tap(find.text('Desemparejar').last);
     await pumpFor(tester, 300);
 
-    expect(find.text('Este móvil no está emparejado con ningún PC.'), findsOneWidget);
-    expect(find.text('Emparejar'), findsOneWidget);
+    expect(find.text('Iniciar sesión'), findsOneWidget);
+    expect(find.text('Cerrar sesión'), findsNothing);
+    expect(settings.agentAddress, kDefaultAgentAddress);
+    expect(settings.fingerprint, '');
   });
 
   testWidgets('cancelar el diálogo mantiene el emparejado', (tester) async {
@@ -183,6 +188,6 @@ void main() {
     await tester.tap(find.text('Cancelar'));
     await pumpFor(tester, 200);
 
-    expect(find.text('Este móvil está emparejado con el PC.'), findsOneWidget);
+    expect(find.text('Este móvil tiene una sesión abierta con el PC.'), findsOneWidget);
   });
 }

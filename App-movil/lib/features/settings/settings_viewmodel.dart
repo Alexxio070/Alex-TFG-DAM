@@ -23,6 +23,7 @@ class SettingsViewModel extends ChangeNotifier {
   int _termFont = 13;
   ConnectionMode _connectionMode = ConnectionMode.local;
   String _agentAddress = kDefaultAgentAddress;
+  String _fingerprint = '';
   String _irohId = '';
 
   bool get ready => _ready;
@@ -35,6 +36,7 @@ class SettingsViewModel extends ChangeNotifier {
   int get termFont => _termFont;
   ConnectionMode get connectionMode => _connectionMode;
   String get agentAddress => _agentAddress;
+  String get fingerprint => _fingerprint;
   String get irohId => _irohId;
 
   Future<void> _load() async {
@@ -50,6 +52,7 @@ class SettingsViewModel extends ChangeNotifier {
         _termFont = saved.termFont;
         _connectionMode = saved.connectionMode;
         _agentAddress = saved.agentAddress;
+        _fingerprint = saved.fingerprint;
         _irohId = saved.irohId;
       }
     } catch (_) {
@@ -71,6 +74,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> setConnectionMode(ConnectionMode value) =>
       _update(() => _connectionMode = value);
   Future<void> setAgentAddress(String value) => _update(() => _agentAddress = value);
+  Future<void> setFingerprint(String value) => _update(() => _fingerprint = value);
   Future<void> setIrohId(String value) => _update(() => _irohId = value);
 
   Future<void> _update(VoidCallback change) async {
@@ -89,6 +93,7 @@ class SettingsViewModel extends ChangeNotifier {
         termFont: _termFont,
         connectionMode: _connectionMode,
         agentAddress: _agentAddress,
+        fingerprint: _fingerprint,
         irohId: _irohId,
       ),
     );

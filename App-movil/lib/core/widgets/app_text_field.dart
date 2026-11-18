@@ -11,6 +11,7 @@ class AppTextField extends StatelessWidget {
     this.mono = false,
     this.multiline = false,
     this.autofocus = false,
+    this.obscureText = false,
     this.onChanged,
   });
 
@@ -20,6 +21,7 @@ class AppTextField extends StatelessWidget {
   final bool mono;
   final bool multiline;
   final bool autofocus;
+  final bool obscureText;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -35,6 +37,7 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       cursorColor: focusColor,
       autofocus: autofocus,
+      obscureText: obscureText,
       minLines: multiline ? 6 : 1,
       maxLines: multiline ? null : 1,
       keyboardType: multiline ? TextInputType.multiline : null,

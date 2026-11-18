@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_tokens.dart';
+import 'features/auth/auth_viewmodel.dart';
+import 'features/auth/login_view.dart';
 import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_view.dart';
 
@@ -12,11 +14,16 @@ class SysmoteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsViewModel>();
+    final auth = context.watch<AuthViewModel>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Sysmote',
       theme: buildTheme(dark: settings.dark, accent: settings.accent),
-      home: settings.ready ? const ShellView() : const _LoadingPlaceholder(),
+      home: !settings.ready
+          ? const _LoadingPlaceholder()
+          : auth.stage == AuthStage.loggedIn
+              ? const ShellView()
+              : const LoginView(),
     );
   }
 }

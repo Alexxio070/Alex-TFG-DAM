@@ -28,6 +28,7 @@ void main() {
       termFont: 18,
       connectionMode: ConnectionMode.iroh,
       agentAddress: '192.168.1.50:9000',
+      fingerprint: 'a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1',
       irohId: 'nodeid-de-prueba',
     );
 
@@ -44,6 +45,7 @@ void main() {
     expect(loaded.termFont, data.termFont);
     expect(loaded.connectionMode, data.connectionMode);
     expect(loaded.agentAddress, data.agentAddress);
+    expect(loaded.fingerprint, data.fingerprint);
     expect(loaded.irohId, data.irohId);
   });
 

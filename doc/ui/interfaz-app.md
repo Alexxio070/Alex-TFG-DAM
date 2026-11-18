@@ -1,11 +1,12 @@
 # Diseño final de la interfaz
 
-> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026; Métricas y la conexión de Ajustes, revisadas de nuevo el 14/11/2026. Sustituye a [`historico/ui-v1/DESIGN.md`](historico/ui-v1/DESIGN.md) y [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
+> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026; Métricas y la conexión de Ajustes, revisadas de nuevo el 14/11/2026; login y huella del certificado, el 18/11/2026. Sustituye a [`historico/ui-v1/DESIGN.md`](historico/ui-v1/DESIGN.md) y [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
 
 ## 0. Cómo leer este documento
 
 - Cada pantalla se describe tal como está implementada hoy, no como se planeó. Donde el código y un diseño anterior discrepaban, gana el código, y se anota el porqué.
-- **Qué es simulado y qué no:** Inicio, Terminal, Notas y el emparejado siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas y Ajustes ya hablan con implementaciones reales:** `HttpMetricsRepository` pide los datos al agente por HTTP e `IrohMetricsRepository` por un túnel iroh, según el modo de Ajustes (ver sección 4 y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
+- **Qué es simulado y qué no:** Inicio, Terminal y Notas siguen con repositorios `Fake...` en memoria (sección 8), porque esa parte del agente aún no existe. **Métricas, el login y Ajustes ya hablan con implementaciones reales:** por HTTPS (con la huella del certificado fijada) o por un túnel iroh, según el modo de Ajustes (ver secciones 4, 7 bis y 8), y `SharedPreferencesSettingsRepository` guarda los ajustes en el móvil.
+- **Login (fase 3):** sin sesión, la app solo muestra `LoginView` (sección 7 bis); `ShellView` y todas las secciones solo aparecen con una sesión abierta.
 - El diseño de la terminal del agente (sesiones con tmux) vive en [`../agente/terminal-sesiones-tmux.md`](../agente/terminal-sesiones-tmux.md) y **no está implementado en la app** (la sesión real y la ventana del PC son del agente, que todavía no tiene esa parte); la terminal vacía y las pestañas sí están implementadas sobre una maqueta sin agente. La sección 5 describe lo que hay hoy.
 
 ## 1. Estructura general
@@ -84,7 +85,7 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 
 **Tarjeta** (`MetricSurface`): radio 20, borde 1 dp `border`, padding 16. El gráfico de área (`AreaChart`) lo dibuja un `CustomPainter` propio: 110 dp de alto, 3 líneas guía al 25/50/75 % y una línea base, sin librería de gráficos. Pie con «Hace 60 s · escala · Ahora». Actualización cada 1 s (`MetricsViewModel.watch()`).
 
-**Datos:** en modo local, `HttpMetricsRepository` pide `GET http://<dirección>/metrics` al agente; en modo iroh, `IrohMetricsRepository` envía la misma petición por un túnel iroh (ver `doc/iroh/`). `ConnectionModeMetricsRepository` elige uno u otro según el modo de conexión de Ajustes, y lo reevalúa en cada llamada (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
+**Datos:** en modo local, `HttpMetricsRepository` pide `GET https://<dirección>/metrics` al agente, con la huella del certificado fijada y el token de sesión como `Bearer`; en modo iroh, `IrohMetricsRepository` envía la misma petición, también con el token, por un túnel iroh (ver `doc/iroh/`). Un `401` del agente no se muestra como fallo de conexión: sin sesión (`no_autenticado`) vuelve al login y, si el agente avisa de que ya no está emparejado (`desemparejado`), se olvida además la dirección, la huella y el identificador iroh. `ConnectionModeMetricsRepository` elige uno u otro según el modo de conexión de Ajustes, y lo reevalúa en cada llamada (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
 
 **Estados de la pantalla.** Mientras llegan los primeros datos, muestra un indicador con **«Conectando con el agente…»**. Si el agente no responde (tras 3 s de espera, o con cualquier otro fallo de conexión) y todavía no había datos, la pantalla muestra un aviso centrado, **«No se puede conectar con el agente»**, más el detalle del error y un botón **«Reintentar»** (`MetricsViewModel.retry()`). Si la conexión se pierde con los datos ya cargados, las tarjetas conservan los últimos valores y encima aparece el aviso **«Conexión perdida. Reintentando…»** con el detalle del error; no lleva botón, porque el sondeo sigue pidiendo una muestra cada segundo, y el aviso desaparece solo cuando vuelve a llegar una. Si el agente responde sin ninguna partición, la tarjeta de disco se sustituye por **«El agente no ha encontrado ninguna partición»** y el resto de tarjetas se muestra con normalidad. El sondeo se pausa al salir de la pantalla de Métricas o al pasar la app a segundo plano (`AppLifecycleListener`), y se reanuda al volver, para no seguir pidiendo datos al agente sin necesidad.
 
@@ -138,14 +139,32 @@ Lista de grupos (`SettingsGroup`, radio 20, cabecera 13 sp `muted`), cada fila c
 | Apariencia | Tema | Segmentado Claro / Oscuro |
 | Apariencia | Color de acento | Botón que abre una hoja inferior con los 6 colores |
 | Dispositivo | Modo de conexión | Segmentado Local / iroh (`ConnectionFields`) |
-| Dispositivo | Dirección del agente (modo Local) o identificador (modo iroh) | Campo de texto monoespaciado + botón «Guardar»; en Local valida el formato `host:puerto` y en iroh que sean 64 caracteres hexadecimales |
-| Dispositivo | Emparejar / Desemparejar | Botón; desemparejar pide confirmación |
+| Dispositivo | Dirección del agente (modo Local) | Campo de texto monoespaciado + botón «Guardar»; valida el formato `host:puerto` |
+| Dispositivo | Huella del certificado (modo Local) | Campo de texto monoespaciado; valida que sean 64 caracteres hexadecimales |
+| Dispositivo | Identificador (modo iroh) | Campo de texto monoespaciado + botón «Guardar»; valida que sean 64 caracteres hexadecimales |
+| Dispositivo | Cerrar sesión | Botón, solo visible con una sesión abierta |
+| Dispositivo | Desemparejar | Botón; pide confirmación y borra dirección, huella e identificador iroh además de la sesión |
 
 Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppSegmented`, `AppStepper` (botones 44×44).
 
-**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Emparejar/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, campo con la dirección `host:puerto` (por defecto `127.0.0.1:8443`); en iroh, campo con el identificador iroh del agente, que usa `IrohMetricsRepository` para conectar (ver `doc/iroh/`); solo se guarda si son 64 caracteres hexadecimales, y si no avisa con «El identificador iroh no es válido: son 64 caracteres hexadecimales». Ambos valores se guardan a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección, el identificador o el modo se aplica en caliente: los repositorios de métricas los leen en cada petición, sin reiniciar la app (si el identificador cambia con una conexión iroh abierta, el repositorio la cierra y abre otra).
+**Conexión con el PC** (`ConnectionFields`, grupo Dispositivo, encima de Cerrar sesión/Desemparejar): selector Local/iroh con `AppSegmented` (no un desplegable nativo, para no introducir un componente que no se usa en ningún otro sitio). En Local, dos campos: la dirección `host:puerto` (por defecto `127.0.0.1:8443`) y la huella del certificado (64 caracteres hexadecimales, que hasta que haya escáner de QR se compara a ojo con la que muestra la TUI); en iroh, un único campo con el identificador del agente, que usa `IrohMetricsRepository` para conectar (ver `doc/iroh/`). Un «Guardar» por modo valida y guarda sus campos a la vez en `SettingsRepository`, junto con el modo activo. Cambiar la dirección, la huella, el identificador o el modo se aplica en caliente: los repositorios de métricas los leen en cada petición, sin reiniciar la app (si el identificador cambia con una conexión iroh abierta, el repositorio la cierra y abre otra).
 
 **Persistencia:** los ajustes se guardan localmente (`shared_preferences`) y se recuperan al reabrir la app. Mientras se cargan, la app muestra una pantalla de carga: `CircularProgressIndicator` (color de acento) y el texto «Sysmote» (`t.muted2`), centrados sobre `t.bg` — sin logo, porque el proyecto no tiene ningún asset de imagen declarado.
+
+## 7 bis. Login (fase 3)
+
+`LoginView` (`features/auth/`), guiada por el estado de `AuthViewModel` (`AuthStage`):
+
+- **Agente inalcanzable** (sin respuesta, huella que no coincide, identificador inválido…): «No se puede conectar con el agente» con el detalle del error y los botones «Reintentar» y «Conexión con el PC». Un token guardado no se borra por un fallo de red.
+- **Sin cuenta y registro cerrado** (`configurado: false`, `registro_abierto: false`): aviso centrado para pulsar «configuración inicial» en la TUI (`sysmote` → Emparejamiento).
+- **Sin cuenta y registro abierto:** formulario «Crear la cuenta» con código de registro (sin guiones o con ellos, en mayúsculas o minúsculas), usuario, contraseña y nombre del dispositivo. Cada error del contrato tiene su mensaje: registro cerrado, código no válido, código caducado («pulsa configuración inicial en la TUI para generar otro») y contraseña débil con sus motivos (mínimo 5 caracteres, un número y una mayúscula). Hasta que haya escáner de QR (fase 9), el código se escribe a mano.
+- **Con cuenta, pidiendo login:** formulario con usuario, contraseña (oculta) y el nombre de este dispositivo (campo de texto libre, sin guardar en Ajustes). Si `sesion_activa` es `true`, un aviso encima del formulario explica que hará falta confirmar en la TUI.
+- **Bloqueado** (`429 demasiados_intentos`): aviso con la cuenta atrás en segundos (`espera_s`) devuelta por el agente; el botón «Entrar» se deshabilita hasta que llega a cero.
+- **Esperando confirmación** (`202` del login, ya había una sesión activa): mensaje con el dispositivo que la tiene abierta, cuenta atrás de 5 minutos y botón «Cancelar»; sondea `GET /login/solicitud/{id}` cada 2 s hasta que se aprueba, se rechaza o caduca.
+- Con sesión, la vista no se muestra: `app.dart` pasa a `ShellView`, y vuelve al login si se pierde la sesión.
+- **«Conexión con el PC»** (en todas las pantallas del login): abre en una hoja inferior los mismos campos de dirección, huella e identificador iroh de Ajustes, porque Ajustes queda dentro de la app y sin esta salida no se podría emparejar. Al cerrarla se vuelve a comprobar el agente.
+
+Construida con el mismo sistema visual que el resto de la app (`AppTextField`, con un `obscureText` nuevo para la contraseña; `AppButton`; tokens). El token se guarda con `TokenStorage` (Android Keystore vía `flutter_secure_storage`), se mantiene en memoria para las peticiones y se borra al cerrar sesión, desemparejar o si el agente devuelve `401`. Cerrar sesión y desemparejar también olvidan lo local aunque el PC esté apagado.
 
 ## 8. Qué es simulado
 
@@ -154,16 +173,17 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 | `MacroRepository` | 4 macros de ejemplo en memoria; `run()` no hace nada |
 | `TerminalRepository` | Shell simulado con `help`, `ls`, `pwd`, `whoami`, `uname`, `date`, `echo`, `clear`, historial con ↑/↓ y `Ctrl+C`/`Ctrl+L` |
 | `NotesRepository` | 3 notas de ejemplo en memoria |
-| `PairingRepository` | Emparejado por defecto; `pair()`/`unpair()` cambian un `ValueNotifier` local |
 
 Todos se registran en `main.dart`; para conectar el agente real basta con escribir la implementación nueva y cambiarla ahí. `FakeMetricsRepository` (CPU/RAM aleatorias, temperatura derivada de la CPU, 3 particiones de ejemplo) sigue existiendo pero ya no se usa en `main.dart`: solo lo ven los tests.
 
 **Repositorios ya no simulados:**
+- `AuthRepository`: `HttpAuthRepository` (HTTPS con la huella del certificado fijada: el cliente no trae ninguna CA y solo acepta el certificado cuyo SHA-256 coincide con la huella guardada) e `IrohAuthRepository` (HTTP crudo por el túnel, sin TLS propio, con el identificador iroh como garantía), elegidos por `ConnectionModeAuthRepository` según el modo de Ajustes; Autenticación y Métricas comparten una única conexión iroh. Probados contra un cliente HTTP simulado y una conexión iroh falsa, y por HTTPS contra el agente real de `feature/agent` (registro, login con sesión activa y su aprobación, `401`, desemparejar y bloqueo por intentos); el camino por iroh con el móvil sigue sin probarse. `FakeAuthRepository` queda para los tests.
 - `SettingsRepository`: `SharedPreferencesSettingsRepository` (persistencia local con `shared_preferences`), además de `InMemorySettingsRepository` para los tests.
-- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET http://<dirección>/metrics` al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app. `main.dart` lo envuelve, junto con `IrohMetricsRepository`, en `ConnectionModeMetricsRepository`, que usa uno u otro según el modo de Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`) y, ya cerrada la fase 1, por USB con `adb reverse` contra el agente real y con el APK release.
+- `MetricsRepository`: `HttpMetricsRepository` (nuevo) pide `GET https://<dirección>/metrics` (ahora con huella fijada y token) al agente real (`feature/agent`, commit `8cf02c2`) y traduce su JSON (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) a los modelos de la app. `main.dart` lo envuelve, junto con `IrohMetricsRepository`, en `ConnectionModeMetricsRepository`, que usa uno u otro según el modo de Ajustes. Probado contra un cliente HTTP simulado (`http/testing.dart`) y, ya cerrada la fase 1, por USB con `adb reverse` contra el agente real y con el APK release.
 
 ## 9. Pendientes conocidos
 
 Lista completa y actualizada en [`../documentos-generales-del-proyecto/04-plan-de-fases.md`](../documentos-generales-del-proyecto/04-plan-de-fases.md), sección «Pendientes». El más relevante para esta interfaz:
 
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).
+- Login por iroh: probarlo con el móvil y el agente con el túnel en marcha (hoy solo probado con una conexión falsa), y también el login y el pinning por HTTPS desde el móvil real (por USB con `adb reverse`).

@@ -1,6 +1,6 @@
 # Estructura de la app Flutter
 
-Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 14/11/2026.
+Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 18/11/2026.
 
 La interfaz sigue [`interfaz-app.md`](interfaz-app.md), que refleja el código real de cada pantalla. `historico/ui-v1` y `historico/ui-v2` se conservan como historial (el prototipo inicial y la primera especificación de Notas).
 
@@ -30,21 +30,24 @@ lib/
       field_label.dart           etiqueta + control, para formularios
       modal_card.dart            diálogo centrado y hoja inferior, con scrim
   data/                          de dónde salen los datos
-    models/                      home_item, metrics, note, note_links, settings (enums y constantes)
-    repositories/                interfaces abstractas
+    models/                      home_item, metrics, note, note_links, settings, auth (enums, constantes y los tipos del contrato de login)
+    repositories/                interfaces abstractas, incluidas AuthRepository y TokenStorage
     agent_metrics_repository.dart  parte común de los repositorios de métricas del agente (parseo del JSON, loadInfo, loadHistory, watch)
+    agent_auth_repository.dart   parte común de los repositorios de autenticación (traduce las respuestas y errores del contrato de la fase 3)
     connection_mode_metrics_repository.dart  elige entre HTTP e iroh según el modo de conexión de Ajustes
-    http/                        implementación real contra el agente por HTTP (HttpMetricsRepository)
-    iroh/                        implementación real contra el agente por un túnel iroh (IrohMetricsRepository)
-    local/                       implementación real con shared_preferences (ajustes)
+    connection_mode_auth_repository.dart     lo mismo para la autenticación
+    http/                        implementación real contra el agente por HTTPS con la huella fijada (HttpAuthRepository, HttpMetricsRepository, cliente de huella fijada)
+    iroh/                        implementación real contra el agente por un túnel iroh (IrohConnection compartida, IrohAuthRepository, IrohMetricsRepository)
+    local/                       implementación real con shared_preferences (ajustes) y flutter_secure_storage (token de sesión)
     fake/                        implementaciones con datos de prueba que usa la app
   features/                      una carpeta por sección
-    shell/                       AppBar, drawer, estado de conexión, navegación
+    shell/                       AppBar, drawer, estado de sesión, navegación
     home/                        cuadrícula de macros, carpetas, arrastre y diálogos
     metrics/                     tarjetas, gráficos de área, disco y particiones
     terminal/                    pestañas, xterm.dart y fila de teclas extra
     notes/                       lista de notas, búsqueda y formulario
     settings/                    ajustes
+    auth/                        AuthViewModel y LoginView (login, fase 3)
 test/
   fakes/                         implementaciones en memoria que solo usan los tests
   helpers/                       app_harness.dart: monta la app con repositorios falsos (app, pumpFor, openSection)
@@ -59,10 +62,10 @@ Piezas compartidas. Los controles que aparecen en más de una pantalla (interrup
 ### data/
 Todo lo relacionado con los datos.
 
-- `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones.
+- `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones; `auth.dart` tiene los tipos del login (`AgentStatus`, `LoginOutcome`, `LoginRequestStatus`, `SessionInfo`), según el contrato de la fase 3.
 - `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo.
-- `http/`, `iroh/` y `local/`: implementaciones reales (agente por HTTP, agente por iroh, ajustes con `shared_preferences`). `http/` e `iroh/` heredan de `agent_metrics_repository.dart` y solo implementan cómo traer el JSON de `/metrics`; `connection_mode_metrics_repository.dart` elige una u otra según el ajuste.
-- `fake/`: implementaciones con datos de prueba que se usan de verdad en la app (terminal, macros, notas, emparejado) mientras no existe esa parte del agente.
+- `http/`, `iroh/` y `local/`: implementaciones reales (agente por HTTPS, agente por iroh, ajustes con `shared_preferences`, token de sesión con `flutter_secure_storage`). Métricas y autenticación tienen una parte común (`agent_metrics_repository.dart`, `agent_auth_repository.dart`) y cada transporte solo implementa cómo enviar la petición; los `connection_mode_*` eligen uno u otro según el ajuste. En HTTPS, el cliente no trae ninguna CA y solo acepta el certificado cuya huella (SHA-256 del DER) coincide con la guardada en Ajustes; por iroh no hay TLS propio y Métricas y Autenticación comparten una única `IrohConnection`.
+- `fake/`: implementaciones con datos de prueba que se usan de verdad en la app (terminal, macros, notas) mientras no existe esa parte del agente. El doble de pruebas de la autenticación (`FakeAuthRepository`, que simula el agente según el contrato de la fase 3) vive en `test/fakes/`, no en `lib/`.
 
 ### features/
 Cada sección sigue el mismo patrón:
@@ -98,13 +101,14 @@ Para conectar el agente real basta con escribir la implementación nueva y cambi
 | Repositorio | Entrega | Implementación en `main.dart` |
 |---|---|---|
 | `MacroRepository` | cargar y guardar la cuadrícula (macros y carpetas) y ejecutar una macro | `FakeMacroRepository` |
-| `MetricsRepository` | datos de la máquina (RAM total, particiones), historial de 60 s y flujo de muestras; lanza `AgentUnavailableException` si el agente no responde | `ConnectionModeMetricsRepository`, que usa `HttpMetricsRepository` (modo local) o `IrohMetricsRepository` (modo iroh) |
+| `MetricsRepository` | datos de la máquina (RAM total, particiones), historial de 60 s y flujo de muestras, con el token de sesión; lanza `AgentUnavailableException` si el agente no responde y la excepción de sesión si da 401 | `ConnectionModeMetricsRepository`, que usa `HttpMetricsRepository` (modo local) o `IrohMetricsRepository` (modo iroh) |
 | `TerminalRepository` | enviar teclas, recibir la salida, crear sesión (`createSession`), avisar de que terminó (`sessionEnded`) y cerrar (`close`); se inyecta una fábrica (`TerminalRepository Function()`), una instancia por pestaña | `FakeTerminalRepository` |
 | `NotesRepository` | listar (con búsqueda), crear, editar y borrar notas | `FakeNotesRepository` |
-| `PairingRepository` | estado de emparejado, emparejar y desemparejar | `FakePairingRepository` |
-| `SettingsRepository` | cargar y guardar tema, acento, unidades, alerta de temperatura, tamaño de fuente y conexión; `load()` devuelve `null` en el primer arranque | `SharedPreferencesSettingsRepository`, con persistencia local |
+| `AuthRepository` | estado del agente (`/estado`), registro, login, consultar una solicitud de login pendiente, comprobar la sesión, cerrar sesión y desemparejar | `ConnectionModeAuthRepository`, que usa `HttpAuthRepository` (modo local) o `IrohAuthRepository` (modo iroh) |
+| `TokenStorage` | guardar, leer y borrar el token de sesión | `SecureTokenStorage`, con `flutter_secure_storage` (Android Keystore) |
+| `SettingsRepository` | cargar y guardar tema, acento, unidades, alerta de temperatura, tamaño de fuente, conexión y huella del certificado; `load()` devuelve `null` en el primer arranque | `SharedPreferencesSettingsRepository`, con persistencia local |
 
-Los ajustes ya no son solo del móvil: se guardan con `SettingsRepository`, pero los lee un único `SettingsViewModel` compartido (registrado en `app_providers.dart`), no cada pantalla por su cuenta.
+Los ajustes ya no son solo del móvil: se guardan con `SettingsRepository`, pero los lee un único `SettingsViewModel` compartido (registrado en `app_providers.dart`), no cada pantalla por su cuenta. `PairingRepository` (estado simulado de emparejado) se retiró el 17/11/2026: `ShellViewModel` y `NotesViewModel` ahora dependen de `AuthViewModel`, que es quien de verdad sabe si hay sesión.
 
 ## Flujo de datos
 
@@ -138,6 +142,7 @@ Ejemplo con un repositorio ya real, Métricas:
 - Notas con tarjetas de texto seleccionable y enlaces pulsables, y formulario aparte (ver `historico/ui-v2`).
 - Los ViewModels de las secciones se registran en `app_providers.dart`, así que su estado se conserva al cambiar de sección.
 - Identificador de la app: `io.github.alexxio070.sysmote`; nombre visible: «Sysmote».
+- Login (fase 3, 18/11/2026): `AuthViewModel` es la única fuente de verdad sobre si hay sesión y guarda el token en memoria; `app.dart` solo muestra `ShellView` con sesión y `LoginView` en cualquier otro caso. `ShellViewModel`, `NotesViewModel` y `MetricsViewModel` lo escuchan o le pasan los errores de sesión (`handleSessionError`: un `401 no_autenticado` vuelve al login y un `401 desemparejado` olvida además dirección, huella e identificador iroh). Como la conexión se configura en Ajustes, que queda dentro de la app, el login ofrece «Conexión con el PC» (los mismos campos en una hoja inferior) para no dejar al usuario atrapado.
 
 ## Orden de implementación
 
@@ -148,4 +153,4 @@ Ejemplo con un repositorio ya real, Métricas:
 5. Notas
 6. Ajustes
 
-Las seis secciones están implementadas; Métricas y Ajustes ya hablan con implementaciones reales (agente por HTTP y `shared_preferences`), el resto sigue con datos simulados hasta que exista esa parte del agente.
+Las seis secciones están implementadas; Métricas, Ajustes y el login ya hablan con implementaciones reales (agente por HTTPS o iroh, `shared_preferences` y `flutter_secure_storage`), el resto sigue con datos simulados hasta que exista esa parte del agente.

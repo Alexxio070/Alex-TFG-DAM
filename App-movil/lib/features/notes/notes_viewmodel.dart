@@ -4,16 +4,16 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/models/note.dart';
 import '../../data/repositories/notes_repository.dart';
-import '../../data/repositories/pairing_repository.dart';
+import '../auth/auth_viewmodel.dart';
 
 class NotesViewModel extends ChangeNotifier {
-  NotesViewModel(this._notes, this._pairing) {
-    _pairing.paired.addListener(load);
+  NotesViewModel(this._notes, this._auth) {
+    _auth.addListener(load);
     load();
   }
 
   final NotesRepository _notes;
-  final PairingRepository _pairing;
+  final AuthViewModel _auth;
   List<Note> _items = const [];
   String _query = '';
   bool _loading = false;
@@ -24,7 +24,7 @@ class NotesViewModel extends ChangeNotifier {
   List<Note> get items => _items;
   String get query => _query;
   bool get loading => _loading;
-  bool get isPaired => _pairing.paired.value;
+  bool get isPaired => _auth.stage == AuthStage.loggedIn;
   String? get message => _message;
 
   Future<void> load() async {
@@ -85,7 +85,7 @@ class NotesViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _pairing.paired.removeListener(load);
+    _auth.removeListener(load);
     _searchTimer?.cancel();
     _messageTimer?.cancel();
     super.dispose();

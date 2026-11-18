@@ -20,6 +20,7 @@ class ConnectionFields extends StatefulWidget {
 
 class _ConnectionFieldsState extends State<ConnectionFields> {
   late final _controller = TextEditingController();
+  late final _fingerprintController = TextEditingController();
   String? _error;
   String? _saved;
   Timer? _savedTimer;
@@ -28,6 +29,7 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
   @override
   void dispose() {
     _controller.dispose();
+    _fingerprintController.dispose();
     _savedTimer?.cancel();
     super.dispose();
   }
@@ -39,7 +41,13 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
         setState(() => _error = 'Formato esperado: host:puerto');
         return;
       }
+      final fingerprint = _fingerprintController.text.trim();
+      if (!isValidFingerprint(fingerprint)) {
+        setState(() => _error = kInvalidFingerprintMessage);
+        return;
+      }
       await s.setAgentAddress(value);
+      await s.setFingerprint(fingerprint);
     } else {
       if (!isValidIrohId(value)) {
         setState(() => _error = kInvalidIrohIdMessage);
@@ -64,9 +72,11 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final s = context.watch<SettingsViewModel>();
+    final local = s.connectionMode == ConnectionMode.local;
     if (_lastMode != s.connectionMode) {
       _lastMode = s.connectionMode;
-      _controller.text = s.connectionMode == ConnectionMode.local ? s.agentAddress : s.irohId;
+      _controller.text = local ? s.agentAddress : s.irohId;
+      _fingerprintController.text = s.fingerprint;
       _error = null;
     }
     return Column(
@@ -87,14 +97,23 @@ class _ConnectionFieldsState extends State<ConnectionFields> {
           controller: _controller,
           focusColor: t.accent,
           mono: true,
-          hint: s.connectionMode == ConnectionMode.local
-              ? kDefaultAgentAddress
-              : 'Identificador iroh',
+          hint: local ? kDefaultAgentAddress : 'Identificador iroh',
           onChanged: (_) => setState(() {
             _error = null;
             _saved = null;
           }),
         ),
+        if (local)
+          AppTextField(
+            controller: _fingerprintController,
+            focusColor: t.accent,
+            mono: true,
+            hint: 'Huella del certificado (64 caracteres hexadecimales)',
+            onChanged: (_) => setState(() {
+              _error = null;
+              _saved = null;
+            }),
+          ),
         if (_error != null) Text(_error!, style: const TextStyle(fontSize: 12, color: kRed)),
         if (_saved != null) Text(_saved!, style: const TextStyle(fontSize: 12, color: kGreen)),
         Align(
