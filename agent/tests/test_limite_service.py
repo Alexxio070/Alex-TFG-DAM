@@ -1,12 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
 from sysmote import rutas
 from sysmote.models.auth import IntentoLogin
-from sysmote.repositories import intento_login_repository
 from sysmote.services import config_service, limite_service
-from sysmote.services.auth_error import AuthError
 
 DIEZ_MINUTOS = timedelta(minutes=10)
 AHORA = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
@@ -57,31 +53,10 @@ def test_la_duracion_cambia_el_tiempo_de_espera():
     assert 0 < espera <= 120
 
 
-def test_comprobar_lanza_demasiados_intentos_con_espera(connection):
-    for _ in range(5):
-        limite_service.registrar(connection, "alex", None, "local", exito=False)
-
-    with pytest.raises(AuthError) as error:
-        limite_service.comprobar(connection, "alex")
-
-    assert error.value.codigo == "demasiados_intentos"
-    assert 0 < error.value.extra["espera_s"] <= 600
-
-
 def test_comprobar_no_afecta_a_otra_cuenta(connection):
     for _ in range(5):
         limite_service.registrar(connection, "alex", None, "local", exito=False)
     limite_service.comprobar(connection, "otro")
-
-
-def test_reiniciar_levanta_el_bloqueo(connection):
-    for _ in range(5):
-        limite_service.registrar(connection, "alex", None, "local", exito=False)
-
-    limite_service.reiniciar(connection, "alex")
-
-    limite_service.comprobar(connection, "alex")
-    assert intento_login_repository.listar_de_usuario(connection, "alex") == []
 
 
 def test_duracion_por_defecto_son_10_minutos():

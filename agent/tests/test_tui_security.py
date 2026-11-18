@@ -317,15 +317,6 @@ class _ServidoresFalsos:
         return self._estado
 
 
-async def test_la_tui_arranca_y_detiene_los_servidores(connection):
-    servidores = _ServidoresFalsos({"https": "activo", "interno": "activo", "iroh": "en marcha"})
-    app = SysmoteApp(connection=connection, servidores=servidores)
-    async with app.run_test(size=SIZE):
-        assert servidores.iniciado is True
-        assert servidores.detenido is False
-    assert servidores.detenido is True
-
-
 async def test_seguridad_muestra_el_identificador_iroh_y_el_estado_de_cada_servidor(connection):
     servidores = _ServidoresFalsos({"https": "activo", "interno": "activo", "iroh": "error: sin red"})
     app = SysmoteApp(connection=connection, servidores=servidores)

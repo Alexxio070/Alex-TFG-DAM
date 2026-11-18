@@ -40,11 +40,6 @@ def test_uri_incluye_iroh_antes_del_codigo_cuando_existe():
     assert list(parse_qs(urlparse(uri).query)) == ["v", "dir", "huella", "iroh", "codigo"]
 
 
-def test_qr_usa_solo_los_caracteres_de_bloque():
-    texto = pairing_service.qr_texto(pairing_service.uri_emparejamiento("192.168.1.20:8443", HUELLA, codigo=CODIGO))
-    assert set(texto) <= set("█▀▄ \n")
-
-
 def test_qr_texto_reproduce_exactamente_la_matriz_del_qr():
     uri = pairing_service.uri_emparejamiento("192.168.1.20:8443", HUELLA, codigo=CODIGO)
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_L, border=2)

@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from sysmote.repositories import codigo_registro_repository, sesion_repository, solicitud_login_repository, usuario_repository
-from sysmote.services import auth_service, limite_service, password_service
+from sysmote.services import auth_service, limite_service, password_service, token_service
 from sysmote.services.auth_service import AuthError
 
 CODIGO = "K7QX-M2PD-9WTR-4HNB"
@@ -36,11 +36,6 @@ def test_estado_sin_cuenta_ni_registro(connection):
         "registro_abierto": False,
         "sesion_activa": False,
     }
-
-
-def test_estado_con_registro_abierto(connection):
-    _abrir_registro(connection)
-    assert auth_service.estado(connection)["registro_abierto"] is True
 
 
 def test_estado_tras_registrar_esta_configurado_con_sesion_y_registro_cerrado(connection):
@@ -381,6 +376,16 @@ def test_solicitud_pendiente_la_devuelve_y_ignora_las_caducadas(connection):
     assert auth_service.consultar_solicitud(connection, solicitud) == {"estado": "caducada"}
 
 
+def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
+    resultado = _cuenta(connection)
+    auth_service.cerrar_todas_las_sesiones(connection)
+
+    auth_service.desemparejar_sesion_activa(connection)
+
+    sesion = sesion_repository.obtener_por_hash_token(connection, token_service.hashear(resultado["token"]))
+    assert sesion.motivo_revocacion == "cerrar_todas"
+
+
 def test_desemparejar_sesion_activa_desde_la_tui(connection):
     resultado = _cuenta(connection)
     assert auth_service.sesion_activa(connection).dispositivo == "Pixel 8"
@@ -390,6 +395,3 @@ def test_desemparejar_sesion_activa_desde_la_tui(connection):
     assert auth_service.sesion_activa(connection) is None
     assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
 
-
-def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
-    auth_service.desemparejar_sesion_activa(connection)

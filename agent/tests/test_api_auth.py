@@ -188,4 +188,5 @@ def test_cinco_fallos_dan_429_con_retry_after_y_espera(client, connection):
 def test_el_origen_del_intento_se_guarda(client, connection):
     _registrar(client, connection)
     client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
-    assert connection.execute("SELECT origen FROM intento_login").fetchone()[0]
+    # El cliente de pruebas de FastAPI se presenta con la dirección «testclient».
+    assert connection.execute("SELECT origen FROM intento_login").fetchone()[0] == "testclient"
