@@ -1,7 +1,4 @@
-"""Subpestañas Seguridad y Dispositivo de la TUI con una base de datos real en memoria."""
-
-import sqlite3
-from pathlib import Path
+"""Subpestañas Seguridad y Dispositivo de la TUI con una base de datos real en una carpeta temporal."""
 
 import pytest
 from textual.widgets import Button, Input, Static
@@ -12,21 +9,11 @@ from sysmote.tui.app import SysmoteApp
 from sysmote.tui.widgets import pairing_section
 
 SIZE = (120, 40)
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 
 
 @pytest.fixture(autouse=True)
 def sondeo_rapido(monkeypatch):
     monkeypatch.setattr(pairing_section, "POLL_SEGUNDOS", 0.05)
-
-
-@pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:")
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.executescript(SCHEMA)
-    yield connection
-    connection.close()
 
 
 def _crear_cuenta(connection) -> str:

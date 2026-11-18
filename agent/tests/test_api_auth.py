@@ -1,32 +1,17 @@
-import sqlite3
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from sysmote.api.deps import get_connection
 from sysmote.main import app
 from sysmote.repositories import codigo_registro_repository
 from sysmote.services import auth_service
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 CODIGO = "K7QX-M2PD-9WTR-4HNB"
 
 
 @pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:", check_same_thread=False)
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.executescript(SCHEMA)
-    app.dependency_overrides[get_connection] = lambda: connection
-    yield connection
-    app.dependency_overrides.clear()
-    connection.close()
-
-
-@pytest.fixture
-def client(connection):
+def client():
     return TestClient(app)
 
 

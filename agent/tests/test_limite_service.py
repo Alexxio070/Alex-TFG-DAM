@@ -1,6 +1,4 @@
-import sqlite3
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import pytest
 
@@ -10,7 +8,6 @@ from sysmote.repositories import intento_login_repository
 from sysmote.services import config_service, limite_service
 from sysmote.services.auth_error import AuthError
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 DIEZ_MINUTOS = timedelta(minutes=10)
 AHORA = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 
@@ -23,14 +20,6 @@ def _intentos(*resultados: bool, hace: timedelta = timedelta(minutes=1)) -> list
         )
         for i, exito in enumerate(resultados)
     ]
-
-
-@pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:")
-    connection.executescript(SCHEMA)
-    yield connection
-    connection.close()
 
 
 def test_cuatro_fallos_no_bloquean():

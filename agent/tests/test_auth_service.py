@@ -1,7 +1,5 @@
 import re
-import sqlite3
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import pytest
 
@@ -9,17 +7,7 @@ from sysmote.repositories import codigo_registro_repository, sesion_repository, 
 from sysmote.services import auth_service, limite_service, password_service
 from sysmote.services.auth_service import AuthError
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 CODIGO = "K7QX-M2PD-9WTR-4HNB"
-
-
-@pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:")
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.executescript(SCHEMA)
-    yield connection
-    connection.close()
 
 
 def _en(delta: timedelta) -> str:

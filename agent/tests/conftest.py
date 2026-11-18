@@ -1,6 +1,6 @@
 import pytest
 
-from sysmote import rutas
+from sysmote import database, rutas
 
 
 @pytest.fixture(autouse=True)
@@ -11,3 +11,11 @@ def entorno_aislado(tmp_path, monkeypatch):
     monkeypatch.setattr(rutas, "CERT_PATH", tmp_path / "tls" / "cert.pem")
     monkeypatch.setattr(rutas, "KEY_PATH", tmp_path / "tls" / "key.pem")
     monkeypatch.setattr(rutas, "IROH_KEY_PATH", tmp_path / "iroh" / "iroh_secret_key.bin")
+
+
+@pytest.fixture
+def connection():
+    """Conexión a una base de datos vacía en la carpeta temporal del test, abierta como la abre el agente."""
+    connection = database.connect()
+    yield connection
+    connection.close()
