@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 
 import qrcode
 
-from sysmote.iroh_tunnel import _load_or_create_secret_key
+from sysmote.iroh_tunnel import load_or_create_secret_key
 
 PUERTO_HTTPS = 8443
 IROH_KEY_PATH = Path.home() / ".local" / "share" / "sysmote" / "iroh_secret_key.bin"
@@ -22,7 +22,7 @@ def direccion_lan() -> str:
 
 
 def identificador_iroh() -> str:
-    return str(_load_or_create_secret_key(IROH_KEY_PATH).public())
+    return str(load_or_create_secret_key(IROH_KEY_PATH).public())
 
 
 def uri_emparejamiento(direccion: str, huella: str, codigo: str | None = None, iroh: str | None = None) -> str:
