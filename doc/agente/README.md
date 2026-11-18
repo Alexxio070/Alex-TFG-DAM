@@ -44,6 +44,6 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 
 Cuando haya implementación o decisiones que no quepan en los documentos generales:
 
-- Referencia de la API del agente: las rutas de seguridad están en el contrato de la fase 3 (`contrato-api-fase3.md`, en `main`) y `GET /metrics`, ahora protegida por login; el resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar. `/docs` está desactivado.
+- Referencia de la API del agente: las rutas de seguridad están en el contrato de la fase 3 ([`contrato-api-fase3.md`](contrato-api-fase3.md)) y `GET /metrics`, ahora protegida por login; el resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar. `/docs` está desactivado.
 - Seguridad: la implementación de la fase 3 está descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/schema.sql`.
 - Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 5).
