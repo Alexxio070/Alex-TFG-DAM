@@ -9,14 +9,6 @@ from cryptography.hazmat.primitives import serialization
 from sysmote.services import tls_service
 
 
-@pytest.fixture(autouse=True)
-def rutas_temporales(tmp_path, monkeypatch):
-    config = tmp_path / "config"
-    monkeypatch.setattr(tls_service, "CONFIG_DIR", config)
-    monkeypatch.setattr(tls_service, "CERT_PATH", config / "cert.pem")
-    monkeypatch.setattr(tls_service, "KEY_PATH", config / "key.pem")
-
-
 def test_crea_certificado_y_clave_con_permisos_seguros():
     cert_path, key_path = tls_service.asegurar_certificado()
 

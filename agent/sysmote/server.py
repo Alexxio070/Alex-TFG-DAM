@@ -5,7 +5,7 @@ import threading
 
 import uvicorn
 
-from sysmote import iroh_tunnel
+from sysmote import iroh_tunnel, rutas
 from sysmote.main import app
 from sysmote.services import pairing_service, tls_service
 
@@ -83,7 +83,7 @@ class Servidores:
     async def _tunel(self) -> None:
         self._iroh_vivo = True
         try:
-            await iroh_tunnel.run(self._puerto_interno, pairing_service.IROH_KEY_PATH)
+            await iroh_tunnel.run(self._puerto_interno, rutas.IROH_KEY_PATH)
         finally:
             self._iroh_vivo = False
 

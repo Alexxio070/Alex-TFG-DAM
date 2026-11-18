@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from sysmote import rutas
 from sysmote.models.auth import IntentoLogin
 from sysmote.repositories import intento_login_repository
 from sysmote.services import config_service, limite_service
@@ -99,10 +100,10 @@ def test_duracion_por_defecto_son_10_minutos():
 
 
 def test_duracion_se_lee_de_config_toml():
-    config_service.CONFIG_PATH.write_text("[seguridad]\nbloqueo_minutos = 2\n")
+    rutas.CONFIG_PATH.write_text("[seguridad]\nbloqueo_minutos = 2\n")
     assert config_service.duracion_bloqueo() == timedelta(minutes=2)
 
 
 def test_config_sin_la_clave_usa_el_valor_por_defecto():
-    config_service.CONFIG_PATH.write_text("[otra]\nclave = 1\n")
+    rutas.CONFIG_PATH.write_text("[otra]\nclave = 1\n")
     assert config_service.duracion_bloqueo() == timedelta(minutes=10)

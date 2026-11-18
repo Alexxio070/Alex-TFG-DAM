@@ -8,9 +8,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
-CONFIG_DIR = Path.home() / ".config" / "sysmote"
-CERT_PATH = CONFIG_DIR / "cert.pem"
-KEY_PATH = CONFIG_DIR / "key.pem"
+from sysmote import rutas
+
 _VALIDEZ = timedelta(days=3650)
 
 
@@ -44,21 +43,22 @@ def _generar() -> tuple[bytes, bytes]:
 
 
 def asegurar_certificado() -> tuple[Path, Path]:
-    CONFIG_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
-    os.chmod(CONFIG_DIR, 0o700)
+    carpeta = rutas.CERT_PATH.parent
+    carpeta.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(carpeta, 0o700)
     if not certificado_existe():
         cert_pem, key_pem = _generar()
-        CERT_PATH.unlink(missing_ok=True)
-        KEY_PATH.unlink(missing_ok=True)
-        _escribir_privado(KEY_PATH, key_pem)
-        _escribir_privado(CERT_PATH, cert_pem)
-    return CERT_PATH, KEY_PATH
+        rutas.CERT_PATH.unlink(missing_ok=True)
+        rutas.KEY_PATH.unlink(missing_ok=True)
+        _escribir_privado(rutas.KEY_PATH, key_pem)
+        _escribir_privado(rutas.CERT_PATH, cert_pem)
+    return rutas.CERT_PATH, rutas.KEY_PATH
 
 
 def certificado_existe() -> bool:
-    return CERT_PATH.exists() and KEY_PATH.exists()
+    return rutas.CERT_PATH.exists() and rutas.KEY_PATH.exists()
 
 
 def huella_sha256() -> str:
-    certificado = x509.load_pem_x509_certificate(CERT_PATH.read_bytes())
+    certificado = x509.load_pem_x509_certificate(rutas.CERT_PATH.read_bytes())
     return hashlib.sha256(certificado.public_bytes(serialization.Encoding.DER)).hexdigest()
