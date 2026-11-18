@@ -31,19 +31,41 @@ boceto original.
 Tres subpestañas propias, que cambian el contenido del mismo marco sin volver al menú principal:
 
 #### Dispositivo
-- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, usando la librería `qrcode`,
-  dependencia obligatoria del agente).
-- Derecha: nombre del dispositivo, fecha y hora de conexión, estado de conexión — datos de `sesion`.
+- Izquierda: código QR de emparejamiento (texto con bloques `▀ ▄ █`, negro sobre fondo blanco para
+  que se lea con cualquier tema, usando la librería `qrcode`, dependencia obligatoria del agente) y,
+  debajo, **el mismo contenido en texto plano**: el URI del contrato
+  (`sysmote://emparejar?v=1&dir=…&huella=…&iroh=…[&codigo=…]`).
+  - Con el modo registro abierto lleva el `codigo` de registro.
+  - Con una cuenta ya creada es el QR de volver a emparejar, sin `codigo`.
+  - Sin certificado, o sin cuenta y sin modo registro abierto, muestra un aviso en su lugar.
+  - Mide unas 25 filas: en terminales bajas la pestaña hace scroll.
+- Derecha: dispositivo, fecha y hora de conexión, última conexión y estado — datos de `sesion`.
+  Sin sesión activa pone «Sin dispositivo emparejado.».
 - Debajo de los datos del dispositivo: botón rojo **Desemparejar**.
-  Está desactivado si no hay ningún dispositivo emparejado.
+  Está desactivado si no hay ningún dispositivo emparejado. Al pulsarlo revoca la sesión con el
+  motivo `desemparejado`: la app olvida el equipo en su siguiente petición (`401 desemparejado`;
+  contrato: `contrato-api-fase3.md`).
 
 #### Seguridad (fase 3)
-- Texto: dirección del agente, huella del certificado TLS, identificador iroh (cuando exista).
-- Botón **Configuración inicial**: genera el certificado TLS autofirmado y crea el usuario y la
-  contraseña (validación de robustez y Argon2). Es la vía hasta la fase 9, cuando llega el
-  registro por QR.
-- Botones **Cambiar contraseña** y **Cerrar todas las sesiones**: deshabilitados hasta que existe
-  una cuenta creada.
+- Texto: dirección del agente (IP de la LAN y puerto 8443), huella del certificado TLS,
+  identificador iroh, estado de cada servidor (HTTPS, HTTP interno, iroh) y, si hay uno vigente,
+  el código de registro con la hora de caducidad.
+- Botón **Configuración inicial**: genera el certificado TLS autofirmado si falta y abre el modo
+  registro: crea un código de un solo uso (16 caracteres en base32, caduca a los 10 minutos), del
+  que solo se guarda el hash. **La cuenta no se crea en la TUI:** la crea la app con
+  `POST /registro` y ese código (contrato de la fase 3). Deshabilitado cuando ya existe una cuenta.
+- Botón **Cambiar contraseña**: diálogo con la contraseña nueva y su confirmación; muestra los
+  motivos si es débil (mínimo 5 caracteres, un número y una mayúscula). Guarda el hash Argon2 y
+  **cierra todas las sesiones**.
+- Botón **Cerrar todas las sesiones**: sin diálogo de confirmación.
+- Botón **Reiniciar intentos**: pone a 0 el contador de intentos de login fallidos y levanta el
+  bloqueo (para pruebas; no existe ruta HTTP equivalente).
+- Los tres botones anteriores están deshabilitados hasta que existe una cuenta.
+- **Solicitud de nueva sesión:** si la app intenta iniciar sesión mientras hay otra sesión activa,
+  la TUI muestra un diálogo: «Hay una sesión activa en {dispositivo}. ¿Quieres cerrarla e iniciar
+  una nueva?», con el dispositivo que lo solicita y los botones **Sí, sobrescribir la sesión** y
+  **No, mantener la sesión anterior**. La TUI consulta SQLite cada segundo **mientras esta
+  subpestaña está abierta**; no avisa si está cerrada. Contrato: `contrato-api-fase3.md`.
 
 #### Servicio (fase 5)
 - Botones **Instalar servicio**, **Quitar servicio** y **Estado**: gestionan el servicio systemd
@@ -61,9 +83,10 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 - Vacía hasta que exista alguna de las dos fuentes.
 
 ### Base de datos
-- Lista de **todas las tablas** del esquema real (`usuario`, `sesion`, `intento_login`, `grupo`,
-  `accion_rapida`, `ejecucion`, `regla_alerta`, `notificacion`, `nota`, según se vayan creando
-  fase a fase), una debajo de otra y separadas por un divisor grueso.
+- Lista de **todas las tablas** del esquema real (`usuario`, `sesion`, `intento_login`,
+  `solicitud_login`, `codigo_registro`, `grupo`, `accion_rapida`, `ejecucion`, `regla_alerta`,
+  `notificacion`, `nota`, según se vayan creando fase a fase), una debajo de otra y separadas por
+  un divisor grueso.
 - Cada tabla tiene:
   1. Título con el nombre y el número de filas (`nombre · N filas`).
   2. Etiqueta **Columnas** y una tabla con las propiedades de cada columna:
@@ -88,6 +111,15 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
   (creada por `agent/schema.sql`), salvo el historial de comandos de terminal.
 - Consultas de la base de datos: `sqlite_master` para las tablas, `PRAGMA table_info` para las
   columnas y `SELECT * ... LIMIT 200` para las filas.
+- **El comando `sysmote` abre la TUI y arranca el agente** (hasta que exista el servicio de la
+  fase 5): HTTPS en `0.0.0.0:8443` para USB y LAN, HTTP en `127.0.0.1:8444` como puerto interno
+  y el túnel iroh que reenvía a ese puerto. Al salir de la TUI se paran. Si un servidor no
+  arranca (por ejemplo, un puerto ocupado) la TUI lo avisa con una notificación a los 2 segundos
+  y los demás siguen funcionando.
+- La TUI y la API **solo se comunican por la base de datos SQLite**, cada una con su propia
+  conexión: no hay socket entre ellas.
+- Los datos de Emparejamiento (dispositivo, QR, estado de los servidores) se refrescan cada
+  segundo mientras la subpestaña está visible, y al cambiar de subpestaña.
 
 ### Historial de comandos de terminal
 - El agente solo ve las teclas que la app manda por el WebSocket de la terminal (fase 4); lo
@@ -110,9 +142,10 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 
 ## Pendiente (marcado con TODO en el código)
 
-- Desemparejar, Exportar datos y Exportar estructura: deshabilitados hasta sus fases.
-- Dispositivo emparejado y código QR: sin datos hasta la fase 9 (registro/emparejamiento real).
-- Seguridad y Servicio: deshabilitados hasta las fases 3 y 5.
+- Exportar datos y Exportar estructura: deshabilitados hasta la fase 7.
+- Servicio: deshabilitado hasta la fase 5.
+- El QR ya se muestra en la fase 3; el escáner en la app (que lo lee) llega con la fase 9, y hasta
+  entonces la app introduce a mano dirección, huella, identificador iroh y código.
 - Historial y Base de datos: vacíos hasta que existan acciones rápidas (fase 7) o comandos de
   terminal (fase 4) reales.
 - Notas: deshabilitada hasta la fase 9.
