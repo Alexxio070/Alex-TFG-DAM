@@ -5,7 +5,7 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Button, Static
 
 from sysmote.services import auth_service, pairing_service, tls_service
-from sysmote.tui.widgets.formato import codigo_vigente, fecha_local
+from sysmote.tui.widgets.formato import fecha_local
 
 SIN_QR = "Pulsa «Configuración inicial» en Seguridad para generar el QR."
 
@@ -82,7 +82,7 @@ class DeviceTab(VerticalScroll):
         huella = tls_service.huella_sha256()
         if configurado:
             return pairing_service.uri_emparejamiento(direccion, huella, iroh=self._iroh)
-        abierto = codigo_vigente(self.app)
+        abierto = self.app.codigo_registro_vigente()
         if abierto is None:
             return None
         return pairing_service.uri_emparejamiento(direccion, huella, codigo=abierto[0], iroh=self._iroh)

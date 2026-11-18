@@ -1,6 +1,7 @@
 """Sysmote: interfaz de terminal (TUI) con Textual."""
 
 import sqlite3
+from datetime import UTC, datetime
 
 from textual.app import App
 
@@ -34,6 +35,11 @@ class SysmoteApp(App):
             self.servidores.detener()
         if self._cierra_su_conexion:
             self.connection.close()
+
+    def codigo_registro_vigente(self) -> tuple[str, str] | None:
+        if self.registro_abierto and self.registro_abierto[1] > datetime.now(UTC).isoformat():
+            return self.registro_abierto
+        return None
 
     def _avisar_errores(self) -> None:
         for nombre, estado in self.servidores.estado().items():
