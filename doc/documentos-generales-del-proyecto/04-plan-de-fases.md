@@ -30,7 +30,7 @@
 | 6 | Procesos y energía (energía pendiente de decidir) | 🟢🟡 | Mar |
 | 7 | CRUD de acciones rápidas y exportaciones | 🟡 | Mar – Abr |
 | 8 | Notificaciones, reglas de alerta y servicio en primer plano | 🟡🔴 | Abr |
-| 9 | mDNS, QR, registro por QR y espacio compartido | 🟡 | Abr – May |
+| 9 | mDNS, escáner de QR en la app y espacio compartido | 🟡 | Abr – May |
 | 10 | Pulido | 🟢 | May |
 | Memoria | Redacción final | | May |
 | **Defensa** | | | **Primera semana de junio** |
@@ -122,7 +122,7 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 **Por qué va aquí:** la terminal (fase 4) da acceso a tu shell, así que no puede exponerse por iroh sin login.
 
 **Objetivos:**
-- Activar dentro de «Emparejamiento» (TUI ya construida en la fase 1): configuración inicial (certificado TLS, usuario y contraseña), cambiar contraseña, cerrar todas las sesiones.
+- Activar dentro de «Emparejamiento» (TUI ya construida en la fase 1): configuración inicial (certificado TLS y modo registro con el QR y el código de un solo uso; la cuenta la crea la app con `POST /registro`), cambiar contraseña, cerrar todas las sesiones, reiniciar los intentos de login y QR de emparejamiento en «Dispositivo». Hasta que haya escáner (fase 9), la dirección, la huella y el código se escriben a mano en la app.
 - Base de datos: primeras tablas (`usuario`, `sesion`, `intento_login`).
 - Agente: HTTPS, login con token de sesión, todas las rutas protegidas, límite de intentos.
 - App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro y botón «Desemparejar» en Ajustes.
@@ -233,7 +233,7 @@ Detalle técnico: `01` §3 (Módulo G) y `02` §4.1 (tipo del servicio en primer
 
 **Objetivos:**
 - mDNS: el agente se anuncia y la app lo encuentra sin escribir la dirección.
-- QR de emparejamiento y registro (sustituye a la creación del usuario desde la TUI de la fase 3): la TUI muestra el QR, la app lo escanea y crea la cuenta. *Cubre el elemento diferenciador "uso de sensores/cámara".*
+- Escáner de QR en la app (la TUI ya muestra el QR desde la fase 3): la app lo escanea, guarda la huella y crea la cuenta sin escribir a mano la dirección, la huella ni el código. *Cubre el elemento diferenciador "uso de sensores/cámara".*
 - Espacio compartido: BD y CRUD de notas, sección «Notas» de la TUI y pantalla de notas de la app conectada al agente (la interfaz ya existe con datos simulados).
 
 Detalle técnico: `01` §3 (Módulo F) y §5.1 (registro por QR). Decisión abierta sobre imágenes en el espacio compartido: `07` §3.8.
@@ -265,7 +265,7 @@ Recortar en este orden (lo primero es lo que menos se pierde):
 1. **Reglas de alerta con CRUD** (fase 8): mantener solo `sysmote notify`.
 2. **mDNS** (fase 9): el QR ya evita escribir la dirección.
 3. **Hibernar** (fase 6): dejar apagar, reiniciar, suspender y bloquear.
-4. **Registro por QR** (fase 9): mantener la creación del usuario desde la TUI.
+4. **Escáner de QR** (fase 9): mantener la introducción a mano de la dirección, la huella y el código.
 
 **Nunca se recortan:** conexión por iroh (o su plan B documentado), terminal (función estrella), CRUD de acciones rápidas (requisito mínimo), login y TLS, y pulido mínimo de errores.
 
@@ -293,7 +293,7 @@ Huecos de la interfaz o decisiones de plan que quedan abiertas, agrupados por fa
 | App Android | Todo el proyecto (Flutter, aceptado por el tutor) |
 | Capas, Git, manual de instalación | Tareas transversales (apéndice) · Fase 5 |
 | Interfaz, navegación, validaciones | Interfaz definitiva (ya hecha) · fase 3 (login) · formularios de las fases 7, 8 y 9 |
-| Registro / login | Login: fase 3 (usuario creado desde la TUI) · Registro por QR: fase 9 |
+| Registro / login | Registro con código y login: fase 3 (el QR lo muestra la TUI) · Escáner de QR en la app: fase 9 |
 | CRUD de 2 entidades relacionadas | **Fase 7** (grupo y acción rápida) · refuerzo en la fase 8 (regla de alerta) y la fase 9 (nota) |
 | Lógica de negocio | Búsqueda de procesos (fase 6), estadísticas y reglas de negocio (fase 7), umbrales (fase 8) |
 | Gestión de errores | Todas las fases · revisión en la fase 10 |
