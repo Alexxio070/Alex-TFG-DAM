@@ -1,7 +1,7 @@
 name: sysmote
 description: "Cliente Flutter de Sysmote: administra en remoto el PC Linux del usuario desde el móvil."
 publish_to: 'none'
-version: 1.0.0+1
+version: 0.1.0+1
 
 environment:
   sdk: ^3.13.4

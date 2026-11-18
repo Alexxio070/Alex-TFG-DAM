@@ -1,0 +1,30 @@
+[project]
+name = "sysmote"
+version = "0.1.0"
+description = "Agente Python del Sysmote: API del PC y TUI sysmote"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.146",
+    "uvicorn>=0.54",
+    "psutil>=7.2",
+    "textual>=8.2",
+    "pydantic>=2.14",
+    "qrcode>=8.2",
+    "iroh>=1.2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1", "pytest-asyncio>=1.4", "httpx2>=2.14"]
+
+[project.scripts]
+sysmote = "sysmote.tui.app:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sysmote*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
