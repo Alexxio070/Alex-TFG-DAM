@@ -62,6 +62,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 16/11/2026 | Plan | Prueba 5 de la matriz de iroh completada: el identificador sobrevive al reinicio del PC | Aplicado en la documentación |
 | 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
+| 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
 
 ---
 
@@ -578,3 +579,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** consecuencias de implementar el contrato. Dos decisiones de diseño nuevas: el login ofrece «Conexión con el PC» porque la dirección y la huella se configuran en Ajustes, dentro de la app, y sin esa salida el usuario quedaría atrapado; y si el agente no responde, un token guardado no se borra, porque puede ser solo un fallo de red.
 - **Afecta a:** `App-movil/lib/data`, `features/auth`, `features/settings`, `doc/ui/` y `doc/agente/contrato-api-fase3.md` (su estado).
 - **Estado:** implementado. 223 tests y análisis limpio; probado contra el agente real por HTTPS. Sin probar en un móvil físico ni por iroh.
+
+### 18/11/2026 — Túnel iroh endurecido y puerto HTTP interno de referencia
+
+- **Qué era:** el túnel no limitaba conexiones ni *streams*, no cortaba un *stream* inactivo y cualquier excepción que no fuera de iroh en su bucle lo tumbaba. Estaba aplazado a la fase 3 (`doc/iroh/04-pruebas.md`, puntos 10 y 11). El túnel reenviaba al puerto que le pasaba quien lo arrancaba (8443 en `iroh_poc.py`).
+- **Qué es ahora:** `Limits` fija 4 conexiones simultáneas (al llegar al límite se cierra la más antigua, no la nueva), 8 *streams* por conexión (los sobrantes se rechazan) y 60 s de inactividad por *stream* (contando las dos direcciones juntas). Cualquier excepción del bucle se registra y el túnel sigue. `INTERNAL_HTTP_PORT = 8444` documenta el puerto HTTP interno propuesto para el destino, según la decisión del 17/11/2026 (sin TLS propio por iroh), que no fija el número; el túnel solo reenvía a `127.0.0.1`.
+- **Por qué:** con el login de la fase 3, el túnel pasa a exponer algo más que métricas. El límite de *streams* se cuenta en el túnel porque el de iroh no se aplica tras aceptar la conexión (comprobado con una prueba).
+- **Afecta a:** `doc/iroh/` (`02-implementacion.md` §2, `03-problemas-y-soluciones.md` §13, `04-pruebas.md`, `README.md`) y `04` (se quita el punto de la fase 3). Código: `agent/sysmote/iroh_tunnel.py` y `agent/tests/test_iroh_tunnel.py`. Pendiente de revisar en la fase 4: 60 s cortarían una terminal inactiva.
+- **Estado:** aplicado en código y en la documentación.
