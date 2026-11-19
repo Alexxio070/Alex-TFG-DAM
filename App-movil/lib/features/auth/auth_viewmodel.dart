@@ -42,7 +42,6 @@ class AuthViewModel extends ChangeNotifier {
   AuthStage _stage = AuthStage.loading;
   bool _sesionActivaAviso = false;
   String? _error;
-  String? _usuario;
   String? _pendingSolicitudId;
   String? _pendingSesionActivaEn;
   int _pendingSecondsLeft = 0;
@@ -54,7 +53,6 @@ class AuthViewModel extends ChangeNotifier {
   AuthStage get stage => _stage;
   bool get sesionActivaAviso => _sesionActivaAviso;
   String? get error => _error;
-  String? get usuario => _usuario;
   String? get pendingSesionActivaEn => _pendingSesionActivaEn;
   int get pendingSecondsLeft => _pendingSecondsLeft;
   int get blockedSecondsLeft => _blockedSecondsLeft;
@@ -65,9 +63,8 @@ class AuthViewModel extends ChangeNotifier {
     final token = await _tokenStorage.read();
     if (token != null) {
       try {
-        final session = await _repository.session();
+        await _repository.session();
         _token = token;
-        _usuario = session.usuario;
         _stage = AuthStage.loggedIn;
         notifyListeners();
         return;
@@ -128,7 +125,6 @@ class AuthViewModel extends ChangeNotifier {
       );
       await _tokenStorage.write(session.token);
       _token = session.token;
-      _usuario = session.usuario;
       _stage = AuthStage.loggedIn;
     } on RegistrationClosedException {
       _error = 'El registro no está abierto. Pulsa configuración inicial en la TUI.';
@@ -168,10 +164,9 @@ class AuthViewModel extends ChangeNotifier {
         dispositivo: dispositivo,
       );
       switch (outcome) {
-        case LoggedIn(:final token, :final usuario):
+        case LoggedIn(:final token):
           await _tokenStorage.write(token);
           _token = token;
-          _usuario = usuario;
           _stage = AuthStage.loggedIn;
           notifyListeners();
         case LoginPending(:final solicitudId, :final sesionActivaEn, :final caducaEnS):
@@ -243,11 +238,10 @@ class AuthViewModel extends ChangeNotifier {
     switch (result) {
       case LoginRequestPending():
         return;
-      case LoginRequestApproved(:final token, :final usuario):
+      case LoginRequestApproved(:final token):
         _stopWaiting();
         await _tokenStorage.write(token);
         _token = token;
-        _usuario = usuario;
         _stage = AuthStage.loggedIn;
         notifyListeners();
       case LoginRequestRejected():
@@ -318,7 +312,6 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> _forgetSession() async {
     await _tokenStorage.clear();
     _token = null;
-    _usuario = null;
   }
 
   Future<void> _forgetDevice() async {

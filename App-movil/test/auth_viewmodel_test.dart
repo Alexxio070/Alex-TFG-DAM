@@ -49,7 +49,6 @@ void main() {
     );
 
     expect(vm.stage, AuthStage.loggedIn);
-    expect(vm.usuario, 'alex');
     expect(await storage.read(), isNotNull);
   });
 
@@ -127,7 +126,6 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(vm.stage, AuthStage.loggedIn);
-    expect(vm.usuario, 'alex');
   });
 
   test('un token guardado que el agente ya no reconoce vuelve al login', () async {
