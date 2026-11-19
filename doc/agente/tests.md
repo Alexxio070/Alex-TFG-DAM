@@ -8,7 +8,7 @@ cd agent && .venv/bin/pytest -q
 
 **Aislamiento.** [`conftest.py`](../../agent/tests/conftest.py) redirige a una carpeta temporal, en todos los tests, la configuración (`config.toml`), la base de datos, el certificado TLS y la clave de iroh. Ningún test toca tu `~/.config/sysmote` ni tu `~/.local/share/sysmote`. También define la fixture `connection`: una base de datos vacía en esa carpeta, abierta igual que la abre el agente.
 
-**Criterio.** Los repositorios no tienen tests propios: los tests de servicios, API y TUI los ejercitan sobre SQLite real. En la auditoría de simplificación se quitaron los tests repetidos; antes de quitar cada uno se rompió a propósito el código que protegía y se comprobó que otro test fallaba (detalle en `AUDITORIA-BACKEND.md`, en la raíz de la rama de la auditoría).
+**Criterio.** Los repositorios no tienen tests propios: los tests de servicios, API y TUI los ejercitan sobre SQLite real. En la auditoría de simplificación se quitaron los tests repetidos; antes de quitar cada uno se rompió a propósito el código que protegía y se comprobó que otro test fallaba (detalle en [`AUDITORIA-BACKEND.md`](../auditoria/2026-11-19/AUDITORIA-BACKEND.md)).
 
 ## Resumen
 
