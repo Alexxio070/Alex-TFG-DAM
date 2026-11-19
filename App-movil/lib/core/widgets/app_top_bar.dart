@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_tokens.dart';
-import '../../../core/widgets/app_icon.dart';
+import '../theme/app_tokens.dart';
+import 'app_icon.dart';
 
 /// Barra con [title] y un botón [icon] que llama a [onIcon]; por defecto, el de abrir el menú.
 class AppTopBar extends StatelessWidget {

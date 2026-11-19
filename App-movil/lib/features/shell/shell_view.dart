@@ -12,7 +12,7 @@ import '../settings/settings_view.dart';
 import '../terminal/terminal_view.dart';
 import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
-import 'widgets/app_top_bar.dart';
+import '../../core/widgets/app_top_bar.dart';
 
 const _edgeDragWidth = 24.0;
 const _flingVelocity = 365 / kDrawerWidth;

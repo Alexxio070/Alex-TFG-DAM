@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../shell_viewmodel.dart';
-import 'app_top_bar.dart';
+import '../../../core/widgets/app_top_bar.dart';
 
 const _navSections = [Section.home, Section.metrics, Section.terminal, Section.notes];
 
