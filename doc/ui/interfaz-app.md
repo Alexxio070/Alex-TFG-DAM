@@ -186,4 +186,4 @@ Todos se registran en `main.dart`; para conectar el agente real basta con escrib
 Lista completa y actualizada en [`../documentos-generales-del-proyecto/04-plan-de-fases.md`](../documentos-generales-del-proyecto/04-plan-de-fases.md), sección «Pendientes». El más relevante para esta interfaz:
 
 - Terminal: verificar en el emulador que el teclado en pantalla no pierde pulsaciones durante el retraso de creación de la sesión (intentado el 19/10/2026, sin acceso visual al emulador en esa sesión).
-- Login por iroh: probarlo con el móvil y el agente con el túnel en marcha (hoy solo probado con una conexión falsa), y también el login y el pinning por HTTPS desde el móvil real (por USB con `adb reverse`).
+- Conexión por USB con `adb reverse`: sin probar. El 19/11/2026 se probaron en un Xiaomi Redmi 13C (Android 15) el registro, el login y las métricas por red local (HTTPS con la huella fijada) y el login completo por iroh con datos móviles.
