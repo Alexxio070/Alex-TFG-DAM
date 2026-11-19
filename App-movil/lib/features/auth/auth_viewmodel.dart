@@ -123,29 +123,23 @@ class AuthViewModel extends ChangeNotifier {
         contrasena: contrasena,
         dispositivo: dispositivo,
       );
-      await _tokenStorage.write(session.token);
-      _token = session.token;
-      _stage = AuthStage.loggedIn;
+      await _enterSession(session.token);
+      return;
     } on RegistrationClosedException {
       _error = 'El registro no está abierto. Pulsa configuración inicial en la TUI.';
-      _stage = AuthStage.needsRegistration;
     } on CodeExpiredException {
       _error = 'El código de registro ha caducado. '
           'Pulsa configuración inicial en la TUI para generar otro.';
-      _stage = AuthStage.needsRegistration;
     } on InvalidCodeException {
       _error = 'El código de registro no es válido';
-      _stage = AuthStage.needsRegistration;
     } on WeakPasswordException catch (e) {
       _error = 'Contraseña débil: ${e.motivos.join(', ')}';
-      _stage = AuthStage.needsRegistration;
     } on AgentUnavailableException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsRegistration;
     } on AgentErrorException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsRegistration;
     }
+    _stage = AuthStage.needsRegistration;
     notifyListeners();
   }
 
@@ -165,10 +159,7 @@ class AuthViewModel extends ChangeNotifier {
       );
       switch (outcome) {
         case LoggedIn(:final token):
-          await _tokenStorage.write(token);
-          _token = token;
-          _stage = AuthStage.loggedIn;
-          notifyListeners();
+          await _enterSession(token);
         case LoginPending(:final solicitudId, :final sesionActivaEn, :final caducaEnS):
           _pendingSolicitudId = solicitudId;
           _pendingSesionActivaEn = sesionActivaEn;
@@ -177,24 +168,29 @@ class AuthViewModel extends ChangeNotifier {
           notifyListeners();
           _startPolling();
       }
+      return;
     } on InvalidCredentialsException {
       _error = 'Usuario o contraseña incorrectos';
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     } on TooManyAttemptsException catch (e) {
       _blockedSecondsLeft = e.esperaS;
       _stage = AuthStage.blocked;
       notifyListeners();
       _startBlockCountdown();
+      return;
     } on AgentUnavailableException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     } on AgentErrorException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     }
+    _stage = AuthStage.needsLogin;
+    notifyListeners();
+  }
+
+  Future<void> _enterSession(String token) async {
+    await _tokenStorage.write(token);
+    _token = token;
+    _stage = AuthStage.loggedIn;
+    notifyListeners();
   }
 
   void _startBlockCountdown() {
@@ -229,10 +225,7 @@ class AuthViewModel extends ChangeNotifier {
     } on AgentUnavailableException {
       return;
     } on AgentErrorException catch (e) {
-      _stopWaiting();
-      _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
+      _stopWaitingWithError(e.message);
       return;
     }
     switch (result) {
@@ -240,21 +233,19 @@ class AuthViewModel extends ChangeNotifier {
         return;
       case LoginRequestApproved(:final token):
         _stopWaiting();
-        await _tokenStorage.write(token);
-        _token = token;
-        _stage = AuthStage.loggedIn;
-        notifyListeners();
+        await _enterSession(token);
       case LoginRequestRejected():
-        _stopWaiting();
-        _error = 'Se mantuvo la sesión anterior';
-        _stage = AuthStage.needsLogin;
-        notifyListeners();
+        _stopWaitingWithError('Se mantuvo la sesión anterior');
       case LoginRequestExpired():
-        _stopWaiting();
-        _error = 'Nadie confirmó a tiempo. Vuelve a iniciar sesión.';
-        _stage = AuthStage.needsLogin;
-        notifyListeners();
+        _stopWaitingWithError('Nadie confirmó a tiempo. Vuelve a iniciar sesión.');
     }
+  }
+
+  void _stopWaitingWithError(String message) {
+    _stopWaiting();
+    _error = message;
+    _stage = AuthStage.needsLogin;
+    notifyListeners();
   }
 
   void cancelPending() {
