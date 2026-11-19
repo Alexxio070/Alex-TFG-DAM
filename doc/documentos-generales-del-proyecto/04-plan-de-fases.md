@@ -126,7 +126,7 @@ La beta **no** necesita cumplir los requisitos mínimos del proyecto (qué fase 
 - Base de datos: primeras tablas (`usuario`, `sesion`, `intento_login`).
 - Agente: HTTPS, login con token de sesión, todas las rutas protegidas, límite de intentos.
 - App: pantalla de login (se diseña en esta fase), certificate pinning, token seguro y botón «Desemparejar» en Ajustes.
-- Comprobar que todo funciona igual por USB y por iroh.
+- Comprobar que todo funciona igual por red local y por iroh. (El USB con `adb reverse` ya no se usa como método de prueba: obsoleto desde el 19/11/2026.)
 
 Detalle técnico: `01` §5 (Seguridad).
 
@@ -134,7 +134,7 @@ Detalle técnico: `01` §5 (Seguridad).
 
 **Lo que no se recorta:** el login y el TLS.
 
-**Estado (18/11/2026):** el agente y la parte de la app (login, registro, token en el Keystore, huella fijada, «Cerrar sesión» y «Desemparejar») están implementados y la app se ha probado contra el agente real por HTTPS. El 19/11/2026 se probó en un móvil físico (Xiaomi Redmi 13C, Android 15) por red local y por iroh con datos móviles; falta probar la conexión por USB, y el endurecimiento del túnel iroh está en curso.
+**Estado (19/11/2026): fase cerrada.** El agente y la app tienen login, registro con código de un solo uso, token en el Keystore, huella del certificado fijada, «Cerrar sesión» y «Desemparejar», y la TUI de emparejamiento con configuración inicial, cambio de contraseña, cierre de todas las sesiones y reinicio de intentos. Probado por el autor en un móvil físico (Xiaomi Redmi 13C, Android 15) por red local y por iroh con datos móviles, con los tres criterios de «Terminada cuando» comprobados: sin login no se puede hacer nada, una huella distinta es rechazada y «Cerrar todas las sesiones» expulsa al móvil. El USB con `adb reverse` queda fuera: ya no se usa como método de prueba. Las limitaciones conocidas del túnel iroh (IPv6, relé caído, fugas de memoria y la falta de un test automático de la conexión real) se dan por cerradas sin probarlas, porque el autor no puede reproducirlas, y quedan documentadas como limitaciones conocidas en `doc/iroh/04-pruebas.md`.
 
 ---
 
