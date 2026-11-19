@@ -19,6 +19,7 @@ abstract class IrohLink {
   void close();
 }
 
+/// Abre la conexión iroh con el agente de identificador [endpointId]; los tests lo sustituyen por uno falso.
 typedef IrohConnector = Future<IrohLink> Function(String endpointId);
 
 class _NativeIrohLink implements IrohLink {

@@ -96,6 +96,7 @@ class _Activity:
         self.last = time.monotonic()
 
     def touch(self) -> None:
+        """Anota que acaba de moverse un dato."""
         self.last = time.monotonic()
 
 
@@ -174,6 +175,7 @@ async def _handle_connection(connection: iroh.Connection, local_port: int, limit
     active = 0
 
     def release(_task: asyncio.Task) -> None:
+        """Libera el hueco de un *stream* cuando su tarea de reenvío termina."""
         nonlocal active
         active -= 1
 

@@ -10,11 +10,13 @@ final _hex64Format = RegExp(r'^[0-9a-fA-F]{64}$');
 /// Un identificador iroh válido son 64 caracteres hexadecimales.
 bool isValidIrohId(String value) => _hex64Format.hasMatch(value);
 
+/// Mensaje que se muestra cuando el identificador iroh no es válido.
 const kInvalidIrohIdMessage = 'El identificador iroh no es válido: son 64 caracteres hexadecimales';
 
 /// Una huella válida son 64 caracteres hexadecimales (SHA-256).
 bool isValidFingerprint(String value) => _hex64Format.hasMatch(value);
 
+/// Mensaje que se muestra cuando la huella del certificado no es válida.
 const kInvalidFingerprintMessage = 'La huella no es válida: son 64 caracteres hexadecimales';
 
 /// Unidad en la que se muestra la temperatura.

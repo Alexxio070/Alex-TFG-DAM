@@ -22,9 +22,9 @@ const kAccentNames = [
   'Grafito',
 ];
 
-// Misma versión de cada color de kAccentColors, aclarada en luminosidad hasta
-// alcanzar un contraste de ~4,5:1 contra el fondo oscuro (#111316), calculado
-// con la fórmula de contraste WCAG. Solo se usan en tema oscuro.
+/// Misma versión de cada color de kAccentColors, aclarada en luminosidad hasta
+/// alcanzar un contraste de ~4,5:1 contra el fondo oscuro (#111316), calculado
+/// con la fórmula de contraste WCAG. Solo se usan en tema oscuro.
 const kAccentColorsDark = [
   Color(0xFF148C81),
   Color(0xFF6675D8),
@@ -39,16 +39,28 @@ const kRed = Color(0xFFB42318);
 /// Verde de confirmaciones y del estado «Conectado».
 const kGreen = Color(0xFF1F9D55);
 
-// Sombra y velo de los diálogos y menús flotantes, repetidos por toda la app.
+/// Color de las sombras de las fichas de Inicio y de los menús flotantes.
 const kShadowColor = Color(0xFF16181D);
+
+/// Velo oscuro que va detrás de los diálogos y del menú lateral.
 const kScrim = Color.fromRGBO(22, 24, 29, 0.45);
 
-// Paleta fija de la terminal: no depende del tema claro/oscuro.
+/// Fondo de la terminal. Toda su paleta es fija: no depende del tema claro u oscuro.
 const kTerminalBackground = Color(0xFF0D0F12);
+
+/// Color del texto y del cursor de la terminal.
 const kTerminalForeground = Color(0xFFE6E8EB);
+
+/// Fondo de la barra de pestañas y de la fila de teclas extra.
 const kTerminalBarBackground = Color(0xFF15171A);
+
+/// Borde de la barra de pestañas y de la fila de teclas extra.
 const kTerminalBarBorder = Color(0xFF2B2F34);
+
+/// Verde de la terminal: el texto verde de xterm y el usuario del prompt.
 const kTerminalGreen = Color(0xFF7EE787);
+
+/// Azul de la terminal: el texto azul de xterm y la ruta del prompt.
 const kTerminalBlue = Color(0xFF79C0FF);
 
 /// Fuente monoespaciada de la interfaz (comandos, puntos de montaje).
@@ -143,6 +155,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
       other is AppTokens && t >= 0.5 ? other : this;
 }
 
+/// Atajo `context.tokens` para leer los [AppTokens] del tema actual.
 extension AppTokensContext on BuildContext {
   AppTokens get tokens => Theme.of(this).extension<AppTokens>()!;
 }
