@@ -5,18 +5,19 @@ Qué hace cada pieza de código de la integración de iroh, implementada en la f
 ## 1. Resumen
 
 ```
-App (ConnectionModeMetricsRepository)                    Agente
-  ├─ modo Local  → HttpMetricsRepository ──── HTTP ───────► FastAPI (127.0.0.1:8443)
-  └─ modo iroh   → IrohMetricsRepository ──── iroh ───────► iroh_tunnel.py ──TCP── FastAPI (127.0.0.1:8443)
+App                                                         Agente
+  modo Local → HttpMetricsRepository, HttpAuthRepository ── HTTPS (huella fijada) ──► API (8443, red local)
+  modo iroh  → IrohMetricsRepository, IrohAuthRepository
+                 └─ IrohConnection (una, compartida) ── iroh ──► iroh_tunnel.py ── TCP ──► API (127.0.0.1:8444, HTTP interno)
 ```
 
-El modo iroh no cambia nada de la API del agente: `iroh_tunnel.py` reenvía bytes sin mirarlos, y `IrohMetricsRepository` construye la misma petición HTTP que `HttpMetricsRepository`, solo que enviada por un *stream* de iroh en vez de un socket TCP.
+El modo iroh no cambia la API: `iroh_tunnel.py` reenvía bytes sin mirarlos, y los repositorios iroh envían la misma petición HTTP que por la red local, solo que por un *stream* de iroh. Por iroh no hay TLS propio: iroh ya cifra y autentica al agente por su identificador (decisión del 17/11/2026 en `08`).
 
 ## 2. Agente: `agent/sysmote/iroh_tunnel.py`
 
 Patrón *dumbpipe* (ver `01-que-es-y-como-funciona.md` §5). Piezas:
 
-- **`_load_or_create_secret_key(path)`**: lee la clave secreta de un archivo si existe, o la genera y la guarda, creándola ya con permisos `0o600`; un archivo corrupto da un `ValueError` con un mensaje claro. Así el identificador iroh del agente sobrevive a los reinicios (prueba 5 de `04-pruebas.md`).
+- **`load_or_create_secret_key(path)`**: lee la clave secreta de un archivo si existe, o la genera y la guarda, creándola ya con permisos `0o600`; un archivo corrupto da un `ValueError` con un mensaje claro. Así el identificador iroh del agente sobrevive a los reinicios (prueba 5 de `04-pruebas.md`). También la usa `pairing_service.py` para poner el identificador en el QR de emparejamiento.
 - **`Limits`**: los tres límites del túnel y sus valores por defecto: 4 conexiones simultáneas, 8 *streams* por conexión y 60 s de inactividad por *stream*. Se pasan a `run(...)`; los tests usan valores pequeños.
 - **`run(local_port, secret_key_path, limits)`**: punto de entrada. Crea el `Endpoint` con el preset `n0` (relés de producción) y el ALPN `b"sysmote/tunnel/0"`, imprime el identificador y entra en `_serve`.
 - **`_serve(endpoint, local_port, limits)`**: el bucle de aceptación. Un fallo concreto (el *handshake* de una conexión, o cualquier excepción inesperada al esperar o al aceptar) se registra y **sigue escuchando**: no tumba el túnel entero (ver `03-problemas-y-soluciones.md` §2 y §13). Si ya hay `max_connections`, cierra la conexión **más antigua** para aceptar la nueva, en vez de rechazar la nueva: si el móvil se reconecta, su conexión muerta puede seguir contando hasta que el agente la detecte, y un límite que rechazara la nueva lo dejaría fuera.
@@ -26,31 +27,26 @@ Patrón *dumbpipe* (ver `01-que-es-y-como-funciona.md` §5). Piezas:
 
 **No se propaga el medio cierre (`EOF`) al socket local**: Uvicorn corta la respuesta si ve el lado de escritura cerrado antes de contestar. Una petición HTTP ya es autocontenida (cabeceras hasta `\r\n\r\n`), así que basta con dejar de escribir sin cerrar el socket. Detalle en `03-problemas-y-soluciones.md`.
 
-### Destino del túnel
+### Quién lo arranca
 
-El contrato de la fase 3 (`../agente/contrato-api-fase3.md`; decisión del 17/11/2026 en `08`) dice que por iroh no hay TLS propio y que el túnel reenvía a un puerto HTTP interno que escucha **solo** en `127.0.0.1`, sin fijar cuál. `INTERNAL_HTTP_PORT = 8444` es el valor propuesto, todavía no recogido en el contrato; si se fija otro, se cambia aquí. El túnel ya recibe el puerto como parámetro y solo reenvía a `127.0.0.1`; la constante documenta el valor que usará quien lo arranque (`sysmote serve`, fase 5). `iroh_poc.py` sigue pasando el 8443 explícito mientras el agente no escuche en el interno.
+`sysmote.server.Servidores` (`agent/sysmote/server.py`), al abrir la TUI: levanta el servidor HTTPS de la red local, el HTTP interno en `127.0.0.1:8444` y el túnel, que reenvía a ese puerto interno con la clave de `pairing_service.IROH_KEY_PATH`. El servicio systemd que lo mantenga en marcha sin la TUI llega en la fase 5.
 
-### Arranque manual (prueba de concepto)
+## 3. App: `App-movil/lib/data/iroh/`
 
-`agent/scripts/iroh_poc.py` arranca en el mismo proceso el servidor Uvicorn real y `iroh_tunnel.run(...)`, e imprime el identificador. Es solo para probar a mano: el arranque automático del túnel (junto a `sysmote serve`) queda para la fase 5, como ya decide `04-plan-de-fases.md`.
-
-## 3. App: `App-movil/lib/data/iroh/iroh_metrics_repository.dart`
-
-`HttpMetricsRepository` (`App-movil/lib/data/http/`) e `IrohMetricsRepository` heredan de `AgentMetricsRepository` (`App-movil/lib/data/agent_metrics_repository.dart`), que tiene la parte común: parsear el JSON de `/metrics` (`cpu_percent`, `cpu_temp_c`, `ram_used_gb`, `ram_total_gb`, `partitions`) e implementar `loadInfo()`, `loadHistory()` y `watch()` (un `Stream.periodic` de 1 segundo). Cada uno solo implementa `fetch()`: cómo traer el JSON. Así el resto de la app (`MetricsViewModel`, `MetricsView`, las gráficas) no sabe por qué vía llegan los datos.
-
-En `IrohMetricsRepository`:
-
-- **`IrohLink` e `IrohConnector`**: la conexión abierta con un agente va tras una interfaz mínima (`exchange(petición)` y `close()`). La implementación real envuelve la `Connection` de `iroh_flutter`; los tests usan una falsa.
-- **`_connectNative(id)`**: crea el `Endpoint` la primera vez (`Iroh.init()` + `Endpoint.bind(alpns: [...])`) y lo reutiliza después, parsea el identificador (texto hex) con `PublicKey.fromHex` y conecta con `endpoint.connect(addr, alpn)`. El envío de la petición (`exchange`) abre un *stream* bidireccional (`connection.openBi()`), escribe una petición `GET /metrics HTTP/1.1` cruda y lee la respuesta hasta el final (`readToEnd`).
-- **`_connect(id)`**: reutiliza la conexión abierta si es del identificador actual de Ajustes; si el identificador cambió, la cierra y abre otra. El intento de conexión nativo no se puede cancelar, así que solo hay uno a la vez: si pasa de 5 s sigue vivo por debajo, y las peticiones siguientes lo esperan (cada una con su propio límite) en vez de lanzar otro. Si acaba conectando tarde, la conexión se aprovecha; si mientras tanto cambió el identificador, se cierra al llegar.
-- **`fetch()`**: comprueba que el identificador sean 64 caracteres hexadecimales (si no, avisa con su propio mensaje y no conecta), conecta y envía la petición, con *timeouts* (ver tabla abajo). Si la petición falla, cierra la conexión y la olvida, para que el siguiente intento abra una nueva — detalle en `03-problemas-y-soluciones.md`.
+- **`IrohConnection`** (`iroh_connection.dart`): la única conexión iroh con el agente, compartida por métricas y autenticación (`main.dart` la crea una vez): crear una por repositorio duplicaría el `Endpoint` y las conexiones abiertas. También tiene `buildRawHttpRequest` y `parseRawHttpResponse`, que montan y separan las peticiones HTTP crudas que viajan por el *stream*.
+  - Comprueba que el identificador sean 64 caracteres hexadecimales; si no, avisa con su propio mensaje y no conecta.
+  - Un solo `Endpoint` para todas las conexiones y un solo intento de conexión a la vez: el intento nativo no se puede cancelar, así que si pasa de 5 s sigue vivo y las peticiones siguientes lo esperan en vez de lanzar otro. Si conecta tarde, se aprovecha; si mientras tanto cambió el identificador, se cierra al llegar.
+  - Si el identificador de Ajustes cambia con una conexión abierta, la cierra y abre otra. Si una petición falla, cierra la conexión y la siguiente reconecta (ver `03-problemas-y-soluciones.md` §6).
+  - La conexión real va tras una interfaz mínima (`IrohLink`: `exchange` y `close`) que los tests sustituyen por una falsa.
+- **`IrohMetricsRepository`** (`iroh_metrics_repository.dart`): pide `/metrics` con el token de sesión por la conexión compartida y traduce la respuesta: un 401 de sesión lanza su excepción, y cualquier otro código o un cuerpo que no es JSON, `AgentUnavailableException`. Hereda de `AgentMetricsRepository` (`App-movil/lib/data/agent_metrics_repository.dart`) la parte común con `HttpMetricsRepository`: parsear el JSON e implementar `loadInfo()`, `loadHistory()` y `watch()` (un `Stream.periodic` de 1 s).
+- **`IrohAuthRepository`** (`iroh_auth_repository.dart`): el login, el registro y la sesión por iroh sobre la misma conexión; se documenta con el resto de la autenticación en `doc/ui/`.
 
 `watch()` nunca solapa peticiones: `asyncMap` pausa el `Stream.periodic` hasta que termina cada una (comprobado en el código fuente del SDK de Dart 3.13.4). Lo que sí podía solaparse eran los refrescos de `MetricsViewModel` (salir y volver rápido, «Reintentar»): ahora descarta los anteriores con un contador de generación, y el intento de conexión compartido cubre que dos de ellos coincidan al conectar.
 
 | Timeout | Valor | Para qué |
 |---|---|---|
-| Conectar (`_connect`) | 5 s | Si el identificador no es alcanzable, no se queda esperando para siempre |
-| Petición (`_exchange`) | 3 s | Mismo tiempo que usa `HttpMetricsRepository`; si el agente se cuelga a medias, no se congela la gráfica |
+| Conectar | 5 s | Si el identificador no es alcanzable, no se queda esperando para siempre |
+| Petición | 3 s | Mismo tiempo que usa `HttpMetricsRepository`; si el agente se cuelga a medias, no se congela la gráfica |
 
 ### Selección del modo: `App-movil/lib/data/connection_mode_metrics_repository.dart`
 
