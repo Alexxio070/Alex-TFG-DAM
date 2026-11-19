@@ -73,6 +73,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Agente | Cambiar la contraseña desde la TUI también levanta el bloqueo por intentos fallidos | Aplicado en código y en la documentación |
 | 19/11/2026 | Interfaz | Login: aviso cuando falta un campo y nombre del dispositivo opcional, propuesto a partir del modelo del móvil | Aplicado en código y en la documentación |
 | 19/11/2026 | Plan / Documentación | Primera prueba en un móvil físico: red local e iroh; se actualiza lo que decía «sin probar» | Aplicado en la documentación |
+| 19/11/2026 | Plan | Fase 3 (seguridad) cerrada; el USB con `adb reverse` pasa a obsoleto como método de prueba | Aplicado en la documentación |
 
 ---
 
@@ -678,3 +679,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué sigue sin probarse:** la conexión por USB con `adb reverse`, y las partes simuladas de la app (macros, terminal y notas).
 - **Afecta a:** `README.md`, `README.en.md`, `agent/README.md`, `doc/ui/interfaz-app.md`, `04` y esta entrada.
 - **Estado:** documentación actualizada con lo que se comprobó, sin afirmar más.
+
+### 19/11/2026 — Fase 3 cerrada y USB obsoleto como método de prueba
+
+- **Qué era:** la fase 3 figuraba como implementada, con la prueba en un móvil físico y por USB pendientes, y el plan seguía nombrando el USB con `adb reverse` como una de las comprobaciones de la fase.
+- **Qué es ahora:** la fase 3 está cerrada. El autor comprobó en un Xiaomi Redmi 13C (Android 15), por red local y por iroh, los tres criterios de «Terminada cuando»: sin login no se puede hacer nada, una huella distinta es rechazada y «Cerrar todas las sesiones» expulsa al móvil. El USB con `adb reverse` deja de usarse como método de prueba; la comprobación «por USB y por iroh» de la fase 3 pasa a ser «por red local y por iroh».
+- **Por qué:** con la conexión por red local y por iroh funcionando en un móvil real, el USB no aporta nada que no cubran; solo seguía útil para instalar la app, y eso se hace con `adb install`, que no necesita `adb reverse`.
+- **Limitaciones del túnel iroh:** IPv6, relé caído, fugas de memoria y la falta de un test automático de la conexión real se dan por cerradas sin probarlas: el autor no tiene forma de reproducirlas. Quedan como limitaciones conocidas, no como comprobadas.
+- **Afecta a:** `04-plan-de-fases.md` (fase 3), `doc/iroh/04-pruebas.md` y esta entrada.
+- **Estado:** aplicado en la fase 3. Quedan menciones del USB en otras partes del plan y de los README (entorno de pruebas, respaldo de la defensa, fase 4, guía de instalación); se revisan aparte.
