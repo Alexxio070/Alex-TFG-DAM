@@ -10,7 +10,7 @@
 **Administra tu PC Linux desde el móvil, estés donde estés, sin abrir puertos en el router ni montar una VPN.**
 
 > [!WARNING]
-> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro, el login y la consulta de una solicitud de login.
+> **Proyecto en desarrollo: todavía no se ha auditado y solo se ha probado en un móvil físico (Xiaomi Redmi 13C, Android 15).** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro, el login y la consulta de una solicitud de login.
 
 Sysmote tiene dos piezas que se desarrollan juntas:
 
@@ -67,7 +67,7 @@ La TUI tiene la estructura completa. Emparejamiento (Seguridad y Dispositivo) ya
 |---|---|
 | Métricas del PC en vivo: CPU, temperatura, RAM y discos, con gráficas | Disponible |
 | Acceso desde fuera de casa por iroh (relé y conexión directa) | Disponible |
-| Login, registro con código de un solo uso, sesión única y desemparejar | Disponible, sin probar en un móvil físico |
+| Login, registro con código de un solo uso, sesión única y desemparejar | Disponible; probado en un móvil físico por red local y por iroh |
 | Ajustes de la app (unidades, tema, modo de conexión) | Disponible |
 | Terminal remota con la shell real del usuario (sesiones persistentes con tmux) | Interfaz hecha, falta conectarla al agente |
 | Acciones rápidas (comandos guardados, con historial) | Interfaz hecha, falta conectarla al agente |
@@ -136,7 +136,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 3. En la app, regístrate con el código, un usuario y una contraseña (mínimo 5 caracteres, un número y una mayúscula). Después ya puedes iniciar sesión.
 
 > [!NOTE]
-> Este flujo está tomado del código y de la documentación, y la app se ha probado contra el agente real por HTTPS. Todavía no se ha probado con un móvil físico ni por iroh con el login.
+> Este flujo está tomado del código y de la documentación, y la app se ha probado contra el agente real por HTTPS. El 19/11/2026 se probó con un móvil físico (Xiaomi Redmi 13C, Android 15): registro, login y métricas por red local, y login completo por iroh con datos móviles. La conexión por USB (`adb reverse`) todavía no se ha probado.
 
 ### Compilar desde el código fuente
 

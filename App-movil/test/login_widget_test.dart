@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sysmote/core/theme/app_theme.dart';
 import 'package:sysmote/core/theme/app_tokens.dart';
 import 'package:sysmote/core/widgets/app_button.dart';
+import 'package:sysmote/data/device_name.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'package:sysmote/data/repositories/agent_exceptions.dart';
@@ -158,7 +159,7 @@ void main() {
 
     expect(find.text('Usuario'), findsOneWidget);
     expect(find.text('Contraseña'), findsOneWidget);
-    expect(find.text('Nombre de este dispositivo'), findsOneWidget);
+    expect(find.text('Nombre de este dispositivo (opcional)'), findsOneWidget);
     expect(find.textContaining('sesión activa en otro dispositivo'), findsNothing);
   });
 
@@ -200,6 +201,49 @@ void main() {
     await tester.pump();
 
     expect(find.text('Usuario o contraseña incorrectos'), findsOneWidget);
+  });
+
+  testWidgets('sin usuario o contraseña avisa de lo que falta', (tester) async {
+    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
+    addTearDown(vm.dispose);
+    await tester.pumpWidget(_app(vm));
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField).at(0), 'alex');
+    await tester.tap(find.text('Entrar'));
+    await tester.pump();
+
+    expect(find.text('Escribe el usuario y la contraseña.'), findsOneWidget);
+    expect(vm.stage, isNot(AuthStage.loggedIn));
+  });
+
+  testWidgets('sin nombre de dispositivo entra con el nombre por defecto', (tester) async {
+    final repo = FakeAuthRepository();
+    final vm = AuthViewModel(repo, InMemoryTokenStorage());
+    addTearDown(vm.dispose);
+    await tester.pumpWidget(_app(vm));
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField).at(0), 'alex');
+    await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
+    await tester.tap(find.text('Entrar'));
+    await tester.pump();
+
+    expect(vm.stage, AuthStage.loggedIn);
+    expect((await repo.session()).dispositivo, kDefaultDeviceName);
+  });
+
+  testWidgets('sin código, usuario o contraseña el registro avisa de lo que falta', (tester) async {
+    final vm = AuthViewModel(sinCuenta(), InMemoryTokenStorage());
+    addTearDown(vm.dispose);
+    await tester.pumpWidget(_app(vm));
+    await tester.pump();
+
+    await tester.tap(find.text('Crear cuenta'));
+    await tester.pump();
+
+    expect(find.text('Escribe el código, el usuario y la contraseña.'), findsOneWidget);
+    expect(vm.stage, AuthStage.needsRegistration);
   });
 
   testWidgets('bloqueado muestra la cuenta atrás y deshabilita Entrar', (tester) async {
