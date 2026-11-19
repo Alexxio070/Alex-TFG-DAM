@@ -166,6 +166,45 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 
 Construida con el mismo sistema visual que el resto de la app (`AppTextField`, con un `obscureText` nuevo para la contraseña; `AppButton`; tokens). El token se guarda con `TokenStorage` (Android Keystore vía `flutter_secure_storage`), se mantiene en memoria para las peticiones y se borra al cerrar sesión, desemparejar o si el agente devuelve `401`. Cerrar sesión y desemparejar también olvidan lo local aunque el PC esté apagado.
 
+### 7 bis.1 Pantalla de bienvenida (diseño aprobado el 19/11/2026, pendiente de implementar)
+
+Sustituye a la pantalla de «agente inalcanzable» y al botón «Conexión con el PC» de los formularios, y se actualizará esta sección cuando se implemente.
+
+Un solo diseño, con el nombre «Sysmote» centrado arriba (sin logo por ahora) y los botones abajo. Cuáles se ven depende de si la app ya está emparejada:
+
+| Estado | Botones |
+|---|---|
+| **Sin emparejar** (primer inicio) | «Conectar con el agente», que abre la hoja de conexión (dirección, huella e identificador iroh). Sin mensajes de error |
+| **Emparejada** | «Iniciar sesión» y «Registrar cuenta», siempre los dos |
+
+**Cuándo está emparejada:** la app guarda una marca la primera vez que el agente responde bien. La marca se borra si se cambia la dirección, la huella o el identificador iroh, o al desemparejar. Tras guardar la hoja de conexión, la app comprueba el agente; si responde, marca y muestra los dos botones; si no, sigue en «Conectar con el agente» con el aviso de abajo.
+
+**Qué hace cada botón.** La app consulta antes el estado del agente (`/estado`):
+
+| Estado del agente | «Registrar cuenta» | «Iniciar sesión» |
+|---|---|---|
+| Con cuenta | Popup: «Este agente ya tiene una cuenta. Inicia sesión.» | Abre el formulario |
+| Sin cuenta y registro abierto | Abre el formulario | Popup: «El agente aún no tiene cuenta. Regístrala.» |
+| Sin cuenta y registro cerrado | Popup: «El registro está cerrado. Ábrelo desde la TUI del PC.» | El mismo popup |
+
+Si el agente responde `registro_cerrado` al enviar el formulario de registro (otro móvil se adelantó), aparece también el popup de «ya tiene una cuenta».
+
+**Si el PC no responde,** aparece bajo los botones un aviso pequeño en gris, **sin botón de reintentar**, con la causa:
+
+| Causa | Mensaje |
+|---|---|
+| Sin respuesta a tiempo | «El PC no responde. ¿Está encendido y en la misma red?» |
+| No se pudo abrir la conexión | «No se puede llegar al PC. Revisa la dirección.» |
+| La huella del certificado no coincide | «La huella no coincide con la de este PC.» |
+| Identificador iroh no válido | «El identificador del PC no es válido.» |
+| Respuesta inesperada o código HTTP | «El agente respondió algo inesperado.» |
+
+La app vuelve a comprobar el agente al pulsar «Iniciar sesión» o «Registrar cuenta» y cada vez que vuelve a primer plano. Un token guardado no se borra por un fallo de red.
+
+**Formularios** de login y registro: sin «Conexión con el PC»; tienen un botón para volver a la bienvenida. Para cambiar de PC se usa Ajustes o desemparejar.
+
+**Sesión caducada:** el token dura 7 días desde el login. Al caducar, el agente devuelve `401 no_autenticado`, la app borra el token y muestra la bienvenida con el aviso «Tu sesión ha caducado. Inicia sesión de nuevo.»
+
 ## 8. Qué es simulado
 
 | Repositorio | Implementación `Fake...` |
