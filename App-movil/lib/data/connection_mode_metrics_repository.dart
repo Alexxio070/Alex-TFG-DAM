@@ -1,3 +1,6 @@
+// Repositorio de métricas que delega en el de HTTPS o en el de iroh según el modo de conexión de
+// Ajustes.
+
 import 'models/metrics.dart';
 import 'models/settings.dart';
 import 'repositories/metrics_repository.dart';

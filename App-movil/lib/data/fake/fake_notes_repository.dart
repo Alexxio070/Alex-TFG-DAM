@@ -1,6 +1,10 @@
+// PLACEHOLDER: notas de ejemplo en memoria mientras el agente no tenga notas. No es código muerto:
+// lo usa main.dart.
+
 import '../models/note.dart';
 import '../repositories/notes_repository.dart';
 
+/// Lista, crea, edita y borra notas en memoria, empezando con 3 de ejemplo.
 class FakeNotesRepository implements NotesRepository {
   FakeNotesRepository() {
     final now = DateTime.now();

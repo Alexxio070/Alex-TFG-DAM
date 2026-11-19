@@ -1,13 +1,18 @@
+// Modelos de la cuadrícula de Inicio: macros y carpetas.
+
 import 'package:flutter/painting.dart';
 
+/// Icono de una macro.
 enum MacroKind { volume, lock, moon, bolt }
 
+/// Elemento de la cuadrícula: una [Macro] o una [Folder].
 sealed class HomeItem {
   const HomeItem({required this.id});
 
   final String id;
 }
 
+/// Comando con nombre que se ejecuta en el PC; [confirm] indica si pide confirmación antes.
 class Macro extends HomeItem {
   const Macro({
     required super.id,
@@ -23,6 +28,7 @@ class Macro extends HomeItem {
   final bool confirm;
 }
 
+/// Carpeta de color con macros dentro.
 class Folder extends HomeItem {
   const Folder({
     required super.id,

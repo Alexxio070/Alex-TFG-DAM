@@ -1,3 +1,5 @@
+// Conexión iroh compartida con el agente y utilidades para mandar HTTP crudo por ella.
+
 import 'dart:convert';
 
 import 'package:iroh_flutter/iroh_flutter.dart';

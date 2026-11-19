@@ -1,3 +1,5 @@
+// Cliente HTTPS con certificate pinning y envío común de peticiones al agente.
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -10,12 +12,15 @@ import '../repositories/metrics_repository.dart' show AgentUnavailableException;
 
 const _timeout = Duration(seconds: 3);
 
+/// Mensaje que se muestra cuando el certificado del agente no coincide con la huella guardada.
 const kFingerprintMismatchMessage =
     'El certificado del agente no coincide con la huella guardada. Compárala con la de la TUI';
 
 /// Huella de un certificado: SHA-256 de su DER en hexadecimal minúscula.
 String certificateFingerprint(Uint8List der) => sha256.convert(der).toString();
 
+/// Indica si el certificado [der] tiene la huella [expected], sin distinguir mayúsculas ni espacios
+/// alrededor.
 bool fingerprintMatches(Uint8List der, String expected) =>
     expected.isNotEmpty && certificateFingerprint(der) == expected.trim().toLowerCase();
 

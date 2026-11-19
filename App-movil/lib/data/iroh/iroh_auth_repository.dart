@@ -1,3 +1,5 @@
+// Autenticación contra el agente por un túnel iroh, con HTTP crudo sobre la conexión.
+
 import 'dart:convert';
 
 import '../agent_auth_repository.dart';

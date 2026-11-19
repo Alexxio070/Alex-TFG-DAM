@@ -1,3 +1,5 @@
+// Métricas del agente por HTTPS con la huella del certificado fijada.
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

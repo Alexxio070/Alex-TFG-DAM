@@ -1,3 +1,6 @@
+// Parte común de los repositorios de métricas reales: convierte el JSON de `/metrics` en los
+// modelos de la app.
+
 import 'models/metrics.dart';
 import 'repositories/metrics_repository.dart';
 
