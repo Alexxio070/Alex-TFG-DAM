@@ -1,3 +1,5 @@
+"""Acceso a la tabla `sesion`: las sesiones de la app, identificadas por el hash de su token."""
+
 import sqlite3
 from datetime import UTC, datetime
 
@@ -20,6 +22,7 @@ def _to_sesion(row: tuple) -> Sesion:
 
 
 def crear(connection: sqlite3.Connection, usuario_id: int, hash_token: str, dispositivo: str) -> Sesion:
+    """Crea una sesión sin revocar, con la fecha actual como creación y último acceso."""
     ahora = datetime.now(UTC).isoformat()
     cursor = connection.execute(
         "INSERT INTO sesion (usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso) "
@@ -40,20 +43,15 @@ def crear(connection: sqlite3.Connection, usuario_id: int, hash_token: str, disp
 
 
 def obtener_por_hash_token(connection: sqlite3.Connection, hash_token: str) -> Sesion | None:
+    """Busca la sesión de un token (por su hash), esté o no revocada."""
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM sesion WHERE hash_token = ?", (hash_token,)
     ).fetchone()
     return _to_sesion(row) if row else None
 
 
-def obtener_activa_de_usuario(connection: sqlite3.Connection, usuario_id: int) -> Sesion | None:
-    row = connection.execute(
-        f"SELECT {_COLUMNS} FROM sesion WHERE usuario_id = ? AND revocada = 0", (usuario_id,)
-    ).fetchone()
-    return _to_sesion(row) if row else None
-
-
 def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
+    """Devuelve la sesión sin revocar más reciente; no comprueba si ha caducado por inactividad."""
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM sesion WHERE revocada = 0 ORDER BY id DESC LIMIT 1"
     ).fetchone()
@@ -61,6 +59,7 @@ def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
 
 
 def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
+    """Pone el último acceso a ahora: cada uso renueva los 30 días de caducidad."""
     connection.execute(
         "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (datetime.now(UTC).isoformat(), sesion_id)
     )
@@ -68,6 +67,7 @@ def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
 
 
 def revocar(connection: sqlite3.Connection, sesion_id: int, motivo: str) -> None:
+    """Revoca una sesión guardando el motivo (por ejemplo `logout` o `desemparejado`)."""
     connection.execute(
         "UPDATE sesion SET revocada = 1, motivo_revocacion = ? WHERE id = ?", (motivo, sesion_id)
     )
@@ -75,6 +75,7 @@ def revocar(connection: sqlite3.Connection, sesion_id: int, motivo: str) -> None
 
 
 def revocar_todas_de_usuario(connection: sqlite3.Connection, usuario_id: int, motivo: str) -> None:
+    """Revoca todas las sesiones abiertas de un usuario."""
     connection.execute(
         "UPDATE sesion SET revocada = 1, motivo_revocacion = ? WHERE usuario_id = ? AND revocada = 0",
         (motivo, usuario_id),

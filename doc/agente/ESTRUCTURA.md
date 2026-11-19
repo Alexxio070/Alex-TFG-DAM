@@ -3,18 +3,30 @@
 Organización de `agent/sysmote/` y qué entra en cada carpeta, fase a fase.
 
 ```
-agent/schema.sql  esquema de SQLite (se aplica al abrir la base de datos)
 agent/sysmote/
   api/            rutas de FastAPI, formato de errores y dependencia de sesión
   services/       lógica de negocio
   repositories/   acceso a datos (psutil, SQLite)
   models/         modelos Pydantic
   tui/            interfaz de terminal `sysmote` (Textual)
+    app.py          la aplicación y el comando `sysmote` (arranca también los servidores)
+    screens/        pantalla principal y diálogos modales
+    widgets/        una sección o subpestaña por archivo (Dispositivo, Seguridad, Historial…)
+    sections.py     cambio de sección con una barra de botones
+  main.py         la app de FastAPI: reúne las rutas (importarla no arranca nada)
   database.py     conexión a SQLite (permisos 0700/0600, claves foráneas activas)
+  schema.sql      esquema de SQLite, se aplica al abrir la base de datos; va dentro del paquete para que se instale con pip
+  rutas.py        dónde guarda el agente sus archivos (base de datos, certificado, clave iroh, config.toml)
   server.py       servidores del agente: HTTPS (USB/LAN), HTTP interno y túnel iroh, en un hilo
   iroh_tunnel.py  túnel iroh (fase 2): fuera de las capas, reenvía las conexiones iroh al puerto local del agente
-agent/scripts/    arranque manual del agente con el túnel iroh (prueba de concepto de la fase 2)
+agent/tests/      tests (ver tests.md)
 ```
+
+Una petición recorre las capas en este orden: `api/` (traduce HTTP) → `services/` (decide) →
+`repositories/` (lee y escribe SQLite) → `models/` (los datos que viajan entre capas). La TUI
+llama directamente a `services/`, igual que la API.
+
+**Nombres.** El código sigue el criterio con el que se escribió cada fase: la parte de métricas y la infraestructura (fase 1 y túnel iroh) usan nombres en inglés (`read_cpu_percent`, `get_metrics`), y el dominio de seguridad (fase 3) los usa en español (`registrar`, `obtener_por_hash`, `limite_service`). Los comentarios, los docstrings y los textos que ve el usuario van siempre en español. Las fases siguientes mantienen el idioma de su dominio.
 
 ## Qué entra en cada carpeta, por fase
 
@@ -31,6 +43,6 @@ agent/scripts/    arranque manual del agente con el túnel iroh (prueba de conce
 
 Cada fase solo añade un archivo en la capa que le toca; las carpetas vacías de la fase 1 (`repositories/` sobre todo) se van llenando a partir de la fase 3, cuando aparece la primera tabla. La estructura y el comportamiento completos de la TUI están en [`tui.md`](tui.md).
 
-**Fase 3 (seguridad).** `server.py` y `database.py` también quedan fuera de las capas: arrancan y paran los servidores, y abren la conexión a SQLite. El comando `sysmote` abre la TUI y arranca por debajo los servidores (HTTPS en el 8443, HTTP interno en `127.0.0.1:8444` y el túnel iroh que reenvía a ese puerto); al salir de la TUI se paran. Los servicios no importan nada de `tui/` ni de `api/`: la TUI y la API los llaman, y se comunican entre sí solo a través de SQLite. `iroh_tunnel.py` no se modifica: `server.py` lo invoca igual que la prueba de concepto.
+**Fase 3 (seguridad).** `server.py`, `database.py` y `rutas.py` también quedan fuera de las capas: arrancan y paran los servidores, abren la conexión a SQLite y dicen dónde está cada archivo. El comando `sysmote` abre la TUI y arranca por debajo los servidores (HTTPS en el 8443, HTTP interno en `127.0.0.1:8444` y el túnel iroh que reenvía a ese puerto); al salir de la TUI se paran. Los servicios no importan nada de `tui/` ni de `api/`: la TUI y la API los llaman, y se comunican entre sí solo a través de SQLite. `server.py` arranca `iroh_tunnel.py` con la clave de `rutas.IROH_KEY_PATH`.
 
-**Fase 2 (iroh).** `iroh_tunnel.py` vive directamente en `agent/sysmote/`, fuera de las capas, porque no es parte de la API ni toca datos: acepta conexiones iroh y copia los bytes de cada flujo al puerto local donde escucha FastAPI, sin mirarlos. `agent/scripts/iroh_poc.py` arranca a mano el agente y el túnel juntos e imprime el identificador iroh; el arranque automático llegará con `sysmote serve` (fase 5). Detalle en `doc/iroh/`.
+**Fase 2 (iroh).** `iroh_tunnel.py` vive directamente en `agent/sysmote/`, fuera de las capas, porque no es parte de la API ni toca datos: acepta conexiones iroh y copia los bytes de cada flujo al puerto local donde escucha FastAPI, sin mirarlos. Lo arranca `sysmote.server.Servidores` al abrir la TUI, junto a los servidores HTTPS e interno; el servicio systemd que lo mantenga sin la TUI llega en la fase 5. Detalle en `doc/iroh/`.

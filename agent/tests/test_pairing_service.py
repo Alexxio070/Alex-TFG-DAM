@@ -1,3 +1,5 @@
+"""Datos de emparejamiento: dirección, URI del contrato y QR en texto (comprobado con un lector real)."""
+
 import re
 import shutil
 import subprocess
@@ -38,11 +40,6 @@ def test_uri_sin_codigo_es_el_de_volver_a_emparejar():
 def test_uri_incluye_iroh_antes_del_codigo_cuando_existe():
     uri = pairing_service.uri_emparejamiento("192.168.1.20:8443", HUELLA, codigo=CODIGO, iroh="abc123")
     assert list(parse_qs(urlparse(uri).query)) == ["v", "dir", "huella", "iroh", "codigo"]
-
-
-def test_qr_usa_solo_los_caracteres_de_bloque():
-    texto = pairing_service.qr_texto(pairing_service.uri_emparejamiento("192.168.1.20:8443", HUELLA, codigo=CODIGO))
-    assert set(texto) <= set("█▀▄ \n")
 
 
 def test_qr_texto_reproduce_exactamente_la_matriz_del_qr():

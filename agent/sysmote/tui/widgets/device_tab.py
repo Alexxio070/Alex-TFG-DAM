@@ -5,12 +5,14 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Button, Static
 
 from sysmote.services import auth_service, pairing_service, tls_service
-from sysmote.tui.widgets.formato import codigo_vigente, fecha_local
+from sysmote.tui.widgets.formato import fecha_local
 
 SIN_QR = "Pulsa «Configuración inicial» en Seguridad para generar el QR."
 
 
 class DeviceTab(VerticalScroll):
+    """QR de emparejamiento con su URI debajo, a la izquierda; datos de la sesión y Desemparejar, a la derecha."""
+
     DEFAULT_CSS = """
     DeviceTab Horizontal#device-row {
         height: auto;
@@ -60,6 +62,7 @@ class DeviceTab(VerticalScroll):
         self.refrescar()
 
     def refrescar(self) -> None:
+        """Vuelve a leer la sesión activa y el QR; `PairingSection` lo llama cada segundo."""
         conexion = self.app.connection
         sesion = auth_service.sesion_activa(conexion)
         if sesion is None:
@@ -76,18 +79,20 @@ class DeviceTab(VerticalScroll):
         self._mostrar_qr(self._uri(auth_service.estado(conexion)["configurado"]))
 
     def _uri(self, configurado: bool) -> str | None:
+        # Con cuenta: QR de volver a emparejar. Sin cuenta: QR con el código de registro, si hay uno.
         if not tls_service.certificado_existe():
             return None
         direccion = pairing_service.direccion_lan()
         huella = tls_service.huella_sha256()
         if configurado:
             return pairing_service.uri_emparejamiento(direccion, huella, iroh=self._iroh)
-        abierto = codigo_vigente(self.app)
+        abierto = self.app.codigo_registro_vigente()
         if abierto is None:
             return None
         return pairing_service.uri_emparejamiento(direccion, huella, codigo=abierto[0], iroh=self._iroh)
 
     def _mostrar_qr(self, uri: str | None) -> None:
+        # Solo se redibuja si cambia: generar el QR cada segundo no hace falta.
         if uri == self._uri_mostrada:
             return
         self._uri_mostrada = uri

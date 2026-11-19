@@ -10,7 +10,7 @@
 **Administra tu PC Linux desde el móvil, estés donde estés, sin abrir puertos en el router ni montar una VPN.**
 
 > [!WARNING]
-> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro y el login.
+> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro, el login y la consulta de una solicitud de login.
 
 Sysmote tiene dos piezas que se desarrollan juntas:
 
@@ -97,6 +97,7 @@ Noviembre de 2026. La app y el agente ya tienen login: se crea la cuenta con un 
 ## Limitaciones conocidas
 
 - **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 30 días sin uso.
+- **Bloqueo por intentos:** el límite de intentos de login es por cuenta y no por dirección, porque por iroh todas las conexiones llegan desde `127.0.0.1`. Quien alcance el agente puede bloquear el login del dueño durante unos minutos con cinco intentos fallidos. La TUI tiene un botón para levantar el bloqueo.
 - **Sin escáner de QR:** la TUI muestra el QR de emparejamiento, pero la app aún no lo escanea. La dirección, la huella del certificado, el identificador de iroh y el código de registro se escriben a mano en la app.
 
 ## Instalación y uso

@@ -1,7 +1,13 @@
+"""Modelos de autenticación: una clase por tabla de `schema.sql` y los cuerpos de las peticiones."""
+
 from pydantic import BaseModel, Field
+
+DISPOSITIVO_POR_DEFECTO = "Móvil"
 
 
 class Usuario(BaseModel):
+    """La cuenta del agente (solo existe una)."""
+
     id: int
     nombre_usuario: str
     hash_contrasena: str
@@ -9,6 +15,8 @@ class Usuario(BaseModel):
 
 
 class Sesion(BaseModel):
+    """Una sesión de la app. Del token solo se guarda su hash; `motivo_revocacion` distingue el 401."""
+
     id: int
     usuario_id: int
     hash_token: str
@@ -20,6 +28,8 @@ class Sesion(BaseModel):
 
 
 class IntentoLogin(BaseModel):
+    """Un intento de login, correcto o no; sirve para el límite de intentos."""
+
     id: int
     usuario_id: int | None
     nombre_usuario: str
@@ -29,6 +39,8 @@ class IntentoLogin(BaseModel):
 
 
 class SolicitudLogin(BaseModel):
+    """Un login que espera confirmación en la TUI porque ya hay otra sesión activa."""
+
     id: str
     usuario_id: int
     dispositivo: str
@@ -38,6 +50,8 @@ class SolicitudLogin(BaseModel):
 
 
 class CodigoRegistro(BaseModel):
+    """El código de registro de un solo uso que genera la TUI (solo se guarda su hash)."""
+
     id: int
     hash_codigo: str
     creado: str
@@ -46,13 +60,17 @@ class CodigoRegistro(BaseModel):
 
 
 class RegistroRequest(BaseModel):
+    """Cuerpo de `POST /registro`."""
+
     codigo: str = Field(min_length=1)
     usuario: str = Field(min_length=1)
     contrasena: str = Field(min_length=1)
-    dispositivo: str | None = None
+    dispositivo: str = DISPOSITIVO_POR_DEFECTO
 
 
 class LoginRequest(BaseModel):
+    """Cuerpo de `POST /login`."""
+
     usuario: str = Field(min_length=1)
     contrasena: str = Field(min_length=1)
-    dispositivo: str = "Móvil"
+    dispositivo: str = DISPOSITIVO_POR_DEFECTO
