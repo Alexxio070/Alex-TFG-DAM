@@ -70,6 +70,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; publicado en PyPI el 19/11/2026 (ver la entrada siguiente) |
 | 19/11/2026 | Agente | Versión del esquema de la base de datos y migraciones, para poder actualizar el agente sin romper las bases de los usuarios | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Plan | Publicación del agente en PyPI con un workflow de GitHub Actions, sin guardar ningún token | Aplicado; `sysmote 0.1.0` publicado |
+| 19/11/2026 | Agente | Cambiar la contraseña desde la TUI también levanta el bloqueo por intentos fallidos | Aplicado en código y en la documentación |
 
 ---
 
@@ -650,3 +651,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** publicar sin guardar secretos y con un paso humano de aprobación; el prefijo `agent-v` evita que las etiquetas de la APK disparen la publicación.
 - **Afecta a:** `.github/workflows/publicar-agente.yml`, `04` (fase 5) y esta entrada.
 - **Estado:** `sysmote 0.1.0` publicado en PyPI el 19/11/2026 tras un ensayo en TestPyPI. Las versiones siguientes se publican subiendo `version` en `agent/pyproject.toml` y la etiqueta `agent-vX.Y.Z`.
+
+### 19/11/2026 — Cambiar la contraseña levanta el bloqueo por intentos
+
+- **Qué era:** tras cinco intentos fallidos la cuenta se bloquea 10 minutos. Quien olvidaba la contraseña y la cambiaba desde la TUI seguía bloqueado, y la contraseña nueva no entraba hasta pulsar también «Reiniciar intentos». Se detectó en la primera prueba con un móvil físico.
+- **Qué es ahora:** `auth_service.cambiar_contrasena` borra además los intentos de la cuenta, de modo que la contraseña nueva entra al momento. «Reiniciar intentos» sigue existiendo por separado.
+- **Por qué:** quien cambia la contraseña desde la TUI es el dueño del PC; mantener el bloqueo no protege nada y despista.
+- **Afecta a:** `agent/sysmote/services/auth_service.py`, `agent/tests/test_auth_service.py` (un test nuevo, 162 en total), `doc/agente/tui.md` y `doc/agente/tests.md`.
+- **Estado:** aplicado y probado.
