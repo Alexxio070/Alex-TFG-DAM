@@ -1,32 +1,19 @@
-import sqlite3
+"""Rutas de autenticación por HTTP: códigos de estado y cuerpos del contrato de la fase 3."""
+
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from sysmote.api.deps import get_connection
 from sysmote.main import app
 from sysmote.repositories import codigo_registro_repository
 from sysmote.services import auth_service
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 CODIGO = "K7QX-M2PD-9WTR-4HNB"
 
 
 @pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:", check_same_thread=False)
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.executescript(SCHEMA)
-    app.dependency_overrides[get_connection] = lambda: connection
-    yield connection
-    app.dependency_overrides.clear()
-    connection.close()
-
-
-@pytest.fixture
-def client(connection):
+def client():
     return TestClient(app)
 
 
@@ -203,4 +190,5 @@ def test_cinco_fallos_dan_429_con_retry_after_y_espera(client, connection):
 def test_el_origen_del_intento_se_guarda(client, connection):
     _registrar(client, connection)
     client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
-    assert connection.execute("SELECT origen FROM intento_login").fetchone()[0]
+    # El cliente de pruebas de FastAPI se presenta con la dirección «testclient».
+    assert connection.execute("SELECT origen FROM intento_login").fetchone()[0] == "testclient"

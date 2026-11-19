@@ -12,7 +12,7 @@ class DatabaseSection(Vertical):
         with VerticalScroll(id="db-scroll"):
             # TODO: una tabla por cada tabla de schema.sql (nombre, columnas,
             # filas), separadas por un divisor, leídas con sqlite_master y
-            # PRAGMA table_info (fase 3 en adelante, cuando exista la BD).
+            # PRAGMA table_info. La base de datos ya existe; falta la vista.
             yield Static("Sin tablas todavía.")
 
         with Horizontal(id="export-buttons"):

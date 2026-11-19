@@ -33,6 +33,8 @@ ModalScreen {
 
 
 class ChangePasswordScreen(ModalScreen[bool]):
+    """Pide la contraseña nueva dos veces y la cambia; devuelve `True` si se cambió."""
+
     DEFAULT_CSS = DIALOG_CSS
 
     def compose(self) -> ComposeResult:
@@ -65,6 +67,13 @@ class ChangePasswordScreen(ModalScreen[bool]):
 
 
 class LoginRequestScreen(ModalScreen[bool]):
+    """Pregunta si sustituir la sesión activa por la del dispositivo que pide entrar; devuelve `True` si se acepta.
+
+    Args:
+        sesion_activa_en: dispositivo de la sesión que ya está abierta.
+        solicitante: dispositivo que intenta iniciar sesión.
+    """
+
     DEFAULT_CSS = DIALOG_CSS
 
     def __init__(self, sesion_activa_en: str, solicitante: str) -> None:

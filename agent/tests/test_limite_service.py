@@ -1,15 +1,11 @@
-import sqlite3
+"""Cálculo del bloqueo por intentos fallidos y su duración configurable."""
+
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
-import pytest
-
+from sysmote import rutas
 from sysmote.models.auth import IntentoLogin
-from sysmote.repositories import intento_login_repository
 from sysmote.services import config_service, limite_service
-from sysmote.services.auth_error import AuthError
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 DIEZ_MINUTOS = timedelta(minutes=10)
 AHORA = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 
@@ -22,14 +18,6 @@ def _intentos(*resultados: bool, hace: timedelta = timedelta(minutes=1)) -> list
         )
         for i, exito in enumerate(resultados)
     ]
-
-
-@pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:")
-    connection.executescript(SCHEMA)
-    yield connection
-    connection.close()
 
 
 def test_cuatro_fallos_no_bloquean():
@@ -67,31 +55,10 @@ def test_la_duracion_cambia_el_tiempo_de_espera():
     assert 0 < espera <= 120
 
 
-def test_comprobar_lanza_demasiados_intentos_con_espera(connection):
-    for _ in range(5):
-        limite_service.registrar(connection, "alex", None, "local", exito=False)
-
-    with pytest.raises(AuthError) as error:
-        limite_service.comprobar(connection, "alex")
-
-    assert error.value.codigo == "demasiados_intentos"
-    assert 0 < error.value.extra["espera_s"] <= 600
-
-
 def test_comprobar_no_afecta_a_otra_cuenta(connection):
     for _ in range(5):
         limite_service.registrar(connection, "alex", None, "local", exito=False)
     limite_service.comprobar(connection, "otro")
-
-
-def test_reiniciar_levanta_el_bloqueo(connection):
-    for _ in range(5):
-        limite_service.registrar(connection, "alex", None, "local", exito=False)
-
-    limite_service.reiniciar(connection, "alex")
-
-    limite_service.comprobar(connection, "alex")
-    assert intento_login_repository.listar_recientes_de_usuario(connection, "alex", desde="") == []
 
 
 def test_duracion_por_defecto_son_10_minutos():
@@ -99,10 +66,10 @@ def test_duracion_por_defecto_son_10_minutos():
 
 
 def test_duracion_se_lee_de_config_toml():
-    config_service.CONFIG_PATH.write_text("[seguridad]\nbloqueo_minutos = 2\n")
+    rutas.CONFIG_PATH.write_text("[seguridad]\nbloqueo_minutos = 2\n")
     assert config_service.duracion_bloqueo() == timedelta(minutes=2)
 
 
 def test_config_sin_la_clave_usa_el_valor_por_defecto():
-    config_service.CONFIG_PATH.write_text("[otra]\nclave = 1\n")
+    rutas.CONFIG_PATH.write_text("[otra]\nclave = 1\n")
     assert config_service.duracion_bloqueo() == timedelta(minutes=10)

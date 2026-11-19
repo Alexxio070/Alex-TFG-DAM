@@ -1,3 +1,8 @@
+"""Certificado TLS autofirmado del agente y su huella, para el HTTPS de USB y red local.
+
+La app guarda la huella al emparejar y solo confía en ese certificado (certificate pinning).
+"""
+
 import hashlib
 import os
 from datetime import UTC, datetime, timedelta
@@ -8,13 +13,13 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
-CONFIG_DIR = Path.home() / ".config" / "sysmote"
-CERT_PATH = CONFIG_DIR / "cert.pem"
-KEY_PATH = CONFIG_DIR / "key.pem"
+from sysmote import rutas
+
 _VALIDEZ = timedelta(days=3650)
 
 
 def _escribir_privado(path: Path, contenido: bytes) -> None:
+    # Con 0600 desde la creación, para que la clave nunca sea legible por otros usuarios.
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "wb") as archivo:
         archivo.write(contenido)
@@ -44,21 +49,28 @@ def _generar() -> tuple[bytes, bytes]:
 
 
 def asegurar_certificado() -> tuple[Path, Path]:
-    CONFIG_DIR.mkdir(mode=0o700, parents=True, exist_ok=True)
-    os.chmod(CONFIG_DIR, 0o700)
-    if not (CERT_PATH.exists() and KEY_PATH.exists()):
+    """Genera el certificado y su clave (EC P-256, 10 años) si no existen, y devuelve sus rutas.
+
+    Si ya existen no los toca: regenerarlos cambiaría la huella y la app rechazaría la conexión.
+    """
+    carpeta = rutas.CERT_PATH.parent
+    carpeta.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(carpeta, 0o700)
+    if not certificado_existe():
         cert_pem, key_pem = _generar()
-        CERT_PATH.unlink(missing_ok=True)
-        KEY_PATH.unlink(missing_ok=True)
-        _escribir_privado(KEY_PATH, key_pem)
-        _escribir_privado(CERT_PATH, cert_pem)
-    return CERT_PATH, KEY_PATH
+        rutas.CERT_PATH.unlink(missing_ok=True)
+        rutas.KEY_PATH.unlink(missing_ok=True)
+        _escribir_privado(rutas.KEY_PATH, key_pem)
+        _escribir_privado(rutas.CERT_PATH, cert_pem)
+    return rutas.CERT_PATH, rutas.KEY_PATH
 
 
 def certificado_existe() -> bool:
-    return CERT_PATH.exists() and KEY_PATH.exists()
+    """Indica si ya existen el certificado y su clave."""
+    return rutas.CERT_PATH.exists() and rutas.KEY_PATH.exists()
 
 
 def huella_sha256() -> str:
-    certificado = x509.load_pem_x509_certificate(CERT_PATH.read_bytes())
+    """Devuelve la huella del certificado: SHA-256 del DER en hexadecimal minúscula (64 caracteres)."""
+    certificado = x509.load_pem_x509_certificate(rutas.CERT_PATH.read_bytes())
     return hashlib.sha256(certificado.public_bytes(serialization.Encoding.DER)).hexdigest()

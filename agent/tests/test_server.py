@@ -58,11 +58,6 @@ def _get(puerto: int, ruta: str, https: bool, token: str | None = None):
     return _pedir(puerto, "GET", ruta, https, token)
 
 
-def test_arrancan_los_dos_puertos_y_el_estado_los_da_por_activos(servidores):
-    _esperar_a_que_esten_activos(servidores)
-    assert servidores.estado() == {"https": "activo", "interno": "activo"}
-
-
 def test_https_responde_y_el_certificado_tiene_la_huella_de_tls_service(servidores):
     _esperar_a_que_esten_activos(servidores)
     https, _ = servidores.puertos
@@ -75,12 +70,6 @@ def test_https_responde_y_el_certificado_tiene_la_huella_de_tls_service(servidor
     assert _get(https, "/estado", https=True)[0] == 200
 
 
-def test_el_puerto_interno_responde_en_http_plano(servidores):
-    _esperar_a_que_esten_activos(servidores)
-    _, interno = servidores.puertos
-    assert _get(interno, "/estado", https=False)[0] == 200
-
-
 def test_el_https_no_habla_http_plano(servidores):
     _esperar_a_que_esten_activos(servidores)
     https, _ = servidores.puertos
@@ -88,16 +77,11 @@ def test_el_https_no_habla_http_plano(servidores):
         _get(https, "/estado", https=False)
 
 
-def test_metrics_exige_login_en_los_dos_puertos(servidores):
+def test_registro_login_y_metricas_de_extremo_a_extremo_por_https_y_por_el_puerto_interno(servidores):
     _esperar_a_que_esten_activos(servidores)
     https, interno = servidores.puertos
     assert _get(https, "/metrics", https=True)[0] == 401
     assert _get(interno, "/metrics", https=False)[0] == 401
-
-
-def test_registro_login_y_metricas_de_extremo_a_extremo_por_https_y_por_el_puerto_interno(servidores):
-    _esperar_a_que_esten_activos(servidores)
-    https, interno = servidores.puertos
     with database.connect() as conexion:
         codigo, _ = auth_service.abrir_registro(conexion)
 

@@ -13,11 +13,11 @@ boceto original.
 
 ## Estructura (de arriba abajo, todo a ancho completo)
 
-1. **Banner** — nombre de la app en arte ASCII ANSI Shadow, en una sola línea:
-   "LINUX" y "SYSTEM" uno al lado del otro. Color verde, en negrita. Línea inferior gruesa.
-   **Responsivo (20/10/2026):** el arte ASCII tiene un ancho fijo (no se puede "encoger" sin
-   romperse). Por debajo de ~97 columnas de ancho de terminal, se sustituye por el texto plano
-   "SYSMOTE" centrado, mismo color y negrita.
+1. **Banner** — "SYSMOTE" en arte ASCII ANSI Shadow, en una sola línea. Color verde, en negrita.
+   Línea inferior gruesa.
+   **Responsivo:** el arte ASCII tiene un ancho fijo (no se puede "encoger" sin romperse). Por
+   debajo de 66 columnas de ancho de terminal (`BANNER_MIN_WIDTH` en `main_screen.py`) se
+   sustituye por el texto plano "SYSMOTE" centrado, mismo color y negrita.
 2. **Área de datos** — un marco redondeado con el título "Datos" arriba a la izquierda.
    Ocupa todo el espacio libre. Por defecto está **vacía**; muestra la sección del botón pulsado.
 3. **Barra de botones** — cuatro botones de igual anchura, en este orden:
@@ -83,6 +83,8 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 - Vacía hasta que exista alguna de las dos fuentes.
 
 ### Base de datos
+**Diseño, todavía sin implementar:** la base de datos ya existe (fase 3), pero la sección solo
+muestra "Sin tablas todavía.". Cuando se implemente:
 - Lista de **todas las tablas** del esquema real (`usuario`, `sesion`, `intento_login`,
   `solicitud_login`, `codigo_registro`, `grupo`, `accion_rapida`, `ejecucion`, `regla_alerta`,
   `notificacion`, `nota`, según se vayan creando fase a fase), una debajo de otra y separadas por
@@ -108,9 +110,10 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
 - El botón de la sección activa se resalta con el estilo "primario" del tema de Textual; igual
   para la subpestaña activa dentro de Emparejamiento.
 - Los datos se leen de la base de datos SQLite en `~/.local/share/sysmote/sysmote.db`
-  (creada por `agent/schema.sql`), salvo el historial de comandos de terminal.
-- Consultas de la base de datos: `sqlite_master` para las tablas, `PRAGMA table_info` para las
-  columnas y `SELECT * ... LIMIT 200` para las filas.
+  (creada por `agent/schema.sql`), salvo el historial de comandos de terminal. Las rutas de
+  todos los archivos del agente están en `agent/sysmote/rutas.py`.
+- Consultas previstas para la sección Base de datos: `sqlite_master` para las tablas,
+  `PRAGMA table_info` para las columnas y `SELECT * ... LIMIT 200` para las filas.
 - **El comando `sysmote` abre la TUI y arranca el agente** (hasta que exista el servicio de la
   fase 5): HTTPS en `0.0.0.0:8443` para USB y LAN, HTTP en `127.0.0.1:8444` como puerto interno
   y el túnel iroh que reenvía a ese puerto. Al salir de la TUI se paran. Si un servidor no
