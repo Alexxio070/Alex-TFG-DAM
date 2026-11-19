@@ -78,12 +78,6 @@ class _NotesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!vm.isPaired) {
-      return const _Placeholder(
-        title: 'Sin emparejar',
-        body: 'Empareja el móvil para ver tus notas.',
-      );
-    }
     if (vm.loading && vm.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }

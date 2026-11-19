@@ -134,7 +134,6 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void _clearToast() {
-    _toastTimer?.cancel();
     _toast = null;
     notifyListeners();
   }

@@ -85,7 +85,7 @@ class MetricsViewModel extends ChangeNotifier {
   }
 
   // Un 401 de sesión no es un fallo de conexión: AuthViewModel lleva al login
-  // (o al estado de sin emparejar) y aquí se deja de sondear.
+  // y aquí se deja de sondear.
   bool _sessionLost(Object error) {
     if (!_auth.handleSessionError(error)) return false;
     stop();

@@ -5,10 +5,7 @@ import '../repositories/token_storage.dart';
 const _key = 'session_token';
 
 class SecureTokenStorage implements TokenStorage {
-  SecureTokenStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
-
-  final FlutterSecureStorage _storage;
+  final _storage = const FlutterSecureStorage();
 
   @override
   Future<String?> read() => _storage.read(key: _key);
