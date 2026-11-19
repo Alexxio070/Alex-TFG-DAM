@@ -42,7 +42,9 @@ class SecurityTab(Vertical):
                 lineas.append(f"{ETIQUETAS_SERVIDORES[nombre]}: {estado}")
         abierto = self.app.codigo_registro_vigente()
         if abierto:
-            lineas.append(f"Código de registro: {abierto[0]} (caduca a las {hora_local(abierto[1])})")
+            lineas.append(
+                f"Código de registro: {abierto[0]} (caduca a las {hora_local(abierto[1])})"
+            )
         self.query_one("#security-info", Static).update("\n".join(lineas))
 
         configurado = auth_service.estado(self.app.connection)["configurado"]
@@ -63,14 +65,20 @@ class SecurityTab(Vertical):
         activa = auth_service.sesion_activa(self.app.connection)
         self._dialogo_abierto = True
         self.app.push_screen(
-            LoginRequestScreen(activa.dispositivo if activa else "otro dispositivo", solicitud.dispositivo),
+            LoginRequestScreen(
+                activa.dispositivo if activa else "otro dispositivo", solicitud.dispositivo
+            ),
             lambda aprobar: self._responder(solicitud, bool(aprobar)),
         )
 
     def _responder(self, solicitud: SolicitudLogin, aprobar: bool) -> None:
         auth_service.responder_solicitud(self.app.connection, solicitud.id, aprobar)
         self._dialogo_abierto = False
-        self._estado("Sesión anterior cerrada, la app ya puede entrar." if aprobar else "Sesión anterior mantenida.")
+        self._estado(
+            "Sesión anterior cerrada, la app ya puede entrar."
+            if aprobar
+            else "Sesión anterior mantenida."
+        )
 
     def _estado(self, texto: str) -> None:
         self.query_one("#security-status", Static).update(texto)
@@ -81,11 +89,17 @@ class SecurityTab(Vertical):
             case "initial-setup":
                 tls_service.asegurar_certificado()
                 self.app.registro_abierto = auth_service.abrir_registro(conexion)
-                self._estado("Registro abierto durante 10 minutos. El QR está en la pestaña Dispositivo.")
+                self._estado(
+                    "Registro abierto durante 10 minutos. El QR está en la pestaña Dispositivo."
+                )
             case "change-password":
                 self.app.push_screen(
                     ChangePasswordScreen(),
-                    lambda cambiada: self._estado("Contraseña cambiada y sesiones cerradas.") if cambiada else None,
+                    lambda cambiada: (
+                        self._estado("Contraseña cambiada y sesiones cerradas.")
+                        if cambiada
+                        else None
+                    ),
                 )
             case "close-sessions":
                 auth_service.cerrar_todas_las_sesiones(conexion)

@@ -25,7 +25,13 @@ def _abrir_registro(connection):
 def _registrar(client, connection, contrasena="Clave1"):
     _abrir_registro(connection)
     return client.post(
-        "/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": contrasena, "dispositivo": "Pixel 8"}
+        "/registro",
+        json={
+            "codigo": CODIGO,
+            "usuario": "alex",
+            "contrasena": contrasena,
+            "dispositivo": "Pixel 8",
+        },
     )
 
 
@@ -54,7 +60,12 @@ def test_cabecera_con_esquema_distinto_de_bearer_da_401(client):
 def test_estado_es_publico(client):
     respuesta = client.get("/estado")
     assert respuesta.status_code == 200
-    assert respuesta.json() == {"api": 1, "configurado": False, "registro_abierto": False, "sesion_activa": False}
+    assert respuesta.json() == {
+        "api": 1,
+        "configurado": False,
+        "registro_abierto": False,
+        "sesion_activa": False,
+    }
 
 
 def test_registro_devuelve_201_con_token_y_el_token_abre_las_rutas_protegidas(client, connection):
@@ -76,22 +87,33 @@ def test_registro_con_contrasena_debil_da_422_con_motivos(client, connection):
 
 def test_registro_con_codigo_equivocado_da_403_codigo_invalido(client, connection):
     _abrir_registro(connection)
-    respuesta = client.post("/registro", json={"codigo": "OTRO", "usuario": "alex", "contrasena": "Clave1"})
+    respuesta = client.post(
+        "/registro", json={"codigo": "OTRO", "usuario": "alex", "contrasena": "Clave1"}
+    )
     assert respuesta.status_code == 403
     assert respuesta.json()["error"] == "codigo_invalido"
 
 
 def test_registro_con_codigo_caducado_da_403_codigo_caducado(client, connection):
     codigo_registro_repository.crear(
-        connection, auth_service.hash_codigo(CODIGO), (datetime.now(UTC) - timedelta(minutes=1)).isoformat()
+        connection,
+        auth_service.hash_codigo(CODIGO),
+        (datetime.now(UTC) - timedelta(minutes=1)).isoformat(),
     )
-    respuesta = client.post("/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"})
+    respuesta = client.post(
+        "/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"}
+    )
     assert respuesta.status_code == 403
-    assert respuesta.json() == {"error": "codigo_caducado", "mensaje": "El código de registro ha caducado"}
+    assert respuesta.json() == {
+        "error": "codigo_caducado",
+        "mensaje": "El código de registro ha caducado",
+    }
 
 
 def test_registro_cerrado_da_403(client):
-    respuesta = client.post("/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"})
+    respuesta = client.post(
+        "/registro", json={"codigo": CODIGO, "usuario": "alex", "contrasena": "Clave1"}
+    )
     assert respuesta.status_code == 403
     assert respuesta.json()["error"] == "registro_cerrado"
 
@@ -104,7 +126,9 @@ def test_cuerpo_mal_formado_da_422_peticion_invalida(client):
 
 def test_login_con_credenciales_malas_da_401(client, connection):
     _registrar(client, connection)
-    respuesta = client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
+    respuesta = client.post(
+        "/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"}
+    )
     assert respuesta.status_code == 401
     assert respuesta.json()["error"] == "credenciales_invalidas"
 
@@ -112,7 +136,9 @@ def test_login_con_credenciales_malas_da_401(client, connection):
 def test_login_con_sesion_activa_da_202_y_el_flujo_de_solicitud_completo(client, connection):
     primero = _registrar(client, connection).json()["token"]
 
-    login = client.post("/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"})
+    login = client.post(
+        "/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"}
+    )
     assert login.status_code == 202
     assert login.json()["estado"] == "pendiente"
     assert login.json()["sesion_activa_en"] == "Pixel 8"
@@ -126,7 +152,10 @@ def test_login_con_sesion_activa_da_202_y_el_flujo_de_solicitud_completo(client,
     assert aprobada["estado"] == "aprobada"
 
     assert client.get("/sesion", headers=_con_token(primero)).status_code == 401
-    assert client.get("/sesion", headers=_con_token(aprobada["token"])).json()["dispositivo"] == "Tablet"
+    assert (
+        client.get("/sesion", headers=_con_token(aprobada["token"])).json()["dispositivo"]
+        == "Tablet"
+    )
     assert client.get(f"/login/solicitud/{solicitud}").status_code == 404
 
 
@@ -134,7 +163,9 @@ def test_login_sin_sesion_activa_da_200_con_token(client, connection):
     token = _registrar(client, connection).json()["token"]
     client.post("/logout", headers=_con_token(token))
 
-    respuesta = client.post("/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"})
+    respuesta = client.post(
+        "/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"}
+    )
     assert respuesta.status_code == 200
     assert "token" in respuesta.json()
 
@@ -177,9 +208,13 @@ def test_documentacion_automatica_desactivada(client):
 def test_cinco_fallos_dan_429_con_retry_after_y_espera(client, connection):
     _registrar(client, connection)
     for _ in range(5):
-        client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
+        client.post(
+            "/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"}
+        )
 
-    respuesta = client.post("/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"})
+    respuesta = client.post(
+        "/login", json={"usuario": "alex", "contrasena": "Clave1", "dispositivo": "Tablet"}
+    )
 
     assert respuesta.status_code == 429
     assert respuesta.json()["error"] == "demasiados_intentos"

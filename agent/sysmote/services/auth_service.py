@@ -41,7 +41,9 @@ def hash_codigo(codigo: str) -> str:
     Ignora guiones, espacios y mayúsculas, y lee `0` como `O` y `1` como `I`.
     """
     # El alfabeto base32 no tiene 0 ni 1: al teclear a mano se leen como O e I.
-    normalizado = codigo.replace("-", "").replace(" ", "").upper().replace("0", "O").replace("1", "I")
+    normalizado = (
+        codigo.replace("-", "").replace(" ", "").upper().replace("0", "O").replace("1", "I")
+    )
     return hashlib.sha256(normalizado.encode()).hexdigest()
 
 
@@ -135,7 +137,11 @@ def registrar(
 
 
 def login(
-    connection: sqlite3.Connection, usuario: str, contrasena: str, dispositivo: str, origen: str = "local"
+    connection: sqlite3.Connection,
+    usuario: str,
+    contrasena: str,
+    dispositivo: str,
+    origen: str = "local",
 ) -> dict:
     """Comprueba las credenciales y abre sesión, o crea una solicitud si ya hay una sesión activa.
 
@@ -153,14 +159,19 @@ def login(
     if cuenta is None:
         password_service.verificar_con_relleno(contrasena)
     if cuenta is None or not password_service.verificar(cuenta.hash_contrasena, contrasena):
-        limite_service.registrar(connection, usuario, cuenta.id if cuenta else None, origen, exito=False)
+        limite_service.registrar(
+            connection, usuario, cuenta.id if cuenta else None, origen, exito=False
+        )
         raise AuthError("credenciales_invalidas", "Usuario o contraseña incorrectos")
     limite_service.registrar(connection, usuario, cuenta.id, origen, exito=True)
 
     solicitud_login_repository.borrar_de_usuario(connection, cuenta.id)
     activa = sesion_activa(connection)
     if activa is None:
-        return {"token": _abrir_sesion(connection, cuenta.id, dispositivo), "usuario": cuenta.nombre_usuario}
+        return {
+            "token": _abrir_sesion(connection, cuenta.id, dispositivo),
+            "usuario": cuenta.nombre_usuario,
+        }
 
     caduca_en = (_ahora() + CADUCIDAD_SOLICITUD).isoformat()
     solicitud = solicitud_login_repository.crear(
@@ -223,7 +234,11 @@ def autenticar(connection: sqlite3.Connection, token: str | None) -> Sesion:
 def datos_sesion(connection: sqlite3.Connection, sesion: Sesion) -> dict:
     """Respuesta de `GET /sesion`: usuario, dispositivo y fecha de creación de la sesión."""
     cuenta = usuario_repository.obtener_por_id(connection, sesion.usuario_id)
-    return {"usuario": cuenta.nombre_usuario, "dispositivo": sesion.dispositivo, "creada": sesion.creado_en}
+    return {
+        "usuario": cuenta.nombre_usuario,
+        "dispositivo": sesion.dispositivo,
+        "creada": sesion.creado_en,
+    }
 
 
 def cerrar_sesion(connection: sqlite3.Connection, sesion: Sesion) -> None:

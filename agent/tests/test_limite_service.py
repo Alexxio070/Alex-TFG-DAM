@@ -13,15 +13,22 @@ AHORA = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 def _intentos(*resultados: bool, hace: timedelta = timedelta(minutes=1)) -> list[IntentoLogin]:
     return [
         IntentoLogin(
-            id=i, usuario_id=None, nombre_usuario="alex", origen="local",
-            fecha=(AHORA - hace + timedelta(seconds=i)).isoformat(), exito=exito,
+            id=i,
+            usuario_id=None,
+            nombre_usuario="alex",
+            origen="local",
+            fecha=(AHORA - hace + timedelta(seconds=i)).isoformat(),
+            exito=exito,
         )
         for i, exito in enumerate(resultados)
     ]
 
 
 def test_cuatro_fallos_no_bloquean():
-    assert limite_service.espera_restante(_intentos(False, False, False, False), AHORA, DIEZ_MINUTOS) == 0
+    assert (
+        limite_service.espera_restante(_intentos(False, False, False, False), AHORA, DIEZ_MINUTOS)
+        == 0
+    )
 
 
 def test_cinco_fallos_seguidos_bloquean_el_tiempo_restante():
@@ -31,7 +38,12 @@ def test_cinco_fallos_seguidos_bloquean_el_tiempo_restante():
 
 
 def test_un_acierto_pone_el_contador_a_cero():
-    assert limite_service.espera_restante(_intentos(False, False, False, False, True, False), AHORA, DIEZ_MINUTOS) == 0
+    assert (
+        limite_service.espera_restante(
+            _intentos(False, False, False, False, True, False), AHORA, DIEZ_MINUTOS
+        )
+        == 0
+    )
 
 
 def test_al_terminar_el_bloqueo_el_contador_vuelve_a_cero():
@@ -42,8 +54,12 @@ def test_al_terminar_el_bloqueo_el_contador_vuelve_a_cero():
 def test_tras_un_bloqueo_terminado_hacen_falta_cinco_fallos_nuevos():
     intentos = _intentos(*[False] * 5, hace=timedelta(minutes=11)) + [
         IntentoLogin(
-            id=99 + i, usuario_id=None, nombre_usuario="alex", origen="local",
-            fecha=(AHORA - timedelta(seconds=30 - i)).isoformat(), exito=False,
+            id=99 + i,
+            usuario_id=None,
+            nombre_usuario="alex",
+            origen="local",
+            fecha=(AHORA - timedelta(seconds=30 - i)).isoformat(),
+            exito=False,
         )
         for i in range(4)
     ]
