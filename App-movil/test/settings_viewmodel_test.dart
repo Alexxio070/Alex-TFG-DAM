@@ -1,3 +1,5 @@
+// Tests de SettingsViewModel: ajustes corruptos y que un cambio no se da por hecho hasta guardarse.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/repositories/settings_repository.dart';
 import 'package:sysmote/features/settings/settings_viewmodel.dart';

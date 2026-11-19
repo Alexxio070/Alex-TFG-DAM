@@ -1,7 +1,11 @@
+// Control segmentado compartido (Ajustes y conexión con el PC).
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Elige un valor entre varias opciones `(valor, texto)`; [label] es su nombre para el lector de
+/// pantalla.
 class AppSegmented<T> extends StatelessWidget {
   const AppSegmented({
     super.key,

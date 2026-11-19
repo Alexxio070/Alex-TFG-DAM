@@ -1,8 +1,11 @@
+// Barra superior de las pantallas: título y un botón a la izquierda (menú, cerrar o volver).
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 
+/// Barra con [title] y un botón [icon] que llama a [onIcon]; por defecto, el de abrir el menú.
 class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,

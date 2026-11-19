@@ -1,3 +1,6 @@
+// PLACEHOLDER: shell simulado mientras el agente no abra terminales reales (fase 4). No es código
+// muerto: lo usa main.dart, una instancia por pestaña.
+
 import 'dart:async';
 
 import '../repositories/terminal_repository.dart';
@@ -5,6 +8,8 @@ import '../repositories/terminal_repository.dart';
 const _prompt = '\x1b[32musuario@pc\x1b[0m:\x1b[34m~\x1b[0m\$ ';
 const _clearScreen = '\x1b[2J\x1b[H';
 
+/// Imita una sesión de bash con unos pocos comandos (`help`, `ls`, `pwd`, `whoami`, `uname`,
+/// `date`, `echo`, `clear`, `exit`), historial con ↑/↓ y Ctrl+C/Ctrl+D/Ctrl+L.
 class FakeTerminalRepository implements TerminalRepository {
   final _output = StreamController<String>.broadcast();
   final _sessionEnded = StreamController<void>.broadcast();

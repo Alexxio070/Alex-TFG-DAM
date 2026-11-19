@@ -1,8 +1,11 @@
+// Papelera que aparece abajo al arrastrar en Inicio.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 
+/// Círculo con la papelera en [center]; se agranda y se pone roja con [hot].
 class TrashIndicator extends StatelessWidget {
   const TrashIndicator({super.key, required this.center, required this.hot});
 

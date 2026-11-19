@@ -1,3 +1,5 @@
+// Test de NotesViewModel: una búsqueda antigua no pisa la más reciente.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/note.dart';
 import 'package:sysmote/data/repositories/notes_repository.dart';

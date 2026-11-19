@@ -1,7 +1,10 @@
+// Interruptor de la app con un área táctil mayor que su dibujo.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Interruptor on/off; [label] es su nombre para el lector de pantalla.
 class AppSwitch extends StatelessWidget {
   const AppSwitch({
     super.key,

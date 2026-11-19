@@ -1,6 +1,9 @@
+// Iconos SVG del diseño, dibujados con trazo y color configurables.
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// Iconos disponibles; cada uno guarda el cuerpo SVG de su dibujo.
 enum AppIcon {
   menu('<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/>'),
   close('<path d="M6 6l12 12"/><path d="M18 6L6 18"/>'),
@@ -27,6 +30,7 @@ enum AppIcon {
   final String body;
 }
 
+/// Dibuja un [AppIcon] con el color, tamaño y grosor de trazo indicados.
 class AppIconView extends StatelessWidget {
   const AppIconView(
     this.icon, {

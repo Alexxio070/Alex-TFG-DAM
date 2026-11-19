@@ -1,3 +1,5 @@
+// Tests de la pantalla de Notas: listar, crear, editar, borrar, buscar y copiar.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

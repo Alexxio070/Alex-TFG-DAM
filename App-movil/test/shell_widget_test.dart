@@ -1,3 +1,5 @@
+// Tests de la estructura de la app: menú lateral, navegación y paso entre login y app.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

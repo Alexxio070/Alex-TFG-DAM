@@ -5,8 +5,7 @@ library;
 import 'dart:convert';
 
 import '../agent_metrics_repository.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/metrics_repository.dart';
+import '../repositories/agent_exceptions.dart';
 import 'iroh_connection.dart';
 
 /// Pide `/metrics` al agente a través de un túnel iroh: la misma petición

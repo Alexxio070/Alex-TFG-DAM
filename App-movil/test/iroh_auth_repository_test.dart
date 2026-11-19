@@ -1,11 +1,13 @@
+// Tests de IrohAuthRepository con una conexión iroh falsa, y del HTTP crudo que viaja por ella.
+
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/iroh/iroh_auth_repository.dart';
 import 'package:sysmote/data/iroh/iroh_connection.dart';
 import 'package:sysmote/data/models/auth.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 import 'fakes/in_memory_token_storage.dart';
 

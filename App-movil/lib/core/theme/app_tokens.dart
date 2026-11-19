@@ -1,5 +1,8 @@
+// Colores, fuentes y medidas compartidas por toda la app (tokens del diseño).
+
 import 'package:flutter/material.dart';
 
+/// Colores de acento que se pueden elegir en Ajustes (tema claro).
 const kAccentColors = [
   Color(0xFF0F6B63),
   Color(0xFF3346C7),
@@ -9,6 +12,7 @@ const kAccentColors = [
   Color(0xFF3F4652),
 ];
 
+/// Nombre visible de cada color de [kAccentColors], en el mismo orden.
 const kAccentNames = [
   'Verde azulado',
   'Azul',
@@ -30,7 +34,9 @@ const kAccentColorsDark = [
   Color(0xFF717E92),
 ];
 
+/// Rojo de errores y acciones destructivas.
 const kRed = Color(0xFFB42318);
+/// Verde de confirmaciones y del estado «Conectado».
 const kGreen = Color(0xFF1F9D55);
 
 // Sombra y velo de los diálogos y menús flotantes, repetidos por toda la app.
@@ -43,11 +49,15 @@ const kTerminalForeground = Color(0xFFE6E8EB);
 const kTerminalBarBackground = Color(0xFF15171A);
 const kTerminalBarBorder = Color(0xFF2B2F34);
 const kTerminalGreen = Color(0xFF7EE787);
+const kTerminalBlue = Color(0xFF79C0FF);
 
+/// Fuente monoespaciada de la interfaz (comandos, puntos de montaje).
 const kMonoFont = 'JetBrainsMono';
 
+/// Ancho del menú lateral.
 const kDrawerWidth = 280.0;
 
+/// Colores que cambian entre tema claro y oscuro. Se leen con `context.tokens`.
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
     required this.bg,

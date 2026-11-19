@@ -1,3 +1,5 @@
+// Tests de TerminalViewModel: Ctrl y Alt de la fila de teclas extra.
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';

@@ -1,3 +1,5 @@
+// Pantalla de Ajustes: unidades, métricas, terminal, apariencia y dispositivo.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +18,7 @@ import 'widgets/connection_fields.dart';
 import 'widgets/settings_group.dart';
 import 'widgets/terminal_preview.dart';
 
+/// Muestra y cambia los ajustes de [SettingsViewModel] y la sesión de [AuthViewModel].
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 

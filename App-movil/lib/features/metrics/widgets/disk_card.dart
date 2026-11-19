@@ -1,3 +1,5 @@
+// Tarjeta de uso de disco con su selector de partición.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/metrics.dart';
-import '../../settings/settings_viewmodel.dart';
+import '../../../data/models/settings.dart';
 import 'metric_card.dart';
 import 'partition_menu.dart';
 
@@ -14,6 +16,7 @@ const _holdSlop = 10.0;
 const _menuOffset = Offset(12, 60);
 const _menuBottomMargin = 16.0;
 
+/// Uso de la partición elegida; mantenerla pulsada 1 s abre el menú de particiones.
 class DiskCard extends StatefulWidget {
   const DiskCard({
     super.key,

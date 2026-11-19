@@ -1,3 +1,6 @@
+// Repositorio de autenticación que delega en el de HTTPS o en el de iroh según el modo de conexión
+// de Ajustes.
+
 import 'models/auth.dart';
 import 'models/settings.dart';
 import 'repositories/auth_repository.dart';

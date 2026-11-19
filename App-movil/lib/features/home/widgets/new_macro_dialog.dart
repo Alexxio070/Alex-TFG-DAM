@@ -1,3 +1,5 @@
+// Diálogo para crear una macro.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +14,8 @@ import '../../../data/models/home_item.dart';
 import '../home_viewmodel.dart';
 import 'item_tile.dart';
 
+/// Pide nombre (único y de hasta 50 caracteres), comando, icono y si pide confirmación, y crea la
+/// macro.
 Future<void> showNewMacroDialog(BuildContext context) {
   final vm = context.read<HomeViewModel>();
   return showTopCard(

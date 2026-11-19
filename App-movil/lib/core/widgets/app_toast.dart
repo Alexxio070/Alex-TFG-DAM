@@ -1,7 +1,10 @@
+// Aviso flotante de una línea, con subtítulo opcional.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Aviso oscuro con [text] y, si se da, [subtitle] en fuente monoespaciada.
 class AppToast extends StatelessWidget {
   const AppToast({super.key, required this.text, this.subtitle});
 

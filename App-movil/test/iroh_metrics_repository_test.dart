@@ -6,8 +6,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/iroh/iroh_connection.dart';
 import 'package:sysmote/data/iroh/iroh_metrics_repository.dart';
-import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 
 const _okResponse = 'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{"cpu_percent": 10}';
 

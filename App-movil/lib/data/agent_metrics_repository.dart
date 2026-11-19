@@ -1,4 +1,8 @@
+// Parte común de los repositorios de métricas reales: convierte el JSON de `/metrics` en los
+// modelos de la app.
+
 import 'models/metrics.dart';
+import 'repositories/agent_exceptions.dart';
 import 'repositories/metrics_repository.dart';
 
 /// Parte común de los repositorios que piden `/metrics` al agente: cada uno
@@ -12,7 +16,7 @@ abstract class AgentMetricsRepository implements MetricsRepository {
     try {
       return parse(json);
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 

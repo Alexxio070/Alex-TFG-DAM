@@ -1,12 +1,11 @@
-import 'dart:async';
+// Métricas del agente por HTTPS con la huella del certificado fijada.
+
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
 import '../agent_metrics_repository.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/metrics_repository.dart';
+import '../repositories/agent_exceptions.dart';
 import 'pinned_http_client.dart';
 
 /// Pide `/metrics` al agente por HTTPS (USB o red local), con la huella del
@@ -22,22 +21,10 @@ class HttpMetricsRepository extends AgentMetricsRepository {
 
   @override
   Future<Map<String, dynamic>> fetch() async {
-    http.Response response;
-    try {
-      final bearer = token();
-      response = await _client
-          .get(
-            Uri.parse('https://${address()}/metrics'),
-            headers: {if (bearer != null) 'Authorization': 'Bearer $bearer'},
-          )
-          .timeout(const Duration(seconds: 3));
-    } on TimeoutException {
-      throw AgentUnavailableException('El agente no respondió a tiempo');
-    } on HandshakeException {
-      throw AgentUnavailableException(kFingerprintMismatchMessage);
-    } catch (_) {
-      throw AgentUnavailableException('No se pudo conectar con el agente');
-    }
+    final request = http.Request('GET', Uri.parse('https://${address()}/metrics'));
+    final bearer = token();
+    if (bearer != null) request.headers['Authorization'] = 'Bearer $bearer';
+    final response = await sendToAgent(_client, request);
     final Object? decoded;
     try {
       decoded = response.body.isEmpty ? null : jsonDecode(response.body);
@@ -45,14 +32,14 @@ class HttpMetricsRepository extends AgentMetricsRepository {
       if (response.statusCode != 200) {
         throw AgentUnavailableException('El agente respondió con el código ${response.statusCode}');
       }
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
     throwIfSessionError(response.statusCode, decoded);
     if (response.statusCode != 200) {
       throw AgentUnavailableException('El agente respondió con el código ${response.statusCode}');
     }
     if (decoded is! Map<String, dynamic>) {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
     return decoded;
   }

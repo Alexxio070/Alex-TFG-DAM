@@ -1,3 +1,5 @@
+// Tarjeta de una nota en la lista.
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/note.dart';
 import '../../../data/models/note_links.dart';
 
+/// Texto seleccionable con enlaces pulsables, origen, fecha y botones de copiar y editar.
 class NoteCard extends StatefulWidget {
   const NoteCard({
     super.key,

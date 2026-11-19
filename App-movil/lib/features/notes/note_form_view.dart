@@ -1,3 +1,5 @@
+// Formulario para crear o editar una nota.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +13,7 @@ import '../../data/models/note.dart';
 import '../shell/widgets/app_top_bar.dart';
 import 'notes_viewmodel.dart';
 
+/// Crea una nota nueva o, con [note], la edita y permite borrarla.
 class NoteFormView extends StatefulWidget {
   const NoteFormView({super.key, this.note});
 

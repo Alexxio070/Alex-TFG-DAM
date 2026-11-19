@@ -1,3 +1,6 @@
+// Detección de enlaces dentro del texto de una nota.
+
+/// Un enlace encontrado y su posición dentro del texto.
 class LinkMatch {
   const LinkMatch({required this.start, required this.end, required this.url});
 
@@ -9,6 +12,7 @@ class LinkMatch {
 final _linkPattern = RegExp(r'\b(?:https?://|www\.)\S+', caseSensitive: false);
 const _trailingPunctuation = '.,;:!?)]}"\'»';
 
+/// Busca las direcciones `http(s)://` y `www.` de [text], sin la puntuación final.
 List<LinkMatch> findLinks(String text) {
   final links = <LinkMatch>[];
   for (final match in _linkPattern.allMatches(text)) {
