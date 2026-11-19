@@ -118,6 +118,24 @@ def test_registrar_dos_veces_da_registro_cerrado(connection):
     assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")) == "registro_cerrado"
 
 
+def test_dos_registros_simultaneos_solo_crean_una_cuenta(connection, monkeypatch):
+    _cuenta(connection)
+    codigo_registro_repository.crear(connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10)))
+    # Simula la carrera: la comprobación de «ya hay cuenta» pasa porque el otro registro aún no había insertado.
+    monkeypatch.setattr(usuario_repository, "existe_alguno", lambda _connection: False)
+
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")) == "registro_cerrado"
+    assert usuario_repository.obtener_por_nombre(connection, "otro") is None
+
+
+def test_login_con_usuario_inexistente_tambien_ejecuta_argon2(connection, monkeypatch):
+    verificadas = []
+    monkeypatch.setattr(password_service, "verificar", lambda hash_contrasena, contrasena: verificadas.append(contrasena) or False)
+
+    assert _codigo_de_error(lambda: auth_service.login(connection, "nadie", "Clave1", "Pixel 8")) == "credenciales_invalidas"
+    assert verificadas == ["Clave1"]
+
+
 def test_login_correcto_sin_sesion_activa_abre_sesion(connection):
     _cuenta(connection)
     sesion_repository.revocar_todas_de_usuario(connection, 1, "cerrar_todas")

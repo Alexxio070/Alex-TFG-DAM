@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 153 tests (141 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 155 tests (143 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -19,14 +19,13 @@ cd agent && .venv/bin/pytest -q
 | [`test_tui.py`](../../agent/tests/test_tui.py) | 6 | La navegación de la TUI `sysmote`, sin terminal real | Interfaz (arnés de Textual) |
 | [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 9 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
 | [`test_iroh_secret_key.py`](../../agent/tests/test_iroh_secret_key.py) | 3 | La clave secreta del túnel, que fija el identificador iroh | Unitario |
-| [`test_database.py`](../../agent/tests/test_database.py) | 2 | La conexión a SQLite: permisos y claves foráneas | Unitario |
-| [`test_sesion_repository.py`](../../agent/tests/test_sesion_repository.py) | 1 | Revocar las sesiones de un usuario sin tocar las de otro | Unitario (SQLite) |
+| [`test_database.py`](../../agent/tests/test_database.py) | 3 | La conexión a SQLite: permisos, claves foráneas y cuenta única | Unitario |
 | [`test_password_service.py`](../../agent/tests/test_password_service.py) | 3 | Hashing de contraseñas con Argon2 | Unitario |
 | [`test_token_service.py`](../../agent/tests/test_token_service.py) | 5 | Tokens de sesión y su caducidad | Unitario |
 | [`test_tls_service.py`](../../agent/tests/test_tls_service.py) | 3 | Certificado TLS autofirmado y su huella | Unitario |
 | [`test_limite_service.py`](../../agent/tests/test_limite_service.py) | 10 | Límite de intentos de login y su configuración | Unitario |
 | [`test_pairing_service.py`](../../agent/tests/test_pairing_service.py) | 6 | URI de emparejamiento y QR en texto | Unitario + lector real |
-| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 51 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
+| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 53 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
 | [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 19 | Las rutas de autenticación y la protección de `/metrics` | Integración |
 | [`test_server.py`](../../agent/tests/test_server.py) | 7 | Los servidores reales (HTTPS, HTTP interno, iroh) y su ciclo de vida | Integración |
 | [`test_tui_security.py`](../../agent/tests/test_tui_security.py) | 21 | Las subpestañas Seguridad y Dispositivo de la TUI | Interfaz (arnés de Textual) |
@@ -102,12 +101,7 @@ Los tests de esta fase se agrupan por comportamiento: una fila por cada grupo de
 |---|---|---|
 | Permisos | El archivo de la base de datos queda en `0600` y su carpeta en `0700` | Que los datos (hashes, sesiones) queden legibles por otros usuarios del PC |
 | Claves foráneas | `PRAGMA foreign_keys` vale 1 en cada conexión | Que SQLite ignore las claves foráneas sin avisar |
-
-### `test_sesion_repository.py`: repositorio de sesiones
-
-| Test | Qué comprueba | Qué fallo detecta |
-|---|---|---|
-| `test_revocar_todas_de_usuario_no_toca_las_de_otro` | Revocar las sesiones de una cuenta no revoca las de otra | Un `UPDATE` sin filtrar por usuario. El servicio no puede probarlo porque el agente solo tiene una cuenta |
+| Cuenta única | La base de datos rechaza una segunda cuenta (índice único) | Que dos registros simultáneos acaben creando dos cuentas |
 
 ### `test_password_service.py` y `test_token_service.py`
 
@@ -153,8 +147,8 @@ Usa la fixture `connection`: SQLite real en una carpeta temporal.
 |---|---|---|
 | Estado | `configurado`, `registro_abierto` y `sesion_activa` en cada situación | Que la app muestre la pantalla equivocada |
 | Contraseña débil | Mínimo 5 caracteres, un número y una mayúscula, con un motivo por cada regla incumplida | Aceptar contraseñas que no cumplen |
-| Registro | Crea la cuenta con Argon2 y devuelve una sesión; `registro_cerrado` con cuenta o si nunca se abrió el registro; `codigo_caducado` si el código enviado es el que caducó; `codigo_invalido` si no coincide con ninguno guardado (también cuando solo hay uno caducado), si ya se usó o si pertenece a un registro anterior; una contraseña débil no gasta el código | Registrar sin código, gastar el código sin crear cuenta o confundir al usuario con el error equivocado |
-| Login | Abre sesión; credenciales incorrectas o usuario inexistente dan `credenciales_invalidas` | Mensajes que revelen qué cuentas existen |
+| Registro | Crea la cuenta con Argon2 y devuelve una sesión; `registro_cerrado` con cuenta o si nunca se abrió el registro; `codigo_caducado` si el código enviado es el que caducó; `codigo_invalido` si no coincide con ninguno guardado (también cuando solo hay uno caducado), si ya se usó o si pertenece a un registro anterior; una contraseña débil no gasta el código; si dos registros coinciden, solo uno crea la cuenta y el otro da `registro_cerrado` | Registrar sin código, gastar el código sin crear cuenta o confundir al usuario con el error equivocado |
+| Login | Abre sesión; credenciales incorrectas o usuario inexistente dan `credenciales_invalidas`, y con usuario inexistente también se ejecuta Argon2, para que el tiempo de respuesta no delate si existe | Mensajes o tiempos que revelen qué cuentas existen |
 | Solicitud de login | Con sesión activa no se abre sesión y se crea una solicitud pendiente (5 minutos); una nueva solicitud sustituye a la anterior; aprobar entrega el token una sola vez y revoca la sesión anterior; rechazar la mantiene; sin respuesta caduca | Que un login correcto eche a otro dispositivo sin confirmar en la TUI |
 | Sesión | Una sesión sin uso 30 días caduca y deja de contar como activa; autenticar renueva el último acceso; logout revoca; desemparejar da `401 desemparejado` | Errores de sesión equivocados en la app |
 | Límite de intentos | Cinco fallos bloquean incluso con la contraseña correcta; el quinto aún da `credenciales_invalidas`; un acierto reinicia; un usuario inexistente también se bloquea; cada intento queda registrado con su origen; reiniciar permite entrar | Un bloqueo mal aplicado o sin registro |
