@@ -1,7 +1,9 @@
-"""Túnel iroh: reenvía cada conexión entrante a un puerto TCP local.
+"""Túnel iroh del agente: deja usar la API desde fuera de casa sin abrir puertos.
 
-Patrón dumbpipe. No depende de la API REST del agente ni la modifica:
-cualquier servidor TCP local puede exponerse así.
+Acepta conexiones iroh y reenvía cada *stream* al puerto HTTP interno del agente,
+que solo escucha en `127.0.0.1`, sin mirar los bytes (patrón *dumbpipe*): la API
+no distingue si la petición llegó por iroh o por la red local. Lo arranca
+`sysmote.server.Servidores`. Detalle en `doc/iroh/02-implementacion.md`.
 """
 
 import asyncio
@@ -15,8 +17,8 @@ from pathlib import Path
 import iroh
 
 ALPN = b"sysmote/tunnel/0"
-# Puerto HTTP interno al que reenvía el túnel; solo debe escuchar en 127.0.0.1.
-INTERNAL_HTTP_PORT = 8444
+"""Protocolo del túnel: la app lo pide al conectar."""
+
 _CHUNK_SIZE = 64 * 1024
 _RESET_CODE = 1
 _REFUSED_CODE = 2
@@ -28,6 +30,14 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Limits:
+    """Límites del túnel frente a un cliente que abuse de él.
+
+    Attributes:
+        max_connections: conexiones simultáneas; al superarlo se cierra la más antigua.
+        max_streams: *streams* simultáneos por conexión; los sobrantes se rechazan.
+        idle_timeout: segundos sin datos en ningún sentido antes de cortar un *stream*.
+    """
+
     max_connections: int = 4
     max_streams: int = 8
     idle_timeout: float = 60.0
@@ -39,13 +49,28 @@ _tasks: set[asyncio.Task] = set()
 
 
 def _spawn(coro) -> asyncio.Task:
+    """Lanza una tarea en segundo plano y guarda una referencia hasta que termina."""
     task = asyncio.create_task(coro)
     _tasks.add(task)
     task.add_done_callback(_tasks.discard)
     return task
 
 
-def _load_or_create_secret_key(path: Path) -> iroh.SecretKey:
+def load_or_create_secret_key(path: Path) -> iroh.SecretKey:
+    """Carga la clave secreta del agente, o la crea si todavía no existe.
+
+    La clave fija el identificador iroh: guardarla en disco hace que el
+    identificador sobreviva a los reinicios.
+
+    Args:
+        path: archivo de la clave. Si se crea, nace con permisos `0600`.
+
+    Returns:
+        La clave secreta.
+
+    Raises:
+        ValueError: si el archivo existe pero no contiene una clave válida.
+    """
     if path.exists():
         try:
             return iroh.SecretKey.from_bytes(path.read_bytes())
@@ -61,18 +86,22 @@ def _load_or_create_secret_key(path: Path) -> iroh.SecretKey:
 
 
 class _IdleTimeout(Exception):
-    pass
+    """Un *stream* ha pasado `idle_timeout` sin mover datos."""
 
 
 class _Activity:
+    """Momento del último dato movido en cualquiera de los dos sentidos de un *stream*."""
+
     def __init__(self) -> None:
         self.last = time.monotonic()
 
     def touch(self) -> None:
+        """Anota que acaba de moverse un dato."""
         self.last = time.monotonic()
 
 
 async def _pump_recv_to_writer(recv: iroh.RecvStream, writer: asyncio.StreamWriter, activity: _Activity) -> None:
+    """Copia lo que llega por iroh al socket local."""
     # No se propaga el EOF al socket local: uvicorn corta la respuesta si ve
     # medio cierre antes de contestar. Una petición HTTP ya es autocontenida
     # (cabeceras hasta `\r\n\r\n`), así que basta con dejar de escribir.
@@ -86,6 +115,7 @@ async def _pump_recv_to_writer(recv: iroh.RecvStream, writer: asyncio.StreamWrit
 
 
 async def _pump_reader_to_send(reader: asyncio.StreamReader, send: iroh.SendStream, activity: _Activity) -> None:
+    """Copia la respuesta del socket local al *stream* de iroh y lo cierra al terminar."""
     try:
         while True:
             data = await reader.read(_CHUNK_SIZE)
@@ -109,6 +139,7 @@ async def _wait_unless_idle(work: asyncio.Future, activity: _Activity, idle_time
 
 
 async def _forward_stream(stream: iroh.BiStream, local_port: int, idle_timeout: float) -> None:
+    """Reenvía un *stream* al puerto local en los dos sentidos hasta que termina, falla o se queda inactivo."""
     try:
         reader, writer = await asyncio.open_connection("127.0.0.1", local_port)
     except OSError:
@@ -133,15 +164,18 @@ async def _forward_stream(stream: iroh.BiStream, local_port: int, idle_timeout: 
 
 
 async def _refuse_stream(stream: iroh.BiStream) -> None:
+    """Rechaza un *stream* sobrante cortándolo en los dos sentidos."""
     with contextlib.suppress(iroh.IrohError):
         await stream.send().reset(_REFUSED_CODE)
         await stream.recv().stop(_REFUSED_CODE)
 
 
-async def _handle_connection(connection: iroh.Connection, local_port: int, limits: Limits = Limits()) -> None:
+async def _handle_connection(connection: iroh.Connection, local_port: int, limits: Limits) -> None:
+    """Atiende los *streams* de una conexión, como mucho `limits.max_streams` a la vez."""
     active = 0
 
     def release(_task: asyncio.Task) -> None:
+        """Libera el hueco de un *stream* cuando su tarea de reenvío termina."""
         nonlocal active
         active -= 1
 
@@ -161,6 +195,7 @@ async def _handle_connection(connection: iroh.Connection, local_port: int, limit
 async def _handle_tracked_connection(
     connection: iroh.Connection, local_port: int, limits: Limits, connections: list[iroh.Connection]
 ) -> None:
+    """Atiende una conexión y la quita de la lista de activas cuando termina."""
     try:
         await _handle_connection(connection, local_port, limits)
     finally:
@@ -169,6 +204,7 @@ async def _handle_tracked_connection(
 
 
 async def _serve(endpoint: iroh.Endpoint, local_port: int, limits: Limits = Limits()) -> None:
+    """Bucle de aceptación: un fallo con una conexión se registra y no tumba el túnel."""
     connections: list[iroh.Connection] = []
     while True:
         try:
@@ -198,8 +234,14 @@ async def _serve(endpoint: iroh.Endpoint, local_port: int, limits: Limits = Limi
 
 
 async def run(local_port: int, secret_key_path: Path, limits: Limits = Limits()) -> None:
-    """Acepta conexiones iroh y las reenvía a `127.0.0.1:local_port`."""
-    secret_key = _load_or_create_secret_key(secret_key_path)
+    """Arranca el túnel y lo mantiene hasta que se cancela.
+
+    Args:
+        local_port: puerto HTTP interno del agente, que solo escucha en `127.0.0.1`.
+        secret_key_path: archivo de la clave secreta, que fija el identificador iroh.
+        limits: límites frente a abusos (ver `Limits`).
+    """
+    secret_key = load_or_create_secret_key(secret_key_path)
     options = iroh.EndpointOptions(preset=iroh.preset_n0(), secret_key=secret_key.to_bytes(), alpns=[ALPN])
     endpoint = await iroh.Endpoint.bind(options)
     print(f"Túnel iroh activo. Identificador: {endpoint.id()}")

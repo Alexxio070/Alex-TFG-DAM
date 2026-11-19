@@ -14,7 +14,7 @@ Tiene *bindings* oficiales para varios lenguajes (Python, Kotlin, Swift, Dart a 
 
 | Concepto | Qué es |
 |---|---|
-| **`SecretKey`** | 32 bytes aleatorios que identifican a un equipo de forma permanente. Si no se guarda, cada arranque genera una identidad nueva (ver `../../agent/sysmote/iroh_tunnel.py`, `_load_or_create_secret_key`). |
+| **`SecretKey`** | 32 bytes aleatorios que identifican a un equipo de forma permanente. Si no se guarda, cada arranque genera una identidad nueva (ver `../../agent/sysmote/iroh_tunnel.py`, `load_or_create_secret_key`). |
 | **`EndpointId`** | La clave pública derivada de la `SecretKey`. Es el "identificador iroh" que se copia entre el agente y la app — 64 caracteres hexadecimales. |
 | **`Endpoint`** | El punto de conexión local: lo que se "arranca" para poder aceptar o iniciar conexiones. Equivale a un socket, pero por encima de QUIC y con descubrimiento de direcciones. |
 | **`Connection`** | Una conexión establecida entre dos `Endpoint`s, identificada por el `EndpointId` del otro lado. |
@@ -38,4 +38,4 @@ Cada `Connection` va sobre QUIC, que cifra con TLS 1.3 de serie — el tráfico 
 
 ## 5. Patrón usado en Sysmote: dumbpipe
 
-Sysmote no "habla iroh" dentro de la API del agente. En vez de eso, usa iroh como un **túnel transparente**: el agente abre un `Endpoint`, acepta conexiones y reenvía cada *stream* a su propio servidor HTTP local (`127.0.0.1:8443`), byte a byte, sin tocar el contenido. La app hace lo mismo al revés: abre un *stream* por cada petición HTTP y la envía tal cual. Así la API REST/WebSocket del agente no sabe si la petición llegó por USB, por la LAN o por iroh — es el mismo patrón que la herramienta `dumbpipe` del propio proyecto iroh. El detalle de implementación está en `02-implementacion.md`.
+Sysmote no "habla iroh" dentro de la API del agente. En vez de eso, usa iroh como un **túnel transparente**: el agente abre un `Endpoint`, acepta conexiones y reenvía cada *stream* a su propio servidor HTTP local (`127.0.0.1:8444`, el puerto HTTP interno), byte a byte, sin tocar el contenido. La app hace lo mismo al revés: abre un *stream* por cada petición HTTP y la envía tal cual. Así la API REST/WebSocket del agente no sabe si la petición llegó por USB, por la LAN o por iroh — es el mismo patrón que la herramienta `dumbpipe` del propio proyecto iroh. El detalle de implementación está en `02-implementacion.md`.

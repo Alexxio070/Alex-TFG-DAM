@@ -1,24 +1,22 @@
+/// Métricas del agente en modo iroh: la misma petición que por la red local,
+/// enviada por la conexión iroh compartida.
+library;
+
 import 'dart:convert';
 
 import '../agent_metrics_repository.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/metrics_repository.dart';
+import '../repositories/agent_exceptions.dart';
 import 'iroh_connection.dart';
-
-export 'iroh_connection.dart' show IrohConnector, IrohLink;
 
 /// Pide `/metrics` al agente a través de un túnel iroh: la misma petición
 /// HTTP que [HttpMetricsRepository], enviada por un *stream* de iroh.
 class IrohMetricsRepository extends AgentMetricsRepository {
-  IrohMetricsRepository(
-    String Function() endpointId,
-    this._token, {
-    IrohConnector? connector,
-    IrohConnection? connection,
-  }) : _connection = connection ?? IrohConnection(endpointId, connector: connector);
+  /// Usa la conexión iroh compartida con la autenticación y lee el token de
+  /// sesión en cada petición, porque puede cambiar tras un nuevo login.
+  IrohMetricsRepository(this._connection, this._token);
 
-  final String? Function() _token;
   final IrohConnection _connection;
+  final String? Function() _token;
 
   @override
   Future<Map<String, dynamic>> fetch() async {
