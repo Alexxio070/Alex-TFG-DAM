@@ -124,7 +124,11 @@ def registrar(
     if motivos:
         raise AuthError("contrasena_debil", "La contraseña es demasiado débil", motivos=motivos)
 
-    nuevo = usuario_repository.crear(connection, usuario, password_service.hashear(contrasena))
+    try:
+        nuevo = usuario_repository.crear(connection, usuario, password_service.hashear(contrasena))
+    except sqlite3.IntegrityError:
+        # Otro registro simultáneo creó la cuenta entre la comprobación de arriba y este insert.
+        raise cerrado from None
     codigo_registro_repository.marcar_usado(connection, registro.id)
     token = _abrir_sesion(connection, nuevo.id, dispositivo)
     return {"token": token, "usuario": nuevo.nombre_usuario}
@@ -146,6 +150,8 @@ def login(
     """
     limite_service.comprobar(connection, usuario)
     cuenta = usuario_repository.obtener_por_nombre(connection, usuario)
+    if cuenta is None:
+        password_service.verificar_con_relleno(contrasena)
     if cuenta is None or not password_service.verificar(cuenta.hash_contrasena, contrasena):
         limite_service.registrar(connection, usuario, cuenta.id if cuenta else None, origen, exito=False)
         raise AuthError("credenciales_invalidas", "Usuario o contraseña incorrectos")

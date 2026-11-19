@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS usuario (
     creado_en TEXT NOT NULL
 );
 
+-- El agente tiene una sola cuenta: con este índice la base de datos rechaza una segunda aunque
+-- dos registros lleguen a la vez.
+CREATE UNIQUE INDEX IF NOT EXISTS usuario_unico ON usuario ((nombre_usuario IS NOT NULL));
+
 CREATE TABLE IF NOT EXISTS sesion (
     id INTEGER PRIMARY KEY,
     usuario_id INTEGER NOT NULL REFERENCES usuario(id),
