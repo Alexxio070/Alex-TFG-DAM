@@ -26,6 +26,7 @@ lib/
       app_switch.dart            interruptor 50x30 (área táctil 56x44)
       app_text_field.dart        campo de texto de una o varias líneas
       app_toast.dart             aviso inferior de una línea (con subtítulo opcional)
+      app_top_bar.dart           barra superior de las pantallas: título y un botón a la izquierda
       confirm_card.dart          diálogo de confirmación único (showConfirmCard)
       field_label.dart           etiqueta + control, para formularios
       modal_card.dart            diálogo centrado y hoja inferior, con scrim
@@ -75,6 +76,8 @@ Cada sección sigue el mismo patrón:
 | `*_view.dart` | Dibuja la pantalla. |
 | `*_viewmodel.dart` | Estado y acciones (`ChangeNotifier`). Habla con los repositorios. |
 | `widgets/` | Piezas que solo usa esa sección. |
+
+Hay una excepción a «solo usa esa sección»: Ajustes es transversal. `SettingsViewModel` es estado global (unidades, tema, datos de conexión) que leen Métricas, Terminal y los campos de conexión, y `connection_sheet.dart` y `connection_fields.dart`, de `settings/widgets/`, los comparten Ajustes y el login. Por eso `features/auth/` y `features/metrics/` importan de `features/settings/`. Lo demás que usan varias secciones vive en `core/`.
 
 Terminal es la única sección con dos niveles: `TerminalTabsViewModel` gestiona la lista de pestañas, y cada pestaña tiene su propio `TerminalViewModel` (ver `XTERM_DART.md`).
 
