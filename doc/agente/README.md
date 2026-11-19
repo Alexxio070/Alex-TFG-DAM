@@ -43,7 +43,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 ## Implementación actual
 
 - **API:** las rutas de seguridad están en el contrato de la fase 3 ([`contrato-api-fase3.md`](contrato-api-fase3.md)), y `GET /metrics` exige sesión. `/docs` está desactivado. El resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar.
-- **Seguridad:** descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/schema.sql`. Cada archivo del código empieza con un comentario que explica su papel.
+- **Seguridad:** descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/sysmote/schema.sql`. Cada archivo del código empieza con un comentario que explica su papel.
 
 ## Por crear en esta carpeta
 

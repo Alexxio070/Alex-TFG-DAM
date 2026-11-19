@@ -334,7 +334,7 @@ Se hacen de forma continua, no como una fase aparte. Son requisitos mínimos del
 
 - **Git y ramas:** ver `CLAUDE.md`.
 - **Arquitectura en capas** (App MVVM, Agente por capas): ver `01` §4.2.
-- **Base de datos:** `agent/schema.sql`, acceso siempre a través de repositorios (ver `01` §6).
+- **Base de datos:** `agent/sysmote/schema.sql`, acceso siempre a través de repositorios (ver `01` §6).
 - **Pruebas:** pytest en el agente, `flutter_test` en la app (ver `02` §8.3), más una tabla de casos de prueba manuales por fase.
 - **Material para la memoria:** al cerrar cada fase, capturas de pantalla, casos de prueba realizados y decisiones tomadas.
 

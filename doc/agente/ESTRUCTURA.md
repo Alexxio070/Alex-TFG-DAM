@@ -3,7 +3,6 @@
 Organización de `agent/sysmote/` y qué entra en cada carpeta, fase a fase.
 
 ```
-agent/schema.sql  esquema de SQLite (se aplica al abrir la base de datos)
 agent/sysmote/
   api/            rutas de FastAPI, formato de errores y dependencia de sesión
   services/       lógica de negocio
@@ -16,6 +15,7 @@ agent/sysmote/
     sections.py     cambio de sección con una barra de botones
   main.py         la app de FastAPI: reúne las rutas (importarla no arranca nada)
   database.py     conexión a SQLite (permisos 0700/0600, claves foráneas activas)
+  schema.sql      esquema de SQLite, se aplica al abrir la base de datos; va dentro del paquete para que se instale con pip
   rutas.py        dónde guarda el agente sus archivos (base de datos, certificado, clave iroh, config.toml)
   server.py       servidores del agente: HTTPS (USB/LAN), HTTP interno y túnel iroh, en un hilo
   iroh_tunnel.py  túnel iroh (fase 2): fuera de las capas, reenvía las conexiones iroh al puerto local del agente

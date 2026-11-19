@@ -110,7 +110,7 @@ muestra "Sin tablas todavía.". Cuando se implemente:
 - El botón de la sección activa se resalta con el estilo "primario" del tema de Textual; igual
   para la subpestaña activa dentro de Emparejamiento.
 - Los datos se leen de la base de datos SQLite en `~/.local/share/sysmote/sysmote.db`
-  (creada por `agent/schema.sql`), salvo el historial de comandos de terminal. Las rutas de
+  (creada por `agent/sysmote/schema.sql`), salvo el historial de comandos de terminal. Las rutas de
   todos los archivos del agente están en `agent/sysmote/rutas.py`.
 - Consultas previstas para la sección Base de datos: `sqlite_master` para las tablas,
   `PRAGMA table_info` para las columnas y `SELECT * ... LIMIT 200` para las filas.

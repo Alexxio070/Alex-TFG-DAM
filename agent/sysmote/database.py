@@ -6,7 +6,7 @@ from pathlib import Path
 
 from sysmote import rutas
 
-_SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema.sql"
+_SCHEMA_PATH = Path(__file__).resolve().parent / "schema.sql"
 
 
 def connect() -> sqlite3.Connection:
