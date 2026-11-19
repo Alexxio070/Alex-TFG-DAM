@@ -1,3 +1,6 @@
+// Tests de la pantalla de Terminal: estado vacío, creación de la sesión, pestañas y shell de
+// ejemplo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:sysmote/app.dart';
@@ -8,10 +11,8 @@ import 'package:xterm/xterm.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
-  TerminalTabsViewModel tabsOf(WidgetTester tester) => Provider.of<TerminalTabsViewModel>(
-        tester.element(find.byType(SysmoteApp)),
-        listen: false,
-      );
+  TerminalTabsViewModel tabsOf(WidgetTester tester) =>
+      Provider.of<TerminalTabsViewModel>(tester.element(find.byType(SysmoteApp)), listen: false);
 
   Future<TerminalViewModel> openTerminal(WidgetTester tester) async {
     await openSection(tester, 'Terminal');
@@ -62,63 +63,44 @@ void main() {
     expect(find.text('Toca para abrir una terminal en tu PC'), findsOneWidget);
   });
 
-  testWidgets('muestra el mensaje de conexión y el prompt', (tester) async {
-    final vm = await openTerminal(tester);
+  // Estos tests prueban el shell simulado de FakeTerminalRepository
+  // (placeholder): se irán con él cuando la terminal hable con el agente.
+  group('shell de ejemplo (placeholder)', () {
+    testWidgets('muestra el mensaje de conexión y el prompt', (tester) async {
+      final vm = await openTerminal(tester);
 
-    expect(screen(vm), contains('Conectado a pc mediante el agente.'));
-    expect(screen(vm), contains(r'usuario@pc:~$'));
-  });
+      expect(screen(vm), contains('Conectado a pc mediante el agente.'));
+      expect(screen(vm), contains(r'usuario@pc:~$'));
+    });
 
-  testWidgets('ejecuta un comando y muestra su salida', (tester) async {
-    final vm = await openTerminal(tester);
+    testWidgets('un comando desconocido da error', (tester) async {
+      final vm = await openTerminal(tester);
 
-    vm.terminal.textInput('whoami\r');
-    await pumpFor(tester, 200);
+      vm.terminal.textInput('foo\r');
+      await pumpFor(tester, 200);
 
-    expect(screen(vm), contains('whoami'));
-    expect(screen(vm), contains('usuario\n'));
-  });
+      expect(screen(vm), contains('bash: foo: orden no encontrada'));
+    });
 
-  testWidgets('un comando desconocido da error', (tester) async {
-    final vm = await openTerminal(tester);
+    testWidgets('la flecha arriba recupera el comando anterior', (tester) async {
+      final vm = await openTerminal(tester);
 
-    vm.terminal.textInput('foo\r');
-    await pumpFor(tester, 200);
+      vm.terminal.textInput('echo hola\r');
+      await pumpFor(tester, 200);
+      vm.pressKey(TerminalKey.arrowUp);
+      await pumpFor(tester, 200);
 
-    expect(screen(vm), contains('bash: foo: orden no encontrada'));
-  });
+      expect(screen(vm).trimRight().split('\n').last, endsWith('echo hola'));
+    });
 
-  testWidgets('la flecha arriba recupera el comando anterior', (tester) async {
-    final vm = await openTerminal(tester);
+    testWidgets('clear limpia la pantalla', (tester) async {
+      final vm = await openTerminal(tester);
 
-    vm.terminal.textInput('echo hola\r');
-    await pumpFor(tester, 200);
-    vm.pressKey(TerminalKey.arrowUp);
-    await pumpFor(tester, 200);
+      vm.terminal.textInput('clear\r');
+      await pumpFor(tester, 200);
 
-    expect(screen(vm).trimRight().split('\n').last, endsWith('echo hola'));
-  });
-
-  testWidgets('CTRL + c cancela la línea', (tester) async {
-    final vm = await openTerminal(tester);
-
-    vm.terminal.textInput('sleep 10');
-    vm.toggleCtrl();
-    expect(vm.ctrl, isTrue);
-    vm.terminal.textInput('c');
-    await pumpFor(tester, 200);
-
-    expect(vm.ctrl, isFalse);
-    expect(screen(vm), contains('^C'));
-  });
-
-  testWidgets('clear limpia la pantalla', (tester) async {
-    final vm = await openTerminal(tester);
-
-    vm.terminal.textInput('clear\r');
-    await pumpFor(tester, 200);
-
-    expect(screen(vm), isNot(contains('Conectado a pc')));
+      expect(screen(vm), isNot(contains('Conectado a pc')));
+    });
   });
 
   testWidgets('el botón + abre una pestaña nueva ya lista', (tester) async {

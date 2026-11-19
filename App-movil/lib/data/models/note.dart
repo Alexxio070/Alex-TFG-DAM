@@ -1,5 +1,9 @@
+// Modelo de una nota.
+
+/// Dónde se creó la nota.
 enum NoteOrigin { mobile, pc }
 
+/// Nota de texto con su origen y sus fechas de creación y de última edición.
 class Note {
   const Note({
     required this.id,

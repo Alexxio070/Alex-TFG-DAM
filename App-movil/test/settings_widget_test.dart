@@ -1,3 +1,5 @@
+// Tests de la pantalla de Ajustes: unidades, límites, tema, acento, conexión y desemparejar.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -87,10 +89,7 @@ void main() {
     await pumpFor(tester, 200);
 
     expect(settings.dark, isTrue);
-    expect(
-      Theme.of(tester.element(find.byType(Scaffold).first)).brightness,
-      Brightness.dark,
-    );
+    expect(Theme.of(tester.element(find.byType(Scaffold).first)).brightness, Brightness.dark);
   });
 
   testWidgets('elige un color de acento desde la hoja', (tester) async {
@@ -150,7 +149,9 @@ void main() {
     expect(settings.irohId, validIrohId);
   });
 
-  testWidgets('rechaza un identificador iroh que no son 64 caracteres hexadecimales', (tester) async {
+  testWidgets('rechaza un identificador iroh que no son 64 caracteres hexadecimales', (
+    tester,
+  ) async {
     await openSettings(tester);
     await tester.tap(find.text('iroh'));
     await pumpFor(tester, 200);

@@ -1,14 +1,14 @@
+// Guarda el token de sesión cifrado en el móvil (Android Keystore).
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../repositories/token_storage.dart';
 
 const _key = 'session_token';
 
+/// [TokenStorage] sobre `flutter_secure_storage`.
 class SecureTokenStorage implements TokenStorage {
-  SecureTokenStorage({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
-
-  final FlutterSecureStorage _storage;
+  final _storage = const FlutterSecureStorage();
 
   @override
   Future<String?> read() => _storage.read(key: _key);

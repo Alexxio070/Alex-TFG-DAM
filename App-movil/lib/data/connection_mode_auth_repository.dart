@@ -1,3 +1,6 @@
+// Repositorio de autenticación que delega en el de HTTPS o en el de iroh según el modo de conexión
+// de Ajustes.
+
 import 'models/auth.dart';
 import 'models/settings.dart';
 import 'repositories/auth_repository.dart';
@@ -26,8 +29,7 @@ class ConnectionModeAuthRepository implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) =>
-      _active.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo);
+  }) => _active.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo);
 
   @override
   Future<LoggedIn> register({
@@ -35,13 +37,12 @@ class ConnectionModeAuthRepository implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) =>
-      _active.register(
-        codigo: codigo,
-        usuario: usuario,
-        contrasena: contrasena,
-        dispositivo: dispositivo,
-      );
+  }) => _active.register(
+    codigo: codigo,
+    usuario: usuario,
+    contrasena: contrasena,
+    dispositivo: dispositivo,
+  );
 
   @override
   Future<LoginRequestStatus> checkLoginRequest(String solicitudId) =>

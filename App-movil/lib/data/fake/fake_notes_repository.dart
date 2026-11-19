@@ -1,6 +1,10 @@
+// PLACEHOLDER: notas de ejemplo en memoria mientras el agente no tenga notas. No es código muerto:
+// lo usa main.dart.
+
 import '../models/note.dart';
 import '../repositories/notes_repository.dart';
 
+/// Lista, crea, edita y borra notas en memoria, empezando con 3 de ejemplo.
 class FakeNotesRepository implements NotesRepository {
   FakeNotesRepository() {
     final now = DateTime.now();
@@ -21,7 +25,8 @@ class FakeNotesRepository implements NotesRepository {
       ),
       Note(
         id: 'n3',
-        content: 'Llamar al técnico para el router. Su web: www.tecnico-local.es, '
+        content:
+            'Llamar al técnico para el router. Su web: www.tecnico-local.es, '
             'abre de lunes a viernes.',
         origin: NoteOrigin.mobile,
         createdAt: now.subtract(const Duration(days: 3)),
@@ -36,10 +41,9 @@ class FakeNotesRepository implements NotesRepository {
   @override
   Future<List<Note>> list({String query = ''}) async {
     final text = query.trim().toLowerCase();
-    final result = _notes
-        .where((n) => text.isEmpty || n.content.toLowerCase().contains(text))
-        .toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final result =
+        _notes.where((n) => text.isEmpty || n.content.toLowerCase().contains(text)).toList()
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return result;
   }
 

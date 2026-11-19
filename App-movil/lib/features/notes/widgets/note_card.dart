@@ -1,3 +1,5 @@
+// Tarjeta de una nota en la lista.
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/note.dart';
 import '../../../data/models/note_links.dart';
 
+/// Texto seleccionable con enlaces pulsables, origen, fecha y botones de copiar y editar.
 class NoteCard extends StatefulWidget {
   const NoteCard({
     super.key,
@@ -50,8 +53,7 @@ class _NoteCardState extends State<NoteCard> {
       if (link.start > cursor) {
         spans.add(TextSpan(text: text.substring(cursor, link.start)));
       }
-      final recognizer = TapGestureRecognizer()
-        ..onTap = () => widget.onOpenLink(link.url);
+      final recognizer = TapGestureRecognizer()..onTap = () => widget.onOpenLink(link.url);
       _recognizers.add(recognizer);
       spans.add(
         TextSpan(
@@ -91,10 +93,7 @@ class _NoteCardState extends State<NoteCard> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  '$origin · $date',
-                  style: TextStyle(fontSize: 11, color: t.muted),
-                ),
+                child: Text('$origin · $date', style: TextStyle(fontSize: 11, color: t.muted)),
               ),
               _IconAction(icon: AppIcon.copy, label: 'Copiar nota', onTap: widget.onCopy),
               _IconAction(icon: AppIcon.edit, label: 'Editar nota', onTap: widget.onEdit),
@@ -126,9 +125,7 @@ class _IconAction extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Center(
-            child: AppIconView(icon, color: context.tokens.muted2, size: 20),
-          ),
+          child: Center(child: AppIconView(icon, color: context.tokens.muted2, size: 20)),
         ),
       ),
     );

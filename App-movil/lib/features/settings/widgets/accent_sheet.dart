@@ -1,8 +1,11 @@
+// Hoja para elegir el color de acento.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/modal_card.dart';
 
+/// Muestra los colores de acento; elegir uno llama a [onPick] y cierra la hoja.
 Future<void> showAccentSheet(
   BuildContext context, {
   required Color current,

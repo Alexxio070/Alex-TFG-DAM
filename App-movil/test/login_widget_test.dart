@@ -1,3 +1,5 @@
+// Tests de la pantalla de login: cada estado de AuthViewModel y su formulario.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +8,7 @@ import 'package:sysmote/core/theme/app_tokens.dart';
 import 'package:sysmote/core/widgets/app_button.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/features/auth/auth_viewmodel.dart';
 import 'package:sysmote/features/auth/login_view.dart';
 import 'package:sysmote/features/settings/settings_viewmodel.dart';
@@ -16,15 +18,15 @@ import 'fakes/in_memory_settings_repository.dart';
 import 'fakes/in_memory_token_storage.dart';
 
 Widget _app(AuthViewModel vm) => MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: vm),
-        ChangeNotifierProvider(create: (_) => SettingsViewModel(InMemorySettingsRepository())),
-      ],
-      child: MaterialApp(
-        theme: buildTheme(dark: false, accent: kAccentColors.first),
-        home: const LoginView(),
-      ),
-    );
+  providers: [
+    ChangeNotifierProvider.value(value: vm),
+    ChangeNotifierProvider(create: (_) => SettingsViewModel(InMemorySettingsRepository())),
+  ],
+  child: MaterialApp(
+    theme: buildTheme(dark: false, accent: kAccentColors.first),
+    home: const LoginView(),
+  ),
+);
 
 class _Down implements AuthRepository {
   bool available = false;
@@ -82,11 +84,11 @@ void main() {
   });
 
   FakeAuthRepository sinCuenta({bool caducado = false}) => FakeAuthRepository(
-        configurado: false,
-        registroAbierto: true,
-        codigoRegistro: 'K7QXM2PD9WTR4HNB',
-        codigoCaducado: caducado,
-      );
+    configurado: false,
+    registroAbierto: true,
+    codigoRegistro: 'K7QXM2PD9WTR4HNB',
+    codigoCaducado: caducado,
+  );
 
   Future<void> rellenarRegistro(WidgetTester tester, {String contrasena = 'Abcd1'}) async {
     await tester.enterText(find.byType(TextField).at(0), 'K7QX-M2PD-9WTR-4HNB');
@@ -130,7 +132,10 @@ void main() {
     await rellenarRegistro(tester);
 
     expect(find.textContaining('ha caducado'), findsOneWidget);
-    expect(find.textContaining('configuración inicial en la TUI para generar otro'), findsOneWidget);
+    expect(
+      find.textContaining('configuración inicial en la TUI para generar otro'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('una contraseña débil muestra los motivos', (tester) async {

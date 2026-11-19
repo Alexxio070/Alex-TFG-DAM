@@ -1,3 +1,5 @@
+// ViewModel de Notas: lista, búsqueda y guardado de notas.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -6,6 +8,7 @@ import '../../data/models/note.dart';
 import '../../data/repositories/notes_repository.dart';
 import '../auth/auth_viewmodel.dart';
 
+/// Carga las notas cuando hay sesión, filtra por búsqueda y muestra avisos breves.
 class NotesViewModel extends ChangeNotifier {
   NotesViewModel(this._notes, this._auth) {
     _auth.addListener(load);
@@ -27,6 +30,7 @@ class NotesViewModel extends ChangeNotifier {
   bool get isPaired => _auth.stage == AuthStage.loggedIn;
   String? get message => _message;
 
+  /// Vuelve a pedir las notas de la búsqueda actual.
   Future<void> load() async {
     if (!isPaired) {
       _items = const [];
@@ -52,12 +56,14 @@ class NotesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Filtra por [query], esperando 300 ms a que se deje de escribir.
   void search(String query) {
     _query = query.trim();
     _searchTimer?.cancel();
     _searchTimer = Timer(const Duration(milliseconds: 300), load);
   }
 
+  /// Crea una nota (sin [id]) o edita la nota [id], y recarga la lista.
   Future<void> save({String? id, required String content}) async {
     final text = content.trim();
     if (id == null) {
@@ -68,11 +74,13 @@ class NotesViewModel extends ChangeNotifier {
     await load();
   }
 
+  /// Borra la nota [id] y recarga la lista.
   Future<void> delete(String id) async {
     await _notes.delete(id);
     await load();
   }
 
+  /// Muestra [text] como aviso durante 2,2 s.
   void showMessage(String text) {
     _messageTimer?.cancel();
     _message = text;

@@ -22,3 +22,6 @@ agent/*.key
 
 # Instrucciones locales de Claude Code
 CLAUDE.md
+
+# Informes de las auditorías: solo en local
+doc/auditoria/

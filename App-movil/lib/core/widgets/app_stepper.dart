@@ -1,7 +1,10 @@
+// Control de botones «−», valor y «+», usado en Ajustes.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Muestra [valueLabel] entre dos botones que llaman a [onDecrease] y [onIncrease].
 class AppStepper extends StatelessWidget {
   const AppStepper({
     super.key,

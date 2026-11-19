@@ -1,3 +1,5 @@
+// Tests de la pantalla de Notas: listar, crear, editar, borrar, buscar y copiar.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,10 +15,8 @@ void main() {
       openSection(tester, 'Notas', root: app(notesRepository: repository));
 
   Finder note(String text) => find.textContaining(text, findRichText: true);
-  Finder formField() => find.descendant(
-        of: find.byType(NoteFormView),
-        matching: find.byType(TextField),
-      );
+  Finder formField() =>
+      find.descendant(of: find.byType(NoteFormView), matching: find.byType(TextField));
 
   testWidgets('lista las notas de ejemplo con su origen', (tester) async {
     await openNotes(tester);
@@ -103,8 +103,10 @@ void main() {
   });
 
   testWidgets('copiar muestra el aviso', (tester) async {
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async => null,
+    );
     await openNotes(tester);
 
     await tester.tap(find.bySemanticsLabel('Copiar nota').first);

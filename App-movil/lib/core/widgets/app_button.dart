@@ -1,9 +1,12 @@
+// Botón de la app, compartido por todas las pantallas.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
 const _disabled = Color(0xFF9AA0AA);
 
+/// Botón con borde o relleno de [fill]. Con [onPressed] a `null` se muestra deshabilitado.
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,

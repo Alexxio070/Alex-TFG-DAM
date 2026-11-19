@@ -1,5 +1,10 @@
+// Tests de la pantalla de Inicio: ejecutar y crear macros, y arrastrar a carpetas y a la papelera.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:sysmote/features/home/widgets/item_tile.dart';
+import 'package:sysmote/features/home/widgets/trash_indicator.dart';
 
 import 'helpers/app_harness.dart';
 
@@ -12,6 +17,28 @@ void main() {
     await tester.pump();
     await tester.pumpAndSettle();
   }
+
+  Offset tileCenter(WidgetTester tester, String label) =>
+      tester.getCenter(find.ancestor(of: find.text(label), matching: find.byType(ItemTile)).first);
+
+  Offset trashCenter(WidgetTester tester) => tester.getCenter(find.byType(TrashIndicator));
+
+  // Mantiene pulsada la ficha [label] hasta levantarla y la suelta en [target],
+  // que se calcula ya con el arrastre en marcha (la papelera solo aparece entonces).
+  Future<void> dragTile(WidgetTester tester, String label, Offset Function() target) async {
+    final gesture = await tester.startGesture(tileCenter(tester, label));
+    await tester.pump(const Duration(milliseconds: 450));
+    await gesture.moveTo(target());
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> makeFolder(WidgetTester tester) =>
+      dragTile(tester, 'Silenciar', () => tileCenter(tester, 'Bloquear'));
+
+  Future<void> dragFolderToTrash(WidgetTester tester) =>
+      dragTile(tester, 'Carpeta', () => trashCenter(tester));
 
   testWidgets('muestra las macros y ejecuta una al tocarla', (tester) async {
     await pumpHome(tester);
@@ -73,12 +100,7 @@ void main() {
   testWidgets('arrastrar una macro a la papelera la elimina', (tester) async {
     await pumpHome(tester);
 
-    final gesture = await tester.startGesture(const Offset(103, 171));
-    await tester.pump(const Duration(milliseconds: 450));
-    await gesture.moveTo(const Offset(195, 64 + 708));
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
+    await dragTile(tester, 'Silenciar', () => trashCenter(tester));
 
     expect(find.text('Silenciar'), findsNothing);
   });
@@ -86,38 +108,13 @@ void main() {
   testWidgets('soltar una macro sobre otra crea una carpeta', (tester) async {
     await pumpHome(tester);
 
-    final gesture = await tester.startGesture(const Offset(103, 171));
-    await tester.pump(const Duration(milliseconds: 450));
-    await gesture.moveTo(const Offset(287, 171));
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
+    await makeFolder(tester);
 
     expect(find.text('Carpeta'), findsOneWidget);
     expect(find.text('2 macros'), findsOneWidget);
   });
 
-  Future<void> makeFolder(WidgetTester tester) async {
-    final gesture = await tester.startGesture(const Offset(103, 171));
-    await tester.pump(const Duration(milliseconds: 450));
-    await gesture.moveTo(const Offset(287, 171));
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> dragFolderToTrash(WidgetTester tester) async {
-    final gesture = await tester.startGesture(const Offset(103, 171));
-    await tester.pump(const Duration(milliseconds: 450));
-    await gesture.moveTo(const Offset(195, 64 + 708));
-    await tester.pump();
-    await gesture.up();
-    await tester.pumpAndSettle();
-  }
-
-  testWidgets('arrastrar una carpeta con macros a la papelera pregunta qué hacer', (
-    tester,
-  ) async {
+  testWidgets('arrastrar una carpeta con macros a la papelera pregunta qué hacer', (tester) async {
     await pumpHome(tester);
     await makeFolder(tester);
 

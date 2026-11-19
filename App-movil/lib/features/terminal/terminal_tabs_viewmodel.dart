@@ -1,3 +1,5 @@
+// ViewModel de las pestañas de la terminal.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -5,8 +7,10 @@ import 'package:flutter/foundation.dart';
 import '../../data/repositories/terminal_repository.dart';
 import 'terminal_viewmodel.dart';
 
+/// Máximo de pestañas abiertas a la vez.
 const kMaxTerminalTabs = 6;
 
+/// Lista de pestañas, cada una con su [TerminalViewModel] y su repositorio.
 class TerminalTabsViewModel extends ChangeNotifier {
   TerminalTabsViewModel(this._createRepository);
 
@@ -22,6 +26,7 @@ class TerminalTabsViewModel extends ChangeNotifier {
   bool get isFull => _tabs.length >= kMaxTerminalTabs;
   bool get showFullToast => _showFullToast;
 
+  /// Abre una pestaña nueva ya creando la sesión, o avisa si no caben más.
   void addTab() {
     if (isFull) {
       _toastTimer?.cancel();
@@ -52,11 +57,13 @@ class TerminalTabsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Activa la pestaña [index].
   void selectTab(int index) {
     _activeIndex = index;
     notifyListeners();
   }
 
+  /// Cierra la pestaña [vm] y su sesión.
   void closeTab(TerminalViewModel vm) {
     if (!_removeTab(vm)) return;
     vm.dispose();

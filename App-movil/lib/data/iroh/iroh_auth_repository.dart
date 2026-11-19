@@ -1,7 +1,9 @@
+// Autenticación contra el agente por un túnel iroh, con HTTP crudo sobre la conexión.
+
 import 'dart:convert';
 
 import '../agent_auth_repository.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../repositories/agent_exceptions.dart';
 import '../repositories/token_storage.dart';
 import 'iroh_connection.dart';
 
@@ -28,14 +30,11 @@ class IrohAuthRepository extends AgentAuthRepository {
     final response = parseRawHttpResponse(await _connection.request(raw));
     if (response.body.isEmpty) return AgentResponse(response.status, const {});
     try {
-      return AgentResponse(
-        response.status,
-        jsonDecode(response.body) as Map<String, dynamic>,
-      );
+      return AgentResponse(response.status, jsonDecode(response.body) as Map<String, dynamic>);
     } on FormatException {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 }

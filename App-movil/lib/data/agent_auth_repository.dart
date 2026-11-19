@@ -1,8 +1,12 @@
+// Parte común de los repositorios de autenticación reales (HTTPS e iroh): traduce el contrato de
+// login de la fase 3 a modelos y excepciones de la app.
+
 import 'models/auth.dart';
 import 'repositories/auth_repository.dart';
-import 'repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'repositories/agent_exceptions.dart';
 import 'repositories/token_storage.dart';
 
+/// Respuesta del agente ya separada en código de estado y cuerpo JSON.
 class AgentResponse {
   AgentResponse(this.status, this.body);
 
@@ -96,9 +100,9 @@ abstract class AgentAuthRepository implements AuthRepository {
     return switch (json['estado']) {
       'pendiente' => const LoginRequestPending(),
       'aprobada' => LoginRequestApproved(
-          token: json['token'] as String,
-          usuario: json['usuario'] as String,
-        ),
+        token: json['token'] as String,
+        usuario: json['usuario'] as String,
+      ),
       'rechazada' => const LoginRequestRejected(),
       'caducada' => const LoginRequestExpired(),
       _ => throw AgentErrorException('Estado de solicitud desconocido'),
@@ -127,9 +131,9 @@ abstract class AgentAuthRepository implements AuthRepository {
     try {
       return await parse();
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     } on FormatException {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 

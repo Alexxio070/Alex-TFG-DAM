@@ -1,7 +1,10 @@
+// Grupo y fila de la lista de Ajustes.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
+/// Título y caja con [children] separados por líneas.
 class SettingsGroup extends StatelessWidget {
   const SettingsGroup({super.key, required this.title, required this.children});
 
@@ -44,6 +47,7 @@ class SettingsGroup extends StatelessWidget {
   }
 }
 
+/// Fila con etiqueta, subtítulo opcional y control a la derecha.
 class SettingsRow extends StatelessWidget {
   const SettingsRow({super.key, required this.label, this.sublabel, required this.trailing});
 

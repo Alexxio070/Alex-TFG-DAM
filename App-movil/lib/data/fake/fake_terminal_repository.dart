@@ -1,3 +1,6 @@
+// PLACEHOLDER: shell simulado mientras el agente no abra terminales reales (fase 4). No es código
+// muerto: lo usa main.dart, una instancia por pestaña.
+
 import 'dart:async';
 
 import '../repositories/terminal_repository.dart';
@@ -5,6 +8,8 @@ import '../repositories/terminal_repository.dart';
 const _prompt = '\x1b[32musuario@pc\x1b[0m:\x1b[34m~\x1b[0m\$ ';
 const _clearScreen = '\x1b[2J\x1b[H';
 
+/// Imita una sesión de bash con unos pocos comandos (`help`, `ls`, `pwd`, `whoami`, `uname`,
+/// `date`, `echo`, `clear`, `exit`), historial con ↑/↓ y Ctrl+C/Ctrl+D/Ctrl+L.
 class FakeTerminalRepository implements TerminalRepository {
   final _output = StreamController<String>.broadcast();
   final _sessionEnded = StreamController<void>.broadcast();
@@ -123,17 +128,15 @@ class FakeTerminalRepository implements TerminalRepository {
     final lines = switch (name) {
       '' => <String>[],
       'help' => [
-          'Comandos de ejemplo:',
-          '  ls  pwd  whoami  uname -a  date  echo <texto>  clear  exit',
-        ],
+        'Comandos de ejemplo:',
+        '  ls  pwd  whoami  uname -a  date  echo <texto>  clear  exit',
+      ],
       'ls' => ['Descargas  Documentos  Escritorio  Imágenes  Música  proyectos'],
       'pwd' => ['/home/usuario'],
       'whoami' => ['usuario'],
       'uname' => [
-          args.contains('-a')
-              ? 'Linux pc 6.11.0 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux'
-              : 'Linux',
-        ],
+        args.contains('-a') ? 'Linux pc 6.11.0 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux' : 'Linux',
+      ],
       'date' => [_now()],
       'echo' => [args],
       _ => ['\x1b[31mbash: $name: orden no encontrada\x1b[0m'],
