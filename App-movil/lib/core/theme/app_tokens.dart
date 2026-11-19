@@ -43,6 +43,7 @@ const kTerminalForeground = Color(0xFFE6E8EB);
 const kTerminalBarBackground = Color(0xFF15171A);
 const kTerminalBarBorder = Color(0xFF2B2F34);
 const kTerminalGreen = Color(0xFF7EE787);
+const kTerminalBlue = Color(0xFF79C0FF);
 
 const kMonoFont = 'JetBrainsMono';
 
