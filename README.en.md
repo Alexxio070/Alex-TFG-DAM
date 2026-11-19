@@ -179,7 +179,6 @@ The whole design is in [`doc/`](doc/) (written in Spanish):
 - [`doc/ui/`](doc/ui/): interface specification and app structure.
 - [`doc/agente/`](doc/agente/): agent and TUI specification, and its tests.
 - [`doc/iroh/`](doc/iroh/): what iroh is, how it is implemented, the problems found and the tests.
-- [`doc/auditoria/`](doc/auditoria/): reports of the code and documentation audits, one folder per date.
 
 ## Repository structure
 

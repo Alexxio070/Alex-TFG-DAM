@@ -177,7 +177,6 @@ Todo el diseño está en [`doc/`](doc/):
 - [`doc/ui/`](doc/ui/): especificación de la interfaz y estructura de la app.
 - [`doc/agente/`](doc/agente/): especificación del agente y de su TUI, y sus tests.
 - [`doc/iroh/`](doc/iroh/): qué es iroh, cómo está implementado, los problemas encontrados y las pruebas.
-- [`doc/auditoria/`](doc/auditoria/): informes de las auditorías del código y de la documentación, una carpeta por fecha.
 
 ## Estructura del repositorio
 
