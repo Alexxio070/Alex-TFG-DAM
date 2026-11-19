@@ -367,6 +367,15 @@ def test_cambiar_contrasena_actualiza_el_hash_y_revoca_las_sesiones(connection):
     assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "Clave1", "Tablet")) == "credenciales_invalidas"
 
 
+def test_cambiar_contrasena_levanta_el_bloqueo_por_intentos(connection):
+    _cuenta(connection)
+    _fallar(connection, 5)
+
+    auth_service.cambiar_contrasena(connection, "Nueva123")
+
+    assert auth_service.login(connection, "alex", "Nueva123", "Tablet")["usuario"] == "alex"
+
+
 def test_cambiar_contrasena_debil_no_cambia_nada(connection):
     resultado = _cuenta(connection)
 
