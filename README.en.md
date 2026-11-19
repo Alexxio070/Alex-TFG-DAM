@@ -10,7 +10,7 @@
 **Manage your Linux PC from your phone, wherever you are, without opening router ports or setting up a VPN.**
 
 > [!WARNING]
-> **Work in progress: it has not been audited or tested on a physical phone yet.** There is now a login (Argon2 passwords and token sessions) and connections are encrypted: HTTPS with the certificate fingerprint pinned on the local network, and iroh's own encryption from outside. It is still a beta: use it for testing only. The agent listens on the whole local network (`0.0.0.0:8443`); without a session only `/estado`, registration and login respond.
+> **Work in progress: it has not been audited or tested on a physical phone yet.** There is now a login (Argon2 passwords and token sessions) and connections are encrypted: HTTPS with the certificate fingerprint pinned on the local network, and iroh's own encryption from outside. It is still a beta: use it for testing only. The agent listens on the whole local network (`0.0.0.0:8443`); without a session only `/estado`, registration, login and the check of a pending login request respond.
 
 Sysmote has two parts that are developed together:
 
@@ -178,6 +178,7 @@ The whole design is in [`doc/`](doc/) (written in Spanish):
 - [`doc/ui/`](doc/ui/): interface specification and app structure.
 - [`doc/agente/`](doc/agente/): agent and TUI specification, and its tests.
 - [`doc/iroh/`](doc/iroh/): what iroh is, how it is implemented, the problems found and the tests.
+- [`doc/auditoria/`](doc/auditoria/): reports of the code and documentation audits, one folder per date.
 
 ## Repository structure
 

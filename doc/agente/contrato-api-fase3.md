@@ -153,11 +153,13 @@ Todo error lleva el mismo cuerpo:
 | 401 | `desemparejado` | El usuario pulsó «Desemparejar» en la TUI | Borra dirección, huella, identificador iroh y token, y vuelve a la pantalla inicial de emparejamiento |
 | 401 | `credenciales_invalidas` | Usuario o contraseña incorrectos | Muestra el error en el login |
 | 403 | `codigo_invalido`, `codigo_caducado`, `registro_cerrado` | Registro | Mensaje específico en el diálogo de registro |
+| 404 | `solicitud_desconocida` | El `id` de la solicitud de login no existe | Muestra el mensaje del agente |
+| 404, 405 | `no_encontrado`, `metodo_no_permitido` | Ruta o método que el agente no tiene | Muestra el mensaje del agente |
 | 422 | `peticion_invalida`, `contrasena_debil` | Cuerpo mal formado o contraseña floja | Muestra los motivos |
 | 429 | `demasiados_intentos` | Límite de intentos del login | Muestra la cuenta atrás con `espera_s` |
 | 5xx | `error_interno` | Fallo del agente | Aviso genérico con reintento |
 
-El agente reconvierte los `422` por defecto de FastAPI a este formato.
+El agente reconvierte los `422` por defecto de FastAPI a este formato. Cualquier otro error HTTP que no esté en la tabla llega con `"error": "error_http"`.
 
 ## 5. Límite de intentos
 
@@ -224,7 +226,7 @@ La **huella** es el SHA-256 del certificado en formato DER, en hexadecimal minú
 Esto se aplica a la conexión por USB o red local. Por iroh, el identificador iroh cumple el papel de la huella: la app solo habla con el agente cuyo identificador tiene guardado.
 
 - En el primer emparejamiento la app guarda la huella y a partir de entonces **solo confía en ese certificado**.
-- En cada conexión compara la huella del certificado recibido con la guardada. Si no coincide, **rechaza la conexión**, no hay alternativa de «continuar de todos modos», y muestra el error `huella_distinta`. Es el mismo error si cambia el certificado del agente (por ejemplo, tras regenerarlo).
+- En cada conexión compara la huella del certificado recibido con la guardada. Si no coincide, **rechaza la conexión**, no hay alternativa de «continuar de todos modos», y muestra el error `huella_distinta`: es un error de la app, no lo devuelve el agente, y el texto que se ve es «El certificado del agente no coincide con la huella guardada. Compárala con la de la TUI». Es el mismo error si cambia el certificado del agente (por ejemplo, tras regenerarlo).
 
 ### Contenido del QR
 

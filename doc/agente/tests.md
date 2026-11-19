@@ -124,7 +124,7 @@ Usa una carpeta temporal. Que el certificado y la clave formen un par lo comprue
 | Grupo | Qué comprueba | Qué fallo detecta |
 |---|---|---|
 | Permisos | Clave y certificado en `0600`, carpeta en `0700` | Una clave privada legible por otros usuarios |
-| Idempotencia | Si ya existen, no se regeneran | Que el certificado cambie en cada arranque y la app rechace la conexión por `huella_distinta` |
+| Idempotencia | Si ya existen, no se regeneran | Que el certificado cambie en cada arranque y la app rechace la conexión por huella distinta |
 | Huella | Coincide con el SHA-256 del DER calculado de forma independiente | Una huella con otro formato que la app no sabría comparar |
 
 ### `test_limite_service.py`: límite de intentos
