@@ -26,6 +26,8 @@ Una petición recorre las capas en este orden: `api/` (traduce HTTP) → `servic
 `repositories/` (lee y escribe SQLite) → `models/` (los datos que viajan entre capas). La TUI
 llama directamente a `services/`, igual que la API.
 
+**Nombres.** El código sigue el criterio con el que se escribió cada fase: la parte de métricas y la infraestructura (fase 1 y túnel iroh) usan nombres en inglés (`read_cpu_percent`, `get_metrics`), y el dominio de seguridad (fase 3) los usa en español (`registrar`, `obtener_por_hash`, `limite_service`). Los comentarios, los docstrings y los textos que ve el usuario van siempre en español. Las fases siguientes mantienen el idioma de su dominio.
+
 ## Qué entra en cada carpeta, por fase
 
 | Fase | `api/` | `services/` | `repositories/` | `models/` | `tui/` |
