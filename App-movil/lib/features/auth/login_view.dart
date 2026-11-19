@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../data/device_name.dart';
 import '../settings/widgets/connection_sheet.dart';
 import 'auth_viewmodel.dart';
 import 'widgets/auth_status_messages.dart';
@@ -24,6 +25,15 @@ class _LoginViewState extends State<LoginView> {
   final _usuario = TextEditingController();
   final _contrasena = TextEditingController();
   final _dispositivo = TextEditingController();
+  String? _aviso;
+
+  @override
+  void initState() {
+    super.initState();
+    readDeviceName().then((name) {
+      if (mounted && name != null && _dispositivo.text.isEmpty) _dispositivo.text = name;
+    });
+  }
 
   @override
   void dispose() {
@@ -39,15 +49,15 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _submit(AuthViewModel vm) {
-    if (_usuario.text.trim().isEmpty ||
-        _contrasena.text.isEmpty ||
-        _dispositivo.text.trim().isEmpty) {
+    if (_usuario.text.trim().isEmpty || _contrasena.text.isEmpty) {
+      setState(() => _aviso = 'Escribe el usuario y la contraseña.');
       return;
     }
+    setState(() => _aviso = null);
     vm.submit(
       usuario: _usuario.text.trim(),
       contrasena: _contrasena.text,
-      dispositivo: _dispositivo.text.trim(),
+      dispositivo: deviceNameOrDefault(_dispositivo.text),
     );
   }
 
@@ -76,6 +86,7 @@ class _LoginViewState extends State<LoginView> {
             usuario: _usuario,
             contrasena: _contrasena,
             dispositivo: _dispositivo,
+            aviso: _aviso,
             onSubmit: () => _submit(vm),
             onConnection: () => _openConnection(vm),
           ),

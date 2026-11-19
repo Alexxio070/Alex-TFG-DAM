@@ -2,7 +2,7 @@
 
 Agente de [Sysmote](https://github.com/Alexxio070/Alex-TFG-DAM) para tu PC Linux: mide el sistema, expone una API protegida con login y trae una interfaz de terminal (`sysmote`) para configurarlo. Se maneja desde la app Android de Sysmote, por la red local, por USB o, desde fuera de casa, por un túnel [iroh](https://www.iroh.computer/) sin abrir puertos en el router.
 
-> **Proyecto en desarrollo (beta).** Todavía no se ha auditado ni probado en un móvil físico. Úsalo solo para probar.
+> **Proyecto en desarrollo (beta).** Todavía no se ha auditado y solo se ha probado en un móvil físico (Xiaomi Redmi 13C, Android 15). Úsalo solo para probar.
 
 ## Requisitos
 

@@ -6,6 +6,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/field_label.dart';
+import '../../../data/device_name.dart';
 import '../auth_viewmodel.dart';
 import 'auth_banner.dart';
 
@@ -25,6 +26,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _usuario = TextEditingController();
   final _contrasena = TextEditingController();
   final _dispositivo = TextEditingController();
+  String? _aviso;
+
+  @override
+  void initState() {
+    super.initState();
+    readDeviceName().then((name) {
+      if (mounted && name != null && _dispositivo.text.isEmpty) _dispositivo.text = name;
+    });
+  }
 
   @override
   void dispose() {
@@ -36,17 +46,16 @@ class _RegistrationFormState extends State<RegistrationForm> {
   }
 
   void _submit() {
-    if (_codigo.text.trim().isEmpty ||
-        _usuario.text.trim().isEmpty ||
-        _contrasena.text.isEmpty ||
-        _dispositivo.text.trim().isEmpty) {
+    if (_codigo.text.trim().isEmpty || _usuario.text.trim().isEmpty || _contrasena.text.isEmpty) {
+      setState(() => _aviso = 'Escribe el código, el usuario y la contraseña.');
       return;
     }
+    setState(() => _aviso = null);
     widget.vm.register(
       codigo: _codigo.text.trim(),
       usuario: _usuario.text.trim(),
       contrasena: _contrasena.text,
-      dispositivo: _dispositivo.text.trim(),
+      dispositivo: deviceNameOrDefault(_dispositivo.text),
     );
   }
 
@@ -88,10 +97,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
             child: AppTextField(controller: _contrasena, focusColor: t.accent, obscureText: true),
           ),
           FieldLabel(
-            label: 'Nombre de este dispositivo',
+            label: 'Nombre de este dispositivo (opcional)',
             child: AppTextField(controller: _dispositivo, focusColor: t.accent, hint: 'Pixel 8'),
           ),
-          if (vm.error != null) Text(vm.error!, style: const TextStyle(fontSize: 13, color: kRed)),
+          if (_aviso ?? vm.error case final message?)
+            Text(message, style: const TextStyle(fontSize: 13, color: kRed)),
           AppButton(
             label: busy ? 'Creando…' : 'Crear cuenta',
             fill: t.accent,

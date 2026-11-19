@@ -134,7 +134,7 @@ Detalle técnico: `01` §5 (Seguridad).
 
 **Lo que no se recorta:** el login y el TLS.
 
-**Estado (18/11/2026):** el agente y la parte de la app (login, registro, token en el Keystore, huella fijada, «Cerrar sesión» y «Desemparejar») están implementados y la app se ha probado contra el agente real por HTTPS. Falta probarla en un móvil físico y por iroh, y el endurecimiento del túnel iroh está en curso.
+**Estado (18/11/2026):** el agente y la parte de la app (login, registro, token en el Keystore, huella fijada, «Cerrar sesión» y «Desemparejar») están implementados y la app se ha probado contra el agente real por HTTPS. El 19/11/2026 se probó en un móvil físico (Xiaomi Redmi 13C, Android 15) por red local y por iroh con datos móviles; falta probar la conexión por USB, y el endurecimiento del túnel iroh está en curso.
 
 ---
 

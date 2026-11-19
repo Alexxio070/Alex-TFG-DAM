@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 161 tests (149 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 162 tests (150 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -26,7 +26,7 @@ cd agent && .venv/bin/pytest -q
 | [`test_tls_service.py`](../../agent/tests/test_tls_service.py) | 3 | Certificado TLS autofirmado y su huella | Unitario |
 | [`test_limite_service.py`](../../agent/tests/test_limite_service.py) | 10 | Límite de intentos de login y su configuración | Unitario |
 | [`test_pairing_service.py`](../../agent/tests/test_pairing_service.py) | 6 | URI de emparejamiento y QR en texto | Unitario + lector real |
-| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 53 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
+| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 54 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
 | [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 19 | Las rutas de autenticación y la protección de `/metrics` | Integración |
 | [`test_server.py`](../../agent/tests/test_server.py) | 7 | Los servidores reales (HTTPS, HTTP interno, iroh) y su ciclo de vida | Integración |
 | [`test_tui_security.py`](../../agent/tests/test_tui_security.py) | 21 | Las subpestañas Seguridad y Dispositivo de la TUI | Interfaz (arnés de Textual) |
@@ -166,7 +166,7 @@ Usa la fixture `connection`: SQLite real en una carpeta temporal.
 | Solicitud de login | Con sesión activa no se abre sesión y se crea una solicitud pendiente (5 minutos); una nueva solicitud sustituye a la anterior; aprobar entrega el token una sola vez y revoca la sesión anterior; rechazar la mantiene; sin respuesta caduca | Que un login correcto eche a otro dispositivo sin confirmar en la TUI |
 | Sesión | Una sesión sin uso 30 días caduca y deja de contar como activa; autenticar renueva el último acceso; logout revoca; desemparejar da `401 desemparejado` | Errores de sesión equivocados en la app |
 | Límite de intentos | Cinco fallos bloquean incluso con la contraseña correcta; el quinto aún da `credenciales_invalidas`; un acierto reinicia; un usuario inexistente también se bloquea; cada intento queda registrado con su origen; reiniciar permite entrar | Un bloqueo mal aplicado o sin registro |
-| Acciones de la TUI | Abrir el registro genera un código de 16 caracteres base32 con 10 minutos, solo se guarda su hash e invalida el anterior; el código se acepta sin guiones, en minúsculas y con `0`/`1` por `O`/`I`; cambiar la contraseña actualiza el hash y cierra las sesiones; cerrar todas las sesiones; consultar la solicitud pendiente ignora las caducadas; desemparejar desde la TUI, y sin sesión activa no hace nada | Que la TUI y la API no se entiendan a través de SQLite |
+| Acciones de la TUI | Abrir el registro genera un código de 16 caracteres base32 con 10 minutos, solo se guarda su hash e invalida el anterior; el código se acepta sin guiones, en minúsculas y con `0`/`1` por `O`/`I`; cambiar la contraseña actualiza el hash, cierra las sesiones y levanta el bloqueo por intentos; cerrar todas las sesiones; consultar la solicitud pendiente ignora las caducadas; desemparejar desde la TUI, y sin sesión activa no hace nada | Que la TUI y la API no se entiendan a través de SQLite |
 
 ### `test_api_auth.py`: rutas de autenticación
 

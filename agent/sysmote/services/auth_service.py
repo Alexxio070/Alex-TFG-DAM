@@ -294,7 +294,7 @@ def abrir_registro(connection: sqlite3.Connection) -> tuple[str, str]:
 
 
 def cambiar_contrasena(connection: sqlite3.Connection, nueva: str) -> None:
-    """Cambia la contraseña de la cuenta y cierra todas sus sesiones.
+    """Cambia la contraseña de la cuenta, cierra todas sus sesiones y levanta el bloqueo por intentos.
 
     Raises:
         AuthError: `contrasena_debil`; en ese caso no cambia nada.
@@ -305,6 +305,7 @@ def cambiar_contrasena(connection: sqlite3.Connection, nueva: str) -> None:
     cuenta = usuario_repository.obtener_primero(connection)
     usuario_repository.actualizar_contrasena(connection, cuenta.id, password_service.hashear(nueva))
     sesion_repository.revocar_todas_de_usuario(connection, cuenta.id, "contrasena_cambiada")
+    limite_service.reiniciar(connection, cuenta.nombre_usuario)
 
 
 def cerrar_todas_las_sesiones(connection: sqlite3.Connection) -> None:

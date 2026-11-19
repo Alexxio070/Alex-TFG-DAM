@@ -10,7 +10,7 @@
 **Manage your Linux PC from your phone, wherever you are, without opening router ports or setting up a VPN.**
 
 > [!WARNING]
-> **Work in progress: it has not been audited or tested on a physical phone yet.** There is now a login (Argon2 passwords and token sessions) and connections are encrypted: HTTPS with the certificate fingerprint pinned on the local network, and iroh's own encryption from outside. It is still a beta: use it for testing only. The agent listens on the whole local network (`0.0.0.0:8443`); without a session only `/estado`, registration, login and the check of a pending login request respond.
+> **Work in progress: it has not been audited yet and has only been tested on one physical phone (Xiaomi Redmi 13C, Android 15).** There is now a login (Argon2 passwords and token sessions) and connections are encrypted: HTTPS with the certificate fingerprint pinned on the local network, and iroh's own encryption from outside. It is still a beta: use it for testing only. The agent listens on the whole local network (`0.0.0.0:8443`); without a session only `/estado`, registration, login and the check of a pending login request respond.
 
 Sysmote has two parts that are developed together:
 
@@ -69,7 +69,7 @@ The TUI has its complete structure. Pairing (Security and Device) already works;
 |---|---|
 | Live PC metrics: CPU, temperature, RAM and disks, with charts | Available |
 | Access from outside your home network through iroh (relay and direct connection) | Available |
-| Login, one-time registration code, single session and unpairing | Available, not tested on a physical phone |
+| Login, one-time registration code, single session and unpairing | Available; tested on a physical phone over the local network and over iroh |
 | App settings (units, theme, connection mode) | Available |
 | Remote terminal with the user's real shell (persistent tmux sessions) | Interface done, not connected to the agent yet |
 | Quick actions (saved commands, with history) | Interface done, not connected to the agent yet |
@@ -138,7 +138,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 3. In the app, register with the code, a username and a password (at least 5 characters, a number and a capital letter). Then you can log in.
 
 > [!NOTE]
-> This flow is taken from the code and the documentation, and the app has been tested against the real agent over HTTPS. It has not been tested with a physical phone or over iroh with the login yet.
+> This flow is taken from the code and the documentation, and the app has been tested against the real agent over HTTPS. On 19/11/2026 it was tested with a physical phone (Xiaomi Redmi 13C, Android 15): registration, login and metrics over the local network, and a full login over iroh with mobile data. The USB connection (`adb reverse`) has not been tested yet.
 
 ### Building from source
 

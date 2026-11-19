@@ -70,6 +70,9 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; publicado en PyPI el 19/11/2026 (ver la entrada siguiente) |
 | 19/11/2026 | Agente | Versión del esquema de la base de datos y migraciones, para poder actualizar el agente sin romper las bases de los usuarios | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Plan | Publicación del agente en PyPI con un workflow de GitHub Actions, sin guardar ningún token | Aplicado; `sysmote 0.1.0` publicado |
+| 19/11/2026 | Agente | Cambiar la contraseña desde la TUI también levanta el bloqueo por intentos fallidos | Aplicado en código y en la documentación |
+| 19/11/2026 | Interfaz | Login: aviso cuando falta un campo y nombre del dispositivo opcional, propuesto a partir del modelo del móvil | Aplicado en código y en la documentación |
+| 19/11/2026 | Plan / Documentación | Primera prueba en un móvil físico: red local e iroh; se actualiza lo que decía «sin probar» | Aplicado en la documentación |
 
 ---
 
@@ -650,3 +653,28 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** publicar sin guardar secretos y con un paso humano de aprobación; el prefijo `agent-v` evita que las etiquetas de la APK disparen la publicación.
 - **Afecta a:** `.github/workflows/publicar-agente.yml`, `04` (fase 5) y esta entrada.
 - **Estado:** `sysmote 0.1.0` publicado en PyPI el 19/11/2026 tras un ensayo en TestPyPI. Las versiones siguientes se publican subiendo `version` en `agent/pyproject.toml` y la etiqueta `agent-vX.Y.Z`.
+
+### 19/11/2026 — Cambiar la contraseña levanta el bloqueo por intentos
+
+- **Qué era:** tras cinco intentos fallidos la cuenta se bloquea 10 minutos. Quien olvidaba la contraseña y la cambiaba desde la TUI seguía bloqueado, y la contraseña nueva no entraba hasta pulsar también «Reiniciar intentos». Se detectó en la primera prueba con un móvil físico.
+- **Qué es ahora:** `auth_service.cambiar_contrasena` borra además los intentos de la cuenta, de modo que la contraseña nueva entra al momento. «Reiniciar intentos» sigue existiendo por separado.
+- **Por qué:** quien cambia la contraseña desde la TUI es el dueño del PC; mantener el bloqueo no protege nada y despista.
+- **Afecta a:** `agent/sysmote/services/auth_service.py`, `agent/tests/test_auth_service.py` (un test nuevo, 162 en total), `doc/agente/tui.md` y `doc/agente/tests.md`.
+- **Estado:** aplicado y probado.
+
+### 19/11/2026 — Login: aviso por campos vacíos y nombre del dispositivo opcional
+
+- **Qué era:** en el login y en el registro, el botón no hacía nada y no avisaba si faltaba algún campo, y el nombre del dispositivo era obligatorio. En la primera prueba con un móvil físico, escribir mal la contraseña sin rellenar ese nombre no daba ningún mensaje.
+- **Qué es ahora:** si falta el usuario, la contraseña (o el código, en el registro) aparece un aviso que lo dice. El nombre del dispositivo es opcional: la app propone el fabricante y el modelo del móvil (leídos con `device_info_plus`) y, si se deja vacío, usa «Móvil Android». Solo sirve para el historial y para el aviso de sesión activa de la TUI.
+- **Por qué:** el nombre es informativo, no una credencial, y un formulario que no responde parece roto.
+- **Afecta a:** `App-movil/lib/features/auth/` (`login_view.dart`, `login_form.dart`, `registration_form.dart`), `App-movil/lib/data/device_name.dart` (nuevo), `pubspec.yaml` (dependencia nueva `device_info_plus` 13.3.0), `test/login_widget_test.dart` (3 tests nuevos, 223 en total), `doc/ui/interfaz-app.md`, `doc/ui/tests.md` y `02` (tabla de dependencias).
+- **Estado:** aplicado y probado (`flutter analyze` sin avisos, 223 tests). Falta probarlo en el móvil físico.
+
+### 19/11/2026 — Primera prueba en un móvil físico
+
+- **Qué era:** el README, el README del paquete, `04` y `interfaz-app.md` decían que la app no se había probado en un móvil físico ni el login por iroh.
+- **Qué se probó:** en un Xiaomi Redmi 13C con Android 15, con el agente instalado desde PyPI (`pipx`): registro con código de un solo uso, login y métricas reales por red local (HTTPS con la huella fijada), ajustes persistentes, bloqueo por intentos fallidos, cierre de sesión y login completo por iroh con datos móviles. La TUI funcionó bien.
+- **Qué falló o faltaba:** el puerto 8443 estaba bloqueado por el cortafuegos del PC (`ufw`) hasta abrirlo para la red local; el login no avisaba si faltaba un campo y exigía el nombre del dispositivo; y tras cambiar la contraseña desde la TUI seguía el bloqueo por intentos. Los dos últimos se corrigen en las dos entradas anteriores.
+- **Qué sigue sin probarse:** la conexión por USB con `adb reverse`, y las partes simuladas de la app (macros, terminal y notas).
+- **Afecta a:** `README.md`, `README.en.md`, `agent/README.md`, `doc/ui/interfaz-app.md`, `04` y esta entrada.
+- **Estado:** documentación actualizada con lo que se comprobó, sin afirmar más.

@@ -18,6 +18,7 @@ class LoginForm extends StatelessWidget {
     required this.usuario,
     required this.contrasena,
     required this.dispositivo,
+    required this.aviso,
     required this.onSubmit,
     required this.onConnection,
   });
@@ -26,6 +27,7 @@ class LoginForm extends StatelessWidget {
   final TextEditingController usuario;
   final TextEditingController contrasena;
   final TextEditingController dispositivo;
+  final String? aviso;
   final VoidCallback onSubmit;
   final VoidCallback onConnection;
 
@@ -60,13 +62,13 @@ class LoginForm extends StatelessWidget {
             child: AppTextField(controller: contrasena, focusColor: t.accent, obscureText: true),
           ),
           FieldLabel(
-            label: 'Nombre de este dispositivo',
+            label: 'Nombre de este dispositivo (opcional)',
             child: AppTextField(controller: dispositivo, focusColor: t.accent, hint: 'Pixel 8'),
           ),
           if (blocked)
             AuthBanner(text: 'Demasiados intentos. Espera ${vm.blockedSecondsLeft} s.', color: kRed)
-          else if (vm.error != null)
-            Text(vm.error!, style: const TextStyle(fontSize: 13, color: kRed)),
+          else if (aviso ?? vm.error case final message?)
+            Text(message, style: const TextStyle(fontSize: 13, color: kRed)),
           AppButton(
             label: busy ? 'Entrando…' : 'Entrar',
             fill: t.accent,
