@@ -1,3 +1,5 @@
+// ViewModel de una pestaña de terminal.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -5,8 +7,11 @@ import 'package:xterm/xterm.dart';
 
 import '../../data/repositories/terminal_repository.dart';
 
+/// Sin sesión, creándola o lista.
 enum TerminalSessionState { empty, creating, ready }
 
+/// Conecta un `Terminal` de xterm.dart con su repositorio: manda lo que se teclea, escribe la
+/// salida y aplica Ctrl y Alt de la fila de teclas extra.
 class TerminalViewModel extends ChangeNotifier {
   TerminalViewModel(this._repository) {
     _endedSubscription = _repository.sessionEnded.listen((_) => _handleSessionEnded());
@@ -25,6 +30,7 @@ class TerminalViewModel extends ChangeNotifier {
   bool get ctrl => _ctrl;
   bool get alt => _alt;
 
+  /// Crea la sesión; lo que se teclee mientras tanto se manda al quedar lista.
   void requestSession() {
     if (_state != TerminalSessionState.empty) return;
     _state = TerminalSessionState.creating;
@@ -51,18 +57,22 @@ class TerminalViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Activa o desactiva Ctrl para la siguiente tecla.
   void toggleCtrl() {
     _ctrl = !_ctrl;
     notifyListeners();
   }
 
+  /// Activa o desactiva Alt para la siguiente tecla.
   void toggleAlt() {
     _alt = !_alt;
     notifyListeners();
   }
 
+  /// Envía una tecla especial (Esc, Tab, flechas).
   void pressKey(TerminalKey key) => terminal.keyInput(key);
 
+  /// Envía [text] como si se hubiera tecleado.
   void pressText(String text) => terminal.textInput(text);
 
   void _onTerminalOutput(String data) {

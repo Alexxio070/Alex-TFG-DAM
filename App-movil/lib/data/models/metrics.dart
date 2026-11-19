@@ -1,6 +1,9 @@
-// Cuántas muestras guarda el historial de métricas (60 s a 1 muestra/s).
+// Modelos de las métricas del PC.
+
+/// Cuántas muestras guarda el historial de métricas (60 s a 1 muestra/s).
 const kHistoryLength = 60;
 
+/// Una muestra por segundo: CPU en %, temperatura (null si no hay sensor) y RAM usada en GB.
 class MetricSample {
   const MetricSample({required this.cpu, required this.tempC, required this.ramGb});
 
@@ -9,6 +12,7 @@ class MetricSample {
   final double ramGb;
 }
 
+/// Una partición del PC con su espacio usado y total en GB.
 class Partition {
   const Partition({
     required this.id,
@@ -25,6 +29,7 @@ class Partition {
   final double totalGb;
 }
 
+/// Datos fijos del PC (RAM total y particiones): se leen al abrir Métricas, no en cada muestra.
 class MachineInfo {
   const MachineInfo({required this.ramTotalGb, required this.partitions});
 

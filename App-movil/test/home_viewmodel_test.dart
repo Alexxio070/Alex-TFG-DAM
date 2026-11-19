@@ -1,3 +1,5 @@
+// Tests de HomeViewModel: reordenar, agrupar y desagrupar sin simular arrastres.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/fake/fake_macro_repository.dart';
 import 'package:sysmote/data/models/home_item.dart';

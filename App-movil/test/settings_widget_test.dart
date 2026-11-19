@@ -1,3 +1,5 @@
+// Tests de la pantalla de Ajustes: unidades, límites, tema, acento, conexión y desemparejar.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';

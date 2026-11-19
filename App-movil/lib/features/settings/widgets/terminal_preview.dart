@@ -1,7 +1,10 @@
+// Vista previa del tamaño de fuente de la terminal.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
+/// Una línea de prompt con los colores de la terminal y [fontSize].
 class TerminalPreview extends StatelessWidget {
   const TerminalPreview({super.key, required this.fontSize});
 
@@ -29,7 +32,7 @@ class TerminalPreview extends StatelessWidget {
             children: [
               const TextSpan(text: 'usuario@pc', style: TextStyle(color: kTerminalGreen)),
               const TextSpan(text: ':'),
-              const TextSpan(text: '~', style: TextStyle(color: Color(0xFF79C0FF))),
+              const TextSpan(text: '~', style: TextStyle(color: kTerminalBlue)),
               const TextSpan(text: r'$ ls'),
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,

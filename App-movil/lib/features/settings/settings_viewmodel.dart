@@ -1,3 +1,5 @@
+// ViewModel de Ajustes: valores actuales y guardado en el móvil.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -6,6 +8,7 @@ import '../../data/repositories/settings_repository.dart';
 
 export '../../data/models/settings.dart';
 
+/// Carga los ajustes guardados al arrancar y guarda cada cambio. Lo comparten todas las pantallas.
 class SettingsViewModel extends ChangeNotifier {
   SettingsViewModel(this._repository) {
     _load();

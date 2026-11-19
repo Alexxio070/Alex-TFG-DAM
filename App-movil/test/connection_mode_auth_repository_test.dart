@@ -1,3 +1,5 @@
+// Tests de ConnectionModeAuthRepository: cada llamada va al repositorio del modo activo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/connection_mode_auth_repository.dart';
 import 'package:sysmote/data/models/auth.dart';

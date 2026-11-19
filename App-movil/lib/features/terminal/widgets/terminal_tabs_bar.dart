@@ -1,3 +1,5 @@
+// Barra de pestañas de la terminal.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -7,6 +9,7 @@ import '../terminal_tabs_viewmodel.dart';
 
 const _mutedTextColor = Color(0xFF9AA4AF);
 
+/// Una pestaña por sesión, con botón de cerrar (pide confirmación) y «+» para abrir otra.
 class TerminalTabsBar extends StatelessWidget {
   const TerminalTabsBar({super.key, required this.vm});
 

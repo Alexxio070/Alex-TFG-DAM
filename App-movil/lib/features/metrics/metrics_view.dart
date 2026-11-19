@@ -1,3 +1,5 @@
+// Pantalla de Métricas: CPU, temperatura, RAM y disco, con sus estados de carga y de error.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,8 @@ import 'metrics_viewmodel.dart';
 import 'widgets/disk_card.dart';
 import 'widgets/metric_card.dart';
 
+/// Pinta las tarjetas con los datos de [MetricsViewModel] y pausa el sondeo al salir de la pantalla
+/// o de la app.
 class MetricsView extends StatefulWidget {
   const MetricsView({super.key});
 
@@ -49,6 +53,8 @@ class _MetricsViewState extends State<MetricsView> {
     final history = metrics.history;
     final ramTotal = metrics.info!.ramTotalGb;
     final unit = settings.storageUnit;
+    final ramTotalLabel =
+        '${unit.format(ramTotal, decimals: unit == StorageUnit.gb ? 0 : 1)} ${unit.label}';
     final fahrenheit = settings.tempUnit == TempUnit.fahrenheit;
     final tempNow = history.last.tempC;
     final hot = tempNow != null && settings.tempAlert && tempNow > settings.tempLimit;
@@ -103,14 +109,13 @@ class _MetricsViewState extends State<MetricsView> {
         MetricCard(
           title: 'Uso de RAM',
           value: MetricValue(
-            number: formatNumber(history.last.ramGb * unit.factor),
-            unit: '/ ${formatNumber(ramTotal * unit.factor, unit == StorageUnit.gb ? 0 : 1)} ${unit.label}',
+            number: unit.format(history.last.ramGb),
+            unit: '/ $ramTotalLabel',
           ),
           values: [for (final s in history) s.ramGb],
           min: 0,
           max: ramTotal,
-          scaleLabel:
-              'Escala 0–${formatNumber(ramTotal * unit.factor, unit == StorageUnit.gb ? 0 : 1)} ${unit.label}',
+          scaleLabel: 'Escala 0–$ramTotalLabel',
         ),
         const SizedBox(height: 16),
         if (partition == null)

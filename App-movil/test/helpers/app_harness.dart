@@ -1,3 +1,6 @@
+// Utilidades comunes de los tests de pantalla: montar la app con repositorios falsos y avanzar el
+// reloj.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +19,8 @@ import '../fakes/in_memory_settings_repository.dart';
 import '../fakes/in_memory_token_storage.dart';
 
 // Por defecto las pantallas se montan con la sesión ya abierta.
+/// La app completa con repositorios falsos o en memoria. Sin [authRepository], arranca con la
+/// sesión ya abierta.
 Widget app({
   MetricsRepository? metricsRepository,
   NotesRepository? notesRepository,
@@ -36,6 +41,8 @@ Widget app({
       child: const SysmoteApp(),
     );
 
+/// Avanza el reloj falso [milliseconds] en saltos de 100 ms, para esperar animaciones y
+/// temporizadores.
 Future<void> pumpFor(WidgetTester tester, int milliseconds) async {
   for (var elapsed = 0; elapsed < milliseconds; elapsed += 100) {
     await tester.pump(const Duration(milliseconds: 100));

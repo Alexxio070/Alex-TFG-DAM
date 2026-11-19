@@ -1,3 +1,5 @@
+// Fila de teclas que no tiene el teclado del móvil.
+
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
@@ -5,6 +7,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../terminal_viewmodel.dart';
 
+/// Esc, Tab, Ctrl, Alt, guion, barra, flechas y ocultar teclado.
 class ExtraKeysBar extends StatelessWidget {
   const ExtraKeysBar({super.key, required this.vm, required this.onHide});
 

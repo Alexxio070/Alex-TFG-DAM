@@ -156,7 +156,7 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 `LoginView` (`features/auth/`), guiada por el estado de `AuthViewModel` (`AuthStage`):
 
 - **Agente inalcanzable** (sin respuesta, huella que no coincide, identificador inválido…): «No se puede conectar con el agente» con el detalle del error y los botones «Reintentar» y «Conexión con el PC». Un token guardado no se borra por un fallo de red.
-- **Sin cuenta y registro cerrado** (`configurado: false`, `registro_abierto: false`): aviso centrado para pulsar «configuración inicial» en la TUI (`sysmote` → Emparejamiento).
+- **Sin cuenta y registro cerrado** (`configurado: false`, `registro_abierto: false`): aviso centrado, «El agente todavía no tiene ninguna cuenta. Créala desde la TUI del PC (sysmote → Emparejamiento).», y el botón «Conexión con el PC».
 - **Sin cuenta y registro abierto:** formulario «Crear la cuenta» con código de registro (sin guiones o con ellos, en mayúsculas o minúsculas), usuario, contraseña y nombre del dispositivo. Cada error del contrato tiene su mensaje: registro cerrado, código no válido, código caducado («pulsa configuración inicial en la TUI para generar otro») y contraseña débil con sus motivos (mínimo 5 caracteres, un número y una mayúscula). Hasta que haya escáner de QR (fase 9), el código se escribe a mano.
 - **Con cuenta, pidiendo login:** formulario con usuario, contraseña (oculta) y el nombre de este dispositivo (campo de texto libre, sin guardar en Ajustes). Si `sesion_activa` es `true`, un aviso encima del formulario explica que hará falta confirmar en la TUI.
 - **Bloqueado** (`429 demasiados_intentos`): aviso con la cuenta atrás en segundos (`espera_s`) devuelta por el agente; el botón «Entrar» se deshabilita hasta que llega a cero.
@@ -174,7 +174,7 @@ Construida con el mismo sistema visual que el resto de la app (`AppTextField`, c
 | `TerminalRepository` | Shell simulado con `help`, `ls`, `pwd`, `whoami`, `uname`, `date`, `echo`, `clear`, historial con ↑/↓ y `Ctrl+C`/`Ctrl+L` |
 | `NotesRepository` | 3 notas de ejemplo en memoria |
 
-Todos se registran en `main.dart`; para conectar el agente real basta con escribir la implementación nueva y cambiarla ahí. `FakeMetricsRepository` (CPU/RAM aleatorias, temperatura derivada de la CPU, 3 particiones de ejemplo) sigue existiendo pero ya no se usa en `main.dart`: solo lo ven los tests.
+Todos se registran en `main.dart`; para conectar el agente real basta con escribir la implementación nueva y cambiarla ahí. `FakeMetricsRepository` (CPU/RAM aleatorias, temperatura derivada de la CPU, 3 particiones de ejemplo) ya no está en `lib/`: vive en `test/fakes/` y solo lo usan los tests.
 
 **Repositorios ya no simulados:**
 - `AuthRepository`: `HttpAuthRepository` (HTTPS con la huella del certificado fijada: el cliente no trae ninguna CA y solo acepta el certificado cuyo SHA-256 coincide con la huella guardada) e `IrohAuthRepository` (HTTP crudo por el túnel, sin TLS propio, con el identificador iroh como garantía), elegidos por `ConnectionModeAuthRepository` según el modo de Ajustes; Autenticación y Métricas comparten una única conexión iroh. Probados contra un cliente HTTP simulado y una conexión iroh falsa, y por HTTPS contra el agente real de `feature/agent` (registro, login con sesión activa y su aprobación, `401`, desemparejar y bloqueo por intentos); el camino por iroh con el móvil sigue sin probarse. `FakeAuthRepository` queda para los tests.

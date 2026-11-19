@@ -1,3 +1,5 @@
+// Pantalla de Inicio: cuadrícula de macros, botón de añadir y aviso de ejecución.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +14,7 @@ import 'widgets/folder_trash_dialog.dart';
 import 'widgets/macro_grid.dart';
 import 'widgets/new_macro_dialog.dart';
 
+/// Conecta la cuadrícula con [HomeViewModel] y abre los diálogos de Inicio.
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 

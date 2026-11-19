@@ -1,8 +1,11 @@
+// Métricas aleatorias para los tests de pantalla.
+
 import 'dart:math';
 
 import 'package:sysmote/data/models/metrics.dart';
 import 'package:sysmote/data/repositories/metrics_repository.dart';
 
+/// CPU y RAM que varían al azar, temperatura derivada de la CPU y 3 particiones de ejemplo.
 class FakeMetricsRepository implements MetricsRepository {
   final _random = Random();
   double _cpu = 30;

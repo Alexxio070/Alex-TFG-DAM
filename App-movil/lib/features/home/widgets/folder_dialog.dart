@@ -1,3 +1,5 @@
+// Diálogo que muestra las macros de una carpeta.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,7 @@ import '../home_viewmodel.dart';
 import '../run_macro.dart';
 import 'item_tile.dart';
 
+/// Abre [folder] con sus macros en cuadrícula; tocar una la ejecuta.
 Future<void> showFolderDialog(BuildContext context, Folder folder) {
   return showTopCard(
     context,

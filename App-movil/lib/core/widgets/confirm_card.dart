@@ -1,9 +1,13 @@
+// Diálogo de confirmación único de la app.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 import 'app_button.dart';
 import 'modal_card.dart';
 
+/// Pide confirmar una acción con «Cancelar» y [confirmLabel]; solo llama a [onConfirm] si se
+/// confirma. [extra] permite añadir contenido entre el texto y los botones.
 Future<void> showConfirmCard(
   BuildContext context, {
   required String title,

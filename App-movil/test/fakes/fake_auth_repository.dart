@@ -1,6 +1,11 @@
+// Doble de pruebas del agente para el login: simula el contrato de la fase 3 en memoria.
+
 import 'package:sysmote/data/models/auth.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
 
+/// Agente simulado con credenciales, código de registro, límite de intentos y solicitudes
+/// pendientes configurables.
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({
     this.configurado = true,

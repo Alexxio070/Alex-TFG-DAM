@@ -1,12 +1,15 @@
+// ViewModel del login: única fuente de verdad sobre si hay sesión con el agente y dueño del token.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
 import '../../data/models/auth.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../../data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/token_storage.dart';
 
+/// En qué punto está el login; [LoginView] muestra una pantalla distinta para cada uno.
 enum AuthStage {
   loading,
   unreachable,
@@ -20,6 +23,8 @@ enum AuthStage {
   loggedIn,
 }
 
+/// Comprueba el agente al arrancar, registra la cuenta, inicia y cierra sesión, espera la
+/// confirmación en la TUI cuando ya hay otra sesión y guarda el token en el móvil y en memoria.
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel(
     this._repository,
@@ -42,7 +47,6 @@ class AuthViewModel extends ChangeNotifier {
   AuthStage _stage = AuthStage.loading;
   bool _sesionActivaAviso = false;
   String? _error;
-  String? _usuario;
   String? _pendingSolicitudId;
   String? _pendingSesionActivaEn;
   int _pendingSecondsLeft = 0;
@@ -54,20 +58,20 @@ class AuthViewModel extends ChangeNotifier {
   AuthStage get stage => _stage;
   bool get sesionActivaAviso => _sesionActivaAviso;
   String? get error => _error;
-  String? get usuario => _usuario;
   String? get pendingSesionActivaEn => _pendingSesionActivaEn;
   int get pendingSecondsLeft => _pendingSecondsLeft;
   int get blockedSecondsLeft => _blockedSecondsLeft;
 
+  /// Entra con el token guardado si el agente lo acepta; si no, pregunta al agente en qué estado
+  /// está para mostrar el formulario que toque.
   Future<void> start() async {
     _stage = AuthStage.loading;
     notifyListeners();
     final token = await _tokenStorage.read();
     if (token != null) {
       try {
-        final session = await _repository.session();
+        await _repository.session();
         _token = token;
-        _usuario = session.usuario;
         _stage = AuthStage.loggedIn;
         notifyListeners();
         return;
@@ -110,6 +114,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Crea la cuenta con el código de registro de la TUI y entra en sesión.
   Future<void> register({
     required String codigo,
     required String usuario,
@@ -126,33 +131,28 @@ class AuthViewModel extends ChangeNotifier {
         contrasena: contrasena,
         dispositivo: dispositivo,
       );
-      await _tokenStorage.write(session.token);
-      _token = session.token;
-      _usuario = session.usuario;
-      _stage = AuthStage.loggedIn;
+      await _enterSession(session.token);
+      return;
     } on RegistrationClosedException {
       _error = 'El registro no está abierto. Pulsa configuración inicial en la TUI.';
-      _stage = AuthStage.needsRegistration;
     } on CodeExpiredException {
       _error = 'El código de registro ha caducado. '
           'Pulsa configuración inicial en la TUI para generar otro.';
-      _stage = AuthStage.needsRegistration;
     } on InvalidCodeException {
       _error = 'El código de registro no es válido';
-      _stage = AuthStage.needsRegistration;
     } on WeakPasswordException catch (e) {
       _error = 'Contraseña débil: ${e.motivos.join(', ')}';
-      _stage = AuthStage.needsRegistration;
     } on AgentUnavailableException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsRegistration;
     } on AgentErrorException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsRegistration;
     }
+    _stage = AuthStage.needsRegistration;
     notifyListeners();
   }
 
+  /// Inicia sesión; si ya hay una sesión activa en otro dispositivo, pasa a esperar la confirmación
+  /// en la TUI.
   Future<void> submit({
     required String usuario,
     required String contrasena,
@@ -168,12 +168,8 @@ class AuthViewModel extends ChangeNotifier {
         dispositivo: dispositivo,
       );
       switch (outcome) {
-        case LoggedIn(:final token, :final usuario):
-          await _tokenStorage.write(token);
-          _token = token;
-          _usuario = usuario;
-          _stage = AuthStage.loggedIn;
-          notifyListeners();
+        case LoggedIn(:final token):
+          await _enterSession(token);
         case LoginPending(:final solicitudId, :final sesionActivaEn, :final caducaEnS):
           _pendingSolicitudId = solicitudId;
           _pendingSesionActivaEn = sesionActivaEn;
@@ -182,24 +178,29 @@ class AuthViewModel extends ChangeNotifier {
           notifyListeners();
           _startPolling();
       }
+      return;
     } on InvalidCredentialsException {
       _error = 'Usuario o contraseña incorrectos';
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     } on TooManyAttemptsException catch (e) {
       _blockedSecondsLeft = e.esperaS;
       _stage = AuthStage.blocked;
       notifyListeners();
       _startBlockCountdown();
+      return;
     } on AgentUnavailableException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     } on AgentErrorException catch (e) {
       _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
     }
+    _stage = AuthStage.needsLogin;
+    notifyListeners();
+  }
+
+  Future<void> _enterSession(String token) async {
+    await _tokenStorage.write(token);
+    _token = token;
+    _stage = AuthStage.loggedIn;
+    notifyListeners();
   }
 
   void _startBlockCountdown() {
@@ -234,35 +235,30 @@ class AuthViewModel extends ChangeNotifier {
     } on AgentUnavailableException {
       return;
     } on AgentErrorException catch (e) {
-      _stopWaiting();
-      _error = e.message;
-      _stage = AuthStage.needsLogin;
-      notifyListeners();
+      _stopWaitingWithError(e.message);
       return;
     }
     switch (result) {
       case LoginRequestPending():
         return;
-      case LoginRequestApproved(:final token, :final usuario):
+      case LoginRequestApproved(:final token):
         _stopWaiting();
-        await _tokenStorage.write(token);
-        _token = token;
-        _usuario = usuario;
-        _stage = AuthStage.loggedIn;
-        notifyListeners();
+        await _enterSession(token);
       case LoginRequestRejected():
-        _stopWaiting();
-        _error = 'Se mantuvo la sesión anterior';
-        _stage = AuthStage.needsLogin;
-        notifyListeners();
+        _stopWaitingWithError('Se mantuvo la sesión anterior');
       case LoginRequestExpired():
-        _stopWaiting();
-        _error = 'Nadie confirmó a tiempo. Vuelve a iniciar sesión.';
-        _stage = AuthStage.needsLogin;
-        notifyListeners();
+        _stopWaitingWithError('Nadie confirmó a tiempo. Vuelve a iniciar sesión.');
     }
   }
 
+  void _stopWaitingWithError(String message) {
+    _stopWaiting();
+    _error = message;
+    _stage = AuthStage.needsLogin;
+    notifyListeners();
+  }
+
+  /// Deja de esperar la confirmación y vuelve al formulario de login.
   void cancelPending() {
     _stopWaiting();
     _stage = AuthStage.needsLogin;
@@ -277,12 +273,14 @@ class AuthViewModel extends ChangeNotifier {
     _pendingSolicitudId = null;
   }
 
+  /// Cierra la sesión en el agente (si responde) y en el móvil.
   Future<void> logout() async {
     await _tryRevoking(_repository.logout);
     await _forgetSession();
     await _checkStatus();
   }
 
+  /// Desempareja el móvil en el agente (si responde) y olvida el equipo en el móvil.
   Future<void> unpair() async {
     await _tryRevoking(_repository.unpair);
     await _forgetDevice();
@@ -318,7 +316,6 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> _forgetSession() async {
     await _tokenStorage.clear();
     _token = null;
-    _usuario = null;
   }
 
   Future<void> _forgetDevice() async {

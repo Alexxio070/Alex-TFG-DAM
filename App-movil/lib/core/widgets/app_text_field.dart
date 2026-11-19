@@ -1,7 +1,11 @@
+// Campo de texto común a todos los formularios.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Campo de una línea o de varias ([multiline]), con fuente monoespaciada opcional ([mono]) y texto
+/// oculto para contraseñas ([obscureText]).
 class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,

@@ -1,3 +1,5 @@
+// Tests de ConnectionModeMetricsRepository: cada llamada va al repositorio del modo activo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/connection_mode_metrics_repository.dart';
 import 'package:sysmote/data/models/metrics.dart';
