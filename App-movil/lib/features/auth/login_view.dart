@@ -1,3 +1,5 @@
+// Pantalla del login: muestra el paso de AuthViewModel en el que se está.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,8 @@ import 'widgets/login_form.dart';
 import 'widgets/pending_confirmation.dart';
 import 'widgets/registration_form.dart';
 
+/// Elige la pantalla según [AuthViewModel.stage]: carga, agente inalcanzable, sin cuenta, registro,
+/// login o espera de confirmación. Guarda los campos del login para no perderlos entre estados.
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 

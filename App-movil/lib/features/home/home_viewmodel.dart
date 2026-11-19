@@ -1,3 +1,5 @@
+// ViewModel de Inicio: estado de la cuadrícula de macros y carpetas.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -7,10 +9,13 @@ import '../../core/theme/app_tokens.dart';
 import '../../data/models/home_item.dart';
 import '../../data/repositories/macro_repository.dart';
 
+/// Máximo de elementos en la cuadrícula.
 const kMaxItems = 40;
 
+/// Texto del aviso inferior: título y comando.
 typedef RunToastData = ({String title, String command});
 
+/// Carga, ordena, agrupa y borra macros y carpetas, las guarda en el repositorio y ejecuta macros.
 class HomeViewModel extends ChangeNotifier {
   HomeViewModel(this._repository) {
     _load();
@@ -32,6 +37,7 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Marca si se está arrastrando un elemento; al empezar, oculta el aviso.
   void setDragging(bool value) {
     if (value) {
       _toastTimer?.cancel();
@@ -41,15 +47,18 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Ejecuta [macro] en el PC y muestra el aviso «Ejecutando…».
   void execute(Macro macro) {
     _repository.run(macro);
     _showToast((title: 'Ejecutando «${macro.label}»', command: macro.command), 2200);
   }
 
+  /// Avisa de que no caben más elementos.
   void showFullToast() {
     _showToast((title: 'No caben más botones', command: ''), 1600);
   }
 
+  /// Añade una macro nueva al final.
   void createMacro({
     required String name,
     required String command,
@@ -66,6 +75,7 @@ class HomeViewModel extends ChangeNotifier {
     _commit([..._items, macro]);
   }
 
+  /// Mueve el elemento [id] a la posición [toIndex].
   void moveItem(String id, int toIndex) {
     final items = List.of(_items);
     final from = items.indexWhere((i) => i.id == id);
@@ -75,6 +85,8 @@ class HomeViewModel extends ChangeNotifier {
     _commit(items);
   }
 
+  /// Suelta la macro [id] sobre el elemento de [targetIndex]: si es una carpeta la mete dentro y si
+  /// es otra macro crea una carpeta con las dos.
   void mergeInto(String id, int targetIndex) {
     final items = List.of(_items);
     final from = items.indexWhere((i) => i.id == id);
@@ -95,10 +107,12 @@ class HomeViewModel extends ChangeNotifier {
     _commit(items);
   }
 
+  /// Borra el elemento [id] (una carpeta, con sus macros).
   void deleteItem(String id) {
     _commit(_items.where((i) => i.id != id).toList());
   }
 
+  /// Deshace la carpeta [id] y deja sus macros sueltas en su lugar.
   void ungroupFolder(String id) {
     final items = List.of(_items);
     final index = items.indexWhere((i) => i.id == id);
@@ -110,6 +124,7 @@ class HomeViewModel extends ChangeNotifier {
     _commit(items);
   }
 
+  /// Cambia el nombre y el color de la carpeta [id].
   void updateFolder(String id, {required String name, required Color color}) {
     final label = name.trim().isEmpty ? 'Carpeta' : name.trim();
     _commit([

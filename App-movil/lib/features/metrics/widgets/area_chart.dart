@@ -1,7 +1,10 @@
+// Gráfico de área de las tarjetas de Métricas, dibujado a mano con CustomPainter.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
+/// Dibuja [values] entre [min] y [max] con líneas guía al 25, 50 y 75 %.
 class AreaChart extends StatelessWidget {
   const AreaChart({
     super.key,

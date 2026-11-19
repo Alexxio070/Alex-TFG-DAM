@@ -1,3 +1,5 @@
+// Menú lateral: secciones, botón de Ajustes y estado de conexión.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -14,6 +16,7 @@ const _icons = {
   Section.notes: AppIcon.notes,
 };
 
+/// Lista de secciones; elegir una llama a [onSelect].
 class AppDrawer extends StatelessWidget {
   const AppDrawer({
     super.key,

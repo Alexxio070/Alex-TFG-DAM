@@ -1,7 +1,10 @@
+// Aviso en caja usado por los formularios del login.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
+/// Caja con [text] en el color indicado.
 class AuthBanner extends StatelessWidget {
   const AuthBanner({super.key, required this.text, required this.color});
 

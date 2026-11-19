@@ -1,3 +1,5 @@
+// Campos de conexión con el PC (modo, dirección, huella o identificador iroh).
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import '../settings_viewmodel.dart';
 
 final _addressFormat = RegExp(r'^[\w.-]+:\d+$');
 
+/// Valida y guarda en Ajustes los datos del modo elegido. Se usa en Ajustes y en el login.
 class ConnectionFields extends StatefulWidget {
   const ConnectionFields({super.key});
 

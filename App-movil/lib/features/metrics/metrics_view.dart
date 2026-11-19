@@ -1,3 +1,5 @@
+// Pantalla de Métricas: CPU, temperatura, RAM y disco, con sus estados de carga y de error.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,8 @@ import 'metrics_viewmodel.dart';
 import 'widgets/disk_card.dart';
 import 'widgets/metric_card.dart';
 
+/// Pinta las tarjetas con los datos de [MetricsViewModel] y pausa el sondeo al salir de la pantalla
+/// o de la app.
 class MetricsView extends StatefulWidget {
   const MetricsView({super.key});
 

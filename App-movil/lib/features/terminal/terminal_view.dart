@@ -1,3 +1,5 @@
+// Pantalla de Terminal: pestañas, terminal xterm.dart y fila de teclas extra.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +39,7 @@ const _theme = xterm.TerminalTheme(
   searchHitForeground: kTerminalBackground,
 );
 
+/// Sin pestañas muestra el aviso para abrir una; con pestañas, la terminal activa.
 class TerminalView extends StatefulWidget {
   const TerminalView({super.key});
 

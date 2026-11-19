@@ -1,9 +1,12 @@
+// Pantalla de espera mientras se confirma el login en la TUI.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../auth_viewmodel.dart';
 
+/// Indica qué dispositivo tiene la sesión abierta, muestra la cuenta atrás y deja cancelar.
 class PendingConfirmation extends StatelessWidget {
   const PendingConfirmation({super.key, required this.vm});
 

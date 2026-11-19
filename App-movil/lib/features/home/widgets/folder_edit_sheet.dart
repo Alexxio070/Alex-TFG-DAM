@@ -1,3 +1,5 @@
+// Hoja para cambiar el nombre y el color de una carpeta.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,7 @@ import '../../../core/widgets/modal_card.dart';
 import '../../../data/models/home_item.dart';
 import '../home_viewmodel.dart';
 
+/// Edita el nombre y el color de [folder].
 Future<void> showFolderEditSheet(BuildContext context, Folder folder) {
   final vm = context.read<HomeViewModel>();
   return showBottomCard(

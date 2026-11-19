@@ -1,3 +1,5 @@
+// Pantalla de Notas: buscador, lista y botón de nueva nota.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,7 @@ import 'note_form_view.dart';
 import 'notes_viewmodel.dart';
 import 'widgets/note_card.dart';
 
+/// Lista de notas con búsqueda; tocar editar o «+» abre [NoteFormView].
 class NotesView extends StatelessWidget {
   const NotesView({super.key});
 

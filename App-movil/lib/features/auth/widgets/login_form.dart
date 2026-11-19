@@ -1,3 +1,5 @@
+// Formulario de inicio de sesión.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -7,6 +9,8 @@ import '../../../core/widgets/field_label.dart';
 import '../auth_viewmodel.dart';
 import 'auth_banner.dart';
 
+/// Usuario, contraseña y nombre del dispositivo; avisa si hay otra sesión activa y muestra la
+/// cuenta atrás si el agente bloquea por intentos.
 class LoginForm extends StatelessWidget {
   const LoginForm({
     super.key,

@@ -1,8 +1,11 @@
+// Hoja inferior con los campos de conexión, para el login.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/modal_card.dart';
 import 'connection_fields.dart';
 
+/// Abre [ConnectionFields] en una hoja inferior que sube con el teclado.
 Future<void> showConnectionSheet(BuildContext context) {
   return showBottomCard(
     context,

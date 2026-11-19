@@ -1,3 +1,5 @@
+// Formulario para crear la cuenta del agente la primera vez.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -7,6 +9,7 @@ import '../../../core/widgets/field_label.dart';
 import '../auth_viewmodel.dart';
 import 'auth_banner.dart';
 
+/// Código de registro de la TUI, usuario, contraseña y nombre del dispositivo.
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key, required this.vm, required this.onConnection});
 

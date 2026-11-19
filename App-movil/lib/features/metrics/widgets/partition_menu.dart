@@ -1,3 +1,5 @@
+// Selector de partición de la tarjeta de disco.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -5,6 +7,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/metrics.dart';
 import '../../../data/models/settings.dart';
 
+/// Botón con la partición actual que abre el menú.
 class PartitionChip extends StatelessWidget {
   const PartitionChip({super.key, required this.mount, required this.onTap});
 
@@ -59,6 +62,7 @@ class PartitionChip extends StatelessWidget {
   }
 }
 
+/// Lista de particiones para elegir una.
 class PartitionMenu extends StatelessWidget {
   const PartitionMenu({
     super.key,
@@ -107,6 +111,7 @@ class PartitionMenu extends StatelessWidget {
   }
 }
 
+/// Una partición del menú, con su uso.
 class PartitionOption extends StatelessWidget {
   const PartitionOption({
     super.key,

@@ -1,3 +1,5 @@
+// ViewModel del login: única fuente de verdad sobre si hay sesión con el agente y dueño del token.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +9,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/metrics_repository.dart' show AgentUnavailableException;
 import '../../data/repositories/token_storage.dart';
 
+/// En qué punto está el login; [LoginView] muestra una pantalla distinta para cada uno.
 enum AuthStage {
   loading,
   unreachable,
@@ -20,6 +23,8 @@ enum AuthStage {
   loggedIn,
 }
 
+/// Comprueba el agente al arrancar, registra la cuenta, inicia y cierra sesión, espera la
+/// confirmación en la TUI cuando ya hay otra sesión y guarda el token en el móvil y en memoria.
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel(
     this._repository,
@@ -57,6 +62,8 @@ class AuthViewModel extends ChangeNotifier {
   int get pendingSecondsLeft => _pendingSecondsLeft;
   int get blockedSecondsLeft => _blockedSecondsLeft;
 
+  /// Entra con el token guardado si el agente lo acepta; si no, pregunta al agente en qué estado
+  /// está para mostrar el formulario que toque.
   Future<void> start() async {
     _stage = AuthStage.loading;
     notifyListeners();
@@ -107,6 +114,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Crea la cuenta con el código de registro de la TUI y entra en sesión.
   Future<void> register({
     required String codigo,
     required String usuario,
@@ -143,6 +151,8 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Inicia sesión; si ya hay una sesión activa en otro dispositivo, pasa a esperar la confirmación
+  /// en la TUI.
   Future<void> submit({
     required String usuario,
     required String contrasena,
@@ -248,6 +258,7 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Deja de esperar la confirmación y vuelve al formulario de login.
   void cancelPending() {
     _stopWaiting();
     _stage = AuthStage.needsLogin;
@@ -262,12 +273,14 @@ class AuthViewModel extends ChangeNotifier {
     _pendingSolicitudId = null;
   }
 
+  /// Cierra la sesión en el agente (si responde) y en el móvil.
   Future<void> logout() async {
     await _tryRevoking(_repository.logout);
     await _forgetSession();
     await _checkStatus();
   }
 
+  /// Desempareja el móvil en el agente (si responde) y olvida el equipo en el móvil.
   Future<void> unpair() async {
     await _tryRevoking(_repository.unpair);
     await _forgetDevice();

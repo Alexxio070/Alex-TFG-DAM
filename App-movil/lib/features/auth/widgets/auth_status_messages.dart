@@ -1,9 +1,12 @@
+// Pantallas del login sin formulario: agente sin cuenta y agente inalcanzable.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../auth_viewmodel.dart';
 
+/// El agente no tiene cuenta ni registro abierto: indica cómo crearla desde la TUI.
 class NoAccountMessage extends StatelessWidget {
   const NoAccountMessage({super.key, required this.onConnection});
 
@@ -33,6 +36,7 @@ class NoAccountMessage extends StatelessWidget {
   }
 }
 
+/// No se puede hablar con el agente: muestra el error y deja reintentar o revisar la conexión.
 class UnreachableMessage extends StatelessWidget {
   const UnreachableMessage({super.key, required this.vm, required this.onConnection});
 

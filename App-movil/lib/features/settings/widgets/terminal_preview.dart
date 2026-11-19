@@ -1,7 +1,10 @@
+// Vista previa del tamaño de fuente de la terminal.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 
+/// Una línea de prompt con los colores de la terminal y [fontSize].
 class TerminalPreview extends StatelessWidget {
   const TerminalPreview({super.key, required this.fontSize});
 
