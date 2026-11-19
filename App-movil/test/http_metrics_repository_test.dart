@@ -8,8 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:sysmote/data/http/http_metrics_repository.dart';
 import 'package:sysmote/data/http/pinned_http_client.dart';
-import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 
 const _body = '''
 {

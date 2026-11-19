@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import '../agent_metrics_repository.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/metrics_repository.dart';
+import '../repositories/agent_exceptions.dart';
 import 'iroh_connection.dart';
 
 export 'iroh_connection.dart' show IrohConnector, IrohLink;

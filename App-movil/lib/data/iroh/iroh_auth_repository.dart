@@ -3,7 +3,7 @@
 import 'dart:convert';
 
 import '../agent_auth_repository.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException, kUnexpectedFormatMessage;
+import '../repositories/agent_exceptions.dart';
 import '../repositories/token_storage.dart';
 import 'iroh_connection.dart';
 

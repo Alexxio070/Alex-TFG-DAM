@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/models/auth.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../../data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/token_storage.dart';
 
 /// En qué punto está el login; [LoginView] muestra una pantalla distinta para cada uno.

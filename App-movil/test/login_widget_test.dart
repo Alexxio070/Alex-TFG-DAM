@@ -8,7 +8,7 @@ import 'package:sysmote/core/theme/app_tokens.dart';
 import 'package:sysmote/core/widgets/app_button.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/features/auth/auth_viewmodel.dart';
 import 'package:sysmote/features/auth/login_view.dart';
 import 'package:sysmote/features/settings/settings_viewmodel.dart';

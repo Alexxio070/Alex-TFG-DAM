@@ -5,8 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../agent_metrics_repository.dart';
-import '../repositories/auth_repository.dart';
-import '../repositories/metrics_repository.dart';
+import '../repositories/agent_exceptions.dart';
 import 'pinned_http_client.dart';
 
 /// Pide `/metrics` al agente por HTTPS (USB o red local), con la huella del

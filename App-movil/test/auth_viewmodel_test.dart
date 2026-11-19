@@ -4,7 +4,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/features/auth/auth_viewmodel.dart';
 
 import 'fakes/fake_auth_repository.dart';

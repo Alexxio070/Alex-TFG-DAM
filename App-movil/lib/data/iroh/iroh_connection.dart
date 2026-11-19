@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:iroh_flutter/iroh_flutter.dart';
 
 import '../models/settings.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../repositories/agent_exceptions.dart';
 
 const _alpn = 'sysmote/tunnel/0';
 const _connectTimeout = Duration(seconds: 5);
