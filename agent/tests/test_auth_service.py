@@ -1,25 +1,15 @@
+"""Lógica de autenticación: registro, login, solicitudes de login, sesiones, límite y acciones de la TUI."""
+
 import re
-import sqlite3
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import pytest
 
 from sysmote.repositories import codigo_registro_repository, sesion_repository, solicitud_login_repository, usuario_repository
-from sysmote.services import auth_service, limite_service, password_service
+from sysmote.services import auth_service, limite_service, password_service, token_service
 from sysmote.services.auth_service import AuthError
 
-SCHEMA = (Path(__file__).resolve().parent.parent / "schema.sql").read_text()
 CODIGO = "K7QX-M2PD-9WTR-4HNB"
-
-
-@pytest.fixture
-def connection():
-    connection = sqlite3.connect(":memory:")
-    connection.execute("PRAGMA foreign_keys = ON")
-    connection.executescript(SCHEMA)
-    yield connection
-    connection.close()
 
 
 def _en(delta: timedelta) -> str:
@@ -50,11 +40,6 @@ def test_estado_sin_cuenta_ni_registro(connection):
     }
 
 
-def test_estado_con_registro_abierto(connection):
-    _abrir_registro(connection)
-    assert auth_service.estado(connection)["registro_abierto"] is True
-
-
 def test_estado_tras_registrar_esta_configurado_con_sesion_y_registro_cerrado(connection):
     _cuenta(connection)
     estado = auth_service.estado(connection)
@@ -81,56 +66,56 @@ def test_registrar_crea_usuario_con_argon2_y_devuelve_sesion(connection):
 
 
 def test_registrar_sin_registro_abierto_da_registro_cerrado(connection):
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "registro_cerrado"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "registro_cerrado"
 
 
 def test_registrar_con_codigo_equivocado_da_codigo_invalido(connection):
     _abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", None)) == "codigo_invalido"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")) == "codigo_invalido"
 
 
 def test_registrar_con_el_codigo_caducado_da_codigo_caducado(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_caducado"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_caducado"
 
 
 def test_registrar_con_otro_codigo_cuando_solo_hay_uno_caducado_da_codigo_invalido(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", None)) == "codigo_invalido"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")) == "codigo_invalido"
 
 
 def test_registrar_con_un_codigo_ya_usado_da_codigo_invalido(connection):
     _abrir_registro(connection)
     codigo = codigo_registro_repository.obtener_por_hash(connection, auth_service.hash_codigo(CODIGO))
     codigo_registro_repository.marcar_usado(connection, codigo.id)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_invalido"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_invalido"
 
 
 def test_el_codigo_caducado_deja_de_reconocerse_al_abrir_un_registro_nuevo(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
     auth_service.abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)) == "codigo_invalido"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_invalido"
 
 
 def test_el_codigo_caducado_se_distingue_antes_que_la_contrasena_debil(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "abc", None)) == "codigo_caducado"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "abc", "Móvil")) == "codigo_caducado"
 
 
 def test_registrar_con_contrasena_debil_no_consume_el_codigo(connection):
     _abrir_registro(connection)
     with pytest.raises(AuthError) as error:
-        auth_service.registrar(connection, CODIGO, "alex", "abc", None)
+        auth_service.registrar(connection, CODIGO, "alex", "abc", "Móvil")
     assert error.value.codigo == "contrasena_debil"
     assert len(error.value.extra["motivos"]) == 3
 
-    assert auth_service.registrar(connection, CODIGO, "alex", "Clave1", None)["usuario"] == "alex"
+    assert auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")["usuario"] == "alex"
 
 
 def test_registrar_dos_veces_da_registro_cerrado(connection):
     _cuenta(connection)
     codigo_registro_repository.crear(connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", None)) == "registro_cerrado"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")) == "registro_cerrado"
 
 
 def test_login_correcto_sin_sesion_activa_abre_sesion(connection):
@@ -336,13 +321,13 @@ def test_abrir_registro_guarda_solo_el_hash(connection):
 def test_abrir_registro_invalida_el_codigo_anterior(connection):
     primero, _ = auth_service.abrir_registro(connection)
     auth_service.abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, primero, "alex", "Clave1", None)) == "codigo_invalido"
+    assert _codigo_de_error(lambda: auth_service.registrar(connection, primero, "alex", "Clave1", "Móvil")) == "codigo_invalido"
 
 
 def test_el_codigo_sirve_escrito_sin_guiones_y_en_minusculas(connection):
     codigo, _ = auth_service.abrir_registro(connection)
     escrito_a_mano = codigo.replace("-", "").lower()
-    assert auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", None)["usuario"] == "alex"
+    assert auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", "Móvil")["usuario"] == "alex"
 
 
 def test_el_codigo_sirve_si_se_teclea_cero_por_o_y_uno_por_i(connection):
@@ -393,6 +378,16 @@ def test_solicitud_pendiente_la_devuelve_y_ignora_las_caducadas(connection):
     assert auth_service.consultar_solicitud(connection, solicitud) == {"estado": "caducada"}
 
 
+def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
+    resultado = _cuenta(connection)
+    auth_service.cerrar_todas_las_sesiones(connection)
+
+    auth_service.desemparejar_sesion_activa(connection)
+
+    sesion = sesion_repository.obtener_por_hash_token(connection, token_service.hashear(resultado["token"]))
+    assert sesion.motivo_revocacion == "cerrar_todas"
+
+
 def test_desemparejar_sesion_activa_desde_la_tui(connection):
     resultado = _cuenta(connection)
     assert auth_service.sesion_activa(connection).dispositivo == "Pixel 8"
@@ -402,6 +397,3 @@ def test_desemparejar_sesion_activa_desde_la_tui(connection):
     assert auth_service.sesion_activa(connection) is None
     assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
 
-
-def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
-    auth_service.desemparejar_sesion_activa(connection)

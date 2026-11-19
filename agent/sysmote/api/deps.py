@@ -1,3 +1,5 @@
+"""Dependencias de FastAPI que comparten las rutas: la conexión a SQLite y la sesión del usuario."""
+
 import sqlite3
 from collections.abc import Iterator
 
@@ -9,6 +11,7 @@ from sysmote.services import auth_service
 
 
 def get_connection() -> Iterator[sqlite3.Connection]:
+    """Abre una conexión a SQLite para la petición y la cierra al terminar."""
     connection = database.connect()
     try:
         yield connection
@@ -20,5 +23,10 @@ def requiere_sesion(
     authorization: str | None = Header(default=None),
     connection: sqlite3.Connection = Depends(get_connection),
 ) -> Sesion:
+    """Devuelve la sesión del token `Authorization: Bearer <token>`.
+
+    Raises:
+        AuthError: si falta el token, no es válido, caducó o fue revocado (la API responde 401).
+    """
     esquema, _, token = (authorization or "").partition(" ")
     return auth_service.autenticar(connection, token if esquema.lower() == "bearer" else None)

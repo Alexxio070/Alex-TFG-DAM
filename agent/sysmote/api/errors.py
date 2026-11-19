@@ -1,3 +1,9 @@
+"""Formato único de los errores de la API: `{"error": "...", "mensaje": "...", ...}` (contrato, §4).
+
+Traduce las excepciones del agente y las propias de FastAPI a ese formato, con el código
+HTTP que corresponde a cada error.
+"""
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -24,6 +30,8 @@ def _respuesta(estado: int, error: str, mensaje: str, **extra) -> JSONResponse:
 
 
 def registrar_manejadores(app: FastAPI) -> None:
+    """Registra en la app los manejadores que convierten cada error al formato del contrato."""
+
     @app.exception_handler(AuthError)
     async def _auth(request: Request, exc: AuthError) -> JSONResponse:
         respuesta = _respuesta(_ESTADO_DE_AUTH[exc.codigo], exc.codigo, exc.mensaje, **exc.extra)

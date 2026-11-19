@@ -1,3 +1,5 @@
+"""Lectura de las métricas del sistema con `psutil`. No guarda nada: los datos son en vivo."""
+
 import psutil
 
 from sysmote.models.metrics import Partition
@@ -13,10 +15,12 @@ psutil.cpu_percent(interval=None)
 
 
 def read_cpu_percent() -> float:
+    """Uso de CPU en porcentaje desde la lectura anterior."""
     return psutil.cpu_percent(interval=None)
 
 
 def read_cpu_temp_c() -> float | None:
+    """Temperatura de la CPU en °C, o `None` si no hay ningún sensor conocido."""
     temps = psutil.sensors_temperatures()
     for sensor_name in CPU_TEMP_SENSORS:
         entries = temps.get(sensor_name)
@@ -26,11 +30,13 @@ def read_cpu_temp_c() -> float | None:
 
 
 def read_ram_gb() -> tuple[float, float]:
+    """RAM usada y total, en GB decimales."""
     mem = psutil.virtual_memory()
     return mem.used / GB, mem.total / GB
 
 
 def read_partitions() -> list[Partition]:
+    """Particiones de disco reales, sin sistemas virtuales, paquetes snap ni montajes duplicados."""
     partitions = []
     for part in psutil.disk_partitions():
         if not part.device.startswith("/dev/"):

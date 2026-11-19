@@ -40,10 +40,11 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 | Instalación y servicio systemd | `01-memoria-tecnica.md`, §8 · `02-necesidades-tecnologicas.md`, §7 |
 | Fases de implementación | `04-plan-de-fases.md` |
 
+## Implementación actual
+
+- **API:** las rutas de seguridad están en el contrato de la fase 3 ([`contrato-api-fase3.md`](contrato-api-fase3.md)), y `GET /metrics` exige sesión. `/docs` está desactivado. El resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar.
+- **Seguridad:** descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/schema.sql`. Cada archivo del código empieza con un comentario que explica su papel.
+
 ## Por crear en esta carpeta
 
-Cuando haya implementación o decisiones que no quepan en los documentos generales:
-
-- Referencia de la API del agente: las rutas de seguridad están en el contrato de la fase 3 ([`contrato-api-fase3.md`](contrato-api-fase3.md)) y `GET /metrics`, ahora protegida por login; el resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar. `/docs` está desactivado.
-- Seguridad: la implementación de la fase 3 está descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/schema.sql`.
 - Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 5).

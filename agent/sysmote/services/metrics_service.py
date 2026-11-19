@@ -1,8 +1,11 @@
+"""Reúne las métricas del sistema en la respuesta de `GET /metrics`."""
+
 from sysmote.models.metrics import Metrics
 from sysmote.repositories import metrics_repository
 
 
 def get_metrics() -> Metrics:
+    """Lee CPU, temperatura, RAM y particiones en este momento."""
     ram_used_gb, ram_total_gb = metrics_repository.read_ram_gb()
     return Metrics(
         cpu_percent=metrics_repository.read_cpu_percent(),

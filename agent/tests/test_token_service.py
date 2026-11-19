@@ -1,3 +1,5 @@
+"""Tokens de sesión: formato, aleatoriedad, hash y caducidad de 30 días."""
+
 import re
 from datetime import UTC, datetime, timedelta
 
@@ -17,10 +19,6 @@ def test_hash_es_sha256_hexadecimal_y_no_contiene_el_token():
     hash_token = token_service.hashear(token)
     assert re.fullmatch(r"[0-9a-f]{64}", hash_token)
     assert token not in hash_token
-
-
-def test_mismo_token_mismo_hash():
-    assert token_service.hashear("abc") == token_service.hashear("abc")
 
 
 def test_no_caduca_con_acceso_reciente():

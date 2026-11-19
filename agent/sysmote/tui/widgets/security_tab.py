@@ -7,10 +7,12 @@ from textual.widgets import Button, Static
 from sysmote.models.auth import SolicitudLogin
 from sysmote.services import auth_service, pairing_service, tls_service
 from sysmote.tui.screens.dialogs import ChangePasswordScreen, LoginRequestScreen
-from sysmote.tui.widgets.formato import ETIQUETAS_SERVIDORES, codigo_vigente, hora_local
+from sysmote.tui.widgets.formato import ETIQUETAS_SERVIDORES, hora_local
 
 
 class SecurityTab(Vertical):
+    """Datos de conexión del agente y botones de seguridad; abre el diálogo de las solicitudes de login."""
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._dialogo_abierto = False
@@ -28,6 +30,7 @@ class SecurityTab(Vertical):
         self.refrescar()
 
     def refrescar(self) -> None:
+        """Actualiza los datos mostrados y qué botones se pueden pulsar según haya cuenta o no."""
         huella = tls_service.huella_sha256() if tls_service.certificado_existe() else "—"
         lineas = [
             f"Dirección: {pairing_service.direccion_lan()}",
@@ -37,7 +40,7 @@ class SecurityTab(Vertical):
         if self.app.servidores is not None:
             for nombre, estado in self.app.servidores.estado().items():
                 lineas.append(f"{ETIQUETAS_SERVIDORES[nombre]}: {estado}")
-        abierto = codigo_vigente(self.app)
+        abierto = self.app.codigo_registro_vigente()
         if abierto:
             lineas.append(f"Código de registro: {abierto[0]} (caduca a las {hora_local(abierto[1])})")
         self.query_one("#security-info", Static).update("\n".join(lineas))
@@ -48,6 +51,10 @@ class SecurityTab(Vertical):
             self.query_one(boton, Button).disabled = not configurado
 
     def comprobar_solicitud(self) -> None:
+        """Si la app ha pedido un login con otra sesión activa, pregunta al usuario qué hacer.
+
+        `PairingSection` lo llama cada segundo mientras esta pestaña está visible.
+        """
         if self._dialogo_abierto:
             return
         solicitud = auth_service.solicitud_pendiente(self.app.connection)
