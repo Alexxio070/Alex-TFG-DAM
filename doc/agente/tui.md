@@ -56,7 +56,7 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
   `POST /registro` y ese código (contrato de la fase 3). Deshabilitado cuando ya existe una cuenta.
 - Botón **Cambiar contraseña**: diálogo con la contraseña nueva y su confirmación; muestra los
   motivos si es débil (mínimo 5 caracteres, un número y una mayúscula). Guarda el hash Argon2 y
-  **cierra todas las sesiones**.
+  **cierra todas las sesiones** y levanta el bloqueo por intentos fallidos.
 - Botón **Cerrar todas las sesiones**: sin diálogo de confirmación.
 - Botón **Reiniciar intentos**: pone a 0 el contador de intentos de login fallidos y levanta el
   bloqueo (para pruebas; no existe ruta HTTP equivalente).
