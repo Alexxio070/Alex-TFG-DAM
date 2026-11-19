@@ -12,7 +12,7 @@ abstract class AgentMetricsRepository implements MetricsRepository {
     try {
       return parse(json);
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 

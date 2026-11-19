@@ -6,6 +6,8 @@ abstract class MetricsRepository {
   Stream<MetricSample> watch();
 }
 
+const kUnexpectedFormatMessage = 'Respuesta del agente con formato inesperado';
+
 class AgentUnavailableException implements Exception {
   AgentUnavailableException(this.message);
 

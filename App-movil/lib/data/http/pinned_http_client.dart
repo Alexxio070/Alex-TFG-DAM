@@ -1,9 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
+
+import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+
+const _timeout = Duration(seconds: 3);
 
 const kFingerprintMismatchMessage =
     'El certificado del agente no coincide con la huella guardada. Compárala con la de la TUI';
@@ -23,4 +28,18 @@ http.Client buildPinnedHttpClient(String Function() fingerprint) {
     ..badCertificateCallback =
         (certificate, host, port) => fingerprintMatches(certificate.der, fingerprint());
   return IOClient(inner);
+}
+
+/// Envía [request] al agente con un límite de 3 s para toda la respuesta y
+/// traduce cualquier fallo de red a [AgentUnavailableException].
+Future<http.Response> sendToAgent(http.Client client, http.BaseRequest request) async {
+  try {
+    return await client.send(request).then(http.Response.fromStream).timeout(_timeout);
+  } on TimeoutException {
+    throw AgentUnavailableException('El agente no respondió a tiempo');
+  } on HandshakeException {
+    throw AgentUnavailableException(kFingerprintMismatchMessage);
+  } catch (_) {
+    throw AgentUnavailableException('No se pudo conectar con el agente');
+  }
 }

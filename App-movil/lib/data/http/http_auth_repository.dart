@@ -1,15 +1,11 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
 import '../agent_auth_repository.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../repositories/metrics_repository.dart' show AgentUnavailableException, kUnexpectedFormatMessage;
 import '../repositories/token_storage.dart';
 import 'pinned_http_client.dart';
-
-const _timeout = Duration(seconds: 3);
 
 /// Habla con el agente por HTTPS (USB o red local), con la huella del
 /// certificado fijada: si no coincide con la guardada en Ajustes, la conexión
@@ -40,16 +36,7 @@ class HttpAuthRepository extends AgentAuthRepository {
       request.headers['Content-Type'] = 'application/json; charset=utf-8';
       request.body = jsonEncode(body);
     }
-    final http.Response response;
-    try {
-      response = await http.Response.fromStream(await _client.send(request).timeout(_timeout));
-    } on TimeoutException {
-      throw AgentUnavailableException('El agente no respondió a tiempo');
-    } on HandshakeException {
-      throw AgentUnavailableException(kFingerprintMismatchMessage);
-    } catch (_) {
-      throw AgentUnavailableException('No se pudo conectar con el agente');
-    }
+    final response = await sendToAgent(_client, request);
     return AgentResponse(response.statusCode, _json(response));
   }
 
@@ -58,9 +45,9 @@ class HttpAuthRepository extends AgentAuthRepository {
     try {
       return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     } on FormatException {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 }

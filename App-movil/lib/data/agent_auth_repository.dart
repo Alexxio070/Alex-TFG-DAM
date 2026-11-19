@@ -1,6 +1,6 @@
 import 'models/auth.dart';
 import 'repositories/auth_repository.dart';
-import 'repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'repositories/metrics_repository.dart' show AgentUnavailableException, kUnexpectedFormatMessage;
 import 'repositories/token_storage.dart';
 
 class AgentResponse {
@@ -127,9 +127,9 @@ abstract class AgentAuthRepository implements AuthRepository {
     try {
       return await parse();
     } on TypeError {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     } on FormatException {
-      throw AgentUnavailableException('Respuesta del agente con formato inesperado');
+      throw AgentUnavailableException(kUnexpectedFormatMessage);
     }
   }
 
