@@ -67,6 +67,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan / Agente / Interfaz | Auditorías de simplificación y legibilidad del agente y de la interfaz y revisión de la documentación general frente al código: `07` sobre la creación de la cuenta y el QR, tabla de errores del contrato, README y `CONTRIBUTING.md` | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente | `schema.sql` pasa a `agent/sysmote/` y se incluye en el paquete, para que el agente funcione instalado con `pip` o `pipx` | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Interfaz / Plan | Auditoría complementaria y sus correcciones: login con tiempo igualado y una sola cuenta a nivel de base de datos, `AppTopBar` a `core/`, formato Dart a 100 columnas, comentarios que faltaban, captura de la TUI, y textos de TLS, uvicorn y bloqueo por intentos | Aplicado en código y en la documentación |
+| 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; falta publicarlo |
 
 ---
 
@@ -623,3 +624,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** revisión pedida por el autor antes del PR de las auditorías. Los informes de las auditorías no se publican: se guardan solo en local.
 - **Afecta a:** `agent/sysmote/services/auth_service.py`, `password_service.py`, `schema.sql`, `iroh_tunnel.py`, sus tests y `doc/agente/tests.md` (155 tests); `App-movil/` (formato, `AppTopBar` y comentarios); `02`, `05`, los dos README, `doc/img/tui-emparejamiento.png`, `doc/agente/ESTRUCTURA.md` y `doc/ui/estructura-app.md`.
 - **Estado:** aplicado en código y en la documentación. Quedan como decisión del autor la convención de nombres de los documentos, el identificador de la aplicación de Android, los emojis de `04` a `06`, la copia de seguridad de Android, un archivo de restricciones para Python y el formateador de Python.
+
+### 19/11/2026 — Paquete del agente preparado para PyPI
+
+- **Qué era:** el agente solo se podía instalar desde el código fuente. `pyproject.toml` no tenía autor, descripción larga, enlaces ni clasificadores, `agent/README.md` solo remitía al README raíz y la licencia no viajaba dentro del paquete.
+- **Qué es ahora:** `pyproject.toml` declara el autor (Alexxio), las palabras clave, nueve clasificadores comprobados contra la lista oficial de PyPI, los enlaces del proyecto y `license-files`; `agent/README.md` es la página del paquete, con instalación por `pipx` y por `pip` en un entorno virtual; y `agent/LICENSE` es una copia de la licencia. Verificado construyendo el sdist y la rueda, mirando su contenido (incluyen `schema.sql`, la licencia y el README) e instalando la rueda en un entorno limpio, donde `sysmote` arranca.
+- **Por qué:** decisión del autor de distribuir el agente como paquete de Python en PyPI. La instalación recomendada sigue siendo `pipx`, con `pip` dentro de un entorno virtual como alternativa.
+- **Afecta a:** `agent/pyproject.toml`, `agent/README.md`, `agent/LICENSE`, `02` §7.2, `07` §3.1 y `04` (fase 5).
+- **Estado:** el paquete está listo; falta publicarlo, primero en TestPyPI y después en PyPI, con la cuenta y el token del autor. Una versión subida a PyPI no se puede volver a subir con el mismo número.

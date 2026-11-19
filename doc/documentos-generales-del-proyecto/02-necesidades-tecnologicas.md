@@ -233,7 +233,7 @@ Cada bloque sigue el mismo esquema:
 ### 7.2 Instalar el agente
 - **Necesidad:** instalación sencilla en cualquier distribución.
 - **Tipo de tecnología:** gestor de paquetes de aplicaciones Python.
-- **Elección:** **pipx.** Crea un entorno aislado automáticamente y usa el Python de la distribución. El binding de iroh (ver 3.3) solo publica paquetes para Linux `manylinux_2_28` y no publica código fuente, así que el agente no es compatible con distribuciones basadas en musl (como Alpine). Las otras dependencias compiladas (cryptography, argon2) sí tienen paquetes para musl.
+- **Elección:** **pipx**, con el agente publicado en PyPI con el nombre `sysmote` (como alternativa, `pip install sysmote` dentro de un entorno virtual). `pipx` crea un entorno aislado automáticamente y usa el Python de la distribución. El binding de iroh (ver 3.3) solo publica paquetes para Linux `manylinux_2_28` y no publica código fuente, así que el agente no es compatible con distribuciones basadas en musl (como Alpine). Las otras dependencias compiladas (cryptography, argon2) sí tienen paquetes para musl.
 - **Dependencias del sistema:** `pipx` solo instala paquetes de Python. `tmux` y la terminal gráfica del usuario se instalan con el gestor de la distribución (ver 2.2.1).
 - **Alternativas descartadas:**
   - *PyInstaller:* el binario queda ligado a la glibc de la máquina de compilación.
