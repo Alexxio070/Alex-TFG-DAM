@@ -1,3 +1,6 @@
+// Tests de la pantalla de Métricas: tarjetas, particiones, unidades, avisos y desbordes en móviles
+// estrechos.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';

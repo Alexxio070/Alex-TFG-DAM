@@ -1,3 +1,5 @@
+// Tests de la pantalla de login: cada estado de AuthViewModel y su formulario.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';

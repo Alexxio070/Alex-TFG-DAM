@@ -1,5 +1,8 @@
+// Ajustes guardados en memoria para los tests.
+
 import 'package:sysmote/data/repositories/settings_repository.dart';
 
+/// [SettingsRepository] que guarda en una variable en vez de en shared_preferences.
 class InMemorySettingsRepository implements SettingsRepository {
   SettingsData? _data;
 

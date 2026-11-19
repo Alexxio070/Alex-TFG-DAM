@@ -1,3 +1,6 @@
+// Tests de AuthViewModel: arranque, registro, login, confirmación en la TUI, errores de sesión y
+// agente inalcanzable.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';

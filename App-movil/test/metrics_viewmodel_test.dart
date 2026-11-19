@@ -1,3 +1,5 @@
+// Tests de MetricsViewModel: errores, reintentos, suscripciones y errores de sesión.
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';

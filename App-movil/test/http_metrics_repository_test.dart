@@ -1,3 +1,6 @@
+// Tests de HttpMetricsRepository contra un cliente HTTP simulado: parseo, token, errores y huella
+// del certificado.
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';

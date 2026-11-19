@@ -1,3 +1,5 @@
+// Tests de la pantalla de Inicio: ejecutar y crear macros, y arrastrar a carpetas y a la papelera.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

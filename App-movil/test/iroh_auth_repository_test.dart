@@ -1,3 +1,5 @@
+// Tests de IrohAuthRepository con una conexión iroh falsa, y del HTTP crudo que viaja por ella.
+
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';

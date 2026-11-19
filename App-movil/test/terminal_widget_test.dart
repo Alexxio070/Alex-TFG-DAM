@@ -1,3 +1,6 @@
+// Tests de la pantalla de Terminal: estado vacío, creación de la sesión, pestañas y shell de
+// ejemplo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:sysmote/app.dart';

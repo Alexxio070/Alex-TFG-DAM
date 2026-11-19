@@ -1,3 +1,6 @@
+// Tests de HttpAuthRepository contra un cliente HTTP simulado: contrato de login, errores y huella
+// del certificado.
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';

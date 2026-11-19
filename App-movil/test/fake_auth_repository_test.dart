@@ -1,3 +1,6 @@
+// Tests del doble FakeAuthRepository: que simula fielmente el contrato de login de la fase 3,
+// porque los demás tests de login dependen de él.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
