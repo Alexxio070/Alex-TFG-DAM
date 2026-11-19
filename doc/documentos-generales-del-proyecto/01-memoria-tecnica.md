@@ -40,7 +40,7 @@ Las herramientas existentes cubren partes del problema, pero ninguna lo resuelve
 - **Sin sesiones activas, terminal vacía con aviso** («Toca para abrir una terminal en tu PC»): la sesión se crea al primer toque o tecla, con shell real desde ese momento.
 - **Varias pestañas**, como las de un navegador: cada una es una terminal independiente con su propia sesión y su propia ventana en el PC; cerrar una pestaña cierra su terminal en el PC.
 - **Requisitos en el PC:** `tmux`, y una terminal gráfica para la ventana. Sin `tmux`, la terminal funciona ligada a la conexión (se corta al desconectar) y la app avisa.
-- La app muestra la terminal con **xterm.dart** (secuencias ANSI, color de 24 bits), con barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`). Usa la fuente monoespaciada del sistema Android, no una Nerd Font (ver `../ui/XTERM_DART.md`).
+- La app muestra la terminal con **xterm.dart** (secuencias ANSI, color de 24 bits), con barra de teclas especiales (Ctrl, Alt, Tab, Esc, flechas) y redimensionado dinámico (`TIOCSWINSZ`). Usa la fuente monoespaciada del sistema Android, no una Nerd Font (ver `../ui/xterm-dart.md`).
 - **Shells:** el agente lanza `$SHELL` de forma genérica; Bash, Zsh y Fish funcionan igual a través del PTY. **La shell probada oficialmente es Zsh.**
 - Diseño detallado en `../agente/terminal-sesiones-tmux.md`.
 

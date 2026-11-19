@@ -2,7 +2,7 @@
 
 > **Histórico.** Sustituido por [`../../interfaz-app.md`](../../interfaz-app.md), la referencia actual de toda la interfaz. Se conserva como registro de cómo se llegó hasta allí.
 >
-> **Estado: v1 (prototipo inicial). La pantalla de Notas de esta versión (§6) queda DESCARTADA** y la sustituye la definitiva de [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md).
+> **Estado: v1 (prototipo inicial). La pantalla de Notas de esta versión (§6) queda DESCARTADA** y la sustituye la definitiva de [`../ui-v2/design.md`](../ui-v2/design.md).
 > El resto de secciones (drawer, tema, Inicio, Métricas, Terminal y Ajustes) siguen vigentes como referencia visual y de comportamiento. La pantalla «Opciones» de este documento se llama ahora **«Ajustes»**. Esta carpeta se conserva como histórico de diseño.
 
 Documento de traspaso para implementar en Flutter la interfaz diseñada en el prototipo `prototipo.dc.html`.
@@ -110,7 +110,7 @@ Lista con scroll de tarjetas a ancho completo (radio 20, padding 16, separación
 
 ## 6. Notas — DESCARTADO en v1
 
-> **Idea descartada.** Un único campo de texto compartido no cubre el espacio compartido definido en la memoria técnica (notas de texto y enlaces con CRUD, búsqueda y recarga). Ver la pantalla definitiva en [`../ui-v2/DESIGN.md`](../ui-v2/DESIGN.md). Lo que sigue se conserva solo como histórico.
+> **Idea descartada.** Un único campo de texto compartido no cubre el espacio compartido definido en la memoria técnica (notas de texto y enlaces con CRUD, búsqueda y recarga). Ver la pantalla definitiva en [`../ui-v2/design.md`](../ui-v2/design.md). Lo que sigue se conserva solo como histórico.
 
 - Un único campo de texto multilínea a pantalla completa, **compartido con el PC** en ambos sentidos.
 - Barra de estado superior (40 dp): punto + "Sincronizado con el PC" / "Sincronizando…" (ámbar #D97706) / "Sin emparejar · no se sincroniza"; a la derecha, número de caracteres.

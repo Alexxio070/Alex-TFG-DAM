@@ -23,7 +23,7 @@ Fuente de verdad del stack: `CLAUDE.md` y `../documentos-generales-del-proyecto/
 |---|---|
 | [`terminal-sesiones-tmux.md`](terminal-sesiones-tmux.md) | Diseño de la terminal: sesiones persistentes con tmux, ventana en el PC, ciclo de vida, requisitos y pendientes |
 | [`tui.md`](tui.md) | Especificación de la TUI del agente (`sysmote`): estructura, las cuatro secciones (Emparejamiento con sus subpestañas, Historial, Base de datos, Notas), comportamiento y colores |
-| [`ESTRUCTURA.md`](ESTRUCTURA.md) | Organización de `agent/sysmote/` (`api/`, `services/`, `repositories/`, `models/`, `tui/`) y qué entra en cada carpeta, fase a fase |
+| [`estructura.md`](estructura.md) | Organización de `agent/sysmote/` (`api/`, `services/`, `repositories/`, `models/`, `tui/`) y qué entra en cada carpeta, fase a fase |
 | [`tests.md`](tests.md) | Los tests del agente (`agent/tests/`): qué prueba cada archivo y para qué sirve |
 
 ## Dónde está el resto sobre el agente
@@ -43,7 +43,7 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 ## Implementación actual
 
 - **API:** las rutas de seguridad están en el contrato de la fase 3 ([`contrato-api-fase3.md`](contrato-api-fase3.md)), y `GET /metrics` exige sesión. `/docs` está desactivado. El resto de rutas son diseño en `01-memoria-tecnica.md` §3, sin implementar.
-- **Seguridad:** descrita en [`ESTRUCTURA.md`](ESTRUCTURA.md) y [`tui.md`](tui.md); las tablas, en `agent/sysmote/schema.sql`. Cada archivo del código empieza con un comentario que explica su papel.
+- **Seguridad:** descrita en [`estructura.md`](estructura.md) y [`tui.md`](tui.md); las tablas, en `agent/sysmote/schema.sql`. Cada archivo del código empieza con un comentario que explica su papel.
 
 ## Por crear en esta carpeta
 
