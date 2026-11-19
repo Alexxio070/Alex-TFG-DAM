@@ -136,7 +136,9 @@ Cambiar la contraseña y «Cerrar todas las sesiones» se hacen **solo desde la 
 - Token opaco de 32 bytes aleatorios en base64url (43 caracteres). No es un JWT.
 - El agente guarda solo su hash (SHA-256) en `sesion.hash_token`; el token en claro no se conserva.
 - Revocable: se invalida con `POST /logout`, cerrando todas las sesiones desde la TUI o cambiando la contraseña.
-- Caducidad: la sesión caduca tras **30 días sin usarse**; cada uso la renueva.
+- Caducidad: la sesión caduca **7 días después de iniciarla** (`sesion.caduca_en`), se use o no; el uso no la renueva. Pasado ese plazo el agente responde `401 no_autenticado` y la app vuelve al login.
+- Historial: las filas de `sesion` no se borran. Cada sesión conserva su `id`, el hash de su token, el dispositivo, `creado_en`, `caduca_en`, `ultimo_acceso` y, si se cerró antes de tiempo, `revocada` y `motivo_revocacion`. Esa tabla es el historial de inicios de sesión; no se guarda el token en claro.
+- Migración: al actualizar el agente, las sesiones que ya existían reciben `caduca_en = creado_en + 7 días`; las que lleven más de 7 días caducan en su siguiente uso y hay que iniciar sesión de nuevo.
 - La app guarda el token en el almacenamiento cifrado de Android (Keystore) y lo borra al recibir un `401`.
 
 ## 4. Errores
@@ -203,9 +205,9 @@ El emparejamiento se deshace de cinco maneras. Las dos primeras son inmediatas; 
 
 | # | Cuándo | Qué ocurre |
 |---|---|---|
-| 1 | El usuario pulsa **Desemparejar en la TUI** | El agente revoca la sesión y la marca como `desemparejado`. La siguiente petición de la app recibe `401 desemparejado` y la app olvida el equipo (dirección, huella, identificador iroh y token) y vuelve a la pantalla inicial. Si la app estaba sin conexión, se entera al volver a conectar. La sesión revocada se conserva 30 días para poder dar ese aviso; pasado ese plazo la app recibiría `no_autenticado` y volvería al login. |
+| 1 | El usuario pulsa **Desemparejar en la TUI** | El agente revoca la sesión y la marca como `desemparejado`. La siguiente petición de la app recibe `401 desemparejado` y la app olvida el equipo (dirección, huella, identificador iroh y token) y vuelve a la pantalla inicial. Si la app estaba sin conexión, se entera al volver a conectar. La sesión revocada se conserva en `sesion` y da ese aviso mientras no haya llegado su `caduca_en`; pasado ese plazo la app recibiría `no_autenticado` y volvería al login. |
 | 2 | El usuario pulsa **Desemparejar en la app** (Ajustes) | `POST /desemparejar`: el agente revoca la sesión y la app olvida el equipo. Hacerlo **antes de desinstalar** la app es la forma fiable. |
-| 3 | **Inactividad** | Una sesión sin uso 30 días caduca. La TUI deja de mostrar el dispositivo como emparejado. |
+| 3 | **Caducidad** | La sesión caduca 7 días después de iniciarla. La TUI deja de mostrar el dispositivo como emparejado. |
 | 4 | **Última conexión** en la TUI | La TUI muestra cuándo se vio por última vez al dispositivo (`sesion.ultimo_acceso`), para que el usuario decida si desemparejarlo. |
 | 5 | **Quitar el servicio** en la TUI (fase 5) | Si la app está conectada por WebSocket en ese momento, el agente le envía un evento de aviso. Solo funciona con la app conectada. |
 
@@ -266,13 +268,13 @@ La app usa la lista para elegir entre el repositorio real y el *placeholder* de 
 | # | Tipo | Qué | Estado |
 |---|---|---|---|
 | 1 | Cerrado | HTTPS con huella fijada en red local; por iroh, sin TLS propio (cifrado y autenticación de iroh). Ver `08`, entrada del 17/11/2026. | Confirmado. |
-| 2 | Cerrado | Caducidad de la sesión: 30 días sin uso. | Confirmado. |
+| 2 | Cerrado | Caducidad de la sesión: 7 días desde el inicio de sesión, sin renovarse con el uso. Antes eran 30 días sin uso; cambio del 19/11/2026 (ver `08`). | Confirmado. |
 | 3 | Cerrado | `POST /registro` devuelve ya el token. | Confirmado. |
 | 4 | Cerrado | Límite de intentos: 5 fallos y bloqueo de 10 min (2 min en testeo), con reinicio manual desde la TUI. «Se resetea a los 2 min» se entiende como un bloqueo de 2 min tras el 5.º fallo. | Confirmado. |
 | 5 | Decisión | Formato del QR: URI `sysmote://emparejar?...`. | Propuesta. |
 | 6 | Decisión | Versionado: entero `api` en `/estado`, sin prefijo `/v1`. | Propuesta. |
 | 7 | Cerrado | Una sesión activa solo se sobrescribe si el usuario lo confirma en la TUI del PC; la app avisa antes del login. | Confirmado. |
-| 11 | Cerrado | Desemparejamiento: TUI, botón en la app, inactividad de 30 días, última conexión en la TUI y aviso al quitar el servicio. Sin desemparejamiento automático al desinstalar (limitación de Android). | Confirmado. |
+| 11 | Cerrado | Desemparejamiento: TUI, botón en la app, caducidad de la sesión a los 7 días, última conexión en la TUI y aviso al quitar el servicio. Sin desemparejamiento automático al desinstalar (limitación de Android). | Confirmado. |
 | 10 | Decisión | La solicitud de login pendiente caduca a los 5 minutos. | Propuesta. |
 | 8 | **Abierto** | Si los límites de intentos sobreviven a la defensa del TFG. | Se decide después. |
 | 9 | **Abierto** | Varios ordenadores desde una misma app. | Si sobra tiempo. |
