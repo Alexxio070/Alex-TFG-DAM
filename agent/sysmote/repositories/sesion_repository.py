@@ -5,7 +5,9 @@ from datetime import UTC, datetime
 
 from sysmote.models.auth import Sesion
 
-_COLUMNS = "id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada, motivo_revocacion"
+_COLUMNS = (
+    "id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada, motivo_revocacion"
+)
 
 
 def _to_sesion(row: tuple) -> Sesion:
@@ -21,7 +23,9 @@ def _to_sesion(row: tuple) -> Sesion:
     )
 
 
-def crear(connection: sqlite3.Connection, usuario_id: int, hash_token: str, dispositivo: str) -> Sesion:
+def crear(
+    connection: sqlite3.Connection, usuario_id: int, hash_token: str, dispositivo: str
+) -> Sesion:
     """Crea una sesión sin revocar, con la fecha actual como creación y último acceso."""
     ahora = datetime.now(UTC).isoformat()
     cursor = connection.execute(
@@ -61,7 +65,8 @@ def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
 def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
     """Pone el último acceso a ahora: cada uso renueva los 30 días de caducidad."""
     connection.execute(
-        "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (datetime.now(UTC).isoformat(), sesion_id)
+        "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?",
+        (datetime.now(UTC).isoformat(), sesion_id),
     )
     connection.commit()
 

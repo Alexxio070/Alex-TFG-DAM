@@ -50,7 +50,11 @@ def comprobar(connection: sqlite3.Connection, nombre_usuario: str) -> None:
 
 
 def registrar(
-    connection: sqlite3.Connection, nombre_usuario: str, usuario_id: int | None, origen: str, exito: bool
+    connection: sqlite3.Connection,
+    nombre_usuario: str,
+    usuario_id: int | None,
+    origen: str,
+    exito: bool,
 ) -> None:
     """Anota un intento de login, correcto o fallido."""
     intento_login_repository.registrar(connection, usuario_id, nombre_usuario, origen, exito)

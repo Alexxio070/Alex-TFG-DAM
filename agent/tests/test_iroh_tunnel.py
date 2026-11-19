@@ -38,7 +38,9 @@ class _Lab:
         self.tasks: list[asyncio.Task] = []
 
     async def server(self) -> iroh.Endpoint:
-        endpoint = await iroh.Endpoint.bind(iroh.EndpointOptions(preset=iroh.preset_minimal(), alpns=[ALPN]))
+        endpoint = await iroh.Endpoint.bind(
+            iroh.EndpointOptions(preset=iroh.preset_minimal(), alpns=[ALPN])
+        )
         self.endpoints.append(endpoint)
         return endpoint
 

@@ -75,7 +75,9 @@ def load_or_create_secret_key(path: Path) -> iroh.SecretKey:
         try:
             return iroh.SecretKey.from_bytes(path.read_bytes())
         except iroh.IrohError as error:
-            raise ValueError(f"La clave secreta {path} no es válida: bórrala para generar otra") from error
+            raise ValueError(
+                f"La clave secreta {path} no es válida: bórrala para generar otra"
+            ) from error
     secret_key = iroh.SecretKey.generate()
     path.parent.mkdir(parents=True, exist_ok=True)
     # Con 0o600 desde la creación: escribir primero y hacer chmod después deja
@@ -100,7 +102,9 @@ class _Activity:
         self.last = time.monotonic()
 
 
-async def _pump_recv_to_writer(recv: iroh.RecvStream, writer: asyncio.StreamWriter, activity: _Activity) -> None:
+async def _pump_recv_to_writer(
+    recv: iroh.RecvStream, writer: asyncio.StreamWriter, activity: _Activity
+) -> None:
     """Copia lo que llega por iroh al socket local."""
     # No se propaga el EOF al socket local: uvicorn corta la respuesta si ve
     # medio cierre antes de contestar. Una petición HTTP ya es autocontenida
@@ -114,7 +118,9 @@ async def _pump_recv_to_writer(recv: iroh.RecvStream, writer: asyncio.StreamWrit
         await writer.drain()
 
 
-async def _pump_reader_to_send(reader: asyncio.StreamReader, send: iroh.SendStream, activity: _Activity) -> None:
+async def _pump_reader_to_send(
+    reader: asyncio.StreamReader, send: iroh.SendStream, activity: _Activity
+) -> None:
     """Copia la respuesta del socket local al *stream* de iroh y lo cierra al terminar."""
     try:
         while True:
@@ -242,7 +248,9 @@ async def run(local_port: int, secret_key_path: Path, limits: Limits = Limits())
         limits: límites frente a abusos (ver `Limits`).
     """
     secret_key = load_or_create_secret_key(secret_key_path)
-    options = iroh.EndpointOptions(preset=iroh.preset_n0(), secret_key=secret_key.to_bytes(), alpns=[ALPN])
+    options = iroh.EndpointOptions(
+        preset=iroh.preset_n0(), secret_key=secret_key.to_bytes(), alpns=[ALPN]
+    )
     endpoint = await iroh.Endpoint.bind(options)
     print(f"Túnel iroh activo. Identificador: {endpoint.id()}")
     try:

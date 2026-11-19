@@ -75,7 +75,7 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 - **Sustituye al explorador y la transferencia de archivos**, que pasan a `06-ideas-de-futuro.md`.
 - Notas de texto y enlaces entre el móvil y el PC, en la fase 9, reutilizando el patrón del CRUD de la fase 7. Sin actualización al momento (es una app para usar lejos del PC); si los dos lados editan la misma nota, gana el último cambio. Detalle en `01` §3 (Módulo F).
 - **Imágenes: aún pensándolo** (§3.8).
-- **Pantalla de Notas:** lista de tarjetas con búsqueda y formulario aparte, en lugar del campo de texto único del prototipo v1. Detalle en `../ui/historico/ui-v2/DESIGN.md`.
+- **Pantalla de Notas:** lista de tarjetas con búsqueda y formulario aparte, en lugar del campo de texto único del prototipo v1. Detalle en `../ui/historico/ui-v2/design.md`.
 
 ### 3.6 Requisitos mínimos de DAM
 Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo se resolvieron:

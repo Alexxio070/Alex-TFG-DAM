@@ -12,7 +12,9 @@ _COLUMNS = "id, hash_codigo, creado, caduca_en, usado"
 
 
 def _to_codigo(row: tuple) -> CodigoRegistro:
-    return CodigoRegistro(id=row[0], hash_codigo=row[1], creado=row[2], caduca_en=row[3], usado=bool(row[4]))
+    return CodigoRegistro(
+        id=row[0], hash_codigo=row[1], creado=row[2], caduca_en=row[3], usado=bool(row[4])
+    )
 
 
 def crear(connection: sqlite3.Connection, hash_codigo: str, caduca_en: str) -> CodigoRegistro:
@@ -23,7 +25,13 @@ def crear(connection: sqlite3.Connection, hash_codigo: str, caduca_en: str) -> C
         (hash_codigo, creado, caduca_en),
     )
     connection.commit()
-    return CodigoRegistro(id=cursor.lastrowid, hash_codigo=hash_codigo, creado=creado, caduca_en=caduca_en, usado=False)
+    return CodigoRegistro(
+        id=cursor.lastrowid,
+        hash_codigo=hash_codigo,
+        creado=creado,
+        caduca_en=caduca_en,
+        usado=False,
+    )
 
 
 def obtener_por_hash(connection: sqlite3.Connection, hash_codigo: str) -> CodigoRegistro | None:

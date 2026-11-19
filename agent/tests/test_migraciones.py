@@ -31,7 +31,9 @@ def test_una_base_nueva_se_crea_con_la_version_actual_sin_ejecutar_migraciones(m
 def test_una_base_anterior_a_las_migraciones_cuenta_como_version_1():
     database.connect().close()
     antigua = sqlite3.connect(rutas.DB_PATH)
-    antigua.execute("PRAGMA user_version = 0")  # así quedaban las bases creadas antes de las migraciones
+    antigua.execute(
+        "PRAGMA user_version = 0"
+    )  # así quedaban las bases creadas antes de las migraciones
     antigua.close()
 
     connection = database.connect()

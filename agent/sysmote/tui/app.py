@@ -55,7 +55,9 @@ class SysmoteApp(App):
     def _avisar_errores(self) -> None:
         for nombre, estado in self.servidores.estado().items():
             if estado.startswith("error"):
-                self.notify(f"{ETIQUETAS_SERVIDORES[nombre]}: {estado}", severity="error", timeout=20)
+                self.notify(
+                    f"{ETIQUETAS_SERVIDORES[nombre]}: {estado}", severity="error", timeout=20
+                )
 
 
 def main() -> None:

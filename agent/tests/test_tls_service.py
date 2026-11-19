@@ -29,5 +29,7 @@ def test_no_regenera_si_ya_existen():
 
 def test_huella_coincide_con_el_sha256_del_der_del_certificado():
     cert_path, _ = tls_service.asegurar_certificado()
-    der = x509.load_pem_x509_certificate(cert_path.read_bytes()).public_bytes(serialization.Encoding.DER)
+    der = x509.load_pem_x509_certificate(cert_path.read_bytes()).public_bytes(
+        serialization.Encoding.DER
+    )
     assert tls_service.huella_sha256() == hashlib.sha256(der).hexdigest()

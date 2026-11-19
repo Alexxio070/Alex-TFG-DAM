@@ -74,6 +74,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Interfaz | Login: aviso cuando falta un campo y nombre del dispositivo opcional, propuesto a partir del modelo del móvil | Aplicado en código y en la documentación |
 | 19/11/2026 | Plan / Documentación | Primera prueba en un móvil físico: red local e iroh; se actualiza lo que decía «sin probar» | Aplicado en la documentación |
 | 19/11/2026 | Plan | Fase 3 (seguridad) cerrada; el USB con `adb reverse` pasa a obsoleto como método de prueba | Aplicado en la documentación |
+| 19/11/2026 | Plan / Agente / Interfaz | Decisiones abiertas de la auditoría: nombres de documentos en kebab-case, `allowBackup` desactivado, `uv.lock` y formateador de Python | Aplicado |
 
 ---
 
@@ -688,3 +689,17 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Limitaciones del túnel iroh:** IPv6, relé caído, fugas de memoria y la falta de un test automático de la conexión real se dan por cerradas sin probarlas: el autor no tiene forma de reproducirlas. Quedan como limitaciones conocidas, no como comprobadas.
 - **Afecta a:** `04-plan-de-fases.md` (fase 3), `doc/iroh/04-pruebas.md` y esta entrada.
 - **Estado:** aplicado en la fase 3. Quedan menciones del USB en otras partes del plan y de los README (entorno de pruebas, respaldo de la defensa, fase 4, guía de instalación); se revisan aparte.
+
+### 19/11/2026 — Decisiones abiertas de la auditoría
+
+- **Qué era:** la auditoría dejó seis decisiones del autor sin resolver: nombres de los documentos, `applicationId` de Android, emojis de `04` a `06`, `allowBackup`, versiones fijas de Python y formateador de Python. Las cuatro capturas de la app seguían con la fecha del 16/11.
+- **Qué se decidió y qué se hizo:**
+  - **Nombres de documentos:** todo en kebab-case. Se renombran `doc/agente/ESTRUCTURA.md` a `estructura.md`, `doc/ui/XTERM_DART.md` a `xterm-dart.md` y los dos `DESIGN.md` de `doc/ui/historico/` a `design.md`, con sus enlaces. Las entradas antiguas de este historial conservan los nombres que tenían entonces.
+  - **`applicationId`:** se deja `io.github.alexxio070.sysmote`, la convención habitual de proyectos sin dominio propio. Hay que mantenerlo desde la primera APK publicada, porque cambiarlo después rompe las actualizaciones.
+  - **Emojis de `04` a `06`:** se dejan. La norma de «sin emojis» se refiere al código.
+  - **`allowBackup`:** `android:allowBackup="false"` en el manifiesto. El token ya está en el almacenamiento seguro; el coste es que una reinstalación pierde la dirección y la huella guardadas. No se comprobó que la copia de seguridad fuera explotable.
+  - **Versiones fijas de Python:** se sube `agent/uv.lock` (solo para desarrollo y CI; quien instala desde PyPI sigue usando las cotas mínimas del `pyproject.toml`).
+  - **Formateador de Python:** `ruff format` con 100 columnas, como en Dart, declarado en `pyproject.toml` y en las dependencias de desarrollo. El reformateo de 24 archivos va en un commit aparte y no cambia el comportamiento (162 tests). Quedan unas 34 líneas de más de 100 columnas, casi todas docstrings y textos, que el formateador no parte.
+  - **Capturas de la app:** se dejan como están; el autor comprobó que no cambió nada visible.
+- **Afecta a:** `doc/agente/estructura.md`, `doc/ui/xterm-dart.md`, `doc/ui/historico/`, `AndroidManifest.xml`, `agent/pyproject.toml`, `agent/uv.lock`, el código Python del agente, ambos README y esta entrada.
+- **Estado:** aplicado y probado (162 tests del agente).

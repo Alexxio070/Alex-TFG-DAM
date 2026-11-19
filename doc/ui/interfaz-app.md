@@ -1,6 +1,6 @@
 # Diseño final de la interfaz
 
-> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026; Métricas y la conexión de Ajustes, revisadas de nuevo el 14/11/2026; login y huella del certificado, el 18/11/2026. Sustituye a [`historico/ui-v1/DESIGN.md`](historico/ui-v1/DESIGN.md) y [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
+> **Estado: definitivo.** Refleja el código real de `App-movil/lib/`, verificado leyendo cada pantalla el 20/10/2026; Métricas y la conexión de Ajustes, revisadas de nuevo el 14/11/2026; login y huella del certificado, el 18/11/2026. Sustituye a [`historico/ui-v1/design.md`](historico/ui-v1/design.md) y [`historico/ui-v2/design.md`](historico/ui-v2/design.md) como referencia de diseño; esos dos documentos se conservan como **historial** de cómo se llegó hasta aquí (el prototipo inicial y la primera especificación de Notas).
 
 ## 0. Cómo leer este documento
 
@@ -110,7 +110,7 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 - **`creating`:** la terminal real ya está montada y enfocada por debajo (para no perder lo que se teclee con un teclado físico, que se guarda en cola y se envía en orden al quedar lista), pero se superpone un indicador con el texto **«Abriendo terminal…»**. En la maqueta, el retraso es un `Future.delayed` fijo de 600 ms.
 - **`ready`:** `xterm.dart` (`TerminalView`) sobre el `Terminal` del `TerminalViewModel`, con el shell simulado del repositorio de esa pestaña.
 - **Fuente: la del sistema** (decisión del 15/10/2026). No se pasa `fontFamily`, así que se usa el valor por defecto del paquete, `'monospace'`, que en Android resuelve a la fuente del dispositivo. Se descartan tanto JetBrains Mono como una Nerd Font.
-  - **Conflicto con el espejo de la sesión** (cuando exista el agente): la ventana del PC y la app mostrarán el mismo contenido, pero no el mismo aspecto — la ventana del PC usa la fuente que tenga el usuario ahí (posiblemente una Nerd Font, con iconos de prompts como Starship), y la app la fuente del sistema Android. Discrepancia visual aceptada, documentada en `XTERM_DART.md`.
+  - **Conflicto con el espejo de la sesión** (cuando exista el agente): la ventana del PC y la app mostrarán el mismo contenido, pero no el mismo aspecto — la ventana del PC usa la fuente que tenga el usuario ahí (posiblemente una Nerd Font, con iconos de prompts como Starship), y la app la fuente del sistema Android. Discrepancia visual aceptada, documentada en `xterm-dart.md`.
 - **Cursor sin parpadeo** (decisión del 15/10/2026: se descarta implementarlo).
 - Fila de teclas extra (`ExtraKeysBar`, 44 dp de alto, solo visible con el teclado abierto en `ready`): ESC, TAB, CTRL y ALT (se quedan pulsadas y afectan a la siguiente tecla: CTRL+letra manda el código de control, ALT antepone `ESC`), `-`, `/`, ↑/↓ (historial) y ocultar teclado.
 - Tamaño de fuente configurable en Ajustes (10–22, por defecto 13).
@@ -118,7 +118,7 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 
 ## 6. Notas
 
-Implementación ya verificada contra el código y corregida el 15/10/2026; el detalle completo está en [`historico/ui-v2/DESIGN.md`](historico/ui-v2/DESIGN.md), que sigue siendo preciso. Resumen:
+Implementación ya verificada contra el código y corregida el 15/10/2026; el detalle completo está en [`historico/ui-v2/design.md`](historico/ui-v2/design.md), que sigue siendo preciso. Resumen:
 
 - Lista con búsqueda (debounce 300 ms), recarga al deslizar y tarjetas de texto **seleccionable** (`SelectableText.rich`, 13 sp) con los enlaces detectados en cualquier parte del contenido, pulsables y subrayados en color de acento.
 - El tipo de nota (texto/enlace) lo calcula el agente, no la app; el modelo `Note` del cliente ni siquiera tiene ese campo.

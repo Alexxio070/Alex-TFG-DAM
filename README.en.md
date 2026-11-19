@@ -151,7 +151,7 @@ flutter run                                          # phone connected or emulat
 flutter build apk --release --target-platform android-arm64   # builds the APK
 ```
 
-The agent is started and connected the same way as in the quick installation. Tests are run with `.venv/bin/pytest` (in `agent/`) and `flutter test` (in `App-movil/`).
+The agent is started and connected the same way as in the quick installation. Tests are run with `.venv/bin/pytest` (in `agent/`) and `flutter test` (in `App-movil/`). Code is formatted with `.venv/bin/ruff format` (Python, in `agent/`) and `dart format -l 100` (Dart); `agent/uv.lock` pins the development versions for anyone using `uv`.
 
 > [!NOTE]
 > If you want the `sysmote` command without a virtual environment, from the repository root:

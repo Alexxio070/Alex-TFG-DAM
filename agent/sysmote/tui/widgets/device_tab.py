@@ -89,7 +89,9 @@ class DeviceTab(VerticalScroll):
         abierto = self.app.codigo_registro_vigente()
         if abierto is None:
             return None
-        return pairing_service.uri_emparejamiento(direccion, huella, codigo=abierto[0], iroh=self._iroh)
+        return pairing_service.uri_emparejamiento(
+            direccion, huella, codigo=abierto[0], iroh=self._iroh
+        )
 
     def _mostrar_qr(self, uri: str | None) -> None:
         # Solo se redibuja si cambia: generar el QR cada segundo no hace falta.

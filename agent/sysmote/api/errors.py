@@ -45,7 +45,9 @@ def registrar_manejadores(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-        return _respuesta(exc.status_code, _CODIGO_DE_HTTP.get(exc.status_code, "error_http"), str(exc.detail))
+        return _respuesta(
+            exc.status_code, _CODIGO_DE_HTTP.get(exc.status_code, "error_http"), str(exc.detail)
+        )
 
     @app.exception_handler(Exception)
     async def _interno(request: Request, exc: Exception) -> JSONResponse:
