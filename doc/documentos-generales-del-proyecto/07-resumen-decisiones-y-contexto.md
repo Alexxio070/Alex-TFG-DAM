@@ -54,6 +54,8 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 - **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, que añade el escáner, se escribe a mano comparándola con la que muestra la TUI). Solo en red local (USB/LAN): por iroh no hay TLS propio, porque iroh ya cifra y autentica al agente con su identificador (decisión del 17/11/2026, ver `08`).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.**
+- **Caducidad de la sesión (19/11/2026):** 7 días desde el inicio de sesión, sin renovarse con el uso (antes, 30 días sin uso). Se prefiere la caducidad absoluta porque limita lo que dura un token robado y obliga a una confirmación periódica de la contraseña; el coste, un login semanal, se asume con una sola persona usuaria.
+- **Historial de sesiones (19/11/2026):** la tabla `sesion` conserva todas las sesiones, con su fecha de creación y de caducidad, y guarda el hash del token, no el token. Guardar el token en claro dejaría iniciar sesión a quien leyera la base de datos, y eso contradice el diseño de tokens opacos.
 - **El agente nunca usa root ni sudo.** Para operaciones de root, la app avisa de que hay que usar la terminal.
 
 ### 3.3 Terminal

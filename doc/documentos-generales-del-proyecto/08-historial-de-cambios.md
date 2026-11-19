@@ -75,6 +75,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan / Documentación | Primera prueba en un móvil físico: red local e iroh; se actualiza lo que decía «sin probar» | Aplicado en la documentación |
 | 19/11/2026 | Plan | Fase 3 (seguridad) cerrada; el USB con `adb reverse` pasa a obsoleto como método de prueba | Aplicado en la documentación |
 | 19/11/2026 | Plan / Agente / Interfaz | Decisiones abiertas de la auditoría: nombres de documentos en kebab-case, `allowBackup` desactivado, `uv.lock` y formateador de Python | Aplicado |
+| 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Diseño aprobado y documentado; pendiente de implementar |
 
 ---
 
@@ -703,3 +704,15 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
   - **Capturas de la app:** se dejan como están; el autor comprobó que no cambió nada visible.
 - **Afecta a:** `doc/agente/estructura.md`, `doc/ui/xterm-dart.md`, `doc/ui/historico/`, `AndroidManifest.xml`, `agent/pyproject.toml`, `agent/uv.lock`, el código Python del agente, ambos README y esta entrada.
 - **Estado:** aplicado y probado (162 tests del agente).
+
+### 19/11/2026 — Pantalla de bienvenida y caducidad de la sesión a 7 días
+
+- **Qué era:** en el primer inicio la app mostraba la pantalla de «agente inalcanzable», con el error repetido y los botones «Reintentar» y «Conexión con el PC»; el token de sesión caducaba a los 30 días sin usarse.
+- **Qué se decidió:**
+  - **Bienvenida:** «Sysmote» arriba y, abajo, «Conectar con el agente» si no hay emparejamiento, o «Iniciar sesión» y «Registrar cuenta» si ya lo hay. Cuenta ya creada o registro cerrado: popup. PC sin respuesta: aviso pequeño con la causa, sin botón de reintentar. Los formularios pierden «Conexión con el PC».
+  - **Emparejada:** una marca guardada tras el primer contacto con el agente, que se borra al cambiar la dirección, la huella o el identificador iroh. No se deduce de los ajustes porque la dirección nunca está vacía (trae `127.0.0.1:8443` por defecto), ni de preguntar al agente porque un PC apagado se confundiría con una app sin configurar.
+  - **Caducidad:** 7 días desde el inicio de sesión, sin renovarse con el uso, en lugar de 30 días sin uso. La regla de inactividad desaparece del desemparejamiento.
+  - **Historial:** la tabla `sesion` ya conserva todas las sesiones; se le añade `caduca_en`. Se guarda el hash del token, no el token en claro, para que quien lea la base de datos no pueda iniciar sesión. Las sesiones existentes reciben `creado_en + 7 días` al migrar.
+- **Por qué:** el primer inicio no es un error y no debe parecerlo; y la caducidad absoluta acota lo que dura un token robado.
+- **Afecta a:** `doc/ui/interfaz-app.md` (§7 bis.1), `doc/agente/contrato-api-fase3.md`, `01-memoria-tecnica.md` (tabla `sesion` y desemparejamiento), `07-resumen-decisiones-y-contexto.md` (§3.2) y esta entrada. Quedan por actualizar al implementarlo: `doc/ui/estructura-app.md`, `doc/ui/tests.md`, `doc/agente/tests.md` y `doc/agente/estructura.md`.
+- **Estado:** diseño aprobado y documentado el 19/11/2026; sin implementar. La pantalla y la caducidad van en ramas y PR separados.
