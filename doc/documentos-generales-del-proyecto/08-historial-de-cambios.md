@@ -68,6 +68,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Agente | `schema.sql` pasa a `agent/sysmote/` y se incluye en el paquete, para que el agente funcione instalado con `pip` o `pipx` | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Interfaz / Plan | Auditoría complementaria y sus correcciones: login con tiempo igualado y una sola cuenta a nivel de base de datos, `AppTopBar` a `core/`, formato Dart a 100 columnas, comentarios que faltaban, captura de la TUI, y textos de TLS, uvicorn y bloqueo por intentos | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; falta publicarlo |
+| 19/11/2026 | Agente | Versión del esquema de la base de datos y migraciones, para poder actualizar el agente sin romper las bases de los usuarios | Aplicado en código y en la documentación |
 
 ---
 
@@ -632,3 +633,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** decisión del autor de distribuir el agente como paquete de Python en PyPI. La instalación recomendada sigue siendo `pipx`, con `pip` dentro de un entorno virtual como alternativa.
 - **Afecta a:** `agent/pyproject.toml`, `agent/README.md`, `agent/LICENSE`, `02` §7.2, `07` §3.1 y `04` (fase 5).
 - **Estado:** el paquete está listo; falta publicarlo, primero en TestPyPI y después en PyPI, con la cuenta y el token del autor. Una versión subida a PyPI no se puede volver a subir con el mismo número.
+
+### 19/11/2026 — Versión del esquema y migraciones de la base de datos
+
+- **Qué era:** el agente aplicaba `schema.sql` en cada conexión con `CREATE TABLE IF NOT EXISTS`, que no modifica las tablas que ya existen. No había versión de esquema ni migraciones: cuando una fase posterior añadiera una columna a una tabla, la base de datos de un usuario que ya tuviera esa tabla no la tendría y el agente fallaría.
+- **Qué es ahora:** la versión del esquema se guarda en la propia base (`PRAGMA user_version`; la 1 es el esquema con el que se publica el agente). `agent/sysmote/migraciones.py` guarda los cambios pendientes, cada uno como una tupla de sentencias SQL que se ejecuta en su propia transacción, y `database.connect()` los aplica al abrir una base que ya existía. Una base nueva se crea directamente con `schema.sql` y salta las migraciones, y una base de una versión más nueva que el agente da un error claro. Cada cambio de esquema futuro se escribe a la vez en `schema.sql` y en `migraciones.py`.
+- **Por qué:** hacía falta antes de que haya usuarios con datos y de publicar el agente en PyPI, porque `pipx upgrade` actualiza el código pero no toca la base de datos del usuario. Sin esto, un cambio de tablas en una fase futura habría roto las instalaciones existentes.
+- **Afecta a:** `agent/sysmote/database.py`, `agent/sysmote/migraciones.py`, `agent/tests/test_migraciones.py`, `01` §6, `doc/agente/ESTRUCTURA.md` y `doc/agente/tests.md` (161 tests).
+- **Estado:** aplicado en código y en la documentación. De momento no hay migraciones: el esquema actual es la versión 1.
