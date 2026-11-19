@@ -31,7 +31,7 @@ lib/
       modal_card.dart            diálogo centrado y hoja inferior, con scrim
   data/                          de dónde salen los datos
     models/                      home_item, metrics, note, note_links, settings, auth (enums, constantes y los tipos del contrato de login)
-    repositories/                interfaces abstractas, incluidas AuthRepository y TokenStorage
+    repositories/                interfaces abstractas, incluidas AuthRepository y TokenStorage; agent_exceptions.dart: errores comunes del agente (inalcanzable y sesión perdida)
     agent_metrics_repository.dart  parte común de los repositorios de métricas del agente (parseo del JSON, loadInfo, loadHistory, watch)
     agent_auth_repository.dart   parte común de los repositorios de autenticación (traduce las respuestas y errores del contrato de la fase 3)
     connection_mode_metrics_repository.dart  elige entre HTTP e iroh según el modo de conexión de Ajustes
@@ -63,7 +63,7 @@ Piezas compartidas. Los controles que aparecen en más de una pantalla (interrup
 Todo lo relacionado con los datos.
 
 - `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones; `auth.dart` tiene los tipos del login (`AgentStatus`, `LoginOutcome`, `LoginRequestStatus`, `SessionInfo`), según el contrato de la fase 3.
-- `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo.
+- `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo. `agent_exceptions.dart` reúne los errores que comparten métricas y autenticación: `AgentUnavailableException` y los dos 401 de sesión (`throwIfSessionError`).
 - `http/`, `iroh/` y `local/`: implementaciones reales (agente por HTTPS, agente por iroh, ajustes con `shared_preferences`, token de sesión con `flutter_secure_storage`). Métricas y autenticación tienen una parte común (`agent_metrics_repository.dart`, `agent_auth_repository.dart`) y cada transporte solo implementa cómo enviar la petición; los `connection_mode_*` eligen uno u otro según el ajuste. En HTTPS, el cliente no trae ninguna CA y solo acepta el certificado cuya huella (SHA-256 del DER) coincide con la guardada en Ajustes; por iroh no hay TLS propio y Métricas y Autenticación comparten una única `IrohConnection`.
 - `fake/`: **placeholders**, implementaciones con datos de ejemplo que se usan de verdad en la app (terminal, macros, notas) mientras no existe esa parte del agente. No son código muerto: se sustituirán por implementaciones reales en `main.dart`. El doble de pruebas de la autenticación (`FakeAuthRepository`, que simula el agente según el contrato de la fase 3) vive en `test/fakes/`, no en `lib/`.
 

@@ -13,7 +13,7 @@ Rama local `refactor/auditoria-interfaz`, creada desde `main` (`c7e1d9c`) el 19/
 | `flutter analyze` | No issues found | No issues found |
 | `flutter test` | 223 pasan | 221 pasan |
 | Cobertura de líneas (`flutter test --coverage`) | 89,1 % (2893/3247) | 89,2 % (2871/3220) |
-| Archivos `.dart` en `lib/` | 85 | 90 (login partido en 5 archivos) |
+| Archivos `.dart` en `lib/` | 85 | 91 (login partido en 5 archivos y `agent_exceptions.dart`) |
 | Archivos con comentario de cabecera (lib + test) | 1 | todos los del alcance |
 
 `analyze` y `test` se ejecutaron antes de empezar y después de cada bloque, y salieron en verde todas las veces.
@@ -49,6 +49,9 @@ Rama local `refactor/auditoria-interfaz`, creada desde `main` (`c7e1d9c`) el 19/
   - `pending_confirmation.dart`
   - `auth_status_messages.dart` (sin cuenta / agente inalcanzable)
   - `auth_banner.dart`
+- `data/repositories/agent_exceptions.dart` (decisión de Alex, opción C, 19/11/2026): reúne `AgentUnavailableException`, `kUnexpectedFormatMessage`, `NotAuthenticatedException`, `UnpairedException` y `throwIfSessionError`, que estaban repartidos entre `metrics_repository.dart` y `auth_repository.dart`. Antes, el repositorio de autenticación importaba el de métricas solo para traer una excepción.
+  - En los archivos de la sesión de iroh (`iroh_metrics_repository.dart`, su test e `iroh_connection.dart`) solo cambian los imports, para que `main` compile.
+  - La sesión de iroh tiene esos archivos modificados en su rama local `refactor/auditoria-iroh`: al fusionar habrá un conflicto trivial en esas líneas de import, y su test nuevo `iroh_connection_test.dart` necesitará importar `agent_exceptions.dart`.
 
 ### Comentarios
 - Cada archivo del alcance (lib y test) empieza con un comentario breve que dice qué hace y qué papel tiene.
@@ -98,5 +101,4 @@ Huecos de cobertura que siguen igual. No se ha añadido nada porque la auditorí
   - Hoy `ShellViewModel.isPaired` siempre es `true` con la sesión abierta, así que el pie del menú no refleja nada.
   - Propuesta: un `ConnectionStatusViewModel` que pida `GET /sesion` cada 10 s y muestre «Conectado» o «Desconectado», con sus tests, en un commit `feat:` aparte.
   - Con él hay que actualizar `doc/ui/interfaz-app.md` §1. Se hace después de la auditoría.
-- **R2, no hecho:** mover `AgentUnavailableException` y `throwIfSessionError` a un archivo de excepciones común. Obligaría a tocar `iroh_metrics_repository.dart`, que es de la sesión de iroh. Habría que coordinarlo con ella.
 - **R3, descartado:** renombrar las constantes públicas de `macro_grid_geometry.dart`. Solo las importa `macro_grid.dart`, así que renombrarlas sería cambiar por cambiar.
