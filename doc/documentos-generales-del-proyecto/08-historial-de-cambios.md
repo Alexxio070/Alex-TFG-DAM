@@ -67,8 +67,9 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan / Agente / Interfaz | Auditorías de simplificación y legibilidad del agente y de la interfaz y revisión de la documentación general frente al código: `07` sobre la creación de la cuenta y el QR, tabla de errores del contrato, README y `CONTRIBUTING.md` | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente | `schema.sql` pasa a `agent/sysmote/` y se incluye en el paquete, para que el agente funcione instalado con `pip` o `pipx` | Aplicado en código y en la documentación |
 | 19/11/2026 | Agente / Interfaz / Plan | Auditoría complementaria y sus correcciones: login con tiempo igualado y una sola cuenta a nivel de base de datos, `AppTopBar` a `core/`, formato Dart a 100 columnas, comentarios que faltaban, captura de la TUI, y textos de TLS, uvicorn y bloqueo por intentos | Aplicado en código y en la documentación |
-| 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; falta publicarlo |
+| 19/11/2026 | Agente / Plan | El agente se prepara para publicarse en PyPI con el nombre `sysmote`: metadatos del autor, README del paquete y copia de la licencia | Aplicado en código y en la documentación; publicado en PyPI el 19/11/2026 (ver la entrada siguiente) |
 | 19/11/2026 | Agente | Versión del esquema de la base de datos y migraciones, para poder actualizar el agente sin romper las bases de los usuarios | Aplicado en código y en la documentación |
+| 19/11/2026 | Agente / Plan | Publicación del agente en PyPI con un workflow de GitHub Actions, sin guardar ningún token | Aplicado; `sysmote 0.1.0` publicado |
 
 ---
 
@@ -632,7 +633,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué es ahora:** `pyproject.toml` declara el autor (Alexxio), las palabras clave, nueve clasificadores comprobados contra la lista oficial de PyPI, los enlaces del proyecto y `license-files`; `agent/README.md` es la página del paquete, con instalación por `pipx` y por `pip` en un entorno virtual; y `agent/LICENSE` es una copia de la licencia. Verificado construyendo el sdist y la rueda, mirando su contenido (incluyen `schema.sql`, la licencia y el README) e instalando la rueda en un entorno limpio, donde `sysmote` arranca.
 - **Por qué:** decisión del autor de distribuir el agente como paquete de Python en PyPI. La instalación recomendada sigue siendo `pipx`, con `pip` dentro de un entorno virtual como alternativa.
 - **Afecta a:** `agent/pyproject.toml`, `agent/README.md`, `agent/LICENSE`, `02` §7.2, `07` §3.1 y `04` (fase 5).
-- **Estado:** el paquete está listo; falta publicarlo, primero en TestPyPI y después en PyPI, con la cuenta y el token del autor. Una versión subida a PyPI no se puede volver a subir con el mismo número.
+- **Estado:** aplicado. Se publicó en PyPI el 19/11/2026 con el flujo descrito en la entrada siguiente. Una versión subida a PyPI no se puede volver a subir con el mismo número.
 
 ### 19/11/2026 — Versión del esquema y migraciones de la base de datos
 
@@ -641,3 +642,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** hacía falta antes de que haya usuarios con datos y de publicar el agente en PyPI, porque `pipx upgrade` actualiza el código pero no toca la base de datos del usuario. Sin esto, un cambio de tablas en una fase futura habría roto las instalaciones existentes.
 - **Afecta a:** `agent/sysmote/database.py`, `agent/sysmote/migraciones.py`, `agent/tests/test_migraciones.py`, `01` §6, `doc/agente/ESTRUCTURA.md` y `doc/agente/tests.md` (161 tests).
 - **Estado:** aplicado en código y en la documentación. De momento no hay migraciones: el esquema actual es la versión 1.
+
+### 19/11/2026 — Publicación del agente en PyPI con GitHub Actions
+
+- **Qué era:** el paquete estaba preparado pero no publicado, y publicarlo habría exigido subirlo a mano con un token personal.
+- **Qué es ahora:** el workflow `.github/workflows/publicar-agente.yml` se dispara al subir una etiqueta `agent-v*` (publica en PyPI) o a mano (publica en TestPyPI). Pasa los tests del agente, comprueba que la etiqueta coincide con la versión de `agent/pyproject.toml`, construye con `uv build` y publica con Trusted Publishing: PyPI acepta la identidad temporal de GitHub, así que no hay ningún token guardado. El entorno `pypi` exige la aprobación del autor antes de cada publicación.
+- **Por qué:** publicar sin guardar secretos y con un paso humano de aprobación; el prefijo `agent-v` evita que las etiquetas de la APK disparen la publicación.
+- **Afecta a:** `.github/workflows/publicar-agente.yml`, `04` (fase 5) y esta entrada.
+- **Estado:** `sysmote 0.1.0` publicado en PyPI el 19/11/2026 tras un ensayo en TestPyPI. Las versiones siguientes se publican subiendo `version` en `agent/pyproject.toml` y la etiqueta `agent-vX.Y.Z`.
