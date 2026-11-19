@@ -1,5 +1,9 @@
+// Tests del doble FakeAuthRepository: que simula fielmente el contrato de login de la fase 3,
+// porque los demás tests de login dependen de él.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/auth.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
 
 import 'fakes/fake_auth_repository.dart';
@@ -123,11 +127,10 @@ void main() {
   test('approvePending() aprueba la solicitud y entrega el token', () async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
     final pending = await repo.login(
-          usuario: 'alex',
-          contrasena: 'contraseña-valida',
-          dispositivo: 'Pixel 8',
-        )
-        as LoginPending;
+      usuario: 'alex',
+      contrasena: 'contraseña-valida',
+      dispositivo: 'Pixel 8',
+    ) as LoginPending;
 
     repo.approvePending();
 
@@ -140,11 +143,10 @@ void main() {
   test('rejectPending() deja la sesión anterior intacta', () async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
     final pending = await repo.login(
-          usuario: 'alex',
-          contrasena: 'contraseña-valida',
-          dispositivo: 'Pixel 8',
-        )
-        as LoginPending;
+      usuario: 'alex',
+      contrasena: 'contraseña-valida',
+      dispositivo: 'Pixel 8',
+    ) as LoginPending;
 
     repo.rejectPending();
 
@@ -155,11 +157,10 @@ void main() {
   test('expirePending() marca la solicitud como caducada', () async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
     final pending = await repo.login(
-          usuario: 'alex',
-          contrasena: 'contraseña-valida',
-          dispositivo: 'Pixel 8',
-        )
-        as LoginPending;
+      usuario: 'alex',
+      contrasena: 'contraseña-valida',
+      dispositivo: 'Pixel 8',
+    ) as LoginPending;
 
     repo.expirePending();
 
@@ -169,18 +170,15 @@ void main() {
   test('checkLoginRequest con un id desconocido lanza AgentErrorException', () async {
     final repo = FakeAuthRepository();
 
-    expect(
-      () => repo.checkLoginRequest('no-existe'),
-      throwsA(isA<AgentErrorException>()),
-    );
+    expect(() => repo.checkLoginRequest('no-existe'), throwsA(isA<AgentErrorException>()));
   });
 
   FakeAuthRepository sinCuenta({bool caducado = false}) => FakeAuthRepository(
-        configurado: false,
-        registroAbierto: true,
-        codigoRegistro: 'K7QXM2PD9WTR4HNB',
-        codigoCaducado: caducado,
-      );
+    configurado: false,
+    registroAbierto: true,
+    codigoRegistro: 'K7QXM2PD9WTR4HNB',
+    codigoCaducado: caducado,
+  );
 
   test('register con un código vigente crea la cuenta y abre sesión', () async {
     final repo = sinCuenta();
@@ -282,9 +280,7 @@ void main() {
         contrasena: 'abc',
         dispositivo: 'Pixel 8',
       ),
-      throwsA(
-        isA<WeakPasswordException>().having((e) => e.motivos, 'motivos', hasLength(3)),
-      ),
+      throwsA(isA<WeakPasswordException>().having((e) => e.motivos, 'motivos', hasLength(3))),
     );
     expect((await repo.status()).configurado, isFalse);
   });

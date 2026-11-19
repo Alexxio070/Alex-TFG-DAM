@@ -1,8 +1,11 @@
+// Botón flotante circular de añadir (Inicio y Notas).
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 import 'app_icon.dart';
 
+/// Botón «+» flotante; [label] es su nombre para el lector de pantalla.
 class AppFab extends StatelessWidget {
   const AppFab({super.key, required this.label, required this.onTap});
 

@@ -1,3 +1,5 @@
+// Estructura común de la app con sesión: barra superior, sección activa y menú lateral deslizable.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +12,13 @@ import '../settings/settings_view.dart';
 import '../terminal/terminal_view.dart';
 import 'shell_viewmodel.dart';
 import 'widgets/app_drawer.dart';
-import 'widgets/app_top_bar.dart';
+import '../../core/widgets/app_top_bar.dart';
 
 const _edgeDragWidth = 24.0;
 const _flingVelocity = 365 / kDrawerWidth;
 
+/// Muestra la sección de [ShellViewModel] y gestiona el menú: botón, arrastre desde el borde y
+/// cierre.
 class ShellView extends StatefulWidget {
   const ShellView({super.key});
 

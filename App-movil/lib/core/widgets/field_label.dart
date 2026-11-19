@@ -1,7 +1,10 @@
+// Etiqueta con su control debajo, para los formularios.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Pone [label] encima de [child] y, si hay [error], el mensaje debajo en rojo.
 class FieldLabel extends StatelessWidget {
   const FieldLabel({
     super.key,
@@ -23,7 +26,10 @@ class FieldLabel extends StatelessWidget {
       crossAxisAlignment: crossAxisAlignment,
       spacing: 8,
       children: [
-        Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2),
+        ),
         child,
         if (error != null) Text(error!, style: const TextStyle(fontSize: 12, color: kRed)),
       ],

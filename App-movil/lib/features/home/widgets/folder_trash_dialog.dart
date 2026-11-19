@@ -1,3 +1,5 @@
+// Diálogo al soltar en la papelera una carpeta con macros.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -5,6 +7,8 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/modal_card.dart';
 import '../../../data/models/home_item.dart';
 
+/// Pregunta si mover las macros de [folder] a «Sin grupo» ([onUngroup]) o borrarlo todo
+/// ([onDelete]).
 Future<void> showFolderTrashDialog(
   BuildContext context, {
   required Folder folder,

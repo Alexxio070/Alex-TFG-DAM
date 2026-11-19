@@ -1,11 +1,15 @@
+// ViewModel de Métricas: pide los datos al agente cada segundo mientras la pantalla está abierta.
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
 import '../../data/models/metrics.dart';
+import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/metrics_repository.dart';
 import '../auth/auth_viewmodel.dart';
 
+/// Guarda los datos del PC y el historial de muestras, y el error si el agente no responde.
 class MetricsViewModel extends ChangeNotifier {
   MetricsViewModel(this._repository, this._auth);
 
@@ -35,12 +39,14 @@ class MetricsViewModel extends ChangeNotifier {
     );
   }
 
+  /// Carga los datos del PC y el historial y empieza a recibir una muestra por segundo.
   void start() {
     if (_active) return;
     _active = true;
     _refresh();
   }
 
+  /// Deja de pedir muestras al agente.
   void stop() {
     _active = false;
     _generation++;
@@ -48,6 +54,7 @@ class MetricsViewModel extends ChangeNotifier {
     _subscription = null;
   }
 
+  /// Vuelve a empezar tras un error.
   void retry() {
     _active = true;
     _refresh();
@@ -85,7 +92,7 @@ class MetricsViewModel extends ChangeNotifier {
   }
 
   // Un 401 de sesión no es un fallo de conexión: AuthViewModel lleva al login
-  // (o al estado de sin emparejar) y aquí se deja de sondear.
+  // y aquí se deja de sondear.
   bool _sessionLost(Object error) {
     if (!_auth.handleSessionError(error)) return false;
     stop();
@@ -95,6 +102,7 @@ class MetricsViewModel extends ChangeNotifier {
   String _messageFor(Object error) =>
       error is AgentUnavailableException ? error.message : 'No se puede conectar con el agente';
 
+  /// Cambia la partición que muestra la tarjeta de disco.
   void selectPartition(String id) {
     _partitionId = id;
     notifyListeners();

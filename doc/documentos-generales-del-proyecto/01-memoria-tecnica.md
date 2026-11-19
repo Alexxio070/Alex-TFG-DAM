@@ -268,7 +268,7 @@ Sin 2FA, a propósito (motivo en `02` §5.2).
 
 ## 6. Diseño de la base de datos
 
-Base de datos **SQLite** en el agente (`~/.local/share/sysmote/sysmote.db`), creada con `agent/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02` §6.1).
+Base de datos **SQLite** en el agente (`~/.local/share/sysmote/sysmote.db`), creada con `agent/sysmote/schema.sql` y accesible solo a través de la capa de repositorios (detalles de SQLite, como `PRAGMA foreign_keys`, en `02` §6.1).
 
 El historial de comandos de terminal **no** vive en esta base de datos: va en un archivo de log aparte (ver `../agente/tui.md`, «Historial de comandos de terminal»).
 

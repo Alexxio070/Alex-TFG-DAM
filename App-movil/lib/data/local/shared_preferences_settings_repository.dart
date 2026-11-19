@@ -1,3 +1,5 @@
+// Guarda los ajustes de la app en el móvil con shared_preferences.
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +18,7 @@ const _keyAgentAddress = 'settings_agent_address';
 const _keyFingerprint = 'settings_fingerprint';
 const _keyIrohId = 'settings_iroh_id';
 
+/// [SettingsRepository] que guarda cada ajuste con su propia clave.
 class SharedPreferencesSettingsRepository implements SettingsRepository {
   @override
   Future<SettingsData?> load() async {

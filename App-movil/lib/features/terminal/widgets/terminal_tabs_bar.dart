@@ -1,3 +1,5 @@
+// Barra de pestañas de la terminal.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
@@ -7,6 +9,7 @@ import '../terminal_tabs_viewmodel.dart';
 
 const _mutedTextColor = Color(0xFF9AA4AF);
 
+/// Una pestaña por sesión, con botón de cerrar (pide confirmación) y «+» para abrir otra.
 class TerminalTabsBar extends StatelessWidget {
   const TerminalTabsBar({super.key, required this.vm});
 
@@ -36,8 +39,7 @@ class TerminalTabsBar extends StatelessWidget {
                   onClose: () => showConfirmCard(
                     context,
                     title: '¿Cerrar esta pestaña?',
-                    body:
-                        'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
+                    body: 'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
                     confirmLabel: 'Cerrar',
                     semanticsLabel: 'Cerrar pestaña',
                     onConfirm: () => vm.closeTab(tab),
@@ -56,7 +58,9 @@ class TerminalTabsBar extends StatelessWidget {
               child: const SizedBox(
                 width: 44,
                 height: 44,
-                child: Center(child: AppIconView(AppIcon.plus, color: kTerminalForeground, size: 20)),
+                child: Center(
+                  child: AppIconView(AppIcon.plus, color: kTerminalForeground, size: 20),
+                ),
               ),
             ),
           ),

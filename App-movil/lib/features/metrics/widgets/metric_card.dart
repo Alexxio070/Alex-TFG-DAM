@@ -1,9 +1,12 @@
+// Piezas de las tarjetas de Métricas.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/metrics.dart';
 import 'area_chart.dart';
 
+/// Tarjeta con título, valor actual, gráfico del último minuto y escala.
 class MetricCard extends StatelessWidget {
   const MetricCard({
     super.key,
@@ -76,6 +79,7 @@ class MetricCard extends StatelessWidget {
   }
 }
 
+/// Caja con el fondo y el borde de todas las tarjetas de Métricas.
 class MetricSurface extends StatelessWidget {
   const MetricSurface({super.key, required this.child});
 
@@ -96,6 +100,7 @@ class MetricSurface extends StatelessWidget {
   }
 }
 
+/// Número grande con su unidad al lado.
 class MetricValue extends StatelessWidget {
   const MetricValue({super.key, required this.number, required this.unit, this.color});
 

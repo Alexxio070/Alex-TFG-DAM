@@ -1,3 +1,5 @@
+// Test de NotesViewModel: una búsqueda antigua no pisa la más reciente.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/note.dart';
 import 'package:sysmote/data/repositories/notes_repository.dart';
@@ -17,13 +19,7 @@ class _SlowNotesRepository implements NotesRepository {
     await Future<void>.delayed(delays[query] ?? Duration.zero);
     final now = DateTime.now();
     return [
-      Note(
-        id: query,
-        content: query,
-        origin: NoteOrigin.mobile,
-        createdAt: now,
-        updatedAt: now,
-      ),
+      Note(id: query, content: query, origin: NoteOrigin.mobile, createdAt: now, updatedAt: now),
     ];
   }
 

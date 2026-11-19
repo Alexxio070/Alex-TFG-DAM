@@ -1,6 +1,11 @@
+// Formato de números y fechas en español, usado por todas las pantallas.
+
+/// Número con coma decimal y [decimals] decimales (1 por defecto).
 String formatNumber(double value, [int decimals = 1]) =>
     value.toStringAsFixed(decimals).replaceAll('.', ',');
 
+/// Fecha relativa a [now]: «ahora», «hace N min», «hoy», «ayer», el día de la semana o
+/// `dd/mm/aaaa`.
 String formatRelativeDate(DateTime date, DateTime now) {
   final difference = now.difference(date);
   if (difference.inMinutes < 1) return 'ahora';

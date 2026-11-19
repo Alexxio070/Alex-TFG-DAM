@@ -1,6 +1,10 @@
+// PLACEHOLDER: macros de ejemplo en memoria mientras el agente no sepa ejecutar macros. No es
+// código muerto: lo usa main.dart.
+
 import '../models/home_item.dart';
 import '../repositories/macro_repository.dart';
 
+/// Guarda la cuadrícula de Inicio en memoria con 4 macros de ejemplo; [run] no hace nada.
 class FakeMacroRepository implements MacroRepository {
   List<HomeItem> _items = const [
     Macro(
@@ -9,12 +13,7 @@ class FakeMacroRepository implements MacroRepository {
       command: 'pactl set-sink-mute @DEFAULT_SINK@ toggle',
       kind: MacroKind.volume,
     ),
-    Macro(
-      id: 'm2',
-      label: 'Bloquear',
-      command: 'loginctl lock-session',
-      kind: MacroKind.lock,
-    ),
+    Macro(id: 'm2', label: 'Bloquear', command: 'loginctl lock-session', kind: MacroKind.lock),
     Macro(
       id: 'm3',
       label: 'Modo noche',

@@ -1,7 +1,10 @@
+// Interfaz de los ajustes guardados.
+
 import 'package:flutter/material.dart';
 
 import '../models/settings.dart';
 
+/// Todos los ajustes de la app juntos, tal como se guardan.
 class SettingsData {
   const SettingsData({
     required this.dark,
@@ -30,6 +33,7 @@ class SettingsData {
   final String irohId;
 }
 
+/// Carga y guarda [SettingsData].
 abstract class SettingsRepository {
   /// Devuelve `null` si no hay nada guardado todavía (primer arranque).
   Future<SettingsData?> load();

@@ -1,7 +1,10 @@
+// Diálogos de la app: tarjeta centrada arriba y hoja inferior, con el mismo velo.
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 
+/// Muestra lo que construye [builder] como tarjeta a [top] puntos del borde superior.
 Future<void> showTopCard(
   BuildContext context, {
   required double top,
@@ -27,6 +30,7 @@ Future<void> showTopCard(
   );
 }
 
+/// Muestra lo que construye [builder] pegado al borde inferior.
 Future<void> showBottomCard(BuildContext context, {required WidgetBuilder builder}) {
   return showGeneralDialog(
     context: context,
@@ -44,6 +48,7 @@ Future<void> showBottomCard(BuildContext context, {required WidgetBuilder builde
   );
 }
 
+/// Caja con fondo, borde y sombra de los diálogos.
 class ModalCard extends StatelessWidget {
   const ModalCard({
     super.key,
@@ -74,6 +79,7 @@ class ModalCard extends StatelessWidget {
   }
 }
 
+/// Caja de las hojas inferiores, con el tirador arriba y [children] en columna.
 class BottomSheetCard extends StatelessWidget {
   const BottomSheetCard({super.key, required this.bottomPadding, required this.children});
 

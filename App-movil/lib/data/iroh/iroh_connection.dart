@@ -1,9 +1,11 @@
+// Conexión iroh compartida con el agente y utilidades para mandar HTTP crudo por ella.
+
 import 'dart:convert';
 
 import 'package:iroh_flutter/iroh_flutter.dart';
 
 import '../models/settings.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../repositories/agent_exceptions.dart';
 
 const _alpn = 'sysmote/tunnel/0';
 const _connectTimeout = Duration(seconds: 5);
@@ -17,6 +19,7 @@ abstract class IrohLink {
   void close();
 }
 
+/// Abre la conexión iroh con el agente de identificador [endpointId]; los tests lo sustituyen por uno falso.
 typedef IrohConnector = Future<IrohLink> Function(String endpointId);
 
 class _NativeIrohLink implements IrohLink {

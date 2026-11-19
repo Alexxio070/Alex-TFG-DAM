@@ -1,5 +1,7 @@
+-- Esquema de la base de datos del agente (~/.local/share/sysmote/sysmote.db).
+-- database.py lo aplica en cada conexión: CREATE TABLE IF NOT EXISTS no toca las tablas que ya existen.
 -- El agente ejecuta PRAGMA foreign_keys = ON en cada conexión (ver database.py);
--- sin eso SQLite ignora las claves foráneas y el ON DELETE CASCADE.
+-- sin eso SQLite ignora las claves foráneas (REFERENCES).
 
 CREATE TABLE IF NOT EXISTS usuario (
     id INTEGER PRIMARY KEY,
@@ -7,6 +9,10 @@ CREATE TABLE IF NOT EXISTS usuario (
     hash_contrasena TEXT NOT NULL,
     creado_en TEXT NOT NULL
 );
+
+-- El agente tiene una sola cuenta: con este índice la base de datos rechaza una segunda aunque
+-- dos registros lleguen a la vez.
+CREATE UNIQUE INDEX IF NOT EXISTS usuario_unico ON usuario ((nombre_usuario IS NOT NULL));
 
 CREATE TABLE IF NOT EXISTS sesion (
     id INTEGER PRIMARY KEY,

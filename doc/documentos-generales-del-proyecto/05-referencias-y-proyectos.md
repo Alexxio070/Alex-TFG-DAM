@@ -214,7 +214,7 @@ MaikuB. (s.f.). *flutter_local_notifications* [Paquete de Dart]. pub.dev. https:
 
 Ramírez, S. (s.f.). *FastAPI*. Recuperado en 2026, de https://fastapi.tiangolo.com/
 
-Encode. (s.f.). *Uvicorn*. Recuperado en 2026, de https://www.uvicorn.org/
+Encode. (s.f.). *Uvicorn*. Recuperado en 2026, de https://uvicorn.dev/
 
 Rodola, G. (s.f.). *psutil documentation*. Recuperado en 2026, de https://psutil.readthedocs.io/
 

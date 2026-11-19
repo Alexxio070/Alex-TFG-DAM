@@ -1,3 +1,5 @@
+// Tests de ConnectionModeAuthRepository: cada llamada va al repositorio del modo activo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/connection_mode_auth_repository.dart';
 import 'package:sysmote/data/models/auth.dart';
@@ -15,11 +17,7 @@ void main() {
     local = FakeAuthRepository(usuarioValido: 'local', contrasenaValida: 'x');
     iroh = FakeAuthRepository(usuarioValido: 'iroh', contrasenaValida: 'x');
     mode = ConnectionMode.local;
-    repository = ConnectionModeAuthRepository(
-      connectionMode: () => mode,
-      local: local,
-      iroh: iroh,
-    );
+    repository = ConnectionModeAuthRepository(connectionMode: () => mode, local: local, iroh: iroh);
   });
 
   Future<String> loginUser(String usuario) async {

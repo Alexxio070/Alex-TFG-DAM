@@ -1,3 +1,5 @@
+// Cuadrícula de Inicio con sus gestos: tocar, mantener, arrastrar, agrupar, borrar y autoscroll.
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -17,6 +19,8 @@ const _trashRadius = 52.0;
 const _autoScrollZone = 50.0;
 const _autoScrollStep = 10.0;
 
+/// Cuadrícula de [items]. No cambia el estado: avisa de cada gesto con sus callbacks y
+/// [HomeViewModel] decide.
 class MacroGrid extends StatefulWidget {
   const MacroGrid({
     super.key,

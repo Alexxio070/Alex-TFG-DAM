@@ -63,6 +63,10 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 | 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
+| 18/11/2026 | Agente / Interfaz | Limpieza de la parte de iroh: fuera `iroh_poc.py`, clave secreta con función pública, repositorio de métricas iroh con la conexión compartida y tests de la conexión aparte | Aplicado en código y en la documentación |
+| 19/11/2026 | Plan / Agente / Interfaz | Auditorías de simplificación y legibilidad del agente y de la interfaz y revisión de la documentación general frente al código: `07` sobre la creación de la cuenta y el QR, tabla de errores del contrato, README y `CONTRIBUTING.md` | Aplicado en código y en la documentación |
+| 19/11/2026 | Agente | `schema.sql` pasa a `agent/sysmote/` y se incluye en el paquete, para que el agente funcione instalado con `pip` o `pipx` | Aplicado en código y en la documentación |
+| 19/11/2026 | Agente / Interfaz / Plan | Auditoría complementaria y sus correcciones: login con tiempo igualado y una sola cuenta a nivel de base de datos, `AppTopBar` a `core/`, formato Dart a 100 columnas, comentarios que faltaban, captura de la TUI, y textos de TLS, uvicorn y bloqueo por intentos | Aplicado en código y en la documentación |
 
 ---
 
@@ -587,3 +591,35 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** con el login de la fase 3, el túnel pasa a exponer algo más que métricas. El límite de *streams* se cuenta en el túnel porque el de iroh no se aplica tras aceptar la conexión (comprobado con una prueba).
 - **Afecta a:** `doc/iroh/` (`02-implementacion.md` §2, `03-problemas-y-soluciones.md` §13, `04-pruebas.md`, `README.md`) y `04` (se quita el punto de la fase 3). Código: `agent/sysmote/iroh_tunnel.py` y `agent/tests/test_iroh_tunnel.py`. Pendiente de revisar en la fase 4: 60 s cortarían una terminal inactiva.
 - **Estado:** aplicado en código y en la documentación.
+
+### 18/11/2026 — Limpieza de la parte de iroh
+
+- **Qué era:** `agent/scripts/iroh_poc.py` arrancaba a mano el agente y el túnel con su propia clave (`iroh_secret_key_poc.bin`), aunque desde la fase 3 los arranca `sysmote.server.Servidores` con la clave real: daba otro identificador y su puerto chocaba con el de la TUI. `iroh_tunnel.py` tenía una constante `INTERNAL_HTTP_PORT` que no usaba nadie, y `pairing_service.py` importaba la función privada `_load_or_create_secret_key`. `IrohMetricsRepository` recibía un identificador que ignoraba, y sus tests probaban sobre todo la lógica de `IrohConnection`.
+- **Qué es ahora:** se borran el script y la constante; la función pasa a ser pública (`load_or_create_secret_key`); `IrohMetricsRepository` recibe la conexión compartida y el token, igual que `IrohAuthRepository`. Los tests de la conexión pasan a `iroh_connection_test.dart`, y se quitan o fusionan los redundantes después de comprobar, rompiendo el código a propósito, que otro test cubría lo mismo: tests de iroh del agente de 13 a 12 y de la app de 15 a 14 (9 de la conexión y 5 del repositorio, uno de ellos nuevo). Comentarios y docstrings en el túnel y en el repositorio.
+- **Por qué:** auditoría de simplificación y legibilidad pedida por el autor.
+- **Afecta a:** `agent/sysmote/iroh_tunnel.py`, `agent/sysmote/services/pairing_service.py`, `App-movil/lib/data/iroh/iroh_metrics_repository.dart`, `App-movil/lib/main.dart`, los tests de iroh, `doc/iroh/`, `doc/agente/ESTRUCTURA.md`, `doc/agente/tests.md` y `doc/ui/tests.md`.
+- **Estado:** aplicado en código y en la documentación.
+
+### 19/11/2026 — Revisión de la documentación frente al código
+
+- **Qué era:** tras las auditorías, `07` seguía diciendo que hasta la fase 9 la cuenta se crea en la TUI y que el QR llega en la fase 9; la tabla de errores del contrato no recogía los `404` ni el `405`; `huella_distinta` figuraba como un error del agente; los README omitían la consulta de solicitud de login entre las rutas que responden sin sesión; y `CONTRIBUTING.md` describía una rama `feature/<nombre>` por tarea.
+- **Qué es ahora:** `07` dice que la cuenta la crea la app con el código de registro (la TUI no la crea) y que la TUI muestra el QR desde la fase 3, con el escáner de la app en la fase 9; el contrato añade `404 solicitud_desconocida`, `404 no_encontrado` y `405 metodo_no_permitido`, y aclara que `huella_distinta` es un error de la app y no del agente; los README recogen la consulta de solicitud; `CONTRIBUTING.md` explica que los cambios llegan por pull request desde una rama cortada de `main`.
+- **Por qué:** revisión pedida por el autor antes del PR de las auditorías, cruzando la documentación con el código, el contrato y la ejecución de la guía de instalación.
+- **Afecta a:** `07`, `doc/agente/contrato-api-fase3.md`, `doc/agente/tests.md`, `README.md`, `README.en.md` y `CONTRIBUTING.md`.
+- **Estado:** aplicado en la documentación.
+
+### 19/11/2026 — `schema.sql` dentro del paquete del agente
+
+- **Qué era:** `schema.sql` estaba en `agent/`, fuera del paquete `sysmote`. Con una instalación editable (`pip install -e`) funcionaba, pero al instalar el agente de forma normal (`pip` o `pipx install ./agent`) el archivo no se incluía y `sysmote` terminaba con un `FileNotFoundError` al abrir la base de datos. La guía de instalación ofrecía `pipx` como alternativa válida.
+- **Qué es ahora:** `schema.sql` está en `agent/sysmote/` y `pyproject.toml` lo declara como dato del paquete; `database.py` lo busca junto a sí mismo. Verificado construyendo el paquete, instalándolo sin modo editable en un entorno limpio y arrancando `sysmote`; también con `pipx install ./agent`.
+- **Por qué:** el agente se distribuye como paquete de Python (`pip`, `pipx install sysmote`), y eso exige que todo lo que necesita viaje dentro del paquete.
+- **Afecta a:** `agent/sysmote/database.py`, `agent/pyproject.toml`, `agent/sysmote/schema.sql` y las rutas citadas en `doc/agente/` (`ESTRUCTURA.md`, `README.md`, `tui.md`), `01`, `02` y `04`.
+- **Estado:** aplicado en código y en la documentación.
+
+### 19/11/2026 — Auditoría complementaria y correcciones
+
+- **Qué era:** quedaban por auditar la organización de carpetas y archivos, la legibilidad, la completitud de los comentarios, la seguridad del login, las dependencias y la configuración de Android. De ello salió que el login con un usuario inexistente respondía más rápido que con una contraseña incorrecta (delataba si el usuario existe); que dos registros simultáneos con un código válido podían crear dos cuentas; que `AppTopBar` vivía dentro de `shell/` aunque la usaban otras secciones; que había dos docstrings y trece `///` por escribir; que no había formateador en Dart; y varios desajustes de documentación (captura de la TUI anterior al QR, URL de uvicorn, «TLS 1.3», el bloqueo por intentos sin documentar como limitación).
+- **Qué es ahora:** el login ejecuta Argon2 también con un usuario inexistente; el esquema lleva un índice único que limita la base de datos a una cuenta, y `registrar` convierte el rechazo en `registro_cerrado`; `AppTopBar` está en `core/widgets/`; los docstrings y los `///` están completos (96 de 96 en el agente y 176 de 176 en la app); `dart format` con ancho de 100 columnas fijado en `analysis_options.yaml`; la captura de la TUI está regenerada; `02` dice que el servidor acepta TLS 1.2 y 1.3; `05` cita `uvicorn.dev`; los README recogen el bloqueo por intentos como limitación conocida; y `doc/agente/ESTRUCTURA.md` y `doc/ui/estructura-app.md` escriben la convención de nombres y las piezas transversales. Se quita `test_sesion_repository.py`, porque su escenario (dos cuentas) ya no puede darse.
+- **Por qué:** revisión pedida por el autor antes del PR de las auditorías. Los informes de las auditorías no se publican: se guardan solo en local.
+- **Afecta a:** `agent/sysmote/services/auth_service.py`, `password_service.py`, `schema.sql`, `iroh_tunnel.py`, sus tests y `doc/agente/tests.md` (155 tests); `App-movil/` (formato, `AppTopBar` y comentarios); `02`, `05`, los dos README, `doc/img/tui-emparejamiento.png`, `doc/agente/ESTRUCTURA.md` y `doc/ui/estructura-app.md`.
+- **Estado:** aplicado en código y en la documentación. Quedan como decisión del autor la convención de nombres de los documentos, el identificador de la aplicación de Android, los emojis de `04` a `06`, la copia de seguridad de Android, un archivo de restricciones para Python y el formateador de Python.

@@ -1,16 +1,21 @@
+// Ficha de la cuadrícula de Inicio (macro o carpeta).
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/home_item.dart';
 
+/// Icono que corresponde a cada tipo de macro.
 AppIcon iconFor(MacroKind kind) => switch (kind) {
-      MacroKind.volume => AppIcon.volume,
-      MacroKind.lock => AppIcon.lock,
-      MacroKind.moon => AppIcon.moon,
-      MacroKind.bolt => AppIcon.bolt,
-    };
+  MacroKind.volume => AppIcon.volume,
+  MacroKind.lock => AppIcon.lock,
+  MacroKind.moon => AppIcon.moon,
+  MacroKind.bolt => AppIcon.bolt,
+};
 
+/// Dibuja una macro o una carpeta; [highlight] la marca como destino al arrastrar y [lifted] como
+/// levantada.
 class ItemTile extends StatelessWidget {
   const ItemTile({super.key, required this.item, this.highlight = false, this.lifted = false});
 
@@ -70,12 +75,7 @@ class _MacroContent extends StatelessWidget {
           width: 64,
           height: 64,
           child: Center(
-            child: AppIconView(
-              iconFor(macro.kind),
-              color: t.accent,
-              size: 64,
-              strokeWidth: 1.6,
-            ),
+            child: AppIconView(iconFor(macro.kind), color: t.accent, size: 64, strokeWidth: 1.6),
           ),
         ),
         Text(

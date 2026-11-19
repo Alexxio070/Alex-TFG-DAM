@@ -1,3 +1,5 @@
+// Pantalla de Notas: buscador, lista y botón de nueva nota.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,7 @@ import 'note_form_view.dart';
 import 'notes_viewmodel.dart';
 import 'widgets/note_card.dart';
 
+/// Lista de notas con búsqueda; tocar editar o «+» abre [NoteFormView].
 class NotesView extends StatelessWidget {
   const NotesView({super.key});
 
@@ -25,9 +28,7 @@ class NotesView extends StatelessWidget {
   }
 
   void _openForm(BuildContext context, [Note? note]) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => NoteFormView(note: note)),
-    );
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => NoteFormView(note: note)));
   }
 
   @override
@@ -43,7 +44,9 @@ class NotesView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: _SearchField(onChanged: vm.search),
             ),
-            Expanded(child: _NotesList(vm: vm, onOpen: _open, onCopy: _copy, onEdit: _openForm)),
+            Expanded(
+              child: _NotesList(vm: vm, onOpen: _open, onCopy: _copy, onEdit: _openForm),
+            ),
           ],
         ),
         Positioned(
@@ -78,12 +81,6 @@ class _NotesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!vm.isPaired) {
-      return const _Placeholder(
-        title: 'Sin emparejar',
-        body: 'Empareja el móvil para ver tus notas.',
-      );
-    }
     if (vm.loading && vm.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }

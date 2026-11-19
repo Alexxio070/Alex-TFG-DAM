@@ -1,3 +1,6 @@
+// Tests de que los botones flotantes y la papelera quedan por encima de la barra de navegación del
+// sistema.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

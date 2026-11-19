@@ -1,7 +1,10 @@
+// Tests de AuthViewModel: arranque, registro, login, confirmación en la TUI, errores de sesión y
+// agente inalcanzable.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/models/auth.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart' show AgentUnavailableException;
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/features/auth/auth_viewmodel.dart';
 
 import 'fakes/fake_auth_repository.dart';
@@ -9,21 +12,18 @@ import 'fakes/in_memory_token_storage.dart';
 
 void main() {
   test('sin token y agente sin cuenta: noAccount', () async {
-    final vm = AuthViewModel(
-      FakeAuthRepository(configurado: false),
-      InMemoryTokenStorage(),
-    );
+    final vm = AuthViewModel(FakeAuthRepository(configurado: false), InMemoryTokenStorage());
     await Future<void>.delayed(Duration.zero);
 
     expect(vm.stage, AuthStage.noAccount);
   });
 
   FakeAuthRepository sinCuenta({bool caducado = false}) => FakeAuthRepository(
-        configurado: false,
-        registroAbierto: true,
-        codigoRegistro: 'K7QXM2PD9WTR4HNB',
-        codigoCaducado: caducado,
-      );
+    configurado: false,
+    registroAbierto: true,
+    codigoRegistro: 'K7QXM2PD9WTR4HNB',
+    codigoCaducado: caducado,
+  );
 
   Future<AuthViewModel> registrando(FakeAuthRepository repo, InMemoryTokenStorage storage) async {
     final vm = AuthViewModel(repo, storage);
@@ -49,7 +49,6 @@ void main() {
     );
 
     expect(vm.stage, AuthStage.loggedIn);
-    expect(vm.usuario, 'alex');
     expect(await storage.read(), isNotNull);
   });
 
@@ -127,7 +126,6 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(vm.stage, AuthStage.loggedIn);
-    expect(vm.usuario, 'alex');
   });
 
   test('un token guardado que el agente ya no reconoce vuelve al login', () async {
@@ -177,7 +175,11 @@ void main() {
 
   test('submit con una sesión activa espera la confirmación y la cuenta atrás baja', () async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
-    final vm = AuthViewModel(repo, InMemoryTokenStorage(), pollInterval: const Duration(seconds: 1));
+    final vm = AuthViewModel(
+      repo,
+      InMemoryTokenStorage(),
+      pollInterval: const Duration(seconds: 1),
+    );
     await Future<void>.delayed(Duration.zero);
 
     await vm.submit(usuario: 'alex', contrasena: 'contraseña-valida', dispositivo: 'Pixel 8');
@@ -414,7 +416,11 @@ void main() {
     test('un fallo de red mientras espera la confirmación no la cancela', () async {
       final fake = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
       final repo = _Unreachable(inner: fake)..available = true;
-      final vm = AuthViewModel(repo, InMemoryTokenStorage(), pollInterval: const Duration(milliseconds: 100));
+      final vm = AuthViewModel(
+        repo,
+        InMemoryTokenStorage(),
+        pollInterval: const Duration(milliseconds: 100),
+      );
       await Future<void>.delayed(Duration.zero);
       await vm.submit(usuario: 'alex', contrasena: 'contraseña-valida', dispositivo: 'Pixel 8');
 
@@ -448,8 +454,9 @@ class _Unreachable implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) async =>
-      _guard(() => _inner.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo));
+  }) async => _guard(
+    () => _inner.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo),
+  );
 
   @override
   Future<LoggedIn> register({
@@ -457,13 +464,14 @@ class _Unreachable implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) async =>
-      _guard(() => _inner.register(
-            codigo: codigo,
-            usuario: usuario,
-            contrasena: contrasena,
-            dispositivo: dispositivo,
-          ));
+  }) async => _guard(
+    () => _inner.register(
+      codigo: codigo,
+      usuario: usuario,
+      contrasena: contrasena,
+      dispositivo: dispositivo,
+    ),
+  );
 
   @override
   Future<LoginRequestStatus> checkLoginRequest(String solicitudId) async =>

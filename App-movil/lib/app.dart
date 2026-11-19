@@ -1,3 +1,5 @@
+// Raíz de la interfaz: aplica el tema de Ajustes y elige la pantalla según el estado de la sesión.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,6 +10,8 @@ import 'features/auth/login_view.dart';
 import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_view.dart';
 
+/// MaterialApp de Sysmote: pantalla de carga mientras se leen los ajustes, [ShellView] con la
+/// sesión abierta y [LoginView] en cualquier otro caso.
 class SysmoteApp extends StatelessWidget {
   const SysmoteApp({super.key});
 
@@ -22,12 +26,13 @@ class SysmoteApp extends StatelessWidget {
       home: !settings.ready
           ? const _LoadingPlaceholder()
           : auth.stage == AuthStage.loggedIn
-              ? const ShellView()
-              : const LoginView(),
+          ? const ShellView()
+          : const LoginView(),
     );
   }
 }
 
+/// Pantalla que se ve mientras se cargan los ajustes guardados.
 class _LoadingPlaceholder extends StatelessWidget {
   const _LoadingPlaceholder();
 

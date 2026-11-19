@@ -1,9 +1,11 @@
+// Menú lateral: secciones, botón de Ajustes y estado de conexión.
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../shell_viewmodel.dart';
-import 'app_top_bar.dart';
+import '../../../core/widgets/app_top_bar.dart';
 
 const _navSections = [Section.home, Section.metrics, Section.terminal, Section.notes];
 
@@ -14,6 +16,7 @@ const _icons = {
   Section.notes: AppIcon.notes,
 };
 
+/// Lista de secciones; elegir una llama a [onSelect].
 class AppDrawer extends StatelessWidget {
   const AppDrawer({
     super.key,
@@ -72,7 +75,9 @@ class AppDrawer extends StatelessWidget {
           ),
           Container(
             padding: EdgeInsets.fromLTRB(12, 12, 12, 24 + padding.bottom),
-            decoration: BoxDecoration(border: Border(top: BorderSide(color: t.line))),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: t.line)),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -180,10 +185,7 @@ class _ConnectionStatus extends StatelessWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: paired ? kGreen : t.off,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: paired ? kGreen : t.off),
           ),
           const SizedBox(width: 8),
           Text(

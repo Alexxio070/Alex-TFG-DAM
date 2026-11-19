@@ -1,3 +1,7 @@
+// Punto de entrada de la app: decide qué implementación real de cada repositorio se usa (agente
+// por HTTPS o iroh, ajustes y token en el móvil, placeholders para lo que el agente aún no tiene)
+// y arranca la app.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +22,7 @@ import 'data/local/shared_preferences_settings_repository.dart';
 import 'features/auth/auth_viewmodel.dart';
 import 'features/settings/settings_viewmodel.dart';
 
+/// Crea los repositorios y monta [SysmoteApp] con todos los providers.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settingsRepository = SharedPreferencesSettingsRepository();
@@ -58,11 +63,7 @@ Future<void> main() async {
               () => settings.fingerprint,
               () => auth.token,
             ),
-            iroh: IrohMetricsRepository(
-              () => settings.irohId,
-              () => auth.token,
-              connection: connectionFor(settings),
-            ),
+            iroh: IrohMetricsRepository(connectionFor(settings), () => auth.token),
           );
         },
       ),
