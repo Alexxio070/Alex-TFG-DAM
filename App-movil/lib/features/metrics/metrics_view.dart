@@ -49,6 +49,8 @@ class _MetricsViewState extends State<MetricsView> {
     final history = metrics.history;
     final ramTotal = metrics.info!.ramTotalGb;
     final unit = settings.storageUnit;
+    final ramTotalLabel =
+        '${unit.format(ramTotal, decimals: unit == StorageUnit.gb ? 0 : 1)} ${unit.label}';
     final fahrenheit = settings.tempUnit == TempUnit.fahrenheit;
     final tempNow = history.last.tempC;
     final hot = tempNow != null && settings.tempAlert && tempNow > settings.tempLimit;
@@ -103,14 +105,13 @@ class _MetricsViewState extends State<MetricsView> {
         MetricCard(
           title: 'Uso de RAM',
           value: MetricValue(
-            number: formatNumber(history.last.ramGb * unit.factor),
-            unit: '/ ${formatNumber(ramTotal * unit.factor, unit == StorageUnit.gb ? 0 : 1)} ${unit.label}',
+            number: unit.format(history.last.ramGb),
+            unit: '/ $ramTotalLabel',
           ),
           values: [for (final s in history) s.ramGb],
           min: 0,
           max: ramTotal,
-          scaleLabel:
-              'Escala 0–${formatNumber(ramTotal * unit.factor, unit == StorageUnit.gb ? 0 : 1)} ${unit.label}',
+          scaleLabel: 'Escala 0–$ramTotalLabel',
         ),
         const SizedBox(height: 16),
         if (partition == null)

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/format.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../data/models/metrics.dart';
-import '../../settings/settings_viewmodel.dart';
+import '../../../data/models/settings.dart';
 import 'metric_card.dart';
 import 'partition_menu.dart';
 

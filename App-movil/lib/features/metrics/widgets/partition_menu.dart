@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../data/models/metrics.dart';
-import '../../settings/settings_viewmodel.dart';
+import '../../../data/models/settings.dart';
 
 class PartitionChip extends StatelessWidget {
   const PartitionChip({super.key, required this.mount, required this.onTap});
