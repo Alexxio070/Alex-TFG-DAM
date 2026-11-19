@@ -19,13 +19,7 @@ class _SlowNotesRepository implements NotesRepository {
     await Future<void>.delayed(delays[query] ?? Duration.zero);
     final now = DateTime.now();
     return [
-      Note(
-        id: query,
-        content: query,
-        origin: NoteOrigin.mobile,
-        createdAt: now,
-        updatedAt: now,
-      ),
+      Note(id: query, content: query, origin: NoteOrigin.mobile, createdAt: now, updatedAt: now),
     ];
   }
 

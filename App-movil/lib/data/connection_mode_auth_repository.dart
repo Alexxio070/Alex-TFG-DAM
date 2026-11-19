@@ -29,8 +29,7 @@ class ConnectionModeAuthRepository implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) =>
-      _active.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo);
+  }) => _active.login(usuario: usuario, contrasena: contrasena, dispositivo: dispositivo);
 
   @override
   Future<LoggedIn> register({
@@ -38,13 +37,12 @@ class ConnectionModeAuthRepository implements AuthRepository {
     required String usuario,
     required String contrasena,
     required String dispositivo,
-  }) =>
-      _active.register(
-        codigo: codigo,
-        usuario: usuario,
-        contrasena: contrasena,
-        dispositivo: dispositivo,
-      );
+  }) => _active.register(
+    codigo: codigo,
+    usuario: usuario,
+    contrasena: contrasena,
+    dispositivo: dispositivo,
+  );
 
   @override
   Future<LoginRequestStatus> checkLoginRequest(String solicitudId) =>

@@ -18,12 +18,7 @@ import 'item_tile.dart';
 /// macro.
 Future<void> showNewMacroDialog(BuildContext context) {
   final vm = context.read<HomeViewModel>();
-  return showTopCard(
-    context,
-    top: 180,
-    side: 20,
-    builder: (_) => _NewMacroCard(vm: vm),
-  );
+  return showTopCard(context, top: 180, side: 20, builder: (_) => _NewMacroCard(vm: vm));
 }
 
 class _NewMacroCard extends StatefulWidget {
@@ -50,7 +45,10 @@ class _NewMacroCardState extends State<_NewMacroCard> {
       return 'Máximo $_kMaxNameLength caracteres';
     }
     final taken = widget.vm.items.any((item) {
-      final label = switch (item) { Macro() => item.label, Folder() => item.name };
+      final label = switch (item) {
+        Macro() => item.label,
+        Folder() => item.name,
+      };
       return label.toLowerCase() == name.toLowerCase();
     });
     if (taken) return 'Ya hay un elemento con ese nombre';
@@ -135,11 +133,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
                     children: [
                       Text(
                         'Pedir confirmación',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: t.ink,
-                        ),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: t.ink),
                       ),
                       Text(
                         'Pregunta antes de ejecutarla',
@@ -159,10 +153,7 @@ class _NewMacroCardState extends State<_NewMacroCard> {
               spacing: 12,
               children: [
                 Expanded(
-                  child: AppButton(
-                    label: 'Cancelar',
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                  child: AppButton(label: 'Cancelar', onPressed: () => Navigator.of(context).pop()),
                 ),
                 Expanded(
                   child: AppButton(
@@ -217,4 +208,3 @@ class _IconOption extends StatelessWidget {
     );
   }
 }
-

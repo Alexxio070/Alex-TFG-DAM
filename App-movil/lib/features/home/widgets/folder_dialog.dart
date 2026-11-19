@@ -13,12 +13,7 @@ import 'item_tile.dart';
 
 /// Abre [folder] con sus macros en cuadrícula; tocar una la ejecuta.
 Future<void> showFolderDialog(BuildContext context, Folder folder) {
-  return showTopCard(
-    context,
-    top: 150,
-    side: 20,
-    builder: (_) => _FolderCard(folderId: folder.id),
-  );
+  return showTopCard(context, top: 150, side: 20, builder: (_) => _FolderCard(folderId: folder.id));
 }
 
 class _FolderCard extends StatelessWidget {
@@ -59,11 +54,7 @@ class _FolderCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     folder.name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: t.ink,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: t.ink),
                   ),
                 ),
               ],
@@ -122,9 +113,7 @@ class _ChildButton extends StatelessWidget {
                     color: color.withValues(alpha: 0x1A / 255),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Center(
-                    child: AppIconView(iconFor(macro.kind), color: color, size: 20),
-                  ),
+                  child: Center(child: AppIconView(iconFor(macro.kind), color: color, size: 20)),
                 ),
                 Text(
                   macro.label,

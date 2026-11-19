@@ -159,7 +159,9 @@ void main() {
       () => '127.0.0.1:8443',
       () => '',
       () => null,
-      client: MockClient((request) async => http.Response('{"cpu_percent": "no es un número"}', 200)),
+      client: MockClient(
+        (request) async => http.Response('{"cpu_percent": "no es un número"}', 200),
+      ),
     );
 
     await expectLater(repository.loadHistory(), throwsA(isA<AgentUnavailableException>()));
@@ -201,13 +203,11 @@ void main() {
 
   test('un 401 no_autenticado o desemparejado lanza la excepción de sesión', () async {
     HttpMetricsRepository con(String error) => HttpMetricsRepository(
-          () => '127.0.0.1:8443',
-          () => '',
-          () => 't0k3n',
-          client: MockClient(
-            (_) async => http.Response('{"error": "$error", "mensaje": "x"}', 401),
-          ),
-        );
+      () => '127.0.0.1:8443',
+      () => '',
+      () => 't0k3n',
+      client: MockClient((_) async => http.Response('{"error": "$error", "mensaje": "x"}', 401)),
+    );
 
     await expectLater(con('no_autenticado').loadInfo(), throwsA(isA<NotAuthenticatedException>()));
     await expectLater(con('desemparejado').loadInfo(), throwsA(isA<UnpairedException>()));
@@ -223,7 +223,13 @@ void main() {
 
     await expectLater(
       repository.loadInfo(),
-      throwsA(isA<AgentUnavailableException>().having((e) => e.message, 'message', kFingerprintMismatchMessage)),
+      throwsA(
+        isA<AgentUnavailableException>().having(
+          (e) => e.message,
+          'message',
+          kFingerprintMismatchMessage,
+        ),
+      ),
     );
   });
 }

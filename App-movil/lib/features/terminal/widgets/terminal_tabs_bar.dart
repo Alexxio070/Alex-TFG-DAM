@@ -39,8 +39,7 @@ class TerminalTabsBar extends StatelessWidget {
                   onClose: () => showConfirmCard(
                     context,
                     title: '¿Cerrar esta pestaña?',
-                    body:
-                        'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
+                    body: 'Se cerrará la sesión de terminal y la ventana del PC, aunque haya algo en marcha.',
                     confirmLabel: 'Cerrar',
                     semanticsLabel: 'Cerrar pestaña',
                     onConfirm: () => vm.closeTab(tab),
@@ -59,7 +58,9 @@ class TerminalTabsBar extends StatelessWidget {
               child: const SizedBox(
                 width: 44,
                 height: 44,
-                child: Center(child: AppIconView(AppIcon.plus, color: kTerminalForeground, size: 20)),
+                child: Center(
+                  child: AppIconView(AppIcon.plus, color: kTerminalForeground, size: 20),
+                ),
               ),
             ),
           ),

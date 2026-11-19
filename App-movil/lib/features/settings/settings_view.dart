@@ -123,11 +123,7 @@ class SettingsView extends StatelessWidget {
               trailing: _AccentButton(
                 color: s.accent,
                 name: accentIndex >= 0 ? kAccentNames[accentIndex] : 'Personalizado',
-                onTap: () => showAccentSheet(
-                  context,
-                  current: s.accent,
-                  onPick: s.setAccent,
-                ),
+                onTap: () => showAccentSheet(context, current: s.accent, onPick: s.setAccent),
               ),
             ),
           ],

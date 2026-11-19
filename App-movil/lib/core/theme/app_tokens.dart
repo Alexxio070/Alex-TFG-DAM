@@ -13,14 +13,7 @@ const kAccentColors = [
 ];
 
 /// Nombre visible de cada color de [kAccentColors], en el mismo orden.
-const kAccentNames = [
-  'Verde azulado',
-  'Azul',
-  'Frambuesa',
-  'Naranja',
-  'Violeta',
-  'Grafito',
-];
+const kAccentNames = ['Verde azulado', 'Azul', 'Frambuesa', 'Naranja', 'Violeta', 'Grafito'];
 
 /// Misma versión de cada color de kAccentColors, aclarada en luminosidad hasta
 /// alcanzar un contraste de ~4,5:1 contra el fondo oscuro (#111316), calculado
@@ -36,6 +29,7 @@ const kAccentColorsDark = [
 
 /// Rojo de errores y acciones destructivas.
 const kRed = Color(0xFFB42318);
+
 /// Verde de confirmaciones y del estado «Conectado».
 const kGreen = Color(0xFF1F9D55);
 
@@ -135,20 +129,20 @@ class AppTokens extends ThemeExtension<AppTokens> {
 
   @override
   AppTokens copyWith({Color? accent}) => AppTokens(
-        bg: bg,
-        surface: surface,
-        ink: ink,
-        muted: muted,
-        muted2: muted2,
-        border: border,
-        line: line,
-        borderStrong: borderStrong,
-        field: field,
-        off: off,
-        segOn: segOn,
-        greenText: greenText,
-        accent: accent ?? this.accent,
-      );
+    bg: bg,
+    surface: surface,
+    ink: ink,
+    muted: muted,
+    muted2: muted2,
+    border: border,
+    line: line,
+    borderStrong: borderStrong,
+    field: field,
+    off: off,
+    segOn: segOn,
+    greenText: greenText,
+    accent: accent ?? this.accent,
+  );
 
   @override
   AppTokens lerp(ThemeExtension<AppTokens>? other, double t) =>

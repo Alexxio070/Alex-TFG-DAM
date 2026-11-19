@@ -99,8 +99,11 @@ class _DiskCardState extends State<DiskCard> {
       overlayChildBuilder: (overlayContext) {
         final screenHeight = MediaQuery.sizeOf(overlayContext).height;
         final bottomInset = MediaQuery.paddingOf(overlayContext).bottom;
-        final maxMenuHeight = (screenHeight - _anchorTop - _menuOffset.dy - bottomInset - _menuBottomMargin)
-            .clamp(0.0, double.infinity);
+        final maxMenuHeight =
+            (screenHeight - _anchorTop - _menuOffset.dy - bottomInset - _menuBottomMargin).clamp(
+              0.0,
+              double.infinity,
+            );
         return Stack(
           children: [
             Positioned.fill(
@@ -173,7 +176,9 @@ class _DiskCardState extends State<DiskCard> {
                             color: t.muted2,
                           ),
                         ),
-                        Flexible(child: PartitionChip(mount: p.mount, onTap: _toggleMenu)),
+                        Flexible(
+                          child: PartitionChip(mount: p.mount, onTap: _toggleMenu),
+                        ),
                       ],
                     ),
                     Row(
@@ -254,4 +259,3 @@ class _DiskCardState extends State<DiskCard> {
     );
   }
 }
-

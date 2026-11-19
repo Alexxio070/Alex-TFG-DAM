@@ -17,10 +17,10 @@ import 'package:sysmote/data/repositories/auth_repository.dart';
 import 'fakes/in_memory_token_storage.dart';
 
 http.Response _json(int status, Map<String, Object?> body) => http.Response(
-      jsonEncode(body),
-      status,
-      headers: {'content-type': 'application/json; charset=utf-8'},
-    );
+  jsonEncode(body),
+  status,
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);
 
 void main() {
   late InMemoryTokenStorage storage;
@@ -41,12 +41,14 @@ void main() {
   setUp(() => storage = InMemoryTokenStorage());
 
   test('status() pide /estado por HTTPS y sin token', () async {
-    final repo = repoWith((_) => _json(200, {
-          'api': 1,
-          'configurado': true,
-          'registro_abierto': false,
-          'sesion_activa': true,
-        }));
+    final repo = repoWith(
+      (_) => _json(200, {
+        'api': 1,
+        'configurado': true,
+        'registro_abierto': false,
+        'sesion_activa': true,
+      }),
+    );
 
     final status = await repo.status();
 
@@ -74,12 +76,14 @@ void main() {
   });
 
   test('login con 202 devuelve la solicitud pendiente', () async {
-    final repo = repoWith((_) => _json(202, {
-          'estado': 'pendiente',
-          'solicitud': 'abc123',
-          'sesion_activa_en': 'iPhone 15',
-          'caduca_en_s': 300,
-        }));
+    final repo = repoWith(
+      (_) => _json(202, {
+        'estado': 'pendiente',
+        'solicitud': 'abc123',
+        'sesion_activa_en': 'iPhone 15',
+        'caduca_en_s': 300,
+      }),
+    );
 
     final outcome = await repo.login(usuario: 'alex', contrasena: 'Abcd1', dispositivo: 'Pixel 8');
 
@@ -99,11 +103,9 @@ void main() {
   });
 
   test('login con 429 lanza TooManyAttemptsException con la espera', () async {
-    final repo = repoWith((_) => _json(429, {
-          'error': 'demasiados_intentos',
-          'mensaje': 'x',
-          'espera_s': 40,
-        }));
+    final repo = repoWith(
+      (_) => _json(429, {'error': 'demasiados_intentos', 'mensaje': 'x', 'espera_s': 40}),
+    );
 
     await expectLater(
       repo.login(usuario: 'alex', contrasena: 'Abcd1', dispositivo: 'Pixel 8'),
@@ -161,11 +163,13 @@ void main() {
 
   test('session() manda el token guardado como Bearer', () async {
     await storage.write('t0k3n');
-    final repo = repoWith((_) => _json(200, {
-          'usuario': 'alex',
-          'dispositivo': 'Pixel 8',
-          'creada': '2026-12-20T18:30:00+01:00',
-        }));
+    final repo = repoWith(
+      (_) => _json(200, {
+        'usuario': 'alex',
+        'dispositivo': 'Pixel 8',
+        'creada': '2026-12-20T18:30:00+01:00',
+      }),
+    );
 
     final session = await repo.session();
 
@@ -195,7 +199,9 @@ void main() {
   });
 
   test('un error 5xx sin formato conocido lanza AgentErrorException con el mensaje', () async {
-    final repo = repoWith((_) => _json(500, {'error': 'error_interno', 'mensaje': 'Fallo del agente'}));
+    final repo = repoWith(
+      (_) => _json(500, {'error': 'error_interno', 'mensaje': 'Fallo del agente'}),
+    );
 
     await expectLater(
       repo.status(),
@@ -203,20 +209,23 @@ void main() {
     );
   });
 
-  test('sin conexión, un JSON roto o un campo de otro tipo lanzan AgentUnavailableException', () async {
-    final sinConexion = HttpAuthRepository(
-      () => 'x:1',
-      () => '',
-      storage,
-      client: MockClient((_) async => throw Exception('sin red')),
-    );
-    final roto = repoWith((_) => http.Response('no es json', 200));
-    final tipoMalo = repoWith((_) => _json(200, {'api': 'uno'}));
+  test(
+    'sin conexión, un JSON roto o un campo de otro tipo lanzan AgentUnavailableException',
+    () async {
+      final sinConexion = HttpAuthRepository(
+        () => 'x:1',
+        () => '',
+        storage,
+        client: MockClient((_) async => throw Exception('sin red')),
+      );
+      final roto = repoWith((_) => http.Response('no es json', 200));
+      final tipoMalo = repoWith((_) => _json(200, {'api': 'uno'}));
 
-    expect(() => sinConexion.status(), throwsA(isA<AgentUnavailableException>()));
-    expect(() => roto.status(), throwsA(isA<AgentUnavailableException>()));
-    expect(() => tipoMalo.status(), throwsA(isA<AgentUnavailableException>()));
-  });
+      expect(() => sinConexion.status(), throwsA(isA<AgentUnavailableException>()));
+      expect(() => roto.status(), throwsA(isA<AgentUnavailableException>()));
+      expect(() => tipoMalo.status(), throwsA(isA<AgentUnavailableException>()));
+    },
+  );
 
   test('un certificado que no coincide con la huella avisa de la huella', () async {
     final repo = HttpAuthRepository(
@@ -228,7 +237,13 @@ void main() {
 
     await expectLater(
       repo.status(),
-      throwsA(isA<AgentUnavailableException>().having((e) => e.message, 'message', kFingerprintMismatchMessage)),
+      throwsA(
+        isA<AgentUnavailableException>().having(
+          (e) => e.message,
+          'message',
+          kFingerprintMismatchMessage,
+        ),
+      ),
     );
   });
 

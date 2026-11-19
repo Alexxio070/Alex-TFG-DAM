@@ -192,10 +192,7 @@ class _LoadingOverlay extends StatelessWidget {
           spacing: 12,
           children: [
             CircularProgressIndicator(color: _theme.foreground),
-            Text(
-              'Abriendo terminal…',
-              style: TextStyle(fontSize: 13, color: _theme.brightBlack),
-            ),
+            Text('Abriendo terminal…', style: TextStyle(fontSize: 13, color: _theme.brightBlack)),
           ],
         ),
       ),

@@ -52,10 +52,7 @@ void main() {
   });
 
   test('un índice de enum guardado fuera de rango lanza al leerlo', () async {
-    SharedPreferences.setMockInitialValues({
-      'settings_dark': false,
-      'settings_temp_unit': 99,
-    });
+    SharedPreferences.setMockInitialValues({'settings_dark': false, 'settings_temp_unit': 99});
     final repository = SharedPreferencesSettingsRepository();
 
     expect(repository.load(), throwsRangeError);

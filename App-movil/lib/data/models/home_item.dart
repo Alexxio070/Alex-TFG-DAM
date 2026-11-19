@@ -42,9 +42,9 @@ class Folder extends HomeItem {
   final List<Macro> children;
 
   Folder copyWith({String? name, Color? color, List<Macro>? children}) => Folder(
-        id: id,
-        name: name ?? this.name,
-        color: color ?? this.color,
-        children: children ?? this.children,
-      );
+    id: id,
+    name: name ?? this.name,
+    color: color ?? this.color,
+    children: children ?? this.children,
+  );
 }

@@ -6,12 +6,7 @@ import '../theme/app_tokens.dart';
 
 /// Interruptor on/off; [label] es su nombre para el lector de pantalla.
 class AppSwitch extends StatelessWidget {
-  const AppSwitch({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    required this.label,
-  });
+  const AppSwitch({super.key, required this.value, required this.onChanged, required this.label});
 
   final bool value;
   final ValueChanged<bool> onChanged;

@@ -57,27 +57,18 @@ List<SingleChildWidget> buildProviders({
       },
     ),
     Provider<MetricsRepository>(create: metricsRepositoryBuilder),
+    ChangeNotifierProvider(create: (context) => ShellViewModel(context.read<AuthViewModel>())),
+    ChangeNotifierProvider(create: (context) => HomeViewModel(context.read<MacroRepository>())),
     ChangeNotifierProvider(
-      create: (context) => ShellViewModel(context.read<AuthViewModel>()),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => HomeViewModel(context.read<MacroRepository>()),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => MetricsViewModel(
-        context.read<MetricsRepository>(),
-        context.read<AuthViewModel>(),
-      ),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => NotesViewModel(
-        context.read<NotesRepository>(),
-        context.read<AuthViewModel>(),
-      ),
+      create: (context) =>
+          MetricsViewModel(context.read<MetricsRepository>(), context.read<AuthViewModel>()),
     ),
     ChangeNotifierProvider(
       create: (context) =>
-          TerminalTabsViewModel(context.read<TerminalRepository Function()>()),
+          NotesViewModel(context.read<NotesRepository>(), context.read<AuthViewModel>()),
+    ),
+    ChangeNotifierProvider(
+      create: (context) => TerminalTabsViewModel(context.read<TerminalRepository Function()>()),
     ),
   ];
 }

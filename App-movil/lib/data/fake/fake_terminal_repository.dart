@@ -128,17 +128,15 @@ class FakeTerminalRepository implements TerminalRepository {
     final lines = switch (name) {
       '' => <String>[],
       'help' => [
-          'Comandos de ejemplo:',
-          '  ls  pwd  whoami  uname -a  date  echo <texto>  clear  exit',
-        ],
+        'Comandos de ejemplo:',
+        '  ls  pwd  whoami  uname -a  date  echo <texto>  clear  exit',
+      ],
       'ls' => ['Descargas  Documentos  Escritorio  Imágenes  Música  proyectos'],
       'pwd' => ['/home/usuario'],
       'whoami' => ['usuario'],
       'uname' => [
-          args.contains('-a')
-              ? 'Linux pc 6.11.0 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux'
-              : 'Linux',
-        ],
+        args.contains('-a') ? 'Linux pc 6.11.0 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux' : 'Linux',
+      ],
       'date' => [_now()],
       'echo' => [args],
       _ => ['\x1b[31mbash: $name: orden no encontrada\x1b[0m'],

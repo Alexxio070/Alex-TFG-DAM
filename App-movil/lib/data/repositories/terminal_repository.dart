@@ -5,6 +5,7 @@
 abstract class TerminalRepository {
   /// Texto que escribe la sesión.
   Stream<String> get output;
+
   /// Avisa cuando la sesión termina sola (`exit`, Ctrl+D).
   Stream<void> get sessionEnded;
   Future<void> createSession();

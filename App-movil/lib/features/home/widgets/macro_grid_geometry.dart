@@ -15,10 +15,10 @@ const trashBottomOffset = 72.0;
 /// Tamaño de las fichas, altura de la cuadrícula y posición de la papelera según la pantalla.
 class Geometry {
   Geometry(Size size, double bottomInset)
-      : tile = (size.width - 2 * sideMargin - gap) / columns,
-        gridHeight = size.height * gridHeightRatio,
-        trash = Offset(size.width / 2, size.height - trashBottomOffset - bottomInset),
-        width = size.width;
+    : tile = (size.width - 2 * sideMargin - gap) / columns,
+      gridHeight = size.height * gridHeightRatio,
+      trash = Offset(size.width / 2, size.height - trashBottomOffset - bottomInset),
+      width = size.width;
 
   final double tile;
   final double gridHeight;
@@ -27,9 +27,9 @@ class Geometry {
 
   /// Esquina superior izquierda de la ficha en la posición [index].
   Offset slot(int index) => Offset(
-        sideMargin + (index % columns) * (tile + gap),
-        topMargin + (index ~/ columns) * (tile + gap),
-      );
+    sideMargin + (index % columns) * (tile + gap),
+    topMargin + (index ~/ columns) * (tile + gap),
+  );
 
   /// Altura que ocupan [count] fichas.
   double contentHeight(int count) => topMargin + ((count + columns - 1) ~/ columns) * (tile + gap);

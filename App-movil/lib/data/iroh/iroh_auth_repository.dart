@@ -30,10 +30,7 @@ class IrohAuthRepository extends AgentAuthRepository {
     final response = parseRawHttpResponse(await _connection.request(raw));
     if (response.body.isEmpty) return AgentResponse(response.status, const {});
     try {
-      return AgentResponse(
-        response.status,
-        jsonDecode(response.body) as Map<String, dynamic>,
-      );
+      return AgentResponse(response.status, jsonDecode(response.body) as Map<String, dynamic>);
     } on FormatException {
       throw AgentUnavailableException(kUnexpectedFormatMessage);
     } on TypeError {

@@ -100,9 +100,9 @@ abstract class AgentAuthRepository implements AuthRepository {
     return switch (json['estado']) {
       'pendiente' => const LoginRequestPending(),
       'aprobada' => LoginRequestApproved(
-          token: json['token'] as String,
-          usuario: json['usuario'] as String,
-        ),
+        token: json['token'] as String,
+        usuario: json['usuario'] as String,
+      ),
       'rechazada' => const LoginRequestRejected(),
       'caducada' => const LoginRequestExpired(),
       _ => throw AgentErrorException('Estado de solicitud desconocido'),

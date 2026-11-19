@@ -11,10 +11,8 @@ import 'package:xterm/xterm.dart';
 import 'helpers/app_harness.dart';
 
 void main() {
-  TerminalTabsViewModel tabsOf(WidgetTester tester) => Provider.of<TerminalTabsViewModel>(
-        tester.element(find.byType(SysmoteApp)),
-        listen: false,
-      );
+  TerminalTabsViewModel tabsOf(WidgetTester tester) =>
+      Provider.of<TerminalTabsViewModel>(tester.element(find.byType(SysmoteApp)), listen: false);
 
   Future<TerminalViewModel> openTerminal(WidgetTester tester) async {
     await openSection(tester, 'Terminal');

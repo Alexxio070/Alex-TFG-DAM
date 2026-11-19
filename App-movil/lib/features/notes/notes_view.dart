@@ -28,9 +28,7 @@ class NotesView extends StatelessWidget {
   }
 
   void _openForm(BuildContext context, [Note? note]) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => NoteFormView(note: note)),
-    );
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => NoteFormView(note: note)));
   }
 
   @override
@@ -46,7 +44,9 @@ class NotesView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
               child: _SearchField(onChanged: vm.search),
             ),
-            Expanded(child: _NotesList(vm: vm, onOpen: _open, onCopy: _copy, onEdit: _openForm)),
+            Expanded(
+              child: _NotesList(vm: vm, onOpen: _open, onCopy: _copy, onEdit: _openForm),
+            ),
           ],
         ),
         Positioned(
