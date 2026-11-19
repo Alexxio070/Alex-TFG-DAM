@@ -203,7 +203,7 @@ Cada bloque sigue el mismo esquema:
 ### 6.1 Base de datos
 - **Necesidad:** guardar de forma persistente y relacionada los usuarios, sesiones, intentos de login, grupos, acciones rápidas, ejecuciones, reglas de alerta, notificaciones y notas (9 tablas; diseño en `01` §6).
 - **Tipo de tecnología:** base de datos relacional embebida.
-- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/sysmote/sysmote.db`, creada con el script `agent/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada. SQLite trae las claves foráneas desactivadas por defecto, así que el agente ejecuta `PRAGMA foreign_keys = ON` en cada conexión; sin eso no se aplican ni las claves foráneas ni el `ON DELETE CASCADE`.
+- **Elección:** **SQLite** con el módulo estándar `sqlite3`, en `~/.local/share/sysmote/sysmote.db`, creada con el script `agent/sysmote/schema.sql`. Sin servidor que instalar ni mantener, con transacciones, claves foráneas y borrado en cascada. SQLite trae las claves foráneas desactivadas por defecto, así que el agente ejecuta `PRAGMA foreign_keys = ON` en cada conexión; sin eso no se aplican ni las claves foráneas ni el `ON DELETE CASCADE`.
 - **Alternativas descartadas:**
   - *MySQL / PostgreSQL:* requieren un servidor aparte; excesivo para un agente de un solo usuario y contrario a la instalación mínima.
   - *Firebase:* los datos saldrían del PC a un servicio externo, en contra del diseño sin servidores de terceros.

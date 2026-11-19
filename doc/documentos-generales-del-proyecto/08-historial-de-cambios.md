@@ -65,6 +65,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
 | 18/11/2026 | Agente / Interfaz | Limpieza de la parte de iroh: fuera `iroh_poc.py`, clave secreta con función pública, repositorio de métricas iroh con la conexión compartida y tests de la conexión aparte | Aplicado en código y en la documentación |
 | 19/11/2026 | Plan / Agente / Interfaz | Auditorías de simplificación y legibilidad del agente y de la interfaz (informes en `doc/auditoria/2026-11-19/`) y revisión de la documentación general frente al código: `07` sobre la creación de la cuenta y el QR, tabla de errores del contrato, README y `CONTRIBUTING.md` | Aplicado en código y en la documentación |
+| 19/11/2026 | Agente | `schema.sql` pasa a `agent/sysmote/` y se incluye en el paquete, para que el agente funcione instalado con `pip` o `pipx` | Aplicado en código y en la documentación |
 
 ---
 
@@ -605,3 +606,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** revisión pedida por el autor antes del PR de las auditorías, cruzando la documentación con el código, el contrato y la ejecución de la guía de instalación.
 - **Afecta a:** `07`, `doc/agente/contrato-api-fase3.md`, `doc/agente/tests.md`, `README.md`, `README.en.md` y `CONTRIBUTING.md`.
 - **Estado:** aplicado en la documentación.
+
+### 19/11/2026 — `schema.sql` dentro del paquete del agente
+
+- **Qué era:** `schema.sql` estaba en `agent/`, fuera del paquete `sysmote`. Con una instalación editable (`pip install -e`) funcionaba, pero al instalar el agente de forma normal (`pip` o `pipx install ./agent`) el archivo no se incluía y `sysmote` terminaba con un `FileNotFoundError` al abrir la base de datos. La guía de instalación ofrecía `pipx` como alternativa válida.
+- **Qué es ahora:** `schema.sql` está en `agent/sysmote/` y `pyproject.toml` lo declara como dato del paquete; `database.py` lo busca junto a sí mismo. Verificado construyendo el paquete, instalándolo sin modo editable en un entorno limpio y arrancando `sysmote`; también con `pipx install ./agent`.
+- **Por qué:** el agente se distribuye como paquete de Python (`pip`, `pipx install sysmote`), y eso exige que todo lo que necesita viaje dentro del paquete.
+- **Afecta a:** `agent/sysmote/database.py`, `agent/pyproject.toml`, `agent/sysmote/schema.sql` y las rutas citadas en `doc/agente/` (`ESTRUCTURA.md`, `README.md`, `tui.md`), `01`, `02` y `04`.
+- **Estado:** aplicado en código y en la documentación.
