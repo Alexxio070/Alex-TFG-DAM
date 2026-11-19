@@ -167,7 +167,7 @@ Requiere las gráficas (fase 1), el login (fase 3) y la terminal por iroh (fase 
 **Duración:** ~1 semana (finales de febrero)
 
 **Objetivos:**
-- Empaquetar el agente para instalarlo con `pipx install` (el paquete ya está preparado para PyPI desde el 19/11/2026, con metadatos, README y licencia; falta publicarlo); comprobar las dependencias del sistema (`tmux`, terminal gráfica).
+- Empaquetar el agente para instalarlo con `pipx install` (el agente está publicado en PyPI como `sysmote` desde el 19/11/2026, con publicación automática desde GitHub Actions); comprobar las dependencias del sistema (`tmux`, terminal gráfica).
 - Activar dentro de «Emparejamiento» los botones «Instalar servicio», «Quitar servicio» y «Estado»: servicio systemd de usuario con el punto de conexión iroh activo desde el arranque. «Quitar servicio» avisa a la app si está conectada, para que olvide el equipo.
 - Completar el README (ya tiene una guía de instalación manual) con la instalación por `pipx`, el uso básico y la prueba por USB y por iroh.
 - Probar la instalación desde cero, repetir la prueba 5 de la matriz de la fase 2 (el identificador iroh sobrevive al reinicio) y hacer capturas para la memoria.
