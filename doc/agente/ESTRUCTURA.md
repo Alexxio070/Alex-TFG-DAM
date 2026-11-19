@@ -16,6 +16,7 @@ agent/sysmote/
   main.py         la app de FastAPI: reúne las rutas (importarla no arranca nada)
   database.py     conexión a SQLite (permisos 0700/0600, claves foráneas activas)
   schema.sql      esquema de SQLite, se aplica al abrir la base de datos; va dentro del paquete para que se instale con pip
+  migraciones.py  cambios de esquema para las bases de datos que ya existen (la versión se guarda en `PRAGMA user_version`)
   rutas.py        dónde guarda el agente sus archivos (base de datos, certificado, clave iroh, config.toml)
   server.py       servidores del agente: HTTPS (USB/LAN), HTTP interno y túnel iroh, en un hilo
   iroh_tunnel.py  túnel iroh (fase 2): fuera de las capas, reenvía las conexiones iroh al puerto local del agente

@@ -1,9 +1,24 @@
 [project]
 name = "sysmote"
 version = "0.1.0"
-description = "Agente Python del Sysmote: API del PC y TUI sysmote"
+description = "Agente de Sysmote: administra tu PC Linux desde el móvil, con API protegida por login, TUI y túnel iroh"
+readme = "README.md"
 requires-python = ">=3.11"
 license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+authors = [{ name = "Alexxio" }]
+keywords = ["linux", "remote-administration", "monitoring", "tui", "fastapi", "iroh"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Systems Administration",
+]
 dependencies = [
     "fastapi>=0.146",
     "uvicorn>=0.54",
@@ -18,6 +33,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=9.1", "pytest-asyncio>=1.4", "httpx2>=2.14"]
+
+[project.urls]
+Homepage = "https://github.com/Alexxio070/Alex-TFG-DAM"
+Issues = "https://github.com/Alexxio070/Alex-TFG-DAM/issues"
+Documentation = "https://github.com/Alexxio070/Alex-TFG-DAM/tree/main/doc"
 
 [project.scripts]
 sysmote = "sysmote.tui.app:main"
