@@ -3,6 +3,7 @@ name = "sysmote"
 version = "0.1.0"
 description = "Agente Python del Sysmote: API del PC y TUI sysmote"
 requires-python = ">=3.11"
+license = "GPL-3.0-only"
 dependencies = [
     "fastapi>=0.146",
     "uvicorn>=0.54",
@@ -22,7 +23,7 @@ dev = ["pytest>=9.1", "pytest-asyncio>=1.4", "httpx2>=2.14"]
 sysmote = "sysmote.tui.app:main"
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -30,3 +31,4 @@ include = ["sysmote*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
