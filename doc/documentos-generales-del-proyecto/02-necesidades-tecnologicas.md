@@ -41,6 +41,7 @@ Cada bloque sigue el mismo esquema:
 | Peticiones HTTP | `http` | Llamadas REST al agente |
 | WebSocket | `web_socket_channel` | Terminal, métricas y eventos |
 | Persistencia local de ajustes | `shared_preferences` | Guardar la dirección del agente, el modo de conexión y el resto de ajustes en el móvil |
+| Nombre del móvil | `device_info_plus` | Proponer el fabricante y el modelo como nombre del dispositivo en el login (versión 13.3.0, comprobada en pub.dev el 19/11/2026) |
 | Gráficas | `CustomPainter` (del propio Flutter) | Gráficas de área de CPU, temperatura y RAM en vivo; sin dependencia extra |
 | Terminal | `xterm` | Emulador de terminal (ver 1.2) |
 | Iconos | `flutter_svg` | Iconos del diseño como SVG, con el color del tema |
