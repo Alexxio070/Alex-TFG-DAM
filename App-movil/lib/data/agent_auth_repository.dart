@@ -3,7 +3,7 @@
 
 import 'models/auth.dart';
 import 'repositories/auth_repository.dart';
-import 'repositories/metrics_repository.dart' show AgentUnavailableException, kUnexpectedFormatMessage;
+import 'repositories/agent_exceptions.dart';
 import 'repositories/token_storage.dart';
 
 /// Respuesta del agente ya separada en código de estado y cuerpo JSON.

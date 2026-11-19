@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/iroh/iroh_metrics_repository.dart';
 import 'package:sysmote/data/models/settings.dart';
-import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 
 final _idA = 'a' * 64;
 final _idB = 'b' * 64;

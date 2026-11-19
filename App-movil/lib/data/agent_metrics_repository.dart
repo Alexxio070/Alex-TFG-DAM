@@ -2,6 +2,7 @@
 // modelos de la app.
 
 import 'models/metrics.dart';
+import 'repositories/agent_exceptions.dart';
 import 'repositories/metrics_repository.dart';
 
 /// Parte común de los repositorios que piden `/metrics` al agente: cada uno

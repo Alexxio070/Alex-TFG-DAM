@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../agent_auth_repository.dart';
-import '../repositories/metrics_repository.dart' show AgentUnavailableException, kUnexpectedFormatMessage;
+import '../repositories/agent_exceptions.dart';
 import '../repositories/token_storage.dart';
 import 'pinned_http_client.dart';
 

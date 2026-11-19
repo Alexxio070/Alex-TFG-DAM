@@ -11,8 +11,8 @@ import 'package:http/testing.dart';
 import 'package:sysmote/data/http/http_auth_repository.dart';
 import 'package:sysmote/data/http/pinned_http_client.dart';
 import 'package:sysmote/data/models/auth.dart';
+import 'package:sysmote/data/repositories/agent_exceptions.dart';
 import 'package:sysmote/data/repositories/auth_repository.dart';
-import 'package:sysmote/data/repositories/metrics_repository.dart';
 
 import 'fakes/in_memory_token_storage.dart';
 

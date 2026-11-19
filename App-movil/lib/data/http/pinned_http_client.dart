@@ -8,7 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 
-import '../repositories/metrics_repository.dart' show AgentUnavailableException;
+import '../repositories/agent_exceptions.dart';
 
 const _timeout = Duration(seconds: 3);
 

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../data/models/metrics.dart';
+import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/metrics_repository.dart';
 import '../auth/auth_viewmodel.dart';
 
