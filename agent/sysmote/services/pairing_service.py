@@ -6,10 +6,7 @@ from urllib.parse import urlencode
 import qrcode
 
 from sysmote import rutas
-
-# La clave de iroh la crea y la lee `iroh_tunnel.py` (módulo de la sesión de iroh). Se reutiliza
-# su función, aunque sea privada, para que la clave se cargue igual en los dos sitios.
-from sysmote.iroh_tunnel import _load_or_create_secret_key
+from sysmote.iroh_tunnel import load_or_create_secret_key
 
 PUERTO_HTTPS = 8443
 _BLOQUES = {(True, True): "█", (True, False): "▀", (False, True): "▄", (False, False): " "}
@@ -32,7 +29,7 @@ def direccion_lan() -> str:
 
 def identificador_iroh() -> str:
     """Devuelve el identificador iroh del agente, creando su clave si todavía no existe."""
-    return str(_load_or_create_secret_key(rutas.IROH_KEY_PATH).public())
+    return str(load_or_create_secret_key(rutas.IROH_KEY_PATH).public())
 
 
 def uri_emparejamiento(direccion: str, huella: str, codigo: str | None = None, iroh: str | None = None) -> str:

@@ -63,6 +63,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 16/11/2026 | Interfaz / Agente | Un solo intento de conexión iroh a la vez (el intento nativo no se cancela) y test de fugas de tareas del túnel | Aplicado en código y en la documentación |
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 | 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
+| 18/11/2026 | Agente / Interfaz | Limpieza de la parte de iroh: fuera `iroh_poc.py`, clave secreta con función pública, repositorio de métricas iroh con la conexión compartida y tests de la conexión aparte | Aplicado en código y en la documentación |
 
 ---
 
@@ -586,4 +587,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Qué es ahora:** `Limits` fija 4 conexiones simultáneas (al llegar al límite se cierra la más antigua, no la nueva), 8 *streams* por conexión (los sobrantes se rechazan) y 60 s de inactividad por *stream* (contando las dos direcciones juntas). Cualquier excepción del bucle se registra y el túnel sigue. `INTERNAL_HTTP_PORT = 8444` documenta el puerto HTTP interno propuesto para el destino, según la decisión del 17/11/2026 (sin TLS propio por iroh), que no fija el número; el túnel solo reenvía a `127.0.0.1`.
 - **Por qué:** con el login de la fase 3, el túnel pasa a exponer algo más que métricas. El límite de *streams* se cuenta en el túnel porque el de iroh no se aplica tras aceptar la conexión (comprobado con una prueba).
 - **Afecta a:** `doc/iroh/` (`02-implementacion.md` §2, `03-problemas-y-soluciones.md` §13, `04-pruebas.md`, `README.md`) y `04` (se quita el punto de la fase 3). Código: `agent/sysmote/iroh_tunnel.py` y `agent/tests/test_iroh_tunnel.py`. Pendiente de revisar en la fase 4: 60 s cortarían una terminal inactiva.
+- **Estado:** aplicado en código y en la documentación.
+
+### 18/11/2026 — Limpieza de la parte de iroh
+
+- **Qué era:** `agent/scripts/iroh_poc.py` arrancaba a mano el agente y el túnel con su propia clave (`iroh_secret_key_poc.bin`), aunque desde la fase 3 los arranca `sysmote.server.Servidores` con la clave real: daba otro identificador y su puerto chocaba con el de la TUI. `iroh_tunnel.py` tenía una constante `INTERNAL_HTTP_PORT` que no usaba nadie, y `pairing_service.py` importaba la función privada `_load_or_create_secret_key`. `IrohMetricsRepository` recibía un identificador que ignoraba, y sus tests probaban sobre todo la lógica de `IrohConnection`.
+- **Qué es ahora:** se borran el script y la constante; la función pasa a ser pública (`load_or_create_secret_key`); `IrohMetricsRepository` recibe la conexión compartida y el token, igual que `IrohAuthRepository`. Los tests de la conexión pasan a `iroh_connection_test.dart`, y se quitan o fusionan los redundantes después de comprobar, rompiendo el código a propósito, que otro test cubría lo mismo: tests de iroh del agente de 13 a 12 y de la app de 15 a 14 (9 de la conexión y 5 del repositorio, uno de ellos nuevo). Comentarios y docstrings en el túnel y en el repositorio.
+- **Por qué:** auditoría de simplificación y legibilidad pedida por el autor.
+- **Afecta a:** `agent/sysmote/iroh_tunnel.py`, `agent/sysmote/services/pairing_service.py`, `App-movil/lib/data/iroh/iroh_metrics_repository.dart`, `App-movil/lib/main.dart`, los tests de iroh, `doc/iroh/`, `doc/agente/ESTRUCTURA.md`, `doc/agente/tests.md` y `doc/ui/tests.md`.
 - **Estado:** aplicado en código y en la documentación.

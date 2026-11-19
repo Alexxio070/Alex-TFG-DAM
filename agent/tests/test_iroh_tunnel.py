@@ -5,43 +5,17 @@ mismo proceso y se conectan por sus direcciones directas.
 """
 
 import asyncio
+import contextlib
 
 import iroh
 import pytest
 import uvicorn
 
-from sysmote.iroh_tunnel import ALPN, Limits, _handle_connection, _serve, _tasks
+from sysmote.iroh_tunnel import ALPN, Limits, _serve, _tasks
 from sysmote.main import app
 
 # Ruta pública: desde la fase 3 `/metrics` exige sesión y el túnel no la tiene.
 _ESTADO_REQUEST = b"GET /estado HTTP/1.1\r\nHost: sysmote\r\nConnection: close\r\n\r\n"
-
-
-@pytest.fixture
-async def open_stream():
-    """Abre un stream iroh hacia un túnel que reenvía a `127.0.0.1:local_port`."""
-    endpoints = []
-    tasks = []
-
-    async def _open(local_port: int) -> iroh.BiStream:
-        server = await iroh.Endpoint.bind(iroh.EndpointOptions(preset=iroh.preset_minimal(), alpns=[ALPN]))
-        client = await iroh.Endpoint.bind(iroh.EndpointOptions(preset=iroh.preset_minimal()))
-        endpoints.extend([server, client])
-
-        async def accept() -> None:
-            incoming = await server.accept_next()
-            connection = await (await incoming.accept()).connect()
-            await _handle_connection(connection, local_port)
-
-        tasks.append(asyncio.create_task(accept()))
-        connection = await client.connect(server.addr(), ALPN)
-        return await connection.open_bi()
-
-    yield _open
-    for task in tasks:
-        task.cancel()
-    for endpoint in endpoints:
-        await endpoint.close()
 
 
 @pytest.fixture
@@ -54,46 +28,6 @@ async def running_agent():
     yield server.servers[0].sockets[0].getsockname()[1]
     server.should_exit = True
     await server_task
-
-
-async def test_tunnel_forwards_a_real_request(running_agent, open_stream):
-    stream = await open_stream(running_agent)
-    await stream.send().write_all(_ESTADO_REQUEST)
-    await stream.send().finish()
-    reply = await stream.recv().read_to_end(1_000_000)
-
-    assert reply.startswith(b"HTTP/1.1 200 OK")
-    assert b'"api"' in reply
-
-
-async def test_tunnel_resets_the_stream_when_the_local_agent_is_down(open_stream):
-    stream = await open_stream(1)  # nada escucha en el puerto 1: el agente real está caído
-    await stream.send().write_all(b"ping")
-    await stream.send().finish()
-
-    # Debe cerrarse enseguida (reset), no quedarse colgado hasta un timeout.
-    with pytest.raises(iroh.IrohError):
-        await asyncio.wait_for(stream.recv().read_to_end(1024), timeout=2)
-
-
-async def test_tunnel_leaves_no_background_tasks_behind(running_agent, open_stream):
-    # Con el agente en marcha y con el agente caído: cada petición lanza una tarea
-    # de reenvío que debe desaparecer al terminar, no acumularse.
-    for port in [running_agent] * 10 + [1] * 5:
-        stream = await open_stream(port)
-        await stream.send().write_all(_ESTADO_REQUEST)
-        await stream.send().finish()
-        try:
-            await asyncio.wait_for(stream.recv().read_to_end(1_000_000), timeout=2)
-        except iroh.IrohError:
-            pass  # el reset del agente caído
-
-    for _ in range(40):
-        if not _tasks:
-            break
-        await asyncio.sleep(0.05)
-
-    assert not _tasks
 
 
 class _Lab:
@@ -163,6 +97,12 @@ async def _trickle(reader, writer):
             await asyncio.sleep(0.1)
     finally:
         writer.close()
+
+
+def _pending_tasks() -> list[asyncio.Task]:
+    """Tareas del túnel creadas en este test (las de tests anteriores no cuentan)."""
+    loop = asyncio.get_running_loop()
+    return [task for task in _tasks if task.get_loop() is loop]
 
 
 async def _get_estado(connection: iroh.Connection) -> bytes:
@@ -280,3 +220,37 @@ async def test_tunnel_keeps_serving_after_an_unexpected_error(
 
     assert (await _get_estado(connection)).startswith(b"HTTP/1.1 200 OK")
     assert "inesperado" in caplog.text
+
+
+async def test_tunnel_resets_the_stream_when_the_local_agent_is_down(lab):
+    server = await lab.server()
+    lab.serve(server, 1)  # nada escucha en el puerto 1: el agente real está caído
+    connection = await lab.connect(server)
+    stream = await connection.open_bi()
+    await stream.send().write_all(b"ping")
+    await stream.send().finish()
+
+    # Debe cerrarse enseguida (reset), no quedarse colgado hasta un timeout.
+    with pytest.raises(iroh.IrohError):
+        await asyncio.wait_for(stream.recv().read_to_end(1024), timeout=2)
+
+
+async def test_tunnel_leaves_no_background_tasks_behind(lab, running_agent):
+    # Con el agente en marcha y con el agente caído: cada petición lanza una tarea
+    # de reenvío que debe desaparecer al terminar, no acumularse.
+    up, down = await lab.server(), await lab.server()
+    lab.serve(up, running_agent)
+    lab.serve(down, 1)
+    to_up, to_down = await lab.connect(up), await lab.connect(down)
+    for connection in [to_up] * 10 + [to_down] * 5:
+        with contextlib.suppress(iroh.IrohError):  # el reset del agente caído
+            await _get_estado(connection)
+    to_up.close(0, b"fin")
+    to_down.close(0, b"fin")
+
+    for _ in range(40):
+        if not _pending_tasks():
+            break
+        await asyncio.sleep(0.05)
+
+    assert not _pending_tasks()

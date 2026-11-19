@@ -2,14 +2,14 @@
 
 Todo lo específico de la conexión remota P2P con **iroh** (fase 2, `../documentos-generales-del-proyecto/04-plan-de-fases.md`): qué es, cómo se ha implementado, qué problemas dio y cómo se solucionaron, y qué pruebas hay.
 
-**Estado:** fase 2 cerrada (12/11/2026). Integrado en la app real (modo iroh de Ajustes) y probado, incluida una red restrictiva real. Matriz de pruebas completa en `04-pruebas.md`.
+**Estado:** fase 2 cerrada (12/11/2026). Integrado en la app real (modo iroh de Ajustes) y probado, incluida una red restrictiva real. Matriz de pruebas completa en `04-pruebas.md`. El túnel se endureció el 18/11/2026 (límites de conexiones, *streams* e inactividad; ver `03-problemas-y-soluciones.md` §13).
 
 ## Documentos de esta carpeta
 
 | Documento | Contenido |
 |---|---|
 | [`01-que-es-y-como-funciona.md`](01-que-es-y-como-funciona.md) | Qué es iroh, conceptos básicos (`Endpoint`, `EndpointId`, `Connection`, ALPN, relé), cómo se establece una conexión y el patrón *dumbpipe* usado en Sysmote |
-| [`02-implementacion.md`](02-implementacion.md) | El túnel del agente (`iroh_tunnel.py`), el repositorio de métricas de la app (`IrohMetricsRepository`), cómo se elige el modo de conexión, y requisitos de compilación en Android |
+| [`02-implementacion.md`](02-implementacion.md) | El túnel del agente (`iroh_tunnel.py`) y quién lo arranca, la conexión iroh compartida de la app (`IrohConnection`) y sus repositorios, cómo se elige el modo de conexión, y requisitos de compilación en Android |
 | [`03-problemas-y-soluciones.md`](03-problemas-y-soluciones.md) | Los fallos reales encontrados (incluidos dos que no eran de iroh: `shared_preferences` y un desbordamiento visual) y cómo se arreglaron |
 | [`04-pruebas.md`](04-pruebas.md) | Qué cubre cada test automático, y la matriz de pruebas manuales de la fase 2 |
 
@@ -29,5 +29,5 @@ Para no duplicar, estas cosas siguen en los documentos generales:
 ## Por hacer
 
 - Medir a mano las fugas de recursos nativos de iroh en el móvil (procedimiento en `04-pruebas.md`, «Limitaciones conocidas»).
-- Arranque automático del túnel junto a `sysmote serve` — correctamente aplazado a la fase 5, no es una carencia de esta fase.
-- Decidir si vale la pena montar un `Endpoint` iroh real dentro del entorno de test de Flutter: hoy la lógica del repositorio se prueba con una conexión falsa, y la conexión iroh real solo está probada a mano (ver `04-pruebas.md` §0).
+- Servicio systemd que mantenga el túnel en marcha sin abrir la TUI (fase 5); hoy lo arranca la TUI (`sysmote.server.Servidores`).
+- Decidir si vale la pena montar un `Endpoint` iroh real dentro del entorno de test de Flutter: hoy la lógica de `IrohConnection` se prueba con una conexión falsa, y la conexión iroh real solo está probada a mano (ver `04-pruebas.md` §0).
