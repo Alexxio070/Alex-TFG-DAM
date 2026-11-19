@@ -1,0 +1,48 @@
+name: Publicar el agente en PyPI
+
+on:
+  push:
+    tags: ["agent-v*"]
+  workflow_dispatch:
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Pasar los tests
+        working-directory: agent
+        run: uv run --extra dev pytest
+      - name: Comprobar que la etiqueta coincide con la versión
+        if: github.ref_type == 'tag'
+        working-directory: agent
+        run: |
+          version=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          test "agent-v${version}" = "${GITHUB_REF_NAME}"
+      - name: Construir el paquete
+        working-directory: agent
+        run: uv build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: agent/dist/
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_type == 'tag' && 'pypi' || 'testpypi' }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - name: Publicar en PyPI
+        if: github.ref_type == 'tag'
+        run: uv publish --trusted-publishing always
+      - name: Publicar en TestPyPI
+        if: github.ref_type != 'tag'
+        run: uv publish --trusted-publishing always --publish-url https://test.pypi.org/legacy/

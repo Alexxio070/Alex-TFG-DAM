@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 155 tests (143 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 161 tests (149 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -20,6 +20,7 @@ cd agent && .venv/bin/pytest -q
 | [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 9 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
 | [`test_iroh_secret_key.py`](../../agent/tests/test_iroh_secret_key.py) | 3 | La clave secreta del túnel, que fija el identificador iroh | Unitario |
 | [`test_database.py`](../../agent/tests/test_database.py) | 3 | La conexión a SQLite: permisos, claves foráneas y cuenta única | Unitario |
+| [`test_migraciones.py`](../../agent/tests/test_migraciones.py) | 6 | La versión del esquema y las migraciones de las bases de datos que ya existen | Unitario (SQLite) |
 | [`test_password_service.py`](../../agent/tests/test_password_service.py) | 3 | Hashing de contraseñas con Argon2 | Unitario |
 | [`test_token_service.py`](../../agent/tests/test_token_service.py) | 5 | Tokens de sesión y su caducidad | Unitario |
 | [`test_tls_service.py`](../../agent/tests/test_tls_service.py) | 3 | Certificado TLS autofirmado y su huella | Unitario |
@@ -102,6 +103,19 @@ Los tests de esta fase se agrupan por comportamiento: una fila por cada grupo de
 | Permisos | El archivo de la base de datos queda en `0600` y su carpeta en `0700` | Que los datos (hashes, sesiones) queden legibles por otros usuarios del PC |
 | Claves foráneas | `PRAGMA foreign_keys` vale 1 en cada conexión | Que SQLite ignore las claves foráneas sin avisar |
 | Cuenta única | La base de datos rechaza una segunda cuenta (índice único) | Que dos registros simultáneos acaben creando dos cuentas |
+
+### `test_migraciones.py`: versión del esquema y migraciones
+
+Cada test inyecta migraciones de prueba en `sysmote.migraciones` y usa una base de datos real en la carpeta temporal.
+
+| Grupo | Qué comprueba | Qué fallo detecta |
+|---|---|---|
+| Base nueva | Se crea con la versión actual y **sin** ejecutar migraciones, porque `schema.sql` ya es el esquema actual | Migrar una base que acaba de crearse |
+| Base anterior a las migraciones | Una base con `user_version` 0 pasa a ser la versión 1 | Bases ya publicadas que no se reconocen |
+| Migración pendiente | Se aplica, conserva los datos y sube la versión | Perder los datos de un usuario al actualizar |
+| Migración ya aplicada | Abrir la base otra vez no la repite | Un error de «columna duplicada» en cada petición |
+| Migración que falla | Se deshace entera: no queda ninguna sentencia a medias ni cambia la versión | Una base a medio migrar |
+| Base más nueva que el agente | Error claro en lugar de seguir con un esquema que no conoce | Que un agente antiguo estropee una base nueva |
 
 ### `test_password_service.py` y `test_token_service.py`
 
