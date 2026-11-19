@@ -10,7 +10,7 @@
 **Administra tu PC Linux desde el móvil, estés donde estés, sin abrir puertos en el router ni montar una VPN.**
 
 > [!WARNING]
-> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro y el login.
+> **Proyecto en desarrollo: todavía no se ha auditado ni probado en un móvil físico.** Ya hay login (contraseña con Argon2 y sesiones con token) y las conexiones van cifradas: por HTTPS con la huella del certificado fijada en red local, y por el cifrado de iroh desde fuera. Aun así es una beta: úsala solo para probar. El agente escucha en toda la red local (`0.0.0.0:8443`); sin sesión solo responden `/estado`, el registro, el login y la consulta de una solicitud de login.
 
 Sysmote tiene dos piezas que se desarrollan juntas:
 
@@ -176,6 +176,7 @@ Todo el diseño está en [`doc/`](doc/):
 - [`doc/ui/`](doc/ui/): especificación de la interfaz y estructura de la app.
 - [`doc/agente/`](doc/agente/): especificación del agente y de su TUI, y sus tests.
 - [`doc/iroh/`](doc/iroh/): qué es iroh, cómo está implementado, los problemas encontrados y las pruebas.
+- [`doc/auditoria/`](doc/auditoria/): informes de las auditorías del código y de la documentación, una carpeta por fecha.
 
 ## Estructura del repositorio
 

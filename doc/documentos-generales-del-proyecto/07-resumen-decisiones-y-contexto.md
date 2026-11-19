@@ -25,7 +25,7 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 - En el móvil, **solo descargar la app**; nada de instalar VPNs ni otras apps.
 - En el PC se aceptan dependencias.
 - **Nunca configurar el router.**
-- Flujo deseado: instalar agente → abrir la TUI y hacer la configuración inicial → instalar app → escanear el QR → crear la cuenta → conectar desde cualquier parte. Hasta la fase 9, las credenciales se crean en la TUI.
+- Flujo deseado: instalar agente → abrir la TUI y hacer la configuración inicial → instalar app → escanear el QR → crear la cuenta → conectar desde cualquier parte. Hasta la fase 9 la app no escanea el QR: la dirección, la huella y el identificador de iroh se escriben a mano, y la cuenta se crea desde la app con el código de registro que muestra la TUI. La TUI no crea la cuenta.
 
 **Filosofía de desarrollo:** la primera versión (beta) debe tener **pocas funciones, pero todas funcionando**: una base sólida sobre la que ampliar. La beta es mínima: la interfaz definitiva con *placeholders*, las métricas y la conexión por iroh, sin login.
 
@@ -50,8 +50,8 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
-- **Registro por QR (12/10/2026), en la fase 9:** la TUI muestra un QR con un código de registro de un solo uso; la app lo escanea y crea la cuenta. Hasta entonces el usuario se crea desde la TUI. Detalle en `01-memoria-tecnica.md` §5.1.
-- **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, se compara a ojo con la que muestra la TUI). Solo en red local (USB/LAN): por iroh no hay TLS propio, porque iroh ya cifra y autentica al agente con su identificador (decisión del 17/11/2026, ver `08`).
+- **Registro por QR (12/10/2026):** la TUI muestra un QR con un código de registro de un solo uso (desde la fase 3); la app lo escanea y crea la cuenta (el escáner llega en la fase 9; hasta entonces el código se escribe a mano en la app). La TUI no crea la cuenta. Detalle en `01-memoria-tecnica.md` §5.1.
+- **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, que añade el escáner, se escribe a mano comparándola con la que muestra la TUI). Solo en red local (USB/LAN): por iroh no hay TLS propio, porque iroh ya cifra y autentica al agente con su identificador (decisión del 17/11/2026, ver `08`).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.**
 - **El agente nunca usa root ni sudo.** Para operaciones de root, la app avisa de que hay que usar la terminal.

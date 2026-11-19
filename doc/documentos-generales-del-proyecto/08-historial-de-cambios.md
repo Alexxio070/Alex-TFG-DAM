@@ -64,6 +64,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 16/11/2026 | Interfaz / Agente | Blindaje de iroh: identificador cambiado en caliente y validado, un solo refresco de Métricas, clave secreta con `0600`; el endurecimiento del túnel pasa a la fase 3 | Aplicado en código y en la documentación |
 | 18/11/2026 | Agente | Túnel iroh endurecido (límites de conexiones y *streams*, inactividad, excepciones inesperadas) y puerto HTTP interno de referencia | Aplicado en código y en la documentación |
 | 18/11/2026 | Agente / Interfaz | Limpieza de la parte de iroh: fuera `iroh_poc.py`, clave secreta con función pública, repositorio de métricas iroh con la conexión compartida y tests de la conexión aparte | Aplicado en código y en la documentación |
+| 19/11/2026 | Plan / Agente / Interfaz | Auditorías de simplificación y legibilidad del agente y de la interfaz (informes en `doc/auditoria/2026-11-19/`) y revisión de la documentación general frente al código: `07` sobre la creación de la cuenta y el QR, tabla de errores del contrato, README y `CONTRIBUTING.md` | Aplicado en código y en la documentación |
 
 ---
 
@@ -596,3 +597,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** auditoría de simplificación y legibilidad pedida por el autor.
 - **Afecta a:** `agent/sysmote/iroh_tunnel.py`, `agent/sysmote/services/pairing_service.py`, `App-movil/lib/data/iroh/iroh_metrics_repository.dart`, `App-movil/lib/main.dart`, los tests de iroh, `doc/iroh/`, `doc/agente/ESTRUCTURA.md`, `doc/agente/tests.md` y `doc/ui/tests.md`.
 - **Estado:** aplicado en código y en la documentación.
+
+### 19/11/2026 — Revisión de la documentación frente al código
+
+- **Qué era:** tras las auditorías, `07` seguía diciendo que hasta la fase 9 la cuenta se crea en la TUI y que el QR llega en la fase 9; la tabla de errores del contrato no recogía los `404` ni el `405`; `huella_distinta` figuraba como un error del agente; los README no listaban `doc/auditoria/` ni la consulta de solicitud de login entre las rutas que responden sin sesión; y `CONTRIBUTING.md` describía una rama `feature/<nombre>` por tarea.
+- **Qué es ahora:** `07` dice que la cuenta la crea la app con el código de registro (la TUI no la crea) y que la TUI muestra el QR desde la fase 3, con el escáner de la app en la fase 9; el contrato añade `404 solicitud_desconocida`, `404 no_encontrado` y `405 metodo_no_permitido`, y aclara que `huella_distinta` es un error de la app y no del agente; los README listan `doc/auditoria/` y la consulta de solicitud; `CONTRIBUTING.md` explica que los cambios llegan por pull request desde una rama cortada de `main`.
+- **Por qué:** revisión pedida por el autor antes del PR de las auditorías, cruzando la documentación con el código, el contrato y la ejecución de la guía de instalación.
+- **Afecta a:** `07`, `doc/agente/contrato-api-fase3.md`, `doc/agente/tests.md`, `README.md`, `README.en.md` y `CONTRIBUTING.md`.
+- **Estado:** aplicado en la documentación.
