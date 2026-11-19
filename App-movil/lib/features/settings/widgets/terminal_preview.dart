@@ -30,9 +30,15 @@ class TerminalPreview extends StatelessWidget {
               color: kTerminalForeground,
             ),
             children: [
-              const TextSpan(text: 'usuario@pc', style: TextStyle(color: kTerminalGreen)),
+              const TextSpan(
+                text: 'usuario@pc',
+                style: TextStyle(color: kTerminalGreen),
+              ),
               const TextSpan(text: ':'),
-              const TextSpan(text: '~', style: TextStyle(color: kTerminalBlue)),
+              const TextSpan(
+                text: '~',
+                style: TextStyle(color: kTerminalBlue),
+              ),
               const TextSpan(text: r'$ ls'),
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,

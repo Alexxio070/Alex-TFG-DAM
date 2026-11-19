@@ -75,7 +75,9 @@ class AppDrawer extends StatelessWidget {
           ),
           Container(
             padding: EdgeInsets.fromLTRB(12, 12, 12, 24 + padding.bottom),
-            decoration: BoxDecoration(border: Border(top: BorderSide(color: t.line))),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: t.line)),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -183,10 +185,7 @@ class _ConnectionStatus extends StatelessWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: paired ? kGreen : t.off,
-            ),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: paired ? kGreen : t.off),
           ),
           const SizedBox(width: 8),
           Text(

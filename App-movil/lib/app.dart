@@ -26,8 +26,8 @@ class SysmoteApp extends StatelessWidget {
       home: !settings.ready
           ? const _LoadingPlaceholder()
           : auth.stage == AuthStage.loggedIn
-              ? const ShellView()
-              : const LoginView(),
+          ? const ShellView()
+          : const LoginView(),
     );
   }
 }

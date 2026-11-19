@@ -18,9 +18,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Offset tileCenter(WidgetTester tester, String label) => tester.getCenter(
-        find.ancestor(of: find.text(label), matching: find.byType(ItemTile)).first,
-      );
+  Offset tileCenter(WidgetTester tester, String label) =>
+      tester.getCenter(find.ancestor(of: find.text(label), matching: find.byType(ItemTile)).first);
 
   Offset trashCenter(WidgetTester tester) => tester.getCenter(find.byType(TrashIndicator));
 
@@ -115,9 +114,7 @@ void main() {
     expect(find.text('2 macros'), findsOneWidget);
   });
 
-  testWidgets('arrastrar una carpeta con macros a la papelera pregunta qué hacer', (
-    tester,
-  ) async {
+  testWidgets('arrastrar una carpeta con macros a la papelera pregunta qué hacer', (tester) async {
     await pumpHome(tester);
     await makeFolder(tester);
 

@@ -17,11 +17,7 @@ void main() {
     local = FakeAuthRepository(usuarioValido: 'local', contrasenaValida: 'x');
     iroh = FakeAuthRepository(usuarioValido: 'iroh', contrasenaValida: 'x');
     mode = ConnectionMode.local;
-    repository = ConnectionModeAuthRepository(
-      connectionMode: () => mode,
-      local: local,
-      iroh: iroh,
-    );
+    repository = ConnectionModeAuthRepository(connectionMode: () => mode, local: local, iroh: iroh);
   });
 
   Future<String> loginUser(String usuario) async {

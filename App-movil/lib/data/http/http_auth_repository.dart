@@ -18,8 +18,8 @@ class HttpAuthRepository extends AgentAuthRepository {
     this.fingerprint,
     TokenStorage tokenStorage, {
     http.Client? client,
-  })  : _client = client ?? buildPinnedHttpClient(fingerprint),
-        super(tokenStorage);
+  }) : _client = client ?? buildPinnedHttpClient(fingerprint),
+       super(tokenStorage);
 
   final String Function() address;
   final String Function() fingerprint;

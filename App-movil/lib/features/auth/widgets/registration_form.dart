@@ -91,8 +91,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             label: 'Nombre de este dispositivo',
             child: AppTextField(controller: _dispositivo, focusColor: t.accent, hint: 'Pixel 8'),
           ),
-          if (vm.error != null)
-            Text(vm.error!, style: const TextStyle(fontSize: 13, color: kRed)),
+          if (vm.error != null) Text(vm.error!, style: const TextStyle(fontSize: 13, color: kRed)),
           AppButton(
             label: busy ? 'Creando…' : 'Crear cuenta',
             fill: t.accent,

@@ -46,7 +46,8 @@ class LoginForm extends StatelessWidget {
           ),
           if (vm.sesionActivaAviso)
             AuthBanner(
-              text: 'Hay una sesión activa en otro dispositivo. Para iniciar una nueva '
+              text:
+                  'Hay una sesión activa en otro dispositivo. Para iniciar una nueva '
                   'tendrás que confirmarlo en la TUI del PC.',
               color: t.muted2,
             ),

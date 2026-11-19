@@ -26,7 +26,10 @@ class FieldLabel extends StatelessWidget {
       crossAxisAlignment: crossAxisAlignment,
       spacing: 8,
       children: [
-        Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: t.muted2),
+        ),
         child,
         if (error != null) Text(error!, style: const TextStyle(fontSize: 12, color: kRed)),
       ],

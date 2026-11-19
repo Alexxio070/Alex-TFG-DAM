@@ -12,7 +12,7 @@ import 'pinned_http_client.dart';
 /// certificado fijada y el token de sesión como `Bearer`.
 class HttpMetricsRepository extends AgentMetricsRepository {
   HttpMetricsRepository(this.address, this.fingerprint, this.token, {http.Client? client})
-      : _client = client ?? buildPinnedHttpClient(fingerprint);
+    : _client = client ?? buildPinnedHttpClient(fingerprint);
 
   final String Function() address;
   final String Function() fingerprint;

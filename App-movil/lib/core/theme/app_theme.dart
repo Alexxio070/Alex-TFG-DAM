@@ -14,8 +14,10 @@ ThemeData buildTheme({required bool dark, required Color accent}) {
     brightness: brightness,
     fontFamily: 'PlusJakartaSans',
     scaffoldBackgroundColor: tokens.bg,
-    colorScheme: ColorScheme.fromSeed(seedColor: resolvedAccent, brightness: brightness)
-        .copyWith(primary: resolvedAccent, surface: tokens.surface, onSurface: tokens.ink),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: resolvedAccent,
+      brightness: brightness,
+    ).copyWith(primary: resolvedAccent, surface: tokens.surface, onSurface: tokens.ink),
     extensions: [tokens],
   );
 }

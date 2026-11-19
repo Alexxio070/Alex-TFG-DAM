@@ -110,7 +110,10 @@ void main() {
       },
     );
 
-    await expectLater(harness.request(), _unavailable('No se pudo conectar con el agente por iroh'));
+    await expectLater(
+      harness.request(),
+      _unavailable('No se pudo conectar con el agente por iroh'),
+    );
     expect(await harness.request(), _response);
     expect(harness.connectedIds, [_idA, _idA]);
   });
@@ -156,7 +159,9 @@ void main() {
     expect(link.closed, isTrue);
   });
 
-  testWidgets('si el intento conecta cuando ya nadie espera, la conexión se aprovecha', (tester) async {
+  testWidgets('si el intento conecta cuando ya nadie espera, la conexión se aprovecha', (
+    tester,
+  ) async {
     final connecting = Completer<IrohLink>();
     final link = _FakeLink();
     final harness = _Harness(connect: (_) => connecting.future);

@@ -25,15 +25,11 @@ List<LinkMatch> findLinks(String text) {
     final prefixLength = lower.startsWith('https://')
         ? 8
         : lower.startsWith('http://')
-            ? 7
-            : 4;
+        ? 7
+        : 4;
     if (raw.length <= prefixLength) continue;
     links.add(
-      LinkMatch(
-        start: match.start,
-        end: end,
-        url: lower.startsWith('www.') ? 'https://$raw' : raw,
-      ),
+      LinkMatch(start: match.start, end: end, url: lower.startsWith('www.') ? 'https://$raw' : raw),
     );
   }
   return links;

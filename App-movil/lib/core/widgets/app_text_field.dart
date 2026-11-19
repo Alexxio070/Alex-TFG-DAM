@@ -33,9 +33,9 @@ class AppTextField extends StatelessWidget {
     final t = context.tokens;
     final fontSize = mono ? 14.0 : 16.0;
     OutlineInputBorder border(Color color, double width) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: color, width: width),
-        );
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: color, width: width),
+    );
     return TextField(
       controller: controller,
       onChanged: onChanged,

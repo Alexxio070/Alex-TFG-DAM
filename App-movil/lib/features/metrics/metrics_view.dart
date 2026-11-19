@@ -65,10 +65,7 @@ class _MetricsViewState extends State<MetricsView> {
       children: [
         // El repositorio sigue reintentando cada segundo: el aviso desaparece
         // solo en cuanto vuelve a llegar una muestra.
-        if (error != null) ...[
-          _ConnectionLostBanner(message: error),
-          const SizedBox(height: 16),
-        ],
+        if (error != null) ...[_ConnectionLostBanner(message: error), const SizedBox(height: 16)],
         MetricCard(
           title: 'Uso de CPU',
           value: MetricValue(number: formatNumber(history.last.cpu, 0), unit: '%'),
@@ -108,10 +105,7 @@ class _MetricsViewState extends State<MetricsView> {
         const SizedBox(height: 16),
         MetricCard(
           title: 'Uso de RAM',
-          value: MetricValue(
-            number: unit.format(history.last.ramGb),
-            unit: '/ $ramTotalLabel',
-          ),
+          value: MetricValue(number: unit.format(history.last.ramGb), unit: '/ $ramTotalLabel'),
           values: [for (final s in history) s.ramGb],
           min: 0,
           max: ramTotal,

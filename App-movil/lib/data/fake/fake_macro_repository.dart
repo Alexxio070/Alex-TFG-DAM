@@ -13,12 +13,7 @@ class FakeMacroRepository implements MacroRepository {
       command: 'pactl set-sink-mute @DEFAULT_SINK@ toggle',
       kind: MacroKind.volume,
     ),
-    Macro(
-      id: 'm2',
-      label: 'Bloquear',
-      command: 'loginctl lock-session',
-      kind: MacroKind.lock,
-    ),
+    Macro(id: 'm2', label: 'Bloquear', command: 'loginctl lock-session', kind: MacroKind.lock),
     Macro(
       id: 'm3',
       label: 'Modo noche',

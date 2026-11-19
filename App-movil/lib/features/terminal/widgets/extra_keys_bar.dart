@@ -79,7 +79,8 @@ class _Key extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Center(
-              child: child ??
+              child:
+                  child ??
                   Text(
                     label!,
                     style: TextStyle(

@@ -30,8 +30,8 @@ bool fingerprintMatches(Uint8List der, String expected) =>
 /// callback y se comparan con la huella; si no coincide, se rechaza.
 http.Client buildPinnedHttpClient(String Function() fingerprint) {
   final inner = HttpClient(context: SecurityContext())
-    ..badCertificateCallback =
-        (certificate, host, port) => fingerprintMatches(certificate.der, fingerprint());
+    ..badCertificateCallback = (certificate, host, port) =>
+        fingerprintMatches(certificate.der, fingerprint());
   return IOClient(inner);
 }
 

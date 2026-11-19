@@ -38,10 +38,7 @@ void main() {
 
   IrohAuthRepository repoReplying(String response) {
     link = _FakeLink(response);
-    return IrohAuthRepository(
-      IrohConnection(() => _id, connector: (_) async => link),
-      storage,
-    );
+    return IrohAuthRepository(IrohConnection(() => _id, connector: (_) async => link), storage);
   }
 
   setUp(() => storage = InMemoryTokenStorage());
@@ -49,7 +46,11 @@ void main() {
   test('login manda un POST /login con el cuerpo y su Content-Length en bytes', () async {
     final repo = repoReplying(_http(200, {'token': 't0k3n', 'usuario': 'alex'}));
 
-    final outcome = await repo.login(usuario: 'alex', contrasena: 'ñandú1A', dispositivo: 'Pixel 8');
+    final outcome = await repo.login(
+      usuario: 'alex',
+      contrasena: 'ñandú1A',
+      dispositivo: 'Pixel 8',
+    );
 
     expect((outcome as LoggedIn).token, 't0k3n');
     final request = link.requests.single;
@@ -62,11 +63,13 @@ void main() {
 
   test('las rutas protegidas mandan el token guardado como Bearer', () async {
     await storage.write('t0k3n');
-    final repo = repoReplying(_http(200, {
-      'usuario': 'alex',
-      'dispositivo': 'Pixel 8',
-      'creada': '2026-12-20T18:30:00+01:00',
-    }));
+    final repo = repoReplying(
+      _http(200, {
+        'usuario': 'alex',
+        'dispositivo': 'Pixel 8',
+        'creada': '2026-12-20T18:30:00+01:00',
+      }),
+    );
 
     final session = await repo.session();
 
@@ -97,17 +100,23 @@ void main() {
     );
   });
 
-  test('una respuesta sin formato HTTP o con un cuerpo roto lanza AgentUnavailableException', () async {
-    final sinFormato = repoReplying('basura');
-    final cuerpoRoto = repoReplying('HTTP/1.1 200 OK\r\n\r\nno es json');
+  test(
+    'una respuesta sin formato HTTP o con un cuerpo roto lanza AgentUnavailableException',
+    () async {
+      final sinFormato = repoReplying('basura');
+      final cuerpoRoto = repoReplying('HTTP/1.1 200 OK\r\n\r\nno es json');
 
-    expect(() => sinFormato.status(), throwsA(isA<AgentUnavailableException>()));
-    expect(() => cuerpoRoto.status(), throwsA(isA<AgentUnavailableException>()));
-  });
+      expect(() => sinFormato.status(), throwsA(isA<AgentUnavailableException>()));
+      expect(() => cuerpoRoto.status(), throwsA(isA<AgentUnavailableException>()));
+    },
+  );
 
   test('un identificador iroh inválido avisa sin conectar', () async {
     final repo = IrohAuthRepository(
-      IrohConnection(() => 'no-valido', connector: (_) async => throw StateError('no debe conectar')),
+      IrohConnection(
+        () => 'no-valido',
+        connector: (_) async => throw StateError('no debe conectar'),
+      ),
       storage,
     );
 

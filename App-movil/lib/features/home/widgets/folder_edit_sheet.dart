@@ -85,10 +85,7 @@ class _FolderEditCardState extends State<_FolderEditCard> {
               spacing: 12,
               children: [
                 Expanded(
-                  child: AppButton(
-                    label: 'Cancelar',
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                  child: AppButton(label: 'Cancelar', onPressed: () => Navigator.of(context).pop()),
                 ),
                 Expanded(
                   child: AppButton(label: 'Guardar', fill: _color, onPressed: _save),

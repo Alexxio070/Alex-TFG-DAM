@@ -25,21 +25,20 @@ Widget app({
   MetricsRepository? metricsRepository,
   NotesRepository? notesRepository,
   AuthRepository? authRepository,
-}) =>
-    MultiProvider(
-      providers: buildProviders(
-        authRepositoryBuilder: (_) => authRepository ?? FakeAuthRepository.loggedIn(),
-        tokenStorage: authRepository == null
-            ? (InMemoryTokenStorage()..write('token-fake'))
-            : InMemoryTokenStorage(),
-        macroRepository: FakeMacroRepository(),
-        notesRepository: notesRepository ?? FakeNotesRepository(),
-        terminalRepositoryFactory: FakeTerminalRepository.new,
-        settingsRepository: InMemorySettingsRepository(),
-        metricsRepositoryBuilder: (_) => metricsRepository ?? FakeMetricsRepository(),
-      ),
-      child: const SysmoteApp(),
-    );
+}) => MultiProvider(
+  providers: buildProviders(
+    authRepositoryBuilder: (_) => authRepository ?? FakeAuthRepository.loggedIn(),
+    tokenStorage: authRepository == null
+        ? (InMemoryTokenStorage()..write('token-fake'))
+        : InMemoryTokenStorage(),
+    macroRepository: FakeMacroRepository(),
+    notesRepository: notesRepository ?? FakeNotesRepository(),
+    terminalRepositoryFactory: FakeTerminalRepository.new,
+    settingsRepository: InMemorySettingsRepository(),
+    metricsRepositoryBuilder: (_) => metricsRepository ?? FakeMetricsRepository(),
+  ),
+  child: const SysmoteApp(),
+);
 
 /// Avanza el reloj falso [milliseconds] en saltos de 100 ms, para esperar animaciones y
 /// temporizadores.

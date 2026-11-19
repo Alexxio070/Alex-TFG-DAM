@@ -68,11 +68,11 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<AgentStatus> status() async => AgentStatus(
-        api: 1,
-        configurado: configurado,
-        registroAbierto: registroAbierto,
-        sesionActiva: sesionActivaEnDispositivo != null || _token != null,
-      );
+    api: 1,
+    configurado: configurado,
+    registroAbierto: registroAbierto,
+    sesionActiva: sesionActivaEnDispositivo != null || _token != null,
+  );
 
   @override
   Future<LoginOutcome> login({

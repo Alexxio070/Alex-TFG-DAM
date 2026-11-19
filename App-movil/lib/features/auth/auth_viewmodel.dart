@@ -109,8 +109,8 @@ class AuthViewModel extends ChangeNotifier {
     _stage = status.configurado
         ? AuthStage.needsLogin
         : status.registroAbierto
-            ? AuthStage.needsRegistration
-            : AuthStage.noAccount;
+        ? AuthStage.needsRegistration
+        : AuthStage.noAccount;
     notifyListeners();
   }
 
@@ -136,7 +136,8 @@ class AuthViewModel extends ChangeNotifier {
     } on RegistrationClosedException {
       _error = 'El registro no está abierto. Pulsa configuración inicial en la TUI.';
     } on CodeExpiredException {
-      _error = 'El código de registro ha caducado. '
+      _error =
+          'El código de registro ha caducado. '
           'Pulsa configuración inicial en la TUI para generar otro.';
     } on InvalidCodeException {
       _error = 'El código de registro no es válido';

@@ -130,7 +130,8 @@ class PartitionOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final color = selected ? t.accent : t.ink;
-    final size = '${unit.format(partition.usedGb)} / '
+    final size =
+        '${unit.format(partition.usedGb)} / '
         '${unit.format(partition.totalGb, decimals: 0)} ${unit.label}';
     return Semantics(
       button: true,
