@@ -19,7 +19,7 @@ Los otros tres informes de esta carpeta son los de cada sesión: `Informe_audito
 | APK de release compilado desde una copia limpia, como dice el README | 26,1 MB, en unos 2 minutos |
 | Fallos encontrados en el código de las tres auditorías | ninguno |
 | Fallos encontrados fuera de ellas | 1 de gravedad alta (la instalación con `pipx`), corregido |
-| Hallazgos de la auditoría complementaria | 21: 10 corregidos (algunos en parte), 5 son decisiones del autor, 5 no requieren acción y 1 no se puede cerrar desde el repositorio |
+| Hallazgos de la auditoría complementaria | 21: 11 corregidos (algunos en parte), 5 son decisiones del autor y 5 no requieren acción |
 | Secretos o datos personales en el historial | ninguno (ver §7) |
 
 El código está limpio y bien organizado: ninguna violación de capas, ningún import sin uso, ninguna duplicación real, ningún código comentado ni `print` olvidado. Los hallazgos son sobre todo de consistencia y mantenimiento.
@@ -159,7 +159,7 @@ El segundo y el tercero se probaron con tests que **fallan contra el código ant
 
 | # | Gravedad | Hallazgo | Estado |
 |---|---|---|---|
-| E1 | Baja | **Aviso `GHSA-mf5v-w3w3-f6cg`** en `opentelemetry-api 1.45.1`, que traen `fastapi` y `starlette`: denegación de servicio por análisis lento de la cabecera `traceparent`, de gravedad baja (impacto solo en disponibilidad), publicado el 13/11/2026 y corregido en 1.45.2. Si la API del agente lo usa de verdad no está verificado | No se puede cerrar desde el repositorio: es una dependencia transitiva y no está fijada. Una instalación nueva resuelve la última versión disponible (deducido); en el entorno de desarrollo basta `pip install -U opentelemetry-api` |
+| E1 | Baja | **Aviso `GHSA-mf5v-w3w3-f6cg`** en `opentelemetry-api 1.45.1`, que traen `fastapi` y `starlette`: denegación de servicio por análisis lento de la cabecera `traceparent`, de gravedad baja (impacto solo en disponibilidad), publicado el 13/11/2026 y corregido en 1.45.2. Si la API del agente lo usa de verdad no está verificado | **Corregido en el entorno de desarrollo** (`backend-agente/.venv`), no en el repositorio: es una dependencia transitiva que el proyecto no fija. Se actualizó solo ese paquete a 1.45.2 (sin cambios en el resto del entorno), `pip check` no da errores, la base OSV ya no da avisos para esa versión y los 155 tests pasan. Una instalación nueva resuelve la última versión disponible (deducido) |
 | E2 | Baja | Las dependencias de Python tienen solo cota mínima (`>=`) y no hay archivo de bloqueo: dos instalaciones pueden dar versiones distintas. En Dart sí hay `pubspec.lock` | Decisión del autor |
 
 - **Vulnerabilidades:** 132 paquetes (39 de Python y 93 de Dart) consultados en la base pública OSV, enviando solo nombre y versión. Un único aviso, el de arriba; ninguno en Dart.
@@ -247,7 +247,6 @@ Autoría de todos: la del autor del proyecto, sin `Co-Authored-By`.
 
 **Trabajo que queda:**
 - Regenerar las cuatro capturas de la app (C2), que necesitan un móvil o un emulador.
-- Actualizar `opentelemetry-api` en el entorno de desarrollo (E1).
 - Abrir el PR de esta rama hacia `main`.
 - Limpieza del historial: reducir commits redundantes y unificar la autoría. Necesita decidir el nivel de compactación y un `push` forzado hecho por el autor.
 - Publicar el agente en PyPI. Cuando exista, la guía de instalación del README dirá `pipx install sysmote`.
