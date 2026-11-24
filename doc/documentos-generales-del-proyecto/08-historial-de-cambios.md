@@ -77,6 +77,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan / Agente / Interfaz | Decisiones abiertas de la auditoría: nombres de documentos en kebab-case, `allowBackup` desactivado, `uv.lock` y formateador de Python | Aplicado |
 | 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Diseño aprobado y documentado; pendiente de implementar |
 | 24/11/2026 | Agente / Interfaz | Código de error `sesion_caducada` para distinguir una sesión vencida de un token inválido | Documentado; pendiente de implementar |
+| 24/11/2026 | Plan / Documentación | Comprobación preliminar de marca del nombre «Sysmote» y aviso de no relación en los README | Aplicado; decisión legal pendiente |
 
 ---
 
@@ -725,3 +726,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** caducar a los 7 días será lo habitual; el usuario debe saber que no es un fallo.
 - **Afecta a:** `doc/agente/contrato-api-fase3.md` (§4 y token), `doc/ui/interfaz-app.md` (§7 bis.1) y esta entrada. Al implementarlo, `doc/agente/tests.md`.
 - **Estado:** documentado; sin implementar (va con la rama de la caducidad a 7 días).
+
+### 24/11/2026 — Comprobación preliminar de marca
+
+- **Qué era:** el nombre «Sysmote» no se había contrastado con marcas ni proyectos existentes. Una búsqueda en Google mostró un producto de empresa y un proyecto de GitHub con el mismo nombre.
+- **Qué se hizo:** búsqueda en TMview (EUIPO, solo marcas activas): sin resultado idéntico. Se anotan en `07` §3.8 los dos homónimos (Priente Software, `sysmote.com`, y `freol35241/sysmote`, Apache-2.0, 2021-2022) y se añade a ambos README una línea que aclara que Sysmote no tiene relación con ellos.
+- **Por qué:** el autor se preocupa por el aspecto legal, no por la confusión de usuarios.
+- **Límites:** TMview no es una fuente oficial ni una asesoría legal; no se han mirado otros registros (por ejemplo, fuera de la UE) ni bases de nombres comerciales.
+- **Afecta a:** `07` §3.8, `README.md`, `README.en.md` y esta entrada.
+- **Estado:** aplicado; la decisión de consultar a un profesional o cambiar de nombre sigue pendiente.
