@@ -76,6 +76,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan | Fase 3 (seguridad) cerrada; el USB con `adb reverse` pasa a obsoleto como método de prueba | Aplicado en la documentación |
 | 19/11/2026 | Plan / Agente / Interfaz | Decisiones abiertas de la auditoría: nombres de documentos en kebab-case, `allowBackup` desactivado, `uv.lock` y formateador de Python | Aplicado |
 | 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Diseño aprobado y documentado; pendiente de implementar |
+| 24/11/2026 | Agente / Interfaz | Código de error `sesion_caducada` para distinguir una sesión vencida de un token inválido | Documentado; pendiente de implementar |
 
 ---
 
@@ -716,3 +717,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** el primer inicio no es un error y no debe parecerlo; y la caducidad absoluta acota lo que dura un token robado.
 - **Afecta a:** `doc/ui/interfaz-app.md` (§7 bis.1), `doc/agente/contrato-api-fase3.md`, `01-memoria-tecnica.md` (tabla `sesion` y desemparejamiento), `07-resumen-decisiones-y-contexto.md` (§3.2) y esta entrada. Quedan por actualizar al implementarlo: `doc/ui/estructura-app.md`, `doc/ui/tests.md`, `doc/agente/tests.md` y `doc/agente/estructura.md`.
 - **Estado:** diseño aprobado y documentado el 19/11/2026; sin implementar. La pantalla y la caducidad van en ramas y PR separados.
+
+### 24/11/2026 — Código `sesion_caducada`
+
+- **Qué era:** el diseño del 19/11/2026 hacía que un token caducado y un token inválido dieran el mismo `401 no_autenticado`, así que la app no podía explicar por qué volvía al login.
+- **Qué se decidió:** un token cuya sesión superó su `caduca_en` da `401 sesion_caducada`; la app borra el token y vuelve a la bienvenida con «Tu sesión ha caducado. Inicia sesión de nuevo.». Un token desconocido o mal formado sigue dando `no_autenticado`, y una sesión desemparejada mantiene `desemparejado` hasta su `caduca_en`.
+- **Por qué:** caducar a los 7 días será lo habitual; el usuario debe saber que no es un fallo.
+- **Afecta a:** `doc/agente/contrato-api-fase3.md` (§4 y token), `doc/ui/interfaz-app.md` (§7 bis.1) y esta entrada. Al implementarlo, `doc/agente/tests.md`.
+- **Estado:** documentado; sin implementar (va con la rama de la caducidad a 7 días).

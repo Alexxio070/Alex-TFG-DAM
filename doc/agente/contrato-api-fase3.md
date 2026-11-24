@@ -136,7 +136,7 @@ Cambiar la contraseña y «Cerrar todas las sesiones» se hacen **solo desde la 
 - Token opaco de 32 bytes aleatorios en base64url (43 caracteres). No es un JWT.
 - El agente guarda solo su hash (SHA-256) en `sesion.hash_token`; el token en claro no se conserva.
 - Revocable: se invalida con `POST /logout`, cerrando todas las sesiones desde la TUI o cambiando la contraseña.
-- Caducidad: la sesión caduca **7 días después de iniciarla** (`sesion.caduca_en`), se use o no; el uso no la renueva. Pasado ese plazo el agente responde `401 no_autenticado` y la app vuelve al login.
+- Caducidad: la sesión caduca **7 días después de iniciarla** (`sesion.caduca_en`), se use o no; el uso no la renueva. Pasado ese plazo el agente responde `401 sesion_caducada` y la app vuelve a la bienvenida. Un token desconocido o mal formado sigue dando `401 no_autenticado`.
 - Historial: las filas de `sesion` no se borran. Cada sesión conserva su `id`, el hash de su token, el dispositivo, `creado_en`, `caduca_en`, `ultimo_acceso` y, si se cerró antes de tiempo, `revocada` y `motivo_revocacion`. Esa tabla es el historial de inicios de sesión; no se guarda el token en claro.
 - Migración: al actualizar el agente, las sesiones que ya existían reciben `caduca_en = creado_en + 7 días`; las que lleven más de 7 días caducan en su siguiente uso y hay que iniciar sesión de nuevo.
 - La app guarda el token en el almacenamiento cifrado de Android (Keystore) y lo borra al recibir un `401`.
@@ -151,7 +151,8 @@ Todo error lleva el mismo cuerpo:
 
 | Código HTTP | `error` | Cuándo | Qué hace la app |
 |---|---|---|---|
-| 401 | `no_autenticado` | Falta el token, es inválido, caducó o fue revocado | Borra el token y vuelve al login |
+| 401 | `no_autenticado` | Falta el token, es inválido o fue revocado | Borra el token y vuelve al login |
+| 401 | `sesion_caducada` | La sesión superó sus 7 días (`caduca_en`) | Borra el token y vuelve a la bienvenida con «Tu sesión ha caducado. Inicia sesión de nuevo.» |
 | 401 | `desemparejado` | El usuario pulsó «Desemparejar» en la TUI | Borra dirección, huella, identificador iroh y token, y vuelve a la pantalla inicial de emparejamiento |
 | 401 | `credenciales_invalidas` | Usuario o contraseña incorrectos | Muestra el error en el login |
 | 403 | `codigo_invalido`, `codigo_caducado`, `registro_cerrado` | Registro | Mensaje específico en el diálogo de registro |
@@ -205,7 +206,7 @@ El emparejamiento se deshace de cinco maneras. Las dos primeras son inmediatas; 
 
 | # | Cuándo | Qué ocurre |
 |---|---|---|
-| 1 | El usuario pulsa **Desemparejar en la TUI** | El agente revoca la sesión y la marca como `desemparejado`. La siguiente petición de la app recibe `401 desemparejado` y la app olvida el equipo (dirección, huella, identificador iroh y token) y vuelve a la pantalla inicial. Si la app estaba sin conexión, se entera al volver a conectar. La sesión revocada se conserva en `sesion` y da ese aviso mientras no haya llegado su `caduca_en`; pasado ese plazo la app recibiría `no_autenticado` y volvería al login. |
+| 1 | El usuario pulsa **Desemparejar en la TUI** | El agente revoca la sesión y la marca como `desemparejado`. La siguiente petición de la app recibe `401 desemparejado` y la app olvida el equipo (dirección, huella, identificador iroh y token) y vuelve a la pantalla inicial. Si la app estaba sin conexión, se entera al volver a conectar. La sesión revocada se conserva en `sesion` y da ese aviso mientras no haya llegado su `caduca_en`; pasado ese plazo la app recibiría `sesion_caducada` y volvería a la bienvenida. |
 | 2 | El usuario pulsa **Desemparejar en la app** (Ajustes) | `POST /desemparejar`: el agente revoca la sesión y la app olvida el equipo. Hacerlo **antes de desinstalar** la app es la forma fiable. |
 | 3 | **Caducidad** | La sesión caduca 7 días después de iniciarla. La TUI deja de mostrar el dispositivo como emparejado. |
 | 4 | **Última conexión** en la TUI | La TUI muestra cuándo se vio por última vez al dispositivo (`sesion.ultimo_acceso`), para que el usuario decida si desemparejarlo. |

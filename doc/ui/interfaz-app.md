@@ -204,7 +204,7 @@ La comprobación empieza por el token guardado: si el agente lo acepta, la app e
 
 **Formularios** de login y registro: sin «Conexión con el PC»; tienen un botón «Volver» a la bienvenida, y el gesto atrás del sistema hace lo mismo. Para cambiar de PC se usa Ajustes o desemparejar.
 
-**Sesión caducada:** el token dura 7 días desde el login. Al caducar, el agente devuelve `401 no_autenticado`, la app borra el token y muestra la bienvenida con el aviso «Tu sesión ha caducado. Inicia sesión de nuevo.»
+**Sesión caducada:** el token dura 7 días desde el login. Al caducar, el agente devuelve `401 sesion_caducada` (un token desconocido o mal formado sigue dando `no_autenticado`), la app borra el token y muestra la bienvenida con el aviso «Tu sesión ha caducado. Inicia sesión de nuevo.»
 
 ## 8. Qué es simulado
 
