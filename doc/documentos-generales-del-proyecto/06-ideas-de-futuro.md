@@ -127,9 +127,21 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Con *linger*, ofrecer desde la TUI la instalación guiada de la regla de polkit para permitir apagar y reiniciar sin sesión activa, explicando el riesgo.
 - Relacionado con la decisión pendiente de investigar en `07-resumen-decisiones-y-contexto.md` §3.8: si el Módulo C de energía necesita esta regla para funcionar sin sesión activa.
 
+### Recuperar la contraseña sin estar en el PC 🟡
+- Hoy no hay «¿olvidaste tu contraseña?»: sin acceso al PC no se puede recuperar una cuenta. Tres variantes, con sus costes:
+  - *Código de recuperación:* se muestra una sola vez al registrar (se guarda solo su hash) y permite restablecer la contraseña desde la app. Debilita el modelo, porque entra sin pasar por el PC, y se pierde si se pierde el código.
+  - *Comando local* (`sysmote reset-password`): se ejecuta por SSH o en el PC. Simple, pero exige acceso al PC.
+  - *Aprobación desde la TUI:* como el login actual; exige estar en el PC.
+
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
 - Solo funciona desde la misma red, salvo que otro dispositivo encendido (router, Raspberry Pi) reenvíe el paquete. Requiere activarlo en la BIOS y también en la tarjeta de red desde el sistema (por ejemplo, `WakeOnLan=magic` en systemd.link).
+
+### Conexión iroh menos dependiente del relé 🟡
+- La app conecta con el identificador del agente, sin su relé ni direcciones; si el relé no está disponible, una conexión nueva no se establece.
+- Incluir la URL del relé en el QR quitaría la dependencia del servicio que busca la dirección del agente (sigue habiendo relé).
+- Guardar en la app la última dirección que funcionó y probarla primero ayudaría en reconexiones cortas, si la dirección no ha cambiado.
+- Sin un punto de encuentro (relé, puerto abierto o IPv6 sin NAT) no hay una primera conexión directa desde fuera.
 
 ### Relé iroh propio 🟡
 - Guía y configuración para usar un relé propio en lugar de los públicos, para quien quiera independencia total o más ancho de banda. La documentación de iroh indica que los relés públicos son para desarrollo y pruebas, no para producción.
