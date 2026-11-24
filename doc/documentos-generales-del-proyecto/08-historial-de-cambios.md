@@ -78,6 +78,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Diseño aprobado y documentado; pendiente de implementar |
 | 24/11/2026 | Agente / Interfaz | Código de error `sesion_caducada` para distinguir una sesión vencida de un token inválido | Documentado; pendiente de implementar |
 | 24/11/2026 | Plan / Documentación | Comprobación preliminar de marca del nombre «Sysmote» y aviso de no relación en los README | Aplicado; decisión legal pendiente |
+| 24/11/2026 | Plan / Documentación | Justificación ampliada de iroh frente a WireGuard y Tailscale, con criterios, límites asumidos y fuentes consultadas | Aplicado en la documentación |
 
 ---
 
@@ -735,3 +736,11 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Límites:** TMview no es una fuente oficial ni una asesoría legal; no se han mirado otros registros (por ejemplo, fuera de la UE) ni bases de nombres comerciales.
 - **Afecta a:** `07` §3.8, `README.md`, `README.en.md` y esta entrada.
 - **Estado:** aplicado; la decisión de consultar a un profesional o cambiar de nombre sigue pendiente.
+
+### 24/11/2026 — Justificación ampliada de iroh
+
+- **Qué era:** la elección de iroh se justificaba con una línea por alternativa («obliga a instalar y configurar una app VPN en el móvil»), sin criterios ni límites ni fuentes con fecha.
+- **Qué es ahora:** `02` §3.3 parte del requisito de producto (solo instalar la app) y de cinco criterios, describe por separado WireGuard y Tailscale con lo comprobado el 24/11/2026 (una sola VPN activa en Android; Tailscale requiere app, cuenta y permiso de VPN), explica que el relé es el punto de encuentro de la conexión y no solo un respaldo, y recoge las limitaciones asumidas (madurez, relés públicos para desarrollo).
+- **Por qué:** la decisión fue cuestionada y hay que poder defenderla con argumentos y reconociendo sus costes.
+- **Afecta a:** `02` §3.3, `07` (fila «Acceso remoto»), `06` (ideas relacionadas) y esta entrada.
+- **Estado:** aplicado en la documentación. Pendiente de comprobar en una prueba real por 4G qué camino usa la conexión (directa o relé) y qué pasa al cambiar de Wi-Fi a datos con la app abierta.

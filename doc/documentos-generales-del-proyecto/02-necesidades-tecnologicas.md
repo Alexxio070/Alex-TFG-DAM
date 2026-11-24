@@ -146,15 +146,20 @@ Cada bloque sigue el mismo esquema:
 
 ### 3.3 Acceso desde fuera de casa
 - **Necesidad:** conectar desde 4G/5G u otra red sin abrir puertos del router, sin VPN y sin instalar nada más en el móvil.
+- **Criterio de elección:** el requisito de producto es que el usuario solo instale la app, sin tocar el router, sin VPN y sin cuentas. De ahí salen cinco criterios: (1) que vaya dentro de la app, (2) que no pida permisos de red del sistema, (3) que atraviese el NAT sin configuración, (4) que el cifrado sea de extremo a extremo y (5) que no dependa de una cuenta de terceros.
 - **Tipo de tecnología:** librería P2P con travesía de NAT y relé de respaldo.
 - **Elección:** **iroh (1.x).** Identifica cada equipo por su clave pública. La conexión empieza a través de un relé cifrado y después iroh intenta convertirla en directa atravesando el NAT; si no lo consigue, sigue por el relé. Ofrece bindings oficiales para Python (agente) y Kotlin y relés públicos gratuitos (según iroh, solo para desarrollo y uso personal, con límite de tráfico; suficientes para el TFG). Licencia MIT/Apache-2.0.
   - **Versiones (consultadas el 02/10/2026):** núcleo 1.3.0 (28/09/2026); bindings de Python y Kotlin 1.1.0 (16/07/2026). El agente usa ya el binding de Python 1.2.0 (`agent/pyproject.toml` exige `iroh>=1.2.0`, desde la fase 2). La app no usa el de Kotlin, que no publica paquete para Android, sino el plugin `iroh_flutter` (ver 4.2). El de Python, en Linux, solo tiene paquetes `manylinux_2_28` (glibc 2.28 o superior, x86_64 y aarch64): no hay versión para musl ni para ARM de 32 bits.
 - **Alternativas descartadas:**
-  - *Tailscale / WireGuard:* obliga a instalar y configurar una app VPN en el móvil.
+  - *WireGuard:* es un protocolo de túnel; no incluye descubrimiento de equipos ni relé, así que alguien tiene que repartir endpoints y claves y mantener un extremo alcanzable. En Android funciona como VPN del sistema (`VpnService`) y Android solo permite **una VPN activa** a la vez (consultado el 24/11/2026 en la documentación de Android): si el usuario ya usa otra, habría conflicto.
+  - *Tailscale:* resuelve el NAT con un servidor de coordinación y relés DERP y funciona bien, pero requiere una app aparte, el permiso de VPN del sistema y una cuenta con un proveedor de identidad (consultado el 24/11/2026 en su documentación). No es una librería que se pueda integrar en la app Flutter.
   - *WebRTC con STUN/TURN propios:* exige programar la señalización y alojar y pagar servidores. Queda como **respaldo** solo si iroh da problemas reales (decisión del 27/09/2026).
   - *Relé propio:* exige programar el cifrado de extremo a extremo y mantener un servidor indefinidamente.
   - *Cloudflare Tunnel:* requiere cuenta y dominio, y el cifrado TLS termina en Cloudflare.
   - *Abrir puertos del router:* contradice el requisito de configuración mínima y expone el agente a Internet.
+- **El relé es el punto de encuentro, no solo un respaldo.** El agente está detrás de un NAT: para que dos equipos se conecten directamente tienen que enviarse paquetes a la vez, y para ponerse de acuerdo necesitan un canal, que es el relé. Por eso una conexión nueva (arranque, reconexión, cambio de red) empieza siempre por él y solo pasa a directa si la travesía del NAT lo consigue; si no, sigue por el relé. La app conecta con el identificador del agente, sin sus direcciones directas, porque estas cambian en cada arranque. Es el mismo principio que usan Tailscale (coordinación y DERP) y WebRTC (señalización y STUN/TURN). Una conexión ya directa sobrevive a una caída del relé, pero crear una nueva no.
+- **Limitaciones asumidas:** WireGuard y Tailscale son más maduros y más auditados que iroh 1.x. Según la documentación de iroh (consultada el 24/11/2026), sus relés públicos son para desarrollo, sin garantías de disponibilidad y con límite de tráfico; para un producto real harían falta relés propios o de pago. Mejoras posibles en `06-ideas-de-futuro.md`.
+- **Pruebas que lo respaldan:** conexión en una red restrictiva real y con el UDP saliente bloqueado, que cae al relé y sigue funcionando (`doc/iroh/04-pruebas.md`). No está medido cuánto tiempo pasa la conexión en directa y cuánto en relé.
 
 ---
 
