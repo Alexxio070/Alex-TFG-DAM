@@ -71,7 +71,7 @@ def test_el_qr_renderizado_se_decodifica_con_un_lector_real(tmp_path):
     imagen.write_text(f"P1\n{ancho} {len(filas)}\n" + "\n".join(filas) + "\n")
 
     salida = subprocess.run(
-        ["zbarimg", "--quiet", "--raw", str(imagen)], capture_output=True, text=True
+        ["zbarimg", "--quiet", "--raw", str(imagen)], capture_output=True, text=True, check=False
     )
 
     assert salida.stdout.strip() == uri

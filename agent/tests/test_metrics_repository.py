@@ -16,7 +16,7 @@ def usage(total, used):
 
 
 def test_read_cpu_temp_c_sin_sensores_devuelve_none(monkeypatch):
-    monkeypatch.setattr(repo.psutil, "sensors_temperatures", lambda: {})
+    monkeypatch.setattr(repo.psutil, "sensors_temperatures", dict)
     assert repo.read_cpu_temp_c() is None
 
 
