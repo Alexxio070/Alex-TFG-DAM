@@ -261,6 +261,16 @@ void main() {
     await expectLater(repo.status(), throwsA(isA<AgentUnavailableException>()));
   }, timeout: const Timeout(Duration(seconds: 10)));
 
+  test(
+    'el cliente descarta las conexiones paradas antes de los 5 s en que las cierra el agente',
+    () {
+      final client = pinnedHttpClient(() => '');
+
+      expect(client.idleTimeout, lessThan(const Duration(seconds: 5)));
+      client.close();
+    },
+  );
+
   group('huella del certificado', () {
     final abc = Uint8List.fromList(utf8.encode('abc'));
     const sha256Abc = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
