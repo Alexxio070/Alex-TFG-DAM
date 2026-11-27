@@ -83,6 +83,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 27/11/2026 | Interfaz | La app avisa también cuando el token ya no es válido (`no_autenticado`), con un popup, igual que al caducar | Aplicado en código (PR 24) |
 | 27/11/2026 | Plan / Documentación | Fases renumeradas en orden de ejecución, terminal y acciones rápidas fusionadas en la fase 5, y control de energía fuera del proyecto | Aplicado en la documentación; quedan por actualizar `01` (Módulos C y E), `02` y `03` |
 | 27/11/2026 | Plan / Documentación | Las ramas por función ya no se borran al fusionar; se restauran las ya borradas desde sus PR | Aplicado |
+| 27/11/2026 | Plan / Documentación | Categorías de rama reducidas a vistas parciales, funciones, documentación y reestructuración | Aplicado |
 
 ---
 
@@ -785,4 +786,13 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** trazabilidad y mejor comprensión del historial del proyecto. Riesgo asumido: exceso de ramas, que se mitiga con prefijos por tipo (`feature/`, `fix/`, `docs/`, `chore/`) y nombres descriptivos.
 - **Qué se hizo:** se restauraron en el remoto las 22 ramas de los PR 2 a 24 que ya se habían borrado, con su nombre original y su último commit, y la rama del PR 14, que se cerró sin fusionar. De las fusiones sin PR solo se restauró `docs/reorganizacion`, que es la única con nombre en su mensaje; el resto sigue trazable en `main` con `git log --first-parent`.
 - **Afecta a:** `04` («Al cerrar cada fase»), `07` §7 y esta entrada.
+- **Estado:** aplicado.
+
+### 27/11/2026 — Categorías de rama
+
+- **Qué era:** el historial usaba seis prefijos (`feature/`, `docs/`, `chore/`, `refactor/`, `fix/`, `build/`), y `07` §7 listaba cuatro.
+- **Qué es ahora:** tres categorías para las ramas por función, además de `main` y las vistas parciales: `feature/` (funciones nuevas), `docs/` (solo documentación) y `refactor/` (todo lo demás: arreglos, mantenimiento, empaquetado y reestructuración). Los commits siguen usando los tipos convencionales (`feat:`, `fix:`, `docs:`, `refactor:`, `build:`, `chore:`).
+- **Por qué:** menos categorías, más fáciles de recordar y de leer en la lista de ramas.
+- **Qué no se hace:** las ramas ya creadas con `fix/`, `chore/` o `build/` no se renombran, porque su nombre aparece en los mensajes de fusión de `main` y renombrarlas rompería esa correspondencia.
+- **Afecta a:** `07` §7 y esta entrada.
 - **Estado:** aplicado.
