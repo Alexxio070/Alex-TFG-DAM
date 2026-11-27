@@ -40,14 +40,24 @@ class Servidores:
         self._con_iroh = con_iroh
         self._https = uvicorn.Server(
             uvicorn.Config(
-                app, host="0.0.0.0", port=puerto_https, ssl_certfile=str(cert), ssl_keyfile=str(clave),
-                log_config=None, access_log=False, timeout_graceful_shutdown=2,
+                app,
+                host="0.0.0.0",
+                port=puerto_https,
+                ssl_certfile=str(cert),
+                ssl_keyfile=str(clave),
+                log_config=None,
+                access_log=False,
+                timeout_graceful_shutdown=2,
             )
         )
         self._interno = uvicorn.Server(
             uvicorn.Config(
-                app, host="127.0.0.1", port=puerto_interno,
-                log_config=None, access_log=False, timeout_graceful_shutdown=2,
+                app,
+                host="127.0.0.1",
+                port=puerto_interno,
+                log_config=None,
+                access_log=False,
+                timeout_graceful_shutdown=2,
             )
         )
         self._errores: dict[str, str] = {}
@@ -80,7 +90,9 @@ class Servidores:
             "interno": self._estado_uvicorn("interno", self._interno),
         }
         if self._con_iroh:
-            resultado["iroh"] = self._errores.get("iroh") or ("en marcha" if self._iroh_vivo else "arrancando")
+            resultado["iroh"] = self._errores.get("iroh") or (
+                "en marcha" if self._iroh_vivo else "arrancando"
+            )
         return resultado
 
     def _estado_uvicorn(self, nombre: str, servidor: uvicorn.Server) -> str:
@@ -117,5 +129,7 @@ class Servidores:
             raise
         except SystemExit:
             self._errores[nombre] = "error: no se pudo abrir el puerto (¿ya está en uso?)"
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
+            # Cualquier fallo de un servidor (uvicorn o iroh pueden lanzar casi cualquier cosa) se
+            # guarda como su estado para que la TUI lo avise, y no tumba a los demás.
             self._errores[nombre] = f"error: {error}"

@@ -39,15 +39,26 @@ def servidores():
     servidores.detener()
 
 
-def _pedir(puerto: int, metodo: str, ruta: str, https: bool, token: str | None = None, cuerpo: dict | None = None):
+def _pedir(
+    puerto: int,
+    metodo: str,
+    ruta: str,
+    https: bool,
+    token: str | None = None,
+    cuerpo: dict | None = None,
+):
     if https:
-        conexion = http.client.HTTPSConnection("127.0.0.1", puerto, context=ssl._create_unverified_context())
+        conexion = http.client.HTTPSConnection(
+            "127.0.0.1", puerto, context=ssl._create_unverified_context()
+        )
     else:
         conexion = http.client.HTTPConnection("127.0.0.1", puerto)
     cabeceras = {"Authorization": f"Bearer {token}"} if token else {}
     if cuerpo is not None:
         cabeceras["Content-Type"] = "application/json"
-    conexion.request(metodo, ruta, body=json.dumps(cuerpo) if cuerpo is not None else None, headers=cabeceras)
+    conexion.request(
+        metodo, ruta, body=json.dumps(cuerpo) if cuerpo is not None else None, headers=cabeceras
+    )
     respuesta = conexion.getresponse()
     datos = respuesta.read()
     conexion.close()
@@ -63,7 +74,10 @@ def test_https_responde_y_el_certificado_tiene_la_huella_de_tls_service(servidor
     https, _ = servidores.puertos
 
     contexto = ssl._create_unverified_context()
-    with socket.create_connection(("127.0.0.1", https)) as crudo, contexto.wrap_socket(crudo) as seguro:
+    with (
+        socket.create_connection(("127.0.0.1", https)) as crudo,
+        contexto.wrap_socket(crudo) as seguro,
+    ):
         der = seguro.getpeercert(binary_form=True)
 
     assert hashlib.sha256(der).hexdigest() == tls_service.huella_sha256()
@@ -77,7 +91,9 @@ def test_el_https_no_habla_http_plano(servidores):
         _get(https, "/estado", https=False)
 
 
-def test_registro_login_y_metricas_de_extremo_a_extremo_por_https_y_por_el_puerto_interno(servidores):
+def test_registro_login_y_metricas_de_extremo_a_extremo_por_https_y_por_el_puerto_interno(
+    servidores,
+):
     _esperar_a_que_esten_activos(servidores)
     https, interno = servidores.puertos
     assert _get(https, "/metrics", https=True)[0] == 401
@@ -86,7 +102,11 @@ def test_registro_login_y_metricas_de_extremo_a_extremo_por_https_y_por_el_puert
         codigo, _ = auth_service.abrir_registro(conexion)
 
     estado, cuerpo = _pedir(
-        https, "POST", "/registro", True, cuerpo={"codigo": codigo, "usuario": "alex", "contrasena": "Clave1"}
+        https,
+        "POST",
+        "/registro",
+        True,
+        cuerpo={"codigo": codigo, "usuario": "alex", "contrasena": "Clave1"},
     )
     assert estado == 201
     token = json.loads(cuerpo)["token"]
@@ -113,7 +133,10 @@ def test_detener_libera_los_puertos():
     servidores.detener()
 
     for puerto in (https, interno):
-        with pytest.raises(ConnectionRefusedError), socket.create_connection(("127.0.0.1", puerto), timeout=1):
+        with (
+            pytest.raises(ConnectionRefusedError),
+            socket.create_connection(("127.0.0.1", puerto), timeout=1),
+        ):
             pass
 
 
@@ -132,7 +155,10 @@ async def test_salir_de_la_tui_con_q_para_los_servidores_reales():
         await pilot.pause(0.5)
 
     for puerto in (https, interno):
-        with pytest.raises(ConnectionRefusedError), socket.create_connection(("127.0.0.1", puerto), timeout=1):
+        with (
+            pytest.raises(ConnectionRefusedError),
+            socket.create_connection(("127.0.0.1", puerto), timeout=1),
+        ):
             pass
 
 
@@ -140,11 +166,16 @@ def test_un_puerto_ocupado_se_notifica_sin_tumbar_el_otro():
     with socket.socket() as ocupado:
         ocupado.bind(("0.0.0.0", 0))
         ocupado.listen()
-        servidores = Servidores(puerto_https=ocupado.getsockname()[1], puerto_interno=_puerto_libre(), con_iroh=False)
+        servidores = Servidores(
+            puerto_https=ocupado.getsockname()[1], puerto_interno=_puerto_libre(), con_iroh=False
+        )
         servidores.iniciar()
         try:
             for _ in range(100):
-                if servidores.estado()["https"].startswith("error") and servidores.estado()["interno"] == "activo":
+                if (
+                    servidores.estado()["https"].startswith("error")
+                    and servidores.estado()["interno"] == "activo"
+                ):
                     break
                 time.sleep(0.05)
             estado = servidores.estado()
@@ -155,7 +186,9 @@ def test_un_puerto_ocupado_se_notifica_sin_tumbar_el_otro():
 
 
 def test_con_iroh_el_estado_incluye_el_tunel_y_detener_no_se_cuelga():
-    servidores = Servidores(puerto_https=_puerto_libre(), puerto_interno=_puerto_libre(), con_iroh=True)
+    servidores = Servidores(
+        puerto_https=_puerto_libre(), puerto_interno=_puerto_libre(), con_iroh=True
+    )
     servidores.iniciar()
     time.sleep(1)
     assert "iroh" in servidores.estado()

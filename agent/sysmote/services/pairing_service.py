@@ -32,7 +32,9 @@ def identificador_iroh() -> str:
     return str(load_or_create_secret_key(rutas.IROH_KEY_PATH).public())
 
 
-def uri_emparejamiento(direccion: str, huella: str, codigo: str | None = None, iroh: str | None = None) -> str:
+def uri_emparejamiento(
+    direccion: str, huella: str, codigo: str | None = None, iroh: str | None = None
+) -> str:
     """Construye el URI del QR (contrato, §6): `sysmote://emparejar?v=1&dir=…&huella=…[&iroh=…][&codigo=…]`.
 
     Sin `codigo` es el QR de volver a emparejar.
@@ -57,4 +59,6 @@ def qr_texto(contenido: str) -> str:
     if len(matriz) % 2:
         matriz.append([False] * len(matriz[0]))
     filas = zip(matriz[::2], matriz[1::2])
-    return "\n".join("".join(_BLOQUES[par] for par in zip(arriba, abajo)) for arriba, abajo in filas)
+    return "\n".join(
+        "".join(_BLOQUES[par] for par in zip(arriba, abajo)) for arriba, abajo in filas
+    )

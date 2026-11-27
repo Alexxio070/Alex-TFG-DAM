@@ -88,17 +88,16 @@ November 2026. The app and the agent now have a login: the account is created wi
 - [x] Agent with real metrics and TUI
 - [x] Remote access through iroh
 - [x] Login, secure pairing and encryption (TLS)
-- [ ] Real remote terminal
 - [ ] Agent installation as a system service
-- [ ] Processes
-- [ ] Quick actions
+- [ ] Real remote terminal and quick actions
 - [ ] Notifications and alert rules
+- [ ] Processes
 - [ ] Shared notes between phone and PC
 - [ ] QR scanner in the app and automatic discovery on the local network (the TUI already shows the QR)
 
 ## Known limitations
 
-- **Unpairing on uninstall:** uninstalling the app from the phone or the agent from the PC does not unpair them automatically. Android does not notify an app when it is uninstalled, and the app cannot tell an uninstalled agent from a PC that is switched off or offline. Use the "Unpair" button (in the TUI or in the app); the session also expires by itself after 30 days without use.
+- **Unpairing on uninstall:** uninstalling the app from the phone or the agent from the PC does not unpair them automatically. Android does not notify an app when it is uninstalled, and the app cannot tell an uninstalled agent from a PC that is switched off or offline. Use the "Unpair" button (in the TUI or in the app); the session also expires by itself 7 days after login.
 - **Lockout by attempts:** the login attempt limit is per account, not per address, because over iroh every connection arrives from `127.0.0.1`. Anyone who can reach the agent can lock the owner out of login for a few minutes with five failed attempts. The TUI has a button to lift the lockout.
 - **No QR scanner:** the TUI shows the pairing QR, but the app does not scan it yet. The address, the certificate fingerprint, the iroh identifier and the registration code are typed by hand in the app.
 
@@ -151,7 +150,7 @@ flutter run                                          # phone connected or emulat
 flutter build apk --release --target-platform android-arm64   # builds the APK
 ```
 
-The agent is started and connected the same way as in the quick installation. Tests are run with `.venv/bin/pytest` (in `agent/`) and `flutter test` (in `App-movil/`).
+The agent is started and connected the same way as in the quick installation. Tests are run with `.venv/bin/pytest` (in `agent/`) and `flutter test` (in `App-movil/`). Code is formatted with `.venv/bin/ruff format` (Python, in `agent/`) and `dart format -l 100` (Dart); `agent/uv.lock` pins the development versions for anyone using `uv`.
 
 > [!NOTE]
 > If you want the `sysmote` command without a virtual environment, from the repository root:
@@ -195,3 +194,5 @@ Read the [contributing guide](CONTRIBUTING.md).
 ## License
 
 Sysmote is distributed under the [GNU GPL v3.0](LICENSE) license.
+
+Sysmote is not related to the product of the same name by Priente Software ([sysmote.com](https://sysmote.com/)) or to the [freol35241/sysmote](https://github.com/freol35241/sysmote) project.

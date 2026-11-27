@@ -20,12 +20,19 @@ def crear(connection: sqlite3.Connection, nombre_usuario: str, hash_contrasena: 
         (nombre_usuario, hash_contrasena, creado_en),
     )
     connection.commit()
-    return Usuario(id=cursor.lastrowid, nombre_usuario=nombre_usuario, hash_contrasena=hash_contrasena, creado_en=creado_en)
+    return Usuario(
+        id=cursor.lastrowid,
+        nombre_usuario=nombre_usuario,
+        hash_contrasena=hash_contrasena,
+        creado_en=creado_en,
+    )
 
 
 def obtener_por_nombre(connection: sqlite3.Connection, nombre_usuario: str) -> Usuario | None:
     """Busca la cuenta por su nombre de usuario."""
-    row = connection.execute(f"SELECT {_COLUMNS} FROM usuario WHERE nombre_usuario = ?", (nombre_usuario,)).fetchone()
+    row = connection.execute(
+        f"SELECT {_COLUMNS} FROM usuario WHERE nombre_usuario = ?", (nombre_usuario,)
+    ).fetchone()
     return _to_usuario(row) if row else None
 
 
@@ -37,7 +44,9 @@ def obtener_primero(connection: sqlite3.Connection) -> Usuario | None:
 
 def obtener_por_id(connection: sqlite3.Connection, usuario_id: int) -> Usuario | None:
     """Busca la cuenta por su id."""
-    row = connection.execute(f"SELECT {_COLUMNS} FROM usuario WHERE id = ?", (usuario_id,)).fetchone()
+    row = connection.execute(
+        f"SELECT {_COLUMNS} FROM usuario WHERE id = ?", (usuario_id,)
+    ).fetchone()
     return _to_usuario(row) if row else None
 
 
@@ -46,7 +55,9 @@ def existe_alguno(connection: sqlite3.Connection) -> bool:
     return connection.execute("SELECT 1 FROM usuario LIMIT 1").fetchone() is not None
 
 
-def actualizar_contrasena(connection: sqlite3.Connection, usuario_id: int, hash_contrasena: str) -> None:
+def actualizar_contrasena(
+    connection: sqlite3.Connection, usuario_id: int, hash_contrasena: str
+) -> None:
     """Sustituye el hash de la contraseña."""
     connection.execute(
         "UPDATE usuario SET hash_contrasena = ? WHERE id = ?", (hash_contrasena, usuario_id)

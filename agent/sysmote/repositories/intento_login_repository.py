@@ -38,7 +38,9 @@ def listar_de_usuario(connection: sqlite3.Connection, nombre_usuario: str) -> li
         (nombre_usuario,),
     ).fetchall()
     return [
-        IntentoLogin(id=r[0], usuario_id=r[1], nombre_usuario=r[2], origen=r[3], fecha=r[4], exito=bool(r[5]))
+        IntentoLogin(
+            id=r[0], usuario_id=r[1], nombre_usuario=r[2], origen=r[3], fecha=r[4], exito=bool(r[5])
+        )
         for r in rows
     ]
 

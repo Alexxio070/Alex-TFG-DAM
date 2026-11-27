@@ -123,7 +123,9 @@ async def test_dispositivo_se_actualiza_solo_cuando_la_app_hace_login(connection
         assert "Dispositivo: Pixel 8" in _texto(app, "#device-info")
 
 
-async def test_con_cuenta_se_activan_los_botones_y_se_desactiva_la_configuracion_inicial(connection):
+async def test_con_cuenta_se_activan_los_botones_y_se_desactiva_la_configuracion_inicial(
+    connection,
+):
     _crear_cuenta(connection)
     app = SysmoteApp(connection=connection)
     async with app.run_test(size=SIZE) as pilot:
@@ -318,7 +320,9 @@ class _ServidoresFalsos:
 
 
 async def test_seguridad_muestra_el_identificador_iroh_y_el_estado_de_cada_servidor(connection):
-    servidores = _ServidoresFalsos({"https": "activo", "interno": "activo", "iroh": "error: sin red"})
+    servidores = _ServidoresFalsos(
+        {"https": "activo", "interno": "activo", "iroh": "error: sin red"}
+    )
     app = SysmoteApp(connection=connection, servidores=servidores)
     async with app.run_test(size=SIZE) as pilot:
         await _abrir_pestana(pilot, "tab-security")

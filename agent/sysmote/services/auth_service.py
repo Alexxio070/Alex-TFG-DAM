@@ -7,7 +7,7 @@ partes no se hablan directamente: comparten la base de datos SQLite. Los errores
 Reglas principales:
 - Solo hay una cuenta y una sesión activa a la vez.
 - Un login con otra sesión activa no la sustituye: crea una solicitud que se confirma en la TUI.
-- Una sesión caduca tras 30 días sin usarse.
+- Una sesión caduca a los 7 días de iniciarla, se use o no: usarla no la renueva.
 """
 
 import hashlib
@@ -41,25 +41,35 @@ def hash_codigo(codigo: str) -> str:
     Ignora guiones, espacios y mayúsculas, y lee `0` como `O` y `1` como `I`.
     """
     # El alfabeto base32 no tiene 0 ni 1: al teclear a mano se leen como O e I.
-    normalizado = codigo.replace("-", "").replace(" ", "").upper().replace("0", "O").replace("1", "I")
+    normalizado = (
+        codigo.replace("-", "").replace(" ", "").upper().replace("0", "O").replace("1", "I")
+    )
     return hashlib.sha256(normalizado.encode()).hexdigest()
 
 
 def sesion_activa(connection: sqlite3.Connection) -> Sesion | None:
     """Devuelve la sesión abierta que sigue vigente, o `None` si no hay ninguna."""
     sesion = sesion_repository.obtener_activa(connection)
-    if sesion is None or token_service.esta_caducada(sesion.ultimo_acceso):
+    if sesion is None or token_service.esta_caducada(sesion.caduca_en, _ahora()):
         return None
     return sesion
 
 
 def _abrir_sesion(connection: sqlite3.Connection, usuario_id: int, dispositivo: str) -> str:
-    # Si quedaba una sesión sin revocar (ya caducada por inactividad), se revoca: solo hay una activa.
+    # Si quedaba una sesión sin revocar (ya caducada), se revoca: solo hay una activa.
     anterior = sesion_repository.obtener_activa(connection)
     if anterior is not None:
         sesion_repository.revocar(connection, anterior.id, "caducada")
     token = token_service.generar()
-    sesion_repository.crear(connection, usuario_id, token_service.hashear(token), dispositivo)
+    ahora = _ahora()
+    sesion_repository.crear(
+        connection,
+        usuario_id,
+        token_service.hashear(token),
+        dispositivo,
+        ahora.isoformat(),
+        token_service.calcular_caducidad(ahora).isoformat(),
+    )
     return token
 
 
@@ -135,7 +145,11 @@ def registrar(
 
 
 def login(
-    connection: sqlite3.Connection, usuario: str, contrasena: str, dispositivo: str, origen: str = "local"
+    connection: sqlite3.Connection,
+    usuario: str,
+    contrasena: str,
+    dispositivo: str,
+    origen: str = "local",
 ) -> dict:
     """Comprueba las credenciales y abre sesión, o crea una solicitud si ya hay una sesión activa.
 
@@ -153,14 +167,19 @@ def login(
     if cuenta is None:
         password_service.verificar_con_relleno(contrasena)
     if cuenta is None or not password_service.verificar(cuenta.hash_contrasena, contrasena):
-        limite_service.registrar(connection, usuario, cuenta.id if cuenta else None, origen, exito=False)
+        limite_service.registrar(
+            connection, usuario, cuenta.id if cuenta else None, origen, exito=False
+        )
         raise AuthError("credenciales_invalidas", "Usuario o contraseña incorrectos")
     limite_service.registrar(connection, usuario, cuenta.id, origen, exito=True)
 
     solicitud_login_repository.borrar_de_usuario(connection, cuenta.id)
     activa = sesion_activa(connection)
     if activa is None:
-        return {"token": _abrir_sesion(connection, cuenta.id, dispositivo), "usuario": cuenta.nombre_usuario}
+        return {
+            "token": _abrir_sesion(connection, cuenta.id, dispositivo),
+            "usuario": cuenta.nombre_usuario,
+        }
 
     caduca_en = (_ahora() + CADUCIDAD_SOLICITUD).isoformat()
     solicitud = solicitud_login_repository.crear(
@@ -200,30 +219,37 @@ def consultar_solicitud(connection: sqlite3.Connection, solicitud_id: str) -> di
 
 
 def autenticar(connection: sqlite3.Connection, token: str | None) -> Sesion:
-    """Devuelve la sesión de un token y renueva su último acceso.
+    """Devuelve la sesión de un token y anota su último acceso (no alarga la caducidad).
 
     Raises:
-        AuthError: `desemparejado` si la sesión se revocó al desemparejar; `no_autenticado` en
-            cualquier otro caso (sin token, token desconocido, caducado o revocado).
+        AuthError: `sesion_caducada` si la sesión ya pasó su `caduca_en` (también si estaba
+            revocada); `desemparejado` si se revocó al desemparejar y aún no ha caducado;
+            `no_autenticado` en cualquier otro caso (sin token, token desconocido o revocado).
     """
     no_autenticado = AuthError("no_autenticado", "Hace falta iniciar sesión")
     if not token:
         raise no_autenticado
     sesion = sesion_repository.obtener_por_hash_token(connection, token_service.hashear(token))
-    if sesion is None or token_service.esta_caducada(sesion.ultimo_acceso):
+    if sesion is None:
         raise no_autenticado
+    if token_service.esta_caducada(sesion.caduca_en, _ahora()):
+        raise AuthError("sesion_caducada", "La sesión ha caducado. Inicia sesión de nuevo.")
     if sesion.revocada:
         if sesion.motivo_revocacion == "desemparejado":
             raise AuthError("desemparejado", "El dispositivo fue desemparejado")
         raise no_autenticado
-    sesion_repository.tocar_ultimo_acceso(connection, sesion.id)
+    sesion_repository.tocar_ultimo_acceso(connection, sesion.id, _ahora().isoformat())
     return sesion
 
 
 def datos_sesion(connection: sqlite3.Connection, sesion: Sesion) -> dict:
     """Respuesta de `GET /sesion`: usuario, dispositivo y fecha de creación de la sesión."""
     cuenta = usuario_repository.obtener_por_id(connection, sesion.usuario_id)
-    return {"usuario": cuenta.nombre_usuario, "dispositivo": sesion.dispositivo, "creada": sesion.creado_en}
+    return {
+        "usuario": cuenta.nombre_usuario,
+        "dispositivo": sesion.dispositivo,
+        "creada": sesion.creado_en,
+    }
 
 
 def cerrar_sesion(connection: sqlite3.Connection, sesion: Sesion) -> None:

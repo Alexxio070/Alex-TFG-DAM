@@ -12,7 +12,14 @@ _COLUMNS = "id, usuario_id, dispositivo, creada, estado, caduca_en"
 
 
 def _to_solicitud(row: tuple) -> SolicitudLogin:
-    return SolicitudLogin(id=row[0], usuario_id=row[1], dispositivo=row[2], creada=row[3], estado=row[4], caduca_en=row[5])
+    return SolicitudLogin(
+        id=row[0],
+        usuario_id=row[1],
+        dispositivo=row[2],
+        creada=row[3],
+        estado=row[4],
+        caduca_en=row[5],
+    )
 
 
 def crear(
@@ -26,12 +33,21 @@ def crear(
         (id, usuario_id, dispositivo, creada, caduca_en),
     )
     connection.commit()
-    return SolicitudLogin(id=id, usuario_id=usuario_id, dispositivo=dispositivo, creada=creada, estado="pendiente", caduca_en=caduca_en)
+    return SolicitudLogin(
+        id=id,
+        usuario_id=usuario_id,
+        dispositivo=dispositivo,
+        creada=creada,
+        estado="pendiente",
+        caduca_en=caduca_en,
+    )
 
 
 def obtener(connection: sqlite3.Connection, id: str) -> SolicitudLogin | None:
     """Busca una solicitud por su id."""
-    row = connection.execute(f"SELECT {_COLUMNS} FROM solicitud_login WHERE id = ?", (id,)).fetchone()
+    row = connection.execute(
+        f"SELECT {_COLUMNS} FROM solicitud_login WHERE id = ?", (id,)
+    ).fetchone()
     return _to_solicitud(row) if row else None
 
 

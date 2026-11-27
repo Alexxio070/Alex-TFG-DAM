@@ -5,7 +5,12 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from sysmote.repositories import codigo_registro_repository, sesion_repository, solicitud_login_repository, usuario_repository
+from sysmote.repositories import (
+    codigo_registro_repository,
+    sesion_repository,
+    solicitud_login_repository,
+    usuario_repository,
+)
 from sysmote.services import auth_service, limite_service, password_service, token_service
 from sysmote.services.auth_service import AuthError
 
@@ -16,8 +21,36 @@ def _en(delta: timedelta) -> str:
     return (datetime.now(UTC) + delta).isoformat()
 
 
+class _Reloj:
+    """Reloj de mentira: `auth_service` lo consulta en vez del real, y el test lo adelanta a mano."""
+
+    def __init__(self):
+        self.ahora = datetime.now(UTC)
+
+    def __call__(self):
+        return self.ahora
+
+    def avanzar(self, delta: timedelta) -> None:
+        self.ahora += delta
+
+
+@pytest.fixture
+def reloj(monkeypatch):
+    reloj = _Reloj()
+    monkeypatch.setattr(auth_service, "_ahora", reloj)
+    return reloj
+
+
+def _sesion_de(connection, resultado):
+    return sesion_repository.obtener_por_hash_token(
+        connection, token_service.hashear(resultado["token"])
+    )
+
+
 def _abrir_registro(connection, caduca_en=None):
-    codigo_registro_repository.crear(connection, auth_service.hash_codigo(CODIGO), caduca_en or _en(timedelta(minutes=10)))
+    codigo_registro_repository.crear(
+        connection, auth_service.hash_codigo(CODIGO), caduca_en or _en(timedelta(minutes=10))
+    )
 
 
 def _cuenta(connection, contrasena="Clave1"):
@@ -66,40 +99,75 @@ def test_registrar_crea_usuario_con_argon2_y_devuelve_sesion(connection):
 
 
 def test_registrar_sin_registro_abierto_da_registro_cerrado(connection):
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "registro_cerrado"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")
+        )
+        == "registro_cerrado"
+    )
 
 
 def test_registrar_con_codigo_equivocado_da_codigo_invalido(connection):
     _abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")) == "codigo_invalido"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")
+        )
+        == "codigo_invalido"
+    )
 
 
 def test_registrar_con_el_codigo_caducado_da_codigo_caducado(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_caducado"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")
+        )
+        == "codigo_caducado"
+    )
 
 
 def test_registrar_con_otro_codigo_cuando_solo_hay_uno_caducado_da_codigo_invalido(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")) == "codigo_invalido"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, "OTRO", "alex", "Clave1", "Móvil")
+        )
+        == "codigo_invalido"
+    )
 
 
 def test_registrar_con_un_codigo_ya_usado_da_codigo_invalido(connection):
     _abrir_registro(connection)
-    codigo = codigo_registro_repository.obtener_por_hash(connection, auth_service.hash_codigo(CODIGO))
+    codigo = codigo_registro_repository.obtener_por_hash(
+        connection, auth_service.hash_codigo(CODIGO)
+    )
     codigo_registro_repository.marcar_usado(connection, codigo.id)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_invalido"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")
+        )
+        == "codigo_invalido"
+    )
 
 
 def test_el_codigo_caducado_deja_de_reconocerse_al_abrir_un_registro_nuevo(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
     auth_service.abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")) == "codigo_invalido"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")
+        )
+        == "codigo_invalido"
+    )
 
 
 def test_el_codigo_caducado_se_distingue_antes_que_la_contrasena_debil(connection):
     _abrir_registro(connection, caduca_en=_en(timedelta(minutes=-1)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "abc", "Móvil")) == "codigo_caducado"
+    assert (
+        _codigo_de_error(lambda: auth_service.registrar(connection, CODIGO, "alex", "abc", "Móvil"))
+        == "codigo_caducado"
+    )
 
 
 def test_registrar_con_contrasena_debil_no_consume_el_codigo(connection):
@@ -109,30 +177,53 @@ def test_registrar_con_contrasena_debil_no_consume_el_codigo(connection):
     assert error.value.codigo == "contrasena_debil"
     assert len(error.value.extra["motivos"]) == 3
 
-    assert auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")["usuario"] == "alex"
+    assert (
+        auth_service.registrar(connection, CODIGO, "alex", "Clave1", "Móvil")["usuario"] == "alex"
+    )
 
 
 def test_registrar_dos_veces_da_registro_cerrado(connection):
     _cuenta(connection)
-    codigo_registro_repository.crear(connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10)))
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")) == "registro_cerrado"
+    codigo_registro_repository.crear(
+        connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10))
+    )
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")
+        )
+        == "registro_cerrado"
+    )
 
 
 def test_dos_registros_simultaneos_solo_crean_una_cuenta(connection, monkeypatch):
     _cuenta(connection)
-    codigo_registro_repository.crear(connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10)))
+    codigo_registro_repository.crear(
+        connection, auth_service.hash_codigo("NUEVO"), _en(timedelta(minutes=10))
+    )
     # Simula la carrera: la comprobación de «ya hay cuenta» pasa porque el otro registro aún no había insertado.
     monkeypatch.setattr(usuario_repository, "existe_alguno", lambda _connection: False)
 
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")) == "registro_cerrado"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, "NUEVO", "otro", "Clave1", "Móvil")
+        )
+        == "registro_cerrado"
+    )
     assert usuario_repository.obtener_por_nombre(connection, "otro") is None
 
 
 def test_login_con_usuario_inexistente_tambien_ejecuta_argon2(connection, monkeypatch):
     verificadas = []
-    monkeypatch.setattr(password_service, "verificar", lambda hash_contrasena, contrasena: verificadas.append(contrasena) or False)
+    monkeypatch.setattr(
+        password_service,
+        "verificar",
+        lambda hash_contrasena, contrasena: verificadas.append(contrasena) or False,
+    )
 
-    assert _codigo_de_error(lambda: auth_service.login(connection, "nadie", "Clave1", "Pixel 8")) == "credenciales_invalidas"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "nadie", "Clave1", "Pixel 8"))
+        == "credenciales_invalidas"
+    )
     assert verificadas == ["Clave1"]
 
 
@@ -148,11 +239,17 @@ def test_login_correcto_sin_sesion_activa_abre_sesion(connection):
 
 def test_login_con_contrasena_incorrecta(connection):
     _cuenta(connection)
-    assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet")) == "credenciales_invalidas"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet"))
+        == "credenciales_invalidas"
+    )
 
 
 def test_login_con_usuario_inexistente(connection):
-    assert _codigo_de_error(lambda: auth_service.login(connection, "nadie", "Clave1", "Tablet")) == "credenciales_invalidas"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "nadie", "Clave1", "Tablet"))
+        == "credenciales_invalidas"
+    )
 
 
 def test_login_con_sesion_activa_crea_solicitud_pendiente_y_no_sesion(connection):
@@ -182,12 +279,18 @@ def test_solicitud_aprobada_entrega_token_una_vez_y_revoca_la_sesion_anterior(co
     assert auth_service.consultar_solicitud(connection, solicitud) == {"estado": "pendiente"}
 
     auth_service.responder_solicitud(connection, solicitud, aprobar=True)
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"])) == "no_autenticado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
+        == "no_autenticado"
+    )
 
     resultado = auth_service.consultar_solicitud(connection, solicitud)
     assert resultado["estado"] == "aprobada"
     assert auth_service.autenticar(connection, resultado["token"]).dispositivo == "Tablet"
-    assert _codigo_de_error(lambda: auth_service.consultar_solicitud(connection, solicitud)) == "solicitud_desconocida"
+    assert (
+        _codigo_de_error(lambda: auth_service.consultar_solicitud(connection, solicitud))
+        == "solicitud_desconocida"
+    )
 
 
 def test_solicitud_rechazada_mantiene_la_sesion_anterior(connection):
@@ -209,7 +312,10 @@ def test_solicitud_sin_respuesta_caduca(connection):
 
 
 def test_solicitud_desconocida(connection):
-    assert _codigo_de_error(lambda: auth_service.consultar_solicitud(connection, "no-existe")) == "solicitud_desconocida"
+    assert (
+        _codigo_de_error(lambda: auth_service.consultar_solicitud(connection, "no-existe"))
+        == "solicitud_desconocida"
+    )
 
 
 def test_responder_solicitud_ya_resuelta_no_hace_nada(connection):
@@ -222,27 +328,125 @@ def test_responder_solicitud_ya_resuelta_no_hace_nada(connection):
     assert auth_service.autenticar(connection, primera["token"]).dispositivo == "Pixel 8"
 
 
-def test_sesion_caducada_por_inactividad_no_cuenta_como_activa_y_el_login_no_pide_confirmacion(connection):
+def test_la_sesion_deja_de_valer_a_los_7_dias_de_iniciarla(connection, reloj):
     primera = _cuenta(connection)
-    connection.execute("UPDATE sesion SET ultimo_acceso = ?", (_en(timedelta(days=-31)),))
 
+    reloj.avanzar(timedelta(days=7) - timedelta(seconds=1))
+    assert auth_service.autenticar(connection, primera["token"]).dispositivo == "Pixel 8"
+    assert auth_service.estado(connection)["sesion_activa"] is True
+
+    reloj.avanzar(timedelta(seconds=1))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
+        == "sesion_caducada"
+    )
     assert auth_service.estado(connection)["sesion_activa"] is False
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"])) == "no_autenticado"
+
+
+def test_un_token_desconocido_o_mal_formado_sigue_dando_no_autenticado_aunque_haya_sesiones(
+    connection, reloj
+):
+    _cuenta(connection)
+    reloj.avanzar(timedelta(days=30))
+
+    for token in ("inventado", "no es un token!", "A" * 43):
+        assert (
+            _codigo_de_error(lambda t=token: auth_service.autenticar(connection, t))
+            == "no_autenticado"
+        )
+
+
+def test_una_sesion_cerrada_antes_de_caducar_da_no_autenticado_y_despues_sesion_caducada(
+    connection, reloj
+):
+    resultado = _cuenta(connection)
+    auth_service.cerrar_sesion(connection, auth_service.autenticar(connection, resultado["token"]))
+
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "no_autenticado"
+    )
+    reloj.avanzar(timedelta(days=7))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "sesion_caducada"
+    )
+
+
+def test_una_sesion_desemparejada_da_desemparejado_hasta_su_caduca_en_y_despues_sesion_caducada(
+    connection, reloj
+):
+    resultado = _cuenta(connection)
+    auth_service.desemparejar_sesion_activa(connection)
+
+    reloj.avanzar(timedelta(days=7) - timedelta(seconds=1))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "desemparejado"
+    )
+    reloj.avanzar(timedelta(seconds=1))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "sesion_caducada"
+    )
+
+
+def test_con_la_sesion_caducada_el_login_no_pide_confirmacion(connection, reloj):
+    _cuenta(connection)
+    reloj.avanzar(timedelta(days=8))
+
     assert "token" in auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+
+def test_usar_la_sesion_no_alarga_su_caducidad(connection, reloj):
+    primera = _cuenta(connection)
+    caduca_en = _sesion_de(connection, primera).caduca_en
+
+    reloj.avanzar(timedelta(days=6))
+    auth_service.autenticar(connection, primera["token"])  # un uso el día 6
+
+    assert _sesion_de(connection, primera).caduca_en == caduca_en
+    reloj.avanzar(timedelta(days=1))  # día 7: caduca aunque se usara el día anterior
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
+        == "sesion_caducada"
+    )
+
+
+def test_las_sesiones_no_se_borran_nunca(connection, reloj):
+    _cuenta(connection)
+    auth_service.cerrar_todas_las_sesiones(connection)
+    auth_service.login(connection, "alex", "Clave1", "Tablet")
+    reloj.avanzar(timedelta(days=8))
+    auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+    historial = connection.execute("SELECT id, motivo_revocacion FROM sesion ORDER BY id")
+    assert historial.fetchall() == [(1, "cerrar_todas"), (2, "caducada"), (3, None)]
 
 
 def test_autenticar_sin_token_o_con_token_desconocido(connection):
     assert _codigo_de_error(lambda: auth_service.autenticar(connection, None)) == "no_autenticado"
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, "inventado")) == "no_autenticado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, "inventado"))
+        == "no_autenticado"
+    )
 
 
-def test_autenticar_renueva_el_ultimo_acceso(connection):
+def test_la_sesion_nueva_guarda_su_caducidad_a_los_7_dias_de_crearse(connection):
+    sesion = _sesion_de(connection, _cuenta(connection))
+
+    assert datetime.fromisoformat(sesion.caduca_en) - datetime.fromisoformat(
+        sesion.creado_en
+    ) == timedelta(days=7)
+
+
+def test_autenticar_sigue_anotando_el_ultimo_acceso(connection, reloj):
     resultado = _cuenta(connection)
-    connection.execute("UPDATE sesion SET ultimo_acceso = ?", (_en(timedelta(days=-10)),))
+    reloj.avanzar(timedelta(days=2))
 
-    sesion = auth_service.autenticar(connection, resultado["token"])
+    auth_service.autenticar(connection, resultado["token"])
 
-    assert sesion_repository.obtener_por_hash_token(connection, sesion.hash_token).ultimo_acceso > _en(timedelta(days=-1))
+    assert _sesion_de(connection, resultado).ultimo_acceso == reloj.ahora.isoformat()
 
 
 def test_logout_revoca_la_sesion(connection):
@@ -251,7 +455,10 @@ def test_logout_revoca_la_sesion(connection):
 
     auth_service.cerrar_sesion(connection, sesion)
 
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "no_autenticado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "no_autenticado"
+    )
 
 
 def test_desemparejar_hace_que_la_siguiente_peticion_reciba_desemparejado(connection):
@@ -260,7 +467,10 @@ def test_desemparejar_hace_que_la_siguiente_peticion_reciba_desemparejado(connec
 
     auth_service.desemparejar(connection, sesion)
 
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "desemparejado"
+    )
 
 
 def _fallar(connection, veces, usuario="alex"):
@@ -282,7 +492,10 @@ def test_cinco_fallos_bloquean_el_login_incluso_con_la_contrasena_correcta(conne
 def test_el_quinto_fallo_aun_da_credenciales_invalidas(connection):
     _cuenta(connection)
     _fallar(connection, 4)
-    assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet")) == "credenciales_invalidas"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet"))
+        == "credenciales_invalidas"
+    )
 
 
 def test_un_login_correcto_pone_el_contador_a_cero(connection):
@@ -302,12 +515,17 @@ def test_el_login_con_solicitud_pendiente_no_cuenta_como_fallo(connection):
 
 def test_un_usuario_inexistente_tambien_se_bloquea(connection):
     _fallar(connection, 5, usuario="nadie")
-    assert _codigo_de_error(lambda: auth_service.login(connection, "nadie", "x", "Tablet")) == "demasiados_intentos"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "nadie", "x", "Tablet"))
+        == "demasiados_intentos"
+    )
 
 
 def test_cada_intento_queda_registrado_con_su_origen(connection):
     _cuenta(connection)
-    _codigo_de_error(lambda: auth_service.login(connection, "alex", "mala", "Tablet", origen="127.0.0.1"))
+    _codigo_de_error(
+        lambda: auth_service.login(connection, "alex", "mala", "Tablet", origen="127.0.0.1")
+    )
     auth_service.login(connection, "alex", "Clave1", "Tablet", origen="127.0.0.1")
 
     filas = connection.execute("SELECT origen, exito FROM intento_login ORDER BY id").fetchall()
@@ -339,13 +557,21 @@ def test_abrir_registro_guarda_solo_el_hash(connection):
 def test_abrir_registro_invalida_el_codigo_anterior(connection):
     primero, _ = auth_service.abrir_registro(connection)
     auth_service.abrir_registro(connection)
-    assert _codigo_de_error(lambda: auth_service.registrar(connection, primero, "alex", "Clave1", "Móvil")) == "codigo_invalido"
+    assert (
+        _codigo_de_error(
+            lambda: auth_service.registrar(connection, primero, "alex", "Clave1", "Móvil")
+        )
+        == "codigo_invalido"
+    )
 
 
 def test_el_codigo_sirve_escrito_sin_guiones_y_en_minusculas(connection):
     codigo, _ = auth_service.abrir_registro(connection)
     escrito_a_mano = codigo.replace("-", "").lower()
-    assert auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", "Móvil")["usuario"] == "alex"
+    assert (
+        auth_service.registrar(connection, escrito_a_mano, "alex", "Clave1", "Móvil")["usuario"]
+        == "alex"
+    )
 
 
 def test_el_codigo_sirve_si_se_teclea_cero_por_o_y_uno_por_i(connection):
@@ -362,9 +588,15 @@ def test_cambiar_contrasena_actualiza_el_hash_y_revoca_las_sesiones(connection):
 
     auth_service.cambiar_contrasena(connection, "Nueva123")
 
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "no_autenticado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "no_autenticado"
+    )
     assert auth_service.login(connection, "alex", "Nueva123", "Tablet")["usuario"] == "alex"
-    assert _codigo_de_error(lambda: auth_service.login(connection, "alex", "Clave1", "Tablet")) == "credenciales_invalidas"
+    assert (
+        _codigo_de_error(lambda: auth_service.login(connection, "alex", "Clave1", "Tablet"))
+        == "credenciales_invalidas"
+    )
 
 
 def test_cambiar_contrasena_levanta_el_bloqueo_por_intentos(connection):
@@ -389,7 +621,10 @@ def test_cambiar_contrasena_debil_no_cambia_nada(connection):
 def test_cerrar_todas_las_sesiones(connection):
     resultado = _cuenta(connection)
     auth_service.cerrar_todas_las_sesiones(connection)
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "no_autenticado"
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "no_autenticado"
+    )
     assert "token" in auth_service.login(connection, "alex", "Clave1", "Tablet")
 
 
@@ -411,7 +646,9 @@ def test_desemparejar_sin_sesion_activa_no_hace_nada(connection):
 
     auth_service.desemparejar_sesion_activa(connection)
 
-    sesion = sesion_repository.obtener_por_hash_token(connection, token_service.hashear(resultado["token"]))
+    sesion = sesion_repository.obtener_por_hash_token(
+        connection, token_service.hashear(resultado["token"])
+    )
     assert sesion.motivo_revocacion == "cerrar_todas"
 
 
@@ -422,5 +659,7 @@ def test_desemparejar_sesion_activa_desde_la_tui(connection):
     auth_service.desemparejar_sesion_activa(connection)
 
     assert auth_service.sesion_activa(connection) is None
-    assert _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"])) == "desemparejado"
-
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "desemparejado"
+    )

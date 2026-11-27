@@ -38,7 +38,9 @@ def test_uri_sin_codigo_es_el_de_volver_a_emparejar():
 
 
 def test_uri_incluye_iroh_antes_del_codigo_cuando_existe():
-    uri = pairing_service.uri_emparejamiento("192.168.1.20:8443", HUELLA, codigo=CODIGO, iroh="abc123")
+    uri = pairing_service.uri_emparejamiento(
+        "192.168.1.20:8443", HUELLA, codigo=CODIGO, iroh="abc123"
+    )
     assert list(parse_qs(urlparse(uri).query)) == ["v", "dir", "huella", "iroh", "codigo"]
 
 
@@ -68,6 +70,8 @@ def test_el_qr_renderizado_se_decodifica_con_un_lector_real(tmp_path):
     imagen = tmp_path / "qr.pbm"
     imagen.write_text(f"P1\n{ancho} {len(filas)}\n" + "\n".join(filas) + "\n")
 
-    salida = subprocess.run(["zbarimg", "--quiet", "--raw", str(imagen)], capture_output=True, text=True)
+    salida = subprocess.run(
+        ["zbarimg", "--quiet", "--raw", str(imagen)], capture_output=True, text=True, check=False
+    )
 
     assert salida.stdout.strip() == uri

@@ -1,11 +1,13 @@
 """Acceso a la tabla `sesion`: las sesiones de la app, identificadas por el hash de su token."""
 
 import sqlite3
-from datetime import UTC, datetime
 
 from sysmote.models.auth import Sesion
 
-_COLUMNS = "id, usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso, revocada, motivo_revocacion"
+_COLUMNS = (
+    "id, usuario_id, hash_token, dispositivo, creado_en, caduca_en, ultimo_acceso, "
+    "revocada, motivo_revocacion"
+)
 
 
 def _to_sesion(row: tuple) -> Sesion:
@@ -15,19 +17,29 @@ def _to_sesion(row: tuple) -> Sesion:
         hash_token=row[2],
         dispositivo=row[3],
         creado_en=row[4],
-        ultimo_acceso=row[5],
-        revocada=bool(row[6]),
-        motivo_revocacion=row[7],
+        caduca_en=row[5],
+        ultimo_acceso=row[6],
+        revocada=bool(row[7]),
+        motivo_revocacion=row[8],
     )
 
 
-def crear(connection: sqlite3.Connection, usuario_id: int, hash_token: str, dispositivo: str) -> Sesion:
-    """Crea una sesión sin revocar, con la fecha actual como creación y último acceso."""
-    ahora = datetime.now(UTC).isoformat()
+def crear(
+    connection: sqlite3.Connection,
+    usuario_id: int,
+    hash_token: str,
+    dispositivo: str,
+    creado_en: str,
+    caduca_en: str,
+) -> Sesion:
+    """Crea una sesión sin revocar; su último acceso es el momento de creación.
+
+    Las fechas las calcula el servicio (ISO 8601 en UTC), que es quien decide cuánto dura.
+    """
     cursor = connection.execute(
-        "INSERT INTO sesion (usuario_id, hash_token, dispositivo, creado_en, ultimo_acceso) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (usuario_id, hash_token, dispositivo, ahora, ahora),
+        "INSERT INTO sesion (usuario_id, hash_token, dispositivo, creado_en, caduca_en, "
+        "ultimo_acceso) VALUES (?, ?, ?, ?, ?, ?)",
+        (usuario_id, hash_token, dispositivo, creado_en, caduca_en, creado_en),
     )
     connection.commit()
     return Sesion(
@@ -35,8 +47,9 @@ def crear(connection: sqlite3.Connection, usuario_id: int, hash_token: str, disp
         usuario_id=usuario_id,
         hash_token=hash_token,
         dispositivo=dispositivo,
-        creado_en=ahora,
-        ultimo_acceso=ahora,
+        creado_en=creado_en,
+        caduca_en=caduca_en,
+        ultimo_acceso=creado_en,
         revocada=False,
         motivo_revocacion=None,
     )
@@ -51,18 +64,16 @@ def obtener_por_hash_token(connection: sqlite3.Connection, hash_token: str) -> S
 
 
 def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
-    """Devuelve la sesión sin revocar más reciente; no comprueba si ha caducado por inactividad."""
+    """Devuelve la sesión sin revocar más reciente; no comprueba si ya ha llegado a su `caduca_en`."""
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM sesion WHERE revocada = 0 ORDER BY id DESC LIMIT 1"
     ).fetchone()
     return _to_sesion(row) if row else None
 
 
-def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
-    """Pone el último acceso a ahora: cada uso renueva los 30 días de caducidad."""
-    connection.execute(
-        "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (datetime.now(UTC).isoformat(), sesion_id)
-    )
+def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int, ahora: str) -> None:
+    """Anota el último uso de la sesión (lo muestra la TUI). No cambia su `caduca_en`."""
+    connection.execute("UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (ahora, sesion_id))
     connection.commit()
 
 

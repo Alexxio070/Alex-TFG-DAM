@@ -1,6 +1,9 @@
 """Pantalla principal: banner, área de datos y la barra de cuatro botones."""
 
+from typing import ClassVar
+
 from textual.app import ComposeResult
+from textual.binding import BindingType
 from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Static
@@ -34,7 +37,7 @@ SECTION_IDS = {
 class MainScreen(Screen):
     """Banner arriba, área de datos en el centro, barra de botones abajo."""
 
-    BINDINGS = [("q", "quit", "Salir")]
+    BINDINGS: ClassVar[list[BindingType]] = [("q", "quit", "Salir")]
 
     CSS = """
     #banner {
@@ -82,12 +85,11 @@ class MainScreen(Screen):
         with Container(id="banner"):
             yield Static(BANNER, id="banner-text")
 
-        with Container(id="data"):
-            with ContentSwitcher(id="sections"):
-                yield PairingSection(id="pairing", classes="section")
-                yield HistorySection(id="history", classes="section")
-                yield DatabaseSection(id="database", classes="section")
-                yield NotesSection(id="notes", classes="section")
+        with Container(id="data"), ContentSwitcher(id="sections"):
+            yield PairingSection(id="pairing", classes="section")
+            yield HistorySection(id="history", classes="section")
+            yield DatabaseSection(id="database", classes="section")
+            yield NotesSection(id="notes", classes="section")
 
         with Horizontal(id="buttons"):
             yield Button("Emparejamiento", id="btn-pairing")

@@ -64,7 +64,7 @@ Qué aporta:
 - **No hay una sesión «principal» permanente:** el PC no acumula terminales que nadie ha pedido.
 
 Qué implica:
-- **Hay un retraso** entre el primer toque y que la sesión esté lista (crear la sesión, abrir la ventana del PC y engancharse); estimado en 200 ms–1 s en LAN y hasta 1,5–2 s en WAN por relé (sin verificar; a medir en la fase 4). Mientras tanto se mantiene el mensaje genérico o un indicador de carga, y las teclas que lleguen en ese intervalo se guardan y se envían en orden al estar enganchada, para no perder ninguna.
+- **Hay un retraso** entre el primer toque y que la sesión esté lista (crear la sesión, abrir la ventana del PC y engancharse); estimado en 200 ms–1 s en LAN y hasta 1,5–2 s en WAN por relé (sin verificar; a medir en la fase 5). Mientras tanto se mantiene el mensaje genérico o un indicador de carga, y las teclas que lleguen en ese intervalo se guardan y se envían en orden al estar enganchada, para no perder ninguna.
 - **Aviso obligatorio:** como un simple toque o tecla ya abre una ventana en el PC, aunque el usuario no llegue a ejecutar nada, el mensaje genérico debe decirlo explícitamente (por ejemplo, «Toca para abrir una terminal en tu PC»), para que no sea una sorpresa. Para quitar esa terminal, se cierra la pestaña o se escribe `exit`.
 - Qué cuenta exactamente como el toque o tecla que dispara la creación queda por afinar (ver sección 9): por ejemplo, si un toque accidental al hacer scroll debería contar.
 
@@ -112,7 +112,7 @@ Cada emulador pasa el comando a ejecutar de forma distinta. Hace falta una tabla
 
 ## 9. Pendientes
 
-### Prototipos antes de implementar (fase 4)
+### Prototipos antes de implementar (fase 5)
 
 1. **Cierre de la sesión al cerrar la ventana del PC.** Por defecto, cerrar la ventana solo desengancha el cliente. Dos opciones: un gancho de tmux o que el agente vigile el proceso de la ventana (algunos emuladores se desvinculan y su PID no es fiable). El gancho debe distinguir la ventana del PC del cliente interno del agente.
 2. **Historial sin duplicados:** recuperar lo acumulado y engancharse en vivo sin repetir líneas.

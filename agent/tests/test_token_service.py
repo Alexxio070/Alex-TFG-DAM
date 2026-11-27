@@ -1,4 +1,4 @@
-"""Tokens de sesión: formato, aleatoriedad, hash y caducidad de 30 días."""
+"""Tokens de sesión: formato, aleatoriedad, hash y caducidad absoluta a los 7 días."""
 
 import re
 from datetime import UTC, datetime, timedelta
@@ -21,11 +21,20 @@ def test_hash_es_sha256_hexadecimal_y_no_contiene_el_token():
     assert token not in hash_token
 
 
-def test_no_caduca_con_acceso_reciente():
-    hace_29_dias = (datetime.now(UTC) - timedelta(days=29)).isoformat()
-    assert token_service.esta_caducada(hace_29_dias) is False
+CREADA = datetime(2026, 12, 1, 10, 0, tzinfo=UTC)
 
 
-def test_caduca_tras_30_dias_sin_uso():
-    hace_31_dias = (datetime.now(UTC) - timedelta(days=31)).isoformat()
-    assert token_service.esta_caducada(hace_31_dias) is True
+def test_la_caducidad_es_7_dias_despues_de_crearse():
+    assert token_service.calcular_caducidad(CREADA) == CREADA + timedelta(days=7)
+
+
+def test_no_caduca_antes_de_su_caduca_en():
+    caduca_en = token_service.calcular_caducidad(CREADA).isoformat()
+    un_segundo_antes = CREADA + timedelta(days=7) - timedelta(seconds=1)
+    assert token_service.esta_caducada(caduca_en, un_segundo_antes) is False
+
+
+def test_caduca_al_llegar_su_caduca_en_y_despues():
+    caduca_en = token_service.calcular_caducidad(CREADA).isoformat()
+    assert token_service.esta_caducada(caduca_en, CREADA + timedelta(days=7)) is True
+    assert token_service.esta_caducada(caduca_en, CREADA + timedelta(days=8)) is True
