@@ -29,5 +29,5 @@ Para no duplicar, estas cosas siguen en los documentos generales:
 ## Por hacer
 
 - Medir a mano las fugas de recursos nativos de iroh en el móvil (procedimiento en `04-pruebas.md`, «Limitaciones conocidas»).
-- Servicio systemd que mantenga el túnel en marcha sin abrir la TUI (fase 5); hoy lo arranca la TUI (`sysmote.server.Servidores`).
+- Servicio systemd que mantenga el túnel en marcha sin abrir la TUI (fase 4); hoy lo arranca la TUI (`sysmote.server.Servidores`).
 - Decidir si vale la pena montar un `Endpoint` iroh real dentro del entorno de test de Flutter: hoy la lógica de `IrohConnection` se prueba con una conexión falsa, y la conexión iroh real solo está probada a mano (ver `04-pruebas.md` §0).

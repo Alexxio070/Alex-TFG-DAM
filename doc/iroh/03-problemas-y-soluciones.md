@@ -130,7 +130,7 @@ Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.
 **Síntomas probables:**
 - Sin límite de conexiones ni de *streams* simultáneos, cualquiera que conociera el identificador podía saturar el agente.
 - Un *stream* que no enviaba nada se quedaba abierto sin límite de tiempo.
-- Cualquier excepción que no fuera `iroh.IrohError` en el bucle de `run()` tumbaba el túnel entero, y nada lo reiniciaba hasta el servicio de la fase 5.
+- Cualquier excepción que no fuera `iroh.IrohError` en el bucle de `run()` tumbaba el túnel entero, y nada lo reiniciaba hasta el servicio de la fase 4.
 
 **Solución:** `Limits` (4 conexiones, 8 *streams* por conexión, 60 s de inactividad) y un bucle `_serve` que registra cualquier excepción y sigue escuchando. Detalle en `02-implementacion.md` §2.
 
@@ -138,4 +138,4 @@ Cubierto por tests en `App-movil/test/metrics_widget_test.dart`.
 - **Al llegar al límite de conexiones se cierra la más antigua, no la nueva.** Si el móvil se reconecta, su conexión muerta puede seguir contando hasta que el agente la detecte; rechazar la nueva dejaría al propio usuario fuera.
 - **El límite de *streams* se cuenta en el túnel.** `Connection.set_max_concurrent_bi_streams` no se aplica si se llama después de aceptar la conexión: en una prueba (18/11/2026) el límite estaba en 2 y el cliente abrió 4 *streams*, todos aceptados. Cerrar una conexión con `Connection.close(código, motivo)` sí funciona: el cliente ve el código y el motivo.
 
-**Pendiente de revisar en la fase 4:** la terminal irá por un *stream* largo (WebSocket) y 60 s de inactividad la cortarían si está quieta. Habrá que subir el valor o añadir *keepalive*, que ya consta como pendiente en `04-plan-de-fases.md`. Los valores (4, 8 y 60 s) son propuestas razonadas, no medidas.
+**Pendiente de revisar en la fase 5:** la terminal irá por un *stream* largo (WebSocket) y 60 s de inactividad la cortarían si está quieta. Habrá que subir el valor o añadir *keepalive*, que ya consta como pendiente en `04-plan-de-fases.md`. Los valores (4, 8 y 60 s) son propuestas razonadas, no medidas.
