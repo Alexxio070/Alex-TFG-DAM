@@ -1,6 +1,6 @@
 # Estructura de la app Flutter
 
-Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 19/11/2026.
+Documento de la organización de carpetas de `App-movil/lib/` y de cómo encajan las piezas. Arquitectura: **MVVM + provider** (ver `CLAUDE.md`). Árbol verificado leyendo `App-movil/lib/` el 27/11/2026.
 
 La interfaz sigue [`interfaz-app.md`](interfaz-app.md), que refleja el código real de cada pantalla. `historico/ui-v1` y `historico/ui-v2` se conservan como historial (el prototipo inicial y la primera especificación de Notas).
 
@@ -10,7 +10,7 @@ La interfaz sigue [`interfaz-app.md`](interfaz-app.md), que refleja el código r
 lib/
   main.dart                      arranque: crea los repositorios reales y llama a runApp
   app_providers.dart             lista única de providers y ViewModels (buildProviders)
-  app.dart                       MaterialApp y tema; pantalla de carga mientras cargan los ajustes, ShellView con sesión y LoginView sin ella
+  app.dart                       MaterialApp y tema; pantalla de carga mientras cargan los ajustes, ShellView con sesión y LoginView (la bienvenida y los formularios) sin ella
   core/                          lo que usan todas las pantallas
     format.dart                  números con coma decimal y fechas relativas
     open_link.dart                abrir un enlace en el navegador
@@ -32,7 +32,8 @@ lib/
       modal_card.dart            diálogo centrado y hoja inferior, con scrim
   data/                          de dónde salen los datos
     models/                      home_item, metrics, note, note_links, settings, auth (enums, constantes y los tipos del contrato de login)
-    repositories/                interfaces abstractas, incluidas AuthRepository y TokenStorage; agent_exceptions.dart: errores comunes del agente (inalcanzable y sesión perdida)
+    repositories/                interfaces abstractas, incluidas AuthRepository y TokenStorage; agent_exceptions.dart: errores comunes del agente (inalcanzable, con su causa, y sesión perdida o caducada)
+    device_name.dart             nombre del dispositivo que se propone al iniciar sesión o registrar la cuenta (fabricante y modelo del móvil)
     agent_metrics_repository.dart  parte común de los repositorios de métricas del agente (parseo del JSON, loadInfo, loadHistory, watch)
     agent_auth_repository.dart   parte común de los repositorios de autenticación (traduce las respuestas y errores del contrato de la fase 3)
     connection_mode_metrics_repository.dart  elige entre HTTP e iroh según el modo de conexión de Ajustes
@@ -48,7 +49,7 @@ lib/
     terminal/                    pestañas, xterm.dart y fila de teclas extra
     notes/                       lista de notas, búsqueda y formulario
     settings/                    ajustes
-    auth/                        AuthViewModel y LoginView (login, fase 3); widgets/: formularios de registro y login, espera de confirmación y avisos
+    auth/                        AuthViewModel y LoginView (login, fase 3); widgets/: bienvenida (welcome_view), popup de aviso (info_dialog), formularios de registro y login (con «Volver»), espera de confirmación y avisos
 test/
   fakes/                         implementaciones en memoria que solo usan los tests
   helpers/                       app_harness.dart: monta la app con repositorios falsos (app, pumpFor, openSection)
@@ -63,8 +64,8 @@ Piezas compartidas. Los controles que aparecen en más de una pantalla (interrup
 ### data/
 Todo lo relacionado con los datos.
 
-- `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones; `auth.dart` tiene los tipos del login (`AgentStatus`, `LoginOutcome`, `LoginRequestStatus`, `SessionInfo`), según el contrato de la fase 3.
-- `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo. `agent_exceptions.dart` reúne los errores que comparten métricas y autenticación: `AgentUnavailableException` y los dos 401 de sesión (`throwIfSessionError`).
+- `models/`: clases simples que solo guardan datos. `note_links.dart` contiene la detección de enlaces; `settings.dart` tiene los enums de ajustes (`TempUnit`, `StorageUnit`, `ConnectionMode`) y sus conversiones; el valor `SettingsData`, con todos los ajustes tal como se guardan (incluida la marca de emparejada), está con su interfaz en `repositories/settings_repository.dart`; `auth.dart` tiene los tipos del login (`AgentStatus`, `LoginOutcome`, `LoginRequestStatus`, `SessionInfo`), según el contrato de la fase 3.
+- `repositories/`: interfaces que dicen qué se puede hacer, sin decir cómo. `agent_exceptions.dart` reúne los errores que comparten métricas y autenticación: `AgentUnavailableException`, con su causa (`AgentUnavailableCause`: sin respuesta a tiempo, sin conexión, huella, identificador iroh no válido o respuesta inesperada) para que la bienvenida diga por qué no responde el PC, y los tres 401 de sesión (`no_autenticado`, `sesion_caducada` y `desemparejado`, con `throwIfSessionError`).
 - `http/`, `iroh/` y `local/`: implementaciones reales (agente por HTTPS, agente por iroh, ajustes con `shared_preferences`, token de sesión con `flutter_secure_storage`). Métricas y autenticación tienen una parte común (`agent_metrics_repository.dart`, `agent_auth_repository.dart`) y cada transporte solo implementa cómo enviar la petición; los `connection_mode_*` eligen uno u otro según el ajuste. En HTTPS, el cliente no trae ninguna CA y solo acepta el certificado cuya huella (SHA-256 del DER) coincide con la guardada en Ajustes; por iroh no hay TLS propio y Métricas y Autenticación comparten una única `IrohConnection`.
 - `fake/`: **placeholders**, implementaciones con datos de ejemplo que se usan de verdad en la app (terminal, macros, notas) mientras no existe esa parte del agente. No son código muerto: se sustituirán por implementaciones reales en `main.dart`. El doble de pruebas de la autenticación (`FakeAuthRepository`, que simula el agente según el contrato de la fase 3) vive en `test/fakes/`, no en `lib/`.
 
@@ -145,7 +146,10 @@ Ejemplo con un repositorio ya real, Métricas:
 - Notas con tarjetas de texto seleccionable y enlaces pulsables, y formulario aparte (ver `historico/ui-v2`).
 - Los ViewModels de las secciones se registran en `app_providers.dart`, así que su estado se conserva al cambiar de sección.
 - Identificador de la app: `io.github.alexxio070.sysmote`; nombre visible: «Sysmote».
-- Login (fase 3, 18/11/2026): `AuthViewModel` es la única fuente de verdad sobre si hay sesión y guarda el token en memoria; `app.dart` solo muestra `ShellView` con sesión y `LoginView` en cualquier otro caso. `ShellViewModel`, `NotesViewModel` y `MetricsViewModel` lo escuchan o le pasan los errores de sesión (`handleSessionError`: un `401 no_autenticado` vuelve al login y un `401 desemparejado` olvida además dirección, huella e identificador iroh). Como la conexión se configura en Ajustes, que queda dentro de la app, el login ofrece «Conexión con el PC» (los mismos campos en una hoja inferior) para no dejar al usuario atrapado.
+- Login (fase 3, 18/11/2026) y bienvenida (27/11/2026): `AuthViewModel` es la única fuente de verdad sobre si hay sesión y guarda el token en memoria; `app.dart` solo muestra `ShellView` con sesión y `LoginView` en cualquier otro caso. `ShellViewModel`, `NotesViewModel` y `MetricsViewModel` lo escuchan o le pasan los errores de sesión (`handleSessionError`: un `401 no_autenticado` vuelve a la bienvenida; un `401 sesion_caducada`, que el agente da cuando el token pasa de 7 días, también, con el aviso «Tu sesión ha caducado»; y un `401 desemparejado` olvida además dirección, huella, identificador iroh y la marca de emparejada).
+- Bienvenida: sin sesión, `LoginView` muestra `WelcomeView` y desde ella se abren los formularios de registro y login, que no tienen «Conexión con el PC» pero sí «Volver» (y el gesto atrás hace lo mismo). Sin emparejar, «Conectar con el agente» abre `connection_sheet.dart` (los mismos campos de Ajustes en una hoja inferior), para no dejar al usuario atrapado fuera de Ajustes. Los avisos de la bienvenida son un popup (`info_dialog.dart`, `AlertDialog` con «Aceptar»), que `AuthViewModel` devuelve como texto en vez de guardarlo en el estado, y un mensaje gris con la causa de que el PC no responda.
+- Marca de emparejada: vive en `SettingsData` (`paired`, clave `settings_paired` de `shared_preferences`) junto a los datos que la invalidan. `SettingsViewModel` la borra cuando cambian de verdad la dirección, la huella o el identificador iroh, y `app_providers.dart` también al desemparejar; cambiar entre Local e iroh no la borra. `AuthViewModel` la lee y la pone con dos funciones que recibe de `app_providers.dart` (`isPaired`, `markPaired`), igual que `onForgetDevice`, sin depender de `SettingsViewModel`. Por eso `app.dart` no crea `AuthViewModel` hasta que los ajustes están cargados.
+- Conexión del cliente HTTPS: el `HttpClient` descarta las conexiones paradas a los 4 s (`pinned_http_client.dart`), porque el agente (uvicorn, `timeout_keep_alive=5`) cierra las suyas a los 5 s; con el valor por defecto de `dart:io` (15 s) la primera petición tras unos segundos parado fallaba. Si cambia el `timeout_keep_alive` del agente, hay que revisar ese valor.
 
 ## Orden de implementación
 
