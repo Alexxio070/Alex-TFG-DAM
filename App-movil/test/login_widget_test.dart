@@ -192,17 +192,55 @@ void main() {
       });
     }
 
-    testWidgets('la sesión caducada se avisa en la bienvenida', (tester) async {
+    for (final (error, popup) in <(Exception, String)>[
+      (SessionExpiredException(), kSessionExpiredPopup),
+      (NotAuthenticatedException(), kSessionInvalidPopup),
+    ]) {
+      testWidgets('${error.runtimeType} avisa con un popup una sola vez', (tester) async {
+        final vm = _vm(FakeAuthRepository());
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(_app(vm));
+        await tester.pump();
+
+        vm.handleSessionError(error);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text(popup), findsOneWidget);
+
+        await tester.tap(find.text('Aceptar'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.text('Iniciar sesión'), findsOneWidget);
+      });
+    }
+
+    testWidgets('un token que el agente no reconoce avisa nada más arrancar', (tester) async {
+      final storage = InMemoryTokenStorage()..write('token-viejo');
+      final vm = AuthViewModel(
+        FakeAuthRepository(),
+        storage,
+        isPaired: () => true,
+        markPaired: () async {},
+      );
+      addTearDown(vm.dispose);
+      await tester.pumpWidget(_app(vm));
+      await tester.pumpAndSettle();
+
+      expect(find.text(kSessionInvalidPopup), findsOneWidget);
+    });
+
+    testWidgets('un desemparejado no avisa con ningún popup', (tester) async {
       final vm = _vm(FakeAuthRepository());
       addTearDown(vm.dispose);
       await tester.pumpWidget(_app(vm));
       await tester.pump();
 
-      vm.handleSessionError(SessionExpiredException());
-      await tester.pump();
-      await tester.pump();
+      vm.handleSessionError(UnpairedException());
+      await tester.pumpAndSettle();
 
-      expect(find.text('Tu sesión ha caducado. Inicia sesión de nuevo.'), findsOneWidget);
+      expect(find.byType(AlertDialog), findsNothing);
     });
   });
 

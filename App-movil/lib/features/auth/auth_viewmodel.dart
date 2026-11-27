@@ -9,7 +9,9 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/token_storage.dart';
 
-/// Popups de la bienvenida según el estado del agente.
+/// Popups de la bienvenida según el estado del agente y de la sesión.
+const kSessionExpiredPopup = 'Tu sesión ha caducado. Inicia sesión de nuevo.';
+const kSessionInvalidPopup = 'Tu sesión ya no es válida. Inicia sesión de nuevo.';
 const kAccountExistsPopup = 'Este agente ya tiene una cuenta. Inicia sesión.';
 const kNoAccountPopup = 'El agente aún no tiene cuenta. Regístrala.';
 const kRegistrationClosedPopup = 'El registro está cerrado. Ábrelo desde la TUI del PC.';
@@ -57,7 +59,7 @@ class AuthViewModel extends ChangeNotifier {
   AuthStage _stage = AuthStage.loading;
   bool _sesionActivaAviso = false;
   bool _checking = false;
-  bool _sessionExpired = false;
+  String? _sessionNotice;
   AgentUnavailableCause? _unreachableCause;
   String? _error;
   String? _pendingSolicitudId;
@@ -72,7 +74,16 @@ class AuthViewModel extends ChangeNotifier {
   bool get sesionActivaAviso => _sesionActivaAviso;
   bool get paired => isPaired?.call() ?? false;
   bool get checking => _checking;
-  bool get sessionExpired => _sessionExpired;
+
+  /// Devuelve el popup pendiente de que la sesión haya caducado o ya no sea válida, una sola vez;
+  /// `null` si no hay ninguno.
+  String? takeSessionNotice() {
+    final notice = _sessionNotice;
+    _sessionNotice = null;
+    return notice;
+  }
+
+  bool get hasSessionNotice => _sessionNotice != null;
 
   /// Por qué no responde el PC; `null` si respondió o no hay nada que avisar.
   AgentUnavailableCause? get unreachableCause => _unreachableCause;
@@ -112,7 +123,6 @@ class AuthViewModel extends ChangeNotifier {
     if (status == null) return null;
     final popup = login ? _loginPopup(status) : _registrationPopup(status);
     if (popup != null) return popup;
-    _sessionExpired = false;
     _error = null;
     _sesionActivaAviso = status.sesionActiva;
     _stage = login ? AuthStage.needsLogin : AuthStage.needsRegistration;
@@ -177,10 +187,11 @@ class AuthViewModel extends ChangeNotifier {
       await _repository.session();
     } on NotAuthenticatedException {
       await _tokenStorage.clear();
+      _sessionNotice = kSessionInvalidPopup;
       return false;
     } on SessionExpiredException {
       await _tokenStorage.clear();
-      _sessionExpired = true;
+      _sessionNotice = kSessionExpiredPopup;
       return false;
     } on UnpairedException {
       await _forgetDevice();
@@ -375,29 +386,36 @@ class AuthViewModel extends ChangeNotifier {
     _toWelcome();
   }
 
-  // Si el agente no responde, igualmente se olvida la sesión (o el equipo) en
-  // el móvil: el usuario no puede quedarse atrapado por un PC apagado.
+  // Si el agente no responde o ya no reconoce el token, igualmente se olvida la
+  // sesión (o el equipo) en el móvil: el usuario no puede quedarse atrapado por
+  // un PC apagado ni por un token que ya no vale.
   Future<void> _tryRevoking(Future<void> Function() revoke) async {
     try {
       await revoke();
-    } on AgentUnavailableException {
-      // Se sigue con el olvido local.
+    } catch (e) {
+      final nothingToRevoke =
+          e is AgentUnavailableException ||
+          e is NotAuthenticatedException ||
+          e is SessionExpiredException ||
+          e is UnpairedException;
+      if (!nothingToRevoke) rethrow;
     }
   }
 
   /// Reacciona a un 401 de cualquier petición protegida: sin sesión
-  /// (`no_autenticado`) se vuelve a la bienvenida; con el token pasado de
-  /// los 7 días (`sesion_caducada`), también con el aviso de sesión
-  /// caducada; si el agente avisa de que ya no está emparejado
-  /// (`desemparejado`) se olvida también el equipo. Devuelve `true` si
-  /// [error] era de sesión y ya está tratado.
+  /// (`no_autenticado`) o con el token pasado de los 7 días
+  /// (`sesion_caducada`) se vuelve a la bienvenida con su popup; si el agente
+  /// avisa de que ya no está emparejado (`desemparejado`) se olvida también el
+  /// equipo, sin popup. Devuelve `true` si [error] era de sesión y ya está
+  /// tratado.
   bool handleSessionError(Object error) {
     if (error is NotAuthenticatedException) {
+      _sessionNotice = kSessionInvalidPopup;
       _forgetSession().then((_) => _toWelcome());
       return true;
     }
     if (error is SessionExpiredException) {
-      _sessionExpired = true;
+      _sessionNotice = kSessionExpiredPopup;
       _forgetSession().then((_) => _toWelcome());
       return true;
     }
