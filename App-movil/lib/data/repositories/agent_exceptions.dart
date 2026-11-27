@@ -4,11 +4,15 @@
 /// Mensaje para una respuesta del agente que no se puede interpretar.
 const kUnexpectedFormatMessage = 'Respuesta del agente con formato inesperado';
 
+/// Por qué no se puede hablar con el agente.
+enum AgentUnavailableCause { timeout, unreachable, fingerprint, invalidIrohId, unexpected }
+
 /// No se puede hablar con el agente (red, timeout, huella o respuesta ilegible).
 class AgentUnavailableException implements Exception {
-  AgentUnavailableException(this.message);
+  AgentUnavailableException(this.message, {this.cause = AgentUnavailableCause.unexpected});
 
   final String message;
+  final AgentUnavailableCause cause;
 
   @override
   String toString() => message;
