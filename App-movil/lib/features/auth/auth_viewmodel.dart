@@ -375,13 +375,19 @@ class AuthViewModel extends ChangeNotifier {
     _toWelcome();
   }
 
-  // Si el agente no responde, igualmente se olvida la sesión (o el equipo) en
-  // el móvil: el usuario no puede quedarse atrapado por un PC apagado.
+  // Si el agente no responde o ya no reconoce el token, igualmente se olvida la
+  // sesión (o el equipo) en el móvil: el usuario no puede quedarse atrapado por
+  // un PC apagado ni por un token que ya no vale.
   Future<void> _tryRevoking(Future<void> Function() revoke) async {
     try {
       await revoke();
-    } on AgentUnavailableException {
-      // Se sigue con el olvido local.
+    } catch (e) {
+      final nothingToRevoke =
+          e is AgentUnavailableException ||
+          e is NotAuthenticatedException ||
+          e is SessionExpiredException ||
+          e is UnpairedException;
+      if (!nothingToRevoke) rethrow;
     }
   }
 

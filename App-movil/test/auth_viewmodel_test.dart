@@ -579,6 +579,33 @@ void main() {
       expect(olvidado, isTrue);
     });
 
+    test(
+      'logout() y unpair() olvidan lo local aunque el agente ya no reconozca el token',
+      () async {
+        for (final error in <Exception>[
+          NotAuthenticatedException(),
+          SessionExpiredException(),
+          UnpairedException(),
+        ]) {
+          final repo = _Unreachable(error: error)..available = true;
+          final storage = InMemoryTokenStorage();
+          var olvidado = false;
+          final vm = await enLogin(repo, storage, onForgetDevice: () async => olvidado = true);
+          await vm.submit(usuario: 'alex', contrasena: 'contraseña-valida', dispositivo: 'Pixel 8');
+          expect(vm.stage, AuthStage.loggedIn);
+          repo.available = false;
+
+          await vm.logout();
+          expect(vm.stage, AuthStage.welcome);
+          expect(await storage.read(), isNull);
+
+          await vm.unpair();
+          expect(olvidado, isTrue);
+          expect(vm.stage, AuthStage.welcome);
+        }
+      },
+    );
+
     test('un fallo de red mientras espera la confirmación no la cancela', () async {
       final fake = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
       final repo = _Unreachable(inner: fake)..available = true;
