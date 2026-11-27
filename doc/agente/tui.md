@@ -7,7 +7,7 @@ de datos SQLite local.
 **Origen:** boceto inicial aportado por alex (estructura, banner, colores, comportamiento de
 Emparejamiento/Historial/Base de datos). Las subpestañas de Emparejamiento (Seguridad, Servicio)
 y el botón Notas se añadieron después para cubrir las fases del proyecto que el boceto inicial
-no contemplaba (fase 3, fase 5, fase 9). El esquema de datos y las rutas son los ya documentados
+no contemplaba (fase 3, fase 4, fase 8). El esquema de datos y las rutas son los ya documentados
 en `../documentos-generales-del-proyecto/01-memoria-tecnica.md` (§6), no los de ejemplo del
 boceto original.
 
@@ -67,15 +67,15 @@ Tres subpestañas propias, que cambian el contenido del mismo marco sin volver a
   **No, mantener la sesión anterior**. La TUI consulta SQLite cada segundo **mientras esta
   subpestaña está abierta**; no avisa si está cerrada. Contrato: `contrato-api-fase3.md`.
 
-#### Servicio (fase 5)
+#### Servicio (fase 4)
 - Botones **Instalar servicio**, **Quitar servicio** y **Estado**: gestionan el servicio systemd
   de usuario que ejecuta `sysmote serve`.
-- Deshabilitados hasta la fase 5.
+- Deshabilitados hasta la fase 4.
 
 ### Historial
 - Tabla con tres columnas: **Fecha y hora** (dd/mm/aaaa hh:mm:ss), **Origen** y **Comando**.
-- Origen: `MACRO` (ejecuciones de acciones rápidas, tabla `ejecucion`, fase 7) o `TERMINAL`
-  (comandos enviados desde la app en la terminal, fase 4 — ver más abajo).
+- Origen: `MACRO` (ejecuciones de acciones rápidas, tabla `ejecucion`, fase 5) o `TERMINAL`
+  (comandos enviados desde la app en la terminal, fase 5 — ver más abajo).
 - Las dos fuentes se combinan **solo al mostrarlas**, sin guardarlas juntas: `ejecucion` es una
   tabla SQLite y los comandos de terminal vienen de un archivo de log aparte (ver "Historial de
   comandos de terminal").
@@ -95,13 +95,13 @@ muestra "Sin tablas todavía.". Cuando se implemente:
      Columna · Tipo · Clave primaria · No nulo · Por defecto.
   3. Un espacio y la etiqueta **Datos** con las filas de la tabla.
 - Si el contenido no cabe, **toda la lista hace scroll** (con la rueda del ratón o con las flechas).
-- Debajo de la lista, fijos, dos botones: **Exportar datos** y **Exportar estructura** (fase 7,
+- Debajo de la lista, fijos, dos botones: **Exportar datos** y **Exportar estructura** (fase 5,
   ver `01-memoria-tecnica.md` §6.3). Deshabilitados hasta esa fase.
 
-### Notas (fase 9)
+### Notas (fase 8)
 - Tabla con **Fecha**, **Origen** (Móvil/PC) y **Contenido** — datos de la tabla `nota`.
 - Botón **Añadir nota**.
-- Vacía y sin botón activo hasta que la fase 9 implemente el CRUD de notas del espacio compartido.
+- Vacía y sin botón activo hasta que la fase 8 implemente el CRUD de notas del espacio compartido.
 
 ## Comportamiento
 
@@ -115,7 +115,7 @@ muestra "Sin tablas todavía.". Cuando se implemente:
 - Consultas previstas para la sección Base de datos: `sqlite_master` para las tablas,
   `PRAGMA table_info` para las columnas y `SELECT * ... LIMIT 200` para las filas.
 - **El comando `sysmote` abre la TUI y arranca el agente** (hasta que exista el servicio de la
-  fase 5): HTTPS en `0.0.0.0:8443` para USB y LAN, HTTP en `127.0.0.1:8444` como puerto interno
+  fase 4): HTTPS en `0.0.0.0:8443` para USB y LAN, HTTP en `127.0.0.1:8444` como puerto interno
   y el túnel iroh que reenvía a ese puerto. Al salir de la TUI se paran. Si un servidor no
   arranca (por ejemplo, un puerto ocupado) la TUI lo avisa con una notificación a los 2 segundos
   y los demás siguen funcionando.
@@ -125,7 +125,7 @@ muestra "Sin tablas todavía.". Cuando se implemente:
   segundo mientras la subpestaña está visible, y al cambiar de subpestaña.
 
 ### Historial de comandos de terminal
-- El agente solo ve las teclas que la app manda por el WebSocket de la terminal (fase 4); lo
+- El agente solo ve las teclas que la app manda por el WebSocket de la terminal (fase 5); lo
   escrito directamente en la ventana del PC no pasa por el agente y no se registra (una captura
   completa necesitaría integración de shell con OSC 133, descartada del TFG — ver
   `../documentos-generales-del-proyecto/06-ideas-de-futuro.md` §5).
@@ -145,10 +145,10 @@ muestra "Sin tablas todavía.". Cuando se implemente:
 
 ## Pendiente (marcado con TODO en el código)
 
-- Exportar datos y Exportar estructura: deshabilitados hasta la fase 7.
-- Servicio: deshabilitado hasta la fase 5.
-- El QR ya se muestra en la fase 3; el escáner en la app (que lo lee) llega con la fase 9, y hasta
+- Exportar datos y Exportar estructura: deshabilitados hasta la fase 5.
+- Servicio: deshabilitado hasta la fase 4.
+- El QR ya se muestra en la fase 3; el escáner en la app (que lo lee) llega con la fase 8, y hasta
   entonces la app introduce a mano dirección, huella, identificador iroh y código.
-- Historial y Base de datos: vacíos hasta que existan acciones rápidas (fase 7) o comandos de
-  terminal (fase 4) reales.
-- Notas: deshabilitada hasta la fase 9.
+- Historial y Base de datos: vacíos hasta que existan acciones rápidas (fase 5) o comandos de
+  terminal (fase 5) reales.
+- Notas: deshabilitada hasta la fase 8.

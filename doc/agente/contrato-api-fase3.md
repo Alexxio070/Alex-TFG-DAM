@@ -211,7 +211,7 @@ El emparejamiento se deshace de cinco maneras. Las dos primeras son inmediatas; 
 | 2 | El usuario pulsa **Desemparejar en la app** (Ajustes) | `POST /desemparejar`: el agente revoca la sesión y la app olvida el equipo. Hacerlo **antes de desinstalar** la app es la forma fiable. |
 | 3 | **Caducidad** | La sesión caduca 7 días después de iniciarla. La TUI deja de mostrar el dispositivo como emparejado. |
 | 4 | **Última conexión** en la TUI | La TUI muestra cuándo se vio por última vez al dispositivo (`sesion.ultimo_acceso`), para que el usuario decida si desemparejarlo. |
-| 5 | **Quitar el servicio** en la TUI (fase 5) | Si la app está conectada por WebSocket en ese momento, el agente le envía un evento de aviso. Solo funciona con la app conectada. |
+| 5 | **Quitar el servicio** en la TUI (fase 4) | Si la app está conectada por WebSocket en ese momento, el agente le envía un evento de aviso. Solo funciona con la app conectada. |
 
 Al **reinstalar el móvil** no hace falta nada de lo anterior: el login con una sesión activa exige confirmar en la TUI (§«Un solo dispositivo»).
 
@@ -244,7 +244,7 @@ sysmote://emparejar?v=1&dir=192.168.1.20:8443&huella=<64 hex>&iroh=<id>&codigo=K
 - `codigo`: código de registro de **un solo uso**, 16 caracteres en base32 (unos 80 bits), con **caducidad de 10 minutos**. Solo aparece en el QR de configuración inicial.
 - El QR para volver a emparejar un móvil (reinstalación) no lleva `codigo`: tras escanearlo, la app fija la huella y pide el login.
 
-### Hasta que haya escáner de QR (fase 9)
+### Hasta que haya escáner de QR (fase 8)
 
 El mismo contenido se introduce a mano: dirección, huella y, si procede, código. La huella se compara a ojo con la de la TUI (`01` §5.1).
 
@@ -262,7 +262,7 @@ La app usa la lista para elegir entre el repositorio real y el *placeholder* de 
 
 ## 8. Fuera de esta fase
 
-- WebSocket (terminal, eventos): el token viaja en la cabecera `Authorization` del *handshake*. Se detalla en la fase 4.
+- WebSocket (terminal, eventos): el token viaja en la cabecera `Authorization` del *handshake*. Se detalla en la fase 5.
 - Todo el CRUD (acciones, notas, reglas, notificaciones): sus rutas están en `01` §3 y se protegen con este mismo mecanismo.
 
 ## Decisiones y puntos abiertos

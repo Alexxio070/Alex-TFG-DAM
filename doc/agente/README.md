@@ -47,4 +47,4 @@ Para no duplicar, el resto del diseño del agente sigue en los documentos genera
 
 ## Por crear en esta carpeta
 
-- Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 5).
+- Instalación, servicio y comprobación de dependencias del sistema (sin implementar, fase 4).

@@ -29,7 +29,7 @@ Patrón *dumbpipe* (ver `01-que-es-y-como-funciona.md` §5). Piezas:
 
 ### Quién lo arranca
 
-`sysmote.server.Servidores` (`agent/sysmote/server.py`), al abrir la TUI: levanta el servidor HTTPS de la red local, el HTTP interno en `127.0.0.1:8444` y el túnel, que reenvía a ese puerto interno con la clave de `rutas.IROH_KEY_PATH`. El servicio systemd que lo mantenga en marcha sin la TUI llega en la fase 5.
+`sysmote.server.Servidores` (`agent/sysmote/server.py`), al abrir la TUI: levanta el servidor HTTPS de la red local, el HTTP interno en `127.0.0.1:8444` y el túnel, que reenvía a ese puerto interno con la clave de `rutas.IROH_KEY_PATH`. El servicio systemd que lo mantenga en marcha sin la TUI llega en la fase 4.
 
 ## 3. App: `App-movil/lib/data/iroh/`
 

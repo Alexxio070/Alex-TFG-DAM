@@ -146,7 +146,7 @@ Detectados el 16/11/2026 y aplazados a la fase 3, porque sin login endurecerlo n
 | # | Fallo | Qué debería pasar | Estado |
 |---|---|---|---|
 | 10 | El túnel no limita las conexiones ni los *streams* simultáneos, y no corta un *stream* que no envía nada *(deducido leyendo el código)* | Un límite de conexiones y de *streams*, y un *timeout* de inactividad | **Hecho (18/11/2026)**. Cubierto por los tests de conexiones, *streams* e inactividad de `test_iroh_tunnel.py`. Ver `03-problemas-y-soluciones.md` §13 |
-| 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 5 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Hecho (18/11/2026)**. Cubierto por `test_tunnel_keeps_serving_after_an_unexpected_error` |
+| 11 | Cualquier excepción que no sea `iroh.IrohError` en el bucle de `run()` tumba el túnel, y nada lo reinicia hasta el servicio de la fase 4 | Capturar cualquier excepción del bucle, registrarla y seguir escuchando | **Hecho (18/11/2026)**. Cubierto por `test_tunnel_keeps_serving_after_an_unexpected_error` |
 
 ### Limitaciones conocidas, sin verificar
 
