@@ -282,7 +282,7 @@ Lo que no entra estrictamente en ninguna fase (pulidos, auditorías, pruebas pen
 - Documentación al día: estructura del agente y de la app, pruebas, decisiones (`07`) y una entrada en `08` si algo cambió.
 - Capturas y casos de prueba para la memoria.
 - Probado en el móvil físico, por red local y por iroh.
-- Ramas fusionadas, ramas parciales sincronizadas y ramas y carpetas temporales borradas.
+- Rama de la función fusionada y conservada, ramas parciales sincronizadas y carpetas de trabajo temporales borradas.
 
 ### Tres rondas fijas
 

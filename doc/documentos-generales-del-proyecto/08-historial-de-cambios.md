@@ -82,6 +82,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 27/11/2026 | Interfaz | Corrección del cliente HTTPS: descarta las conexiones paradas a los 4 s, porque el agente cierra las suyas a los 5 s | Aplicado en código (PR 22); sin probar con el agente real |
 | 27/11/2026 | Interfaz | La app avisa también cuando el token ya no es válido (`no_autenticado`), con un popup, igual que al caducar | Aplicado en código (PR 24) |
 | 27/11/2026 | Plan / Documentación | Fases renumeradas en orden de ejecución, terminal y acciones rápidas fusionadas en la fase 5, y control de energía fuera del proyecto | Aplicado en la documentación; quedan por actualizar `01` (Módulos C y E), `02` y `03` |
+| 27/11/2026 | Plan / Documentación | Las ramas por función ya no se borran al fusionar; se restauran las ya borradas desde sus PR | Aplicado |
 
 ---
 
@@ -776,3 +777,12 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** una numeración que coincida con el orden de trabajo es más fácil de seguir; la terminal ya sabe ejecutar comandos, así que un motor de ejecución aparte duplicaba trabajo.
 - **Afecta a:** `04`, `06`, `07` (§3.8, §3.10 y §6), `09`, los README (hoja de ruta), `doc/agente/` (estructura, tui, terminal-sesiones-tmux, contrato y README), `doc/iroh/`, `doc/ui/` y esta entrada. Las entradas anteriores de este historial conservan la numeración antigua, porque describen lo que se pensaba entonces.
 - **Estado:** aplicado en la documentación. **Pendientes de actualizar al nuevo diseño:** `01` §3 (Módulo C de energía y Módulo E de acciones rápidas, con su API, tablas y pantallas), `02` §2.4 y §2.5, y las menciones a la energía de `03`. Los comentarios con números de fase del código (agente y app) van en un cambio aparte.
+
+### 27/11/2026 — Las ramas por función se conservan
+
+- **Qué era:** las ramas de cada tarea se borraban al fusionar su PR; el historial de ramas quedaba reducido a las tres parciales, que son copias de `main` y no cuentan cómo se hizo el trabajo.
+- **Qué es ahora:** se mantiene el modelo (`main` y las tres ramas parciales sincronizadas) y las ramas por función dejan de ser temporales: no se borran al fusionar. Solo se borra la carpeta de trabajo.
+- **Por qué:** trazabilidad y mejor comprensión del historial del proyecto. Riesgo asumido: exceso de ramas, que se mitiga con prefijos por tipo (`feature/`, `fix/`, `docs/`, `chore/`) y nombres descriptivos.
+- **Qué se hizo:** se restauraron en el remoto las 22 ramas de los PR 2 a 24 que ya se habían borrado, con su nombre original y su último commit, y la rama del PR 14, que se cerró sin fusionar. De las fusiones sin PR solo se restauró `docs/reorganizacion`, que es la única con nombre en su mensaje; el resto sigue trazable en `main` con `git log --first-parent`.
+- **Afecta a:** `04` («Al cerrar cada fase»), `07` §7 y esta entrada.
+- **Estado:** aplicado.
