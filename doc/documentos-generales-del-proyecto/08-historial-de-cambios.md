@@ -75,10 +75,12 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 19/11/2026 | Plan / Documentación | Primera prueba en un móvil físico: red local e iroh; se actualiza lo que decía «sin probar» | Aplicado en la documentación |
 | 19/11/2026 | Plan | Fase 3 (seguridad) cerrada; el USB con `adb reverse` pasa a obsoleto como método de prueba | Aplicado en la documentación |
 | 19/11/2026 | Plan / Agente / Interfaz | Decisiones abiertas de la auditoría: nombres de documentos en kebab-case, `allowBackup` desactivado, `uv.lock` y formateador de Python | Aplicado |
-| 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Diseño aprobado y documentado; pendiente de implementar |
+| 19/11/2026 | Interfaz / Agente | Pantalla de bienvenida en el primer inicio y caducidad de la sesión a los 7 días desde el login, con la tabla `sesion` como historial | Bienvenida implementada (PR 21 a 23); caducidad a 7 días pendiente |
 | 24/11/2026 | Agente / Interfaz | Código de error `sesion_caducada` para distinguir una sesión vencida de un token inválido | Documentado; pendiente de implementar |
 | 24/11/2026 | Plan / Documentación | Comprobación preliminar de marca del nombre «Sysmote» y aviso de no relación en los README | Aplicado; decisión legal pendiente |
 | 24/11/2026 | Plan / Documentación | Justificación ampliada de iroh frente a WireGuard y Tailscale, con criterios, límites asumidos y fuentes consultadas | Aplicado en la documentación |
+| 27/11/2026 | Interfaz | Corrección del cliente HTTPS: descarta las conexiones paradas a los 4 s, porque el agente cierra las suyas a los 5 s | Aplicado en código (PR 22); sin probar con el agente real |
+| 27/11/2026 | Interfaz | La app avisará también cuando el token ya no sea válido (`no_autenticado`), no solo cuando caduque | Decidido; pendiente de implementar |
 
 ---
 
@@ -718,7 +720,7 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
   - **Historial:** la tabla `sesion` ya conserva todas las sesiones; se le añade `caduca_en`. Se guarda el hash del token, no el token en claro, para que quien lea la base de datos no pueda iniciar sesión. Las sesiones existentes reciben `creado_en + 7 días` al migrar.
 - **Por qué:** el primer inicio no es un error y no debe parecerlo; y la caducidad absoluta acota lo que dura un token robado.
 - **Afecta a:** `doc/ui/interfaz-app.md` (§7 bis.1), `doc/agente/contrato-api-fase3.md`, `01-memoria-tecnica.md` (tabla `sesion` y desemparejamiento), `07-resumen-decisiones-y-contexto.md` (§3.2) y esta entrada. Quedan por actualizar al implementarlo: `doc/ui/estructura-app.md`, `doc/ui/tests.md`, `doc/agente/tests.md` y `doc/agente/estructura.md`.
-- **Estado:** diseño aprobado y documentado el 19/11/2026; sin implementar. La pantalla y la caducidad van en ramas y PR separados.
+- **Estado:** diseño aprobado el 19/11/2026. La bienvenida se implementó y se fusionó el 27/11/2026 (PR 21 y 22, con su documentación en el PR 23); la caducidad a 7 días y la tabla `sesion` con `caduca_en` siguen pendientes (rama `feature/caducidad-sesion`). Desvío del diseño: ver la entrada del 27/11/2026 sobre el aviso de sesión.
 
 ### 24/11/2026 — Código `sesion_caducada`
 
@@ -744,3 +746,18 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Por qué:** la decisión fue cuestionada y hay que poder defenderla con argumentos y reconociendo sus costes.
 - **Afecta a:** `02` §3.3, `07` (fila «Acceso remoto»), `06` (ideas relacionadas) y esta entrada.
 - **Estado:** aplicado en la documentación. Pendiente de comprobar en una prueba real por 4G qué camino usa la conexión (directa o relé) y qué pasa al cambiar de Wi-Fi a datos con la app abierta.
+
+### 27/11/2026 — Corrección del cliente HTTPS (PR 22)
+
+- **Qué era:** la primera petición tras unos segundos con la app parada fallaba con «No se puede llegar al PC». El cliente de la app reutilizaba durante 15 s (el valor por defecto de `dart:io`) conexiones que uvicorn ya había cerrado a los 5 s (`timeout_keep_alive=5`).
+- **Qué es ahora:** el cliente descarta las conexiones paradas a los 4 s (`pinned_http_client.dart`). Si cambia el `timeout_keep_alive` del agente, hay que revisar ese valor; queda anotado en el contrato.
+- **Afecta a:** `App-movil/lib/data/http/pinned_http_client.dart`, `doc/ui/estructura-app.md`, `doc/agente/contrato-api-fase3.md` (§1) y esta entrada.
+- **Estado:** aplicado en código. Comprobado con un uvicorn de prueba en local; **sin probar con el agente real ni con un móvil** (prueba sugerida: dejar la app más de 5 s parada y pulsar «Iniciar sesión»).
+
+### 27/11/2026 — Aviso de sesión también con `no_autenticado`
+
+- **Qué era:** el diseño del 19/11/2026 decía que la app mostraba «Tu sesión ha caducado» al volver a la bienvenida. En el código implementado solo `sesion_caducada` muestra ese aviso; un `no_autenticado` (por ejemplo, un token revocado desde la TUI) vuelve a la bienvenida sin explicar nada.
+- **Qué se decidió:** dar más información al usuario final: la app también avisará cuando el token ya no sea válido. El texto del aviso queda por proponer; no tiene por qué ser el de la caducidad, porque la causa es distinta.
+- **Por qué:** quedarse sin sesión sin saber por qué parece un fallo.
+- **Afecta a:** `AuthViewModel` y la bienvenida de la app, `doc/ui/interfaz-app.md` (§7 bis.1) y `doc/agente/contrato-api-fase3.md` (tabla de errores), cuando se implemente.
+- **Estado:** decidido el 27/11/2026; pendiente de implementar por la sesión de interfaz.

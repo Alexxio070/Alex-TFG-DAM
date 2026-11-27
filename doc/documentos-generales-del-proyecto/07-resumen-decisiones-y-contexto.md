@@ -119,6 +119,14 @@ Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la secci�
   - su pantalla no tiene sitio decidido en la app.
 - *Otros motivos del autor:* pendientes de anotar.
 
+### 3.9 Pantalla de bienvenida de la app (implementada el 27/11/2026)
+
+- **Avisos:** un `AlertDialog` nativo con el botón «Aceptar». Los fallos de conexión no usan popup: son un mensaje gris pequeño bajo los botones, sin botón de reintentar.
+- **Marca de emparejada:** solo la borran un cambio real de dirección, huella o identificador iroh, y desemparejar. Cambiar entre Local e iroh no la borra.
+- **Arranque:** la comprobación empieza por el token guardado; si el agente lo acepta, se entra sin pasar por la bienvenida. Sin emparejar no se avisa de nada al arrancar: el aviso gris sale tras guardar la hoja de conexión.
+- **Aviso de sesión (27/11/2026):** hoy solo `sesion_caducada` muestra «Tu sesión ha caducado. Inicia sesión de nuevo.»; un `no_autenticado` (token revocado desde la TUI, por ejemplo) vuelve a la bienvenida sin aviso. Se decide dar más información al usuario: también avisará, con un texto propio por proponer. Pendiente de implementar. Historial en `08`.
+- **Sin probar de punta a punta:** `sesion_caducada` solo con dobles de prueba, hasta que el agente la envíe (rama `feature/caducidad-sesion`); la corrección de las conexiones paradas solo con un uvicorn de prueba.
+
 ---
 
 ## 4. Lo descartado y por qué

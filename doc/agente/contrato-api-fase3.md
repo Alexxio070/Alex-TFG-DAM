@@ -16,6 +16,7 @@
   - El login es obligatorio en los dos casos.
 - Puerto por defecto: `8443` (HTTPS, USB y red local). El puerto interno para iroh es el `8444` (HTTP, solo en `127.0.0.1`).
 - Fechas en ISO 8601 con zona horaria (`2026-12-20T18:30:00+01:00`).
+- Conexiones HTTPS: uvicorn cierra las conexiones paradas a los 5 s (`timeout_keep_alive=5`, su valor por defecto). El cliente de la app descarta las suyas a los 4 s (`App-movil/lib/data/http/pinned_http_client.dart`); si cambia el valor en el agente (`server.py`), hay que revisar el de la app.
 - La app ignora los campos de las respuestas que no conoce.
 
 ## 2. Rutas
