@@ -7,10 +7,12 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../data/repositories/agent_exceptions.dart';
 import '../auth_viewmodel.dart';
+import 'info_dialog.dart';
 
 /// «Sysmote» arriba y los botones abajo: sin emparejar, «Conectar con el agente»; emparejada,
-/// «Iniciar sesión» y «Registrar cuenta». Debajo, en gris, por qué no responde el PC o que la
-/// sesión ha caducado. Vuelve a comprobar el agente cada vez que la app vuelve a primer plano.
+/// «Iniciar sesión» y «Registrar cuenta». Debajo, en gris, por qué no responde el PC. Si la sesión
+/// ha caducado o ya no es válida, lo dice un popup. Vuelve a comprobar el agente cada vez que la
+/// app vuelve a primer plano.
 class WelcomeView extends StatefulWidget {
   const WelcomeView({
     super.key,
@@ -44,15 +46,18 @@ class _WelcomeViewState extends State<WelcomeView> {
     super.dispose();
   }
 
+  void _showNotice() {
+    if (!mounted) return;
+    final message = widget.vm.takeSessionNotice();
+    if (message != null) showInfoDialog(context, message);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
     final vm = widget.vm;
     final busy = vm.checking;
-    final notices = [
-      if (vm.sessionExpired) 'Tu sesión ha caducado. Inicia sesión de nuevo.',
-      if (vm.unreachableCause case final cause?) _unreachableMessage(cause),
-    ];
+    if (vm.hasSessionNotice) WidgetsBinding.instance.addPostFrameCallback((_) => _showNotice());
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
       child: Column(
@@ -89,7 +94,7 @@ class _WelcomeViewState extends State<WelcomeView> {
                     ),
                   )
                 : Text(
-                    notices.join('\n'),
+                    vm.unreachableCause == null ? '' : _unreachableMessage(vm.unreachableCause!),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 13, color: t.muted),
                   ),
