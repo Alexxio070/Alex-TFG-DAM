@@ -8,16 +8,14 @@ import 'helpers/app_harness.dart';
 
 void main() {
   testWidgets('arranca en Inicio con el drawer cerrado', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
 
     expect(find.text('Inicio'), findsWidgets);
     expect(find.text('Conectado'), findsNothing);
   });
 
   testWidgets('el drawer cambia de sección y se cierra', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
 
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
@@ -31,8 +29,7 @@ void main() {
   });
 
   testWidgets('el engranaje abre Ajustes', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
 
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
@@ -43,8 +40,7 @@ void main() {
   });
 
   testWidgets('el drawer se abre arrastrando desde el borde izquierdo', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
     expect(find.text('Conectado'), findsNothing);
 
     await tester.dragFrom(const Offset(8, 300), const Offset(250, 0));
@@ -54,8 +50,7 @@ void main() {
   });
 
   testWidgets('un arrastre corto desde el borde deja el drawer cerrado', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
 
     await tester.dragFrom(const Offset(8, 300), const Offset(60, 0));
     await tester.pumpAndSettle();
@@ -64,8 +59,7 @@ void main() {
   });
 
   testWidgets('el drawer se cierra arrastrando hacia la izquierda', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
     await tester.tap(find.bySemanticsLabel('Abrir menú'));
     await tester.pumpAndSettle();
     expect(find.text('Conectado'), findsOneWidget);
@@ -77,15 +71,16 @@ void main() {
   });
 
   testWidgets('sin sesión, la app solo muestra el login', (tester) async {
-    await tester.pumpWidget(app(authRepository: FakeAuthRepository()));
-    await tester.pump();
+    await startApp(tester, app(authRepository: FakeAuthRepository()));
 
     expect(find.text('Iniciar sesión'), findsOneWidget);
     expect(find.bySemanticsLabel('Abrir menú'), findsNothing);
   });
 
   testWidgets('al iniciar sesión pasa a la app y al cerrarla vuelve al login', (tester) async {
-    await tester.pumpWidget(app(authRepository: FakeAuthRepository()));
+    await startApp(tester, app(authRepository: FakeAuthRepository()));
+    await tester.tap(find.text('Iniciar sesión'));
+    await tester.pump();
     await tester.pump();
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');

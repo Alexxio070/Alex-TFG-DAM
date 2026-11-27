@@ -40,6 +40,13 @@ Widget app({
   child: const SysmoteApp(),
 );
 
+/// Monta [root] (por defecto, [app]) y espera a que se carguen los ajustes y arranque la sesión.
+Future<void> startApp(WidgetTester tester, [Widget? root]) async {
+  await tester.pumpWidget(root ?? app());
+  await tester.pump();
+  await tester.pump();
+}
+
 /// Avanza el reloj falso [milliseconds] en saltos de 100 ms, para esperar animaciones y
 /// temporizadores.
 Future<void> pumpFor(WidgetTester tester, int milliseconds) async {
@@ -60,8 +67,7 @@ Future<void> openSection(
   tester.view.physicalSize = size * pixelRatio;
   tester.view.devicePixelRatio = pixelRatio;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(root ?? app());
-  await tester.pump();
+  await startApp(tester, root);
   await tester.tap(find.bySemanticsLabel('Abrir menú'));
   await pumpFor(tester, 500);
   await tester.tap(find.bySemanticsLabel(section));

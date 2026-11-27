@@ -9,8 +9,8 @@ import '../../../core/widgets/field_label.dart';
 import '../auth_viewmodel.dart';
 import 'auth_banner.dart';
 
-/// Usuario, contraseña y nombre del dispositivo; avisa si hay otra sesión activa y muestra la
-/// cuenta atrás si el agente bloquea por intentos.
+/// Usuario, contraseña y nombre del dispositivo; avisa si hay otra sesión activa, muestra la
+/// cuenta atrás si el agente bloquea por intentos y deja volver a la bienvenida.
 class LoginForm extends StatelessWidget {
   const LoginForm({
     super.key,
@@ -20,7 +20,6 @@ class LoginForm extends StatelessWidget {
     required this.dispositivo,
     required this.aviso,
     required this.onSubmit,
-    required this.onConnection,
   });
 
   final AuthViewModel vm;
@@ -29,7 +28,6 @@ class LoginForm extends StatelessWidget {
   final TextEditingController dispositivo;
   final String? aviso;
   final VoidCallback onSubmit;
-  final VoidCallback onConnection;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +72,7 @@ class LoginForm extends StatelessWidget {
             fill: t.accent,
             onPressed: busy || blocked ? null : onSubmit,
           ),
-          AppButton(label: 'Conexión con el PC', onPressed: onConnection),
+          AppButton(label: 'Volver', onPressed: vm.backToWelcome),
         ],
       ),
     );

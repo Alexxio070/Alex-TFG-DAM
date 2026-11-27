@@ -136,16 +136,19 @@ void main() {
     expect(repository.watchCalls, 1);
   });
 
-  test('un 401 de sesión no es un error de conexión: lleva al login y deja de sondear', () async {
-    final auth = _auth();
-    await Future<void>.delayed(Duration.zero);
-    final vm = MetricsViewModel(_SessionLostRepository(NotAuthenticatedException()), auth);
+  test(
+    'un 401 de sesión no es un error de conexión: vuelve a la bienvenida y deja de sondear',
+    () async {
+      final auth = _auth();
+      await Future<void>.delayed(Duration.zero);
+      final vm = MetricsViewModel(_SessionLostRepository(NotAuthenticatedException()), auth);
 
-    vm.start();
-    await Future<void>.delayed(Duration.zero);
-    await Future<void>.delayed(Duration.zero);
+      vm.start();
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
 
-    expect(vm.error, isNull);
-    expect(auth.stage, AuthStage.needsLogin);
-  });
+      expect(vm.error, isNull);
+      expect(auth.stage, AuthStage.welcome);
+    },
+  );
 }

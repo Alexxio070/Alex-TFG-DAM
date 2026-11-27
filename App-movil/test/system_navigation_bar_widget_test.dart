@@ -15,8 +15,7 @@ void main() {
     tester.view.padding = const FakeViewPadding(bottom: bar * 3);
     tester.view.viewPadding = const FakeViewPadding(bottom: bar * 3);
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
     await tester.pumpAndSettle();
   }
 
