@@ -1,4 +1,4 @@
-"""Sección «Notas»: CRUD de notas del espacio compartido (fase 9)."""
+"""Sección «Notas»: CRUD de notas del espacio compartido (fase 8)."""
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -15,4 +15,4 @@ class NotesSection(Vertical):
     def on_mount(self) -> None:
         table = self.query_one("#notes-table", DataTable)
         table.add_columns("Fecha", "Origen", "Contenido")
-        # TODO: CRUD real sobre la tabla `nota` (fase 9).
+        # TODO: CRUD real sobre la tabla `nota` (fase 8).
