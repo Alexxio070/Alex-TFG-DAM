@@ -80,7 +80,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 24/11/2026 | Plan / Documentación | Comprobación preliminar de marca del nombre «Sysmote» y aviso de no relación en los README | Aplicado; decisión legal pendiente |
 | 24/11/2026 | Plan / Documentación | Justificación ampliada de iroh frente a WireGuard y Tailscale, con criterios, límites asumidos y fuentes consultadas | Aplicado en la documentación |
 | 27/11/2026 | Interfaz | Corrección del cliente HTTPS: descarta las conexiones paradas a los 4 s, porque el agente cierra las suyas a los 5 s | Aplicado en código (PR 22); sin probar con el agente real |
-| 27/11/2026 | Interfaz | La app avisará también cuando el token ya no sea válido (`no_autenticado`), no solo cuando caduque | Decidido; pendiente de implementar |
+| 27/11/2026 | Interfaz | La app avisa también cuando el token ya no es válido (`no_autenticado`), con un popup, igual que al caducar | Aplicado en código (PR 24) |
 
 ---
 
@@ -757,7 +757,8 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 ### 27/11/2026 — Aviso de sesión también con `no_autenticado`
 
 - **Qué era:** el diseño del 19/11/2026 decía que la app mostraba «Tu sesión ha caducado» al volver a la bienvenida. En el código implementado solo `sesion_caducada` muestra ese aviso; un `no_autenticado` (por ejemplo, un token revocado desde la TUI) vuelve a la bienvenida sin explicar nada.
-- **Qué se decidió:** dar más información al usuario final: la app también avisará cuando el token ya no sea válido. El texto del aviso queda por proponer; no tiene por qué ser el de la caducidad, porque la causa es distinta.
+- **Qué se decidió:** dar más información al usuario final: la app también avisará cuando el token ya no sea válido. El texto no es el de la caducidad, porque la causa es distinta: «Tu sesión ya no es válida. Inicia sesión de nuevo.».
 - **Por qué:** quedarse sin sesión sin saber por qué parece un fallo.
 - **Afecta a:** `AuthViewModel` y la bienvenida de la app, `doc/ui/interfaz-app.md` (§7 bis.1) y `doc/agente/contrato-api-fase3.md` (tabla de errores), cuando se implemente.
-- **Estado:** decidido el 27/11/2026; pendiente de implementar por la sesión de interfaz.
+- **Qué se hizo (PR 24):** `no_autenticado` con token guardado vuelve a la bienvenida con el popup «Tu sesión ya no es válida. Inicia sesión de nuevo.»; el aviso de caducidad pasa de mensaje gris a popup («Tu sesión ha caducado. Inicia sesión de nuevo.»). Ninguno avisa sin token guardado, con `desemparejado` ni con un login fallido. De paso se corrigió un fallo: «Cerrar sesión» y «Desemparejar» con un token que el agente ya no reconoce lanzaban una excepción y no olvidaban la sesión local; ahora la olvidan.
+- **Estado:** aplicado y fusionado el 27/11/2026 (PR 24). Probado con dobles de prueba; el aviso de caducidad no se verá de punta a punta hasta que el agente envíe `sesion_caducada`.
