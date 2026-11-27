@@ -227,3 +227,56 @@ def test_el_origen_del_intento_se_guarda(client, connection):
     client.post("/login", json={"usuario": "alex", "contrasena": "mala", "dispositivo": "Tablet"})
     # El cliente de pruebas de FastAPI se presenta con la dirección «testclient».
     assert connection.execute("SELECT origen FROM intento_login").fetchone()[0] == "testclient"
+
+
+def _caducar_las_sesiones(connection):
+    ayer = (datetime.now(UTC) - timedelta(days=1)).isoformat()
+    connection.execute("UPDATE sesion SET caduca_en = ?", (ayer,))
+    connection.commit()
+
+
+def test_un_token_de_sesion_caducada_da_401_sesion_caducada_en_todas_las_rutas_protegidas(
+    client, connection
+):
+    token = _registrar(client, connection).json()["token"]
+    _caducar_las_sesiones(connection)
+
+    for metodo, ruta in [
+        ("get", "/metrics"),
+        ("get", "/sesion"),
+        ("get", "/capacidades"),
+        ("post", "/logout"),
+        ("post", "/desemparejar"),
+    ]:
+        respuesta = getattr(client, metodo)(ruta, headers=_con_token(token))
+        assert respuesta.status_code == 401, ruta
+        assert respuesta.json() == {
+            "error": "sesion_caducada",
+            "mensaje": "La sesión ha caducado. Inicia sesión de nuevo.",
+        }, ruta
+
+
+def test_un_token_desconocido_sigue_dando_401_no_autenticado_con_sesiones_caducadas(
+    client, connection
+):
+    _registrar(client, connection)
+    _caducar_las_sesiones(connection)
+
+    respuesta = client.get("/sesion", headers=_con_token("no-es-un-token-de-nadie"))
+
+    assert respuesta.status_code == 401
+    assert respuesta.json()["error"] == "no_autenticado"
+
+
+def test_tras_caducar_se_puede_iniciar_sesion_de_nuevo_y_el_historial_se_conserva(
+    client, connection
+):
+    primero = _registrar(client, connection).json()["token"]
+    _caducar_las_sesiones(connection)
+
+    login = client.post("/login", json={"usuario": "alex", "contrasena": "Clave1"})
+
+    assert login.status_code == 200  # sin confirmación en la TUI: la sesión anterior ya caducó
+    assert client.get("/sesion", headers=_con_token(login.json()["token"])).status_code == 200
+    assert client.get("/sesion", headers=_con_token(primero)).json()["error"] == "sesion_caducada"
+    assert connection.execute("SELECT COUNT(*) FROM sesion").fetchone()[0] == 2

@@ -1,4 +1,4 @@
-"""Tokens de sesión opacos: generación, hash y caducidad por inactividad.
+"""Tokens de sesión opacos: generación, hash y caducidad absoluta a los 7 días.
 
 El token en claro solo lo tiene la app; el agente guarda su SHA-256. No hace falta Argon2
 porque el token ya es aleatorio y largo (32 bytes), no una contraseña elegida por una persona.
@@ -6,9 +6,9 @@ porque el token ya es aleatorio y largo (32 bytes), no una contraseña elegida p
 
 import hashlib
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
-INACTIVIDAD_MAXIMA = timedelta(days=30)
+DURACION_SESION = timedelta(days=7)
 
 
 def generar() -> str:
@@ -21,6 +21,11 @@ def hashear(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def esta_caducada(ultimo_acceso: str) -> bool:
-    """Indica si han pasado más de 30 días desde el último uso de la sesión."""
-    return datetime.now(UTC) - datetime.fromisoformat(ultimo_acceso) > INACTIVIDAD_MAXIMA
+def calcular_caducidad(creado_en: datetime) -> datetime:
+    """Devuelve cuándo caduca una sesión creada en `creado_en`: 7 días después."""
+    return creado_en + DURACION_SESION
+
+
+def esta_caducada(caduca_en: str, ahora: datetime) -> bool:
+    """Indica si la sesión ya ha llegado a su `caduca_en`. Usarla no lo retrasa."""
+    return ahora >= datetime.fromisoformat(caduca_en)

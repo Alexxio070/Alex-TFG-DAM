@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS sesion (
     hash_token TEXT NOT NULL UNIQUE,
     dispositivo TEXT NOT NULL,
     creado_en TEXT NOT NULL,
+    caduca_en TEXT NOT NULL,
     ultimo_acceso TEXT NOT NULL,
     revocada INTEGER NOT NULL DEFAULT 0,
     motivo_revocacion TEXT

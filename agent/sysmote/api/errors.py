@@ -13,6 +13,7 @@ from sysmote.services.auth_error import AuthError
 
 _ESTADO_DE_AUTH = {
     "no_autenticado": 401,
+    "sesion_caducada": 401,
     "desemparejado": 401,
     "credenciales_invalidas": 401,
     "codigo_invalido": 403,
