@@ -67,7 +67,7 @@ class PairingSection(Container):
 
 
 class ServiceTab(Vertical):
-    """Instalar, quitar y consultar el estado del servicio systemd (fase 5)."""
+    """Instalar, quitar y consultar el estado del servicio systemd (fase 4)."""
 
     def compose(self) -> ComposeResult:
         yield Button("Instalar servicio", id="install-service", disabled=True)
