@@ -276,28 +276,51 @@ void main() {
 
     expect(vm.stage, AuthStage.loggedIn);
     expect(vm.paired, isTrue);
+    expect(vm.hasSessionNotice, isFalse);
   });
 
-  test('un token pasado de los 7 días vuelve a la bienvenida con el aviso de caducada', () async {
-    final storage = InMemoryTokenStorage()..write('token-viejo');
-    final vm = await arrancar(FakeAuthRepository()..tokenCaducado = true, storage);
+  group('avisos de la sesión', () {
+    test(
+      'un token pasado de los 7 días avisa de que la sesión ha caducado, una sola vez',
+      () async {
+        final storage = InMemoryTokenStorage()..write('token-viejo');
+        final vm = await arrancar(FakeAuthRepository()..tokenCaducado = true, storage);
 
-    expect(vm.stage, AuthStage.welcome);
-    expect(vm.sessionExpired, isTrue);
-    expect(await storage.read(), isNull);
+        expect(vm.stage, AuthStage.welcome);
+        expect(await storage.read(), isNull);
+        expect(vm.takeSessionNotice(), kSessionExpiredPopup);
+        expect(vm.takeSessionNotice(), isNull);
+      },
+    );
 
-    await vm.openLogin();
+    test('un token que el agente no reconoce avisa de que la sesión ya no es válida', () async {
+      final storage = InMemoryTokenStorage()..write('token-viejo');
+      final vm = await arrancar(FakeAuthRepository(), storage);
 
-    expect(vm.sessionExpired, isFalse);
-  });
+      expect(vm.stage, AuthStage.welcome);
+      expect(await storage.read(), isNull);
+      expect(vm.takeSessionNotice(), kSessionInvalidPopup);
+      expect(vm.takeSessionNotice(), isNull);
+    });
 
-  test('un token que el agente ya no reconoce vuelve a la bienvenida sin aviso', () async {
-    final storage = InMemoryTokenStorage()..write('token-viejo');
-    final vm = await arrancar(FakeAuthRepository(), storage);
+    test('los dos avisos son distintos', () {
+      expect(kSessionInvalidPopup, isNot(kSessionExpiredPopup));
+    });
 
-    expect(vm.stage, AuthStage.welcome);
-    expect(vm.sessionExpired, isFalse);
-    expect(await storage.read(), isNull);
+    test('sin token guardado no avisa', () async {
+      final vm = await arrancar(FakeAuthRepository(), InMemoryTokenStorage());
+
+      expect(vm.hasSessionNotice, isFalse);
+      expect(vm.takeSessionNotice(), isNull);
+    });
+
+    test('un login con credenciales incorrectas no avisa de la sesión', () async {
+      final vm = await enLogin(FakeAuthRepository(), InMemoryTokenStorage());
+
+      await vm.submit(usuario: 'alex', contrasena: 'mala', dispositivo: 'Pixel 8');
+
+      expect(vm.hasSessionNotice, isFalse);
+    });
   });
 
   test('submit con credenciales correctas guarda el token y abre sesión', () async {
@@ -433,7 +456,7 @@ void main() {
   });
 
   test(
-    'un no_autenticado en una petición protegida borra el token y vuelve a la bienvenida',
+    'un no_autenticado en una petición protegida borra el token y avisa de que ya no es válida',
     () async {
       final storage = InMemoryTokenStorage();
       var olvidado = false;
@@ -447,7 +470,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(vm.stage, AuthStage.welcome);
-      expect(vm.sessionExpired, isFalse);
+      expect(vm.takeSessionNotice(), kSessionInvalidPopup);
       expect(vm.paired, isTrue);
       expect(vm.token, isNull);
       expect(await storage.read(), isNull);
@@ -465,7 +488,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(vm.stage, AuthStage.welcome);
-      expect(vm.sessionExpired, isTrue);
+      expect(vm.takeSessionNotice(), kSessionExpiredPopup);
       expect(vm.paired, isTrue);
       expect(vm.token, isNull);
       expect(await storage.read(), isNull);
@@ -488,6 +511,7 @@ void main() {
     expect(await storage.read(), isNull);
     expect(vm.stage, AuthStage.welcome);
     expect(vm.paired, isFalse);
+    expect(vm.hasSessionNotice, isFalse);
   });
 
   test('handleSessionError ignora los errores que no son de sesión', () async {
