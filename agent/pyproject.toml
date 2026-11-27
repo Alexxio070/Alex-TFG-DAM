@@ -58,3 +58,8 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI declara las dependencias como valor por defecto (`= Depends(...)`), y `Limits` es un
+# dataclass congelado: ninguna de las dos llamadas crea un valor mutable compartido.
+extend-immutable-calls = ["fastapi.Depends", "sysmote.iroh_tunnel.Limits"]
