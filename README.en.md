@@ -195,3 +195,5 @@ Read the [contributing guide](CONTRIBUTING.md).
 ## License
 
 Sysmote is distributed under the [GNU GPL v3.0](LICENSE) license.
+
+Sysmote is not related to the product of the same name by Priente Software ([sysmote.com](https://sysmote.com/)) or to the [freol35241/sysmote](https://github.com/freol35241/sysmote) project.

@@ -85,7 +85,7 @@ Lista con scroll (`ListView`, padding 16/16/16/32+margen inferior del sistema) c
 
 **Tarjeta** (`MetricSurface`): radio 20, borde 1 dp `border`, padding 16. El gráfico de área (`AreaChart`) lo dibuja un `CustomPainter` propio: 110 dp de alto, 3 líneas guía al 25/50/75 % y una línea base, sin librería de gráficos. Pie con «Hace 60 s · escala · Ahora». Actualización cada 1 s (`MetricsViewModel.watch()`).
 
-**Datos:** en modo local, `HttpMetricsRepository` pide `GET https://<dirección>/metrics` al agente, con la huella del certificado fijada y el token de sesión como `Bearer`; en modo iroh, `IrohMetricsRepository` envía la misma petición, también con el token, por un túnel iroh (ver `doc/iroh/`). Un `401` del agente no se muestra como fallo de conexión: sin sesión (`no_autenticado`) vuelve al login y, si el agente avisa de que ya no está emparejado (`desemparejado`), se olvida además la dirección, la huella y el identificador iroh. `ConnectionModeMetricsRepository` elige uno u otro según el modo de conexión de Ajustes, y lo reevalúa en cada llamada (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
+**Datos:** en modo local, `HttpMetricsRepository` pide `GET https://<dirección>/metrics` al agente, con la huella del certificado fijada y el token de sesión como `Bearer`; en modo iroh, `IrohMetricsRepository` envía la misma petición, también con el token, por un túnel iroh (ver `doc/iroh/`). Un `401` del agente no se muestra como fallo de conexión: sin sesión (`no_autenticado`) o con la sesión caducada (`sesion_caducada`) vuelve a la bienvenida (con el aviso de caducada en el segundo caso) y, si el agente avisa de que ya no está emparejado (`desemparejado`), se olvida además la dirección, la huella y el identificador iroh. `ConnectionModeMetricsRepository` elige uno u otro según el modo de conexión de Ajustes, y lo reevalúa en cada llamada (ver sección 8). Las particiones (`DiskCard`) se leen una vez al abrir la app (`loadInfo()`), no en cada segundo junto con las gráficas: si cambian mientras la app está abierta, no se reflejan hasta reabrirla (simplificación asumida, no un error).
 
 **Estados de la pantalla.** Mientras llegan los primeros datos, muestra un indicador con **«Conectando con el agente…»**. Si el agente no responde (tras 3 s de espera, o con cualquier otro fallo de conexión) y todavía no había datos, la pantalla muestra un aviso centrado, **«No se puede conectar con el agente»**, más el detalle del error y un botón **«Reintentar»** (`MetricsViewModel.retry()`). Si la conexión se pierde con los datos ya cargados, las tarjetas conservan los últimos valores y encima aparece el aviso **«Conexión perdida. Reintentando…»** con el detalle del error; no lleva botón, porque el sondeo sigue pidiendo una muestra cada segundo, y el aviso desaparece solo cuando vuelve a llegar una. Si el agente responde sin ninguna partición, la tarjeta de disco se sustituye por **«El agente no ha encontrado ninguna partición»** y el resto de tarjetas se muestra con normalidad. El sondeo se pausa al salir de la pantalla de Métricas o al pasar la app a segundo plano (`AppLifecycleListener`), y se reanuda al volver, para no seguir pidiendo datos al agente sin necesidad.
 
@@ -153,28 +153,27 @@ Controles compartidos: `AppSwitch` (pista 50×30 en área táctil 56×44), `AppS
 
 ## 7 bis. Login (fase 3)
 
-`LoginView` (`features/auth/`), guiada por el estado de `AuthViewModel` (`AuthStage`):
+`LoginView` (`features/auth/`), guiada por el estado de `AuthViewModel` (`AuthStage`). Sin sesión se ve la bienvenida (§7 bis.1) y desde ella se abren los formularios y pantallas siguientes:
 
-- **Agente inalcanzable** (sin respuesta, huella que no coincide, identificador inválido…): «No se puede conectar con el agente» con el detalle del error y los botones «Reintentar» y «Conexión con el PC». Un token guardado no se borra por un fallo de red.
-- **Sin cuenta y registro cerrado** (`configurado: false`, `registro_abierto: false`): aviso centrado, «El agente todavía no tiene ninguna cuenta. Créala desde la TUI del PC (sysmote → Emparejamiento).», y el botón «Conexión con el PC».
-- **Sin cuenta y registro abierto:** formulario «Crear la cuenta» con código de registro (sin guiones o con ellos, en mayúsculas o minúsculas), usuario, contraseña y nombre del dispositivo (opcional). Si falta el código, el usuario o la contraseña, avisa de lo que falta. Cada error del contrato tiene su mensaje: registro cerrado, código no válido, código caducado («pulsa configuración inicial en la TUI para generar otro») y contraseña débil con sus motivos (mínimo 5 caracteres, un número y una mayúscula). Hasta que haya escáner de QR (fase 9), el código se escribe a mano.
-- **Con cuenta, pidiendo login:** formulario con usuario, contraseña (oculta) y el nombre de este dispositivo (opcional: se propone el fabricante y el modelo del móvil, `Móvil Android` si se deja vacío, y solo sirve para el historial de la TUI; sin guardar en Ajustes). Si falta el usuario o la contraseña, avisa de lo que falta en lugar de no hacer nada. Si `sesion_activa` es `true`, un aviso encima del formulario explica que hará falta confirmar en la TUI.
+- **Bienvenida** (§7 bis.1): «Sysmote» y los botones para conectar con el agente, iniciar sesión o registrar la cuenta; también avisa, sin botón de reintentar, de por qué no responde el PC.
+- **Registro** (sin cuenta y registro abierto; se abre con «Registrar cuenta»): formulario «Crear la cuenta» con código de registro (sin guiones o con ellos, en mayúsculas o minúsculas), usuario, contraseña y nombre del dispositivo (opcional). Si falta el código, el usuario o la contraseña, avisa de lo que falta. Cada error del contrato tiene su mensaje: código no válido, código caducado («pulsa configuración inicial en la TUI para generar otro») y contraseña débil con sus motivos (mínimo 5 caracteres, un número y una mayúscula). Hasta que haya escáner de QR (fase 9), el código se escribe a mano. Si el agente responde `registro_cerrado` al enviarlo (otro móvil se adelantó), vuelve a la bienvenida con el popup de «ya tiene una cuenta».
+- **Login** (con cuenta; se abre con «Iniciar sesión»): formulario con usuario, contraseña (oculta) y el nombre de este dispositivo (opcional: se propone el fabricante y el modelo del móvil, `Móvil Android` si se deja vacío, y solo sirve para el historial de la TUI; sin guardar en Ajustes). Si falta el usuario o la contraseña, avisa de lo que falta en lugar de no hacer nada. Si `sesion_activa` es `true`, un aviso encima del formulario explica que hará falta confirmar en la TUI.
 - **Bloqueado** (`429 demasiados_intentos`): aviso con la cuenta atrás en segundos (`espera_s`) devuelta por el agente; el botón «Entrar» se deshabilita hasta que llega a cero.
 - **Esperando confirmación** (`202` del login, ya había una sesión activa): mensaje con el dispositivo que la tiene abierta, cuenta atrás de 5 minutos y botón «Cancelar»; sondea `GET /login/solicitud/{id}` cada 2 s hasta que se aprueba, se rechaza o caduca.
-- Con sesión, la vista no se muestra: `app.dart` pasa a `ShellView`, y vuelve al login si se pierde la sesión.
-- **«Conexión con el PC»** (en todas las pantallas del login): abre en una hoja inferior los mismos campos de dirección, huella e identificador iroh de Ajustes, porque Ajustes queda dentro de la app y sin esta salida no se podría emparejar. Al cerrarla se vuelve a comprobar el agente.
+- Con sesión, la vista no se muestra: `app.dart` pasa a `ShellView`, y vuelve a la bienvenida si se pierde la sesión.
+- **«Conectar con el agente»** (solo sin emparejar): abre en una hoja inferior los mismos campos de dirección, huella e identificador iroh de Ajustes, porque Ajustes queda dentro de la app y sin esta salida no se podría emparejar. Al cerrarla se vuelve a comprobar el agente.
 
-Construida con el mismo sistema visual que el resto de la app (`AppTextField`, con un `obscureText` nuevo para la contraseña; `AppButton`; tokens). El token se guarda con `TokenStorage` (Android Keystore vía `flutter_secure_storage`), se mantiene en memoria para las peticiones y se borra al cerrar sesión, desemparejar o si el agente devuelve `401`. Cerrar sesión y desemparejar también olvidan lo local aunque el PC esté apagado.
+Construida con el mismo sistema visual que el resto de la app (`AppTextField`, con un `obscureText` nuevo para la contraseña; `AppButton`; tokens). El token se guarda con `TokenStorage` (Android Keystore vía `flutter_secure_storage`), se mantiene en memoria para las peticiones y se borra al cerrar sesión, desemparejar o si el agente devuelve `401`, y nunca por un fallo de red. Cerrar sesión y desemparejar también olvidan lo local aunque el PC esté apagado.
 
-### 7 bis.1 Pantalla de bienvenida (diseño aprobado el 19/11/2026, pendiente de implementar)
+### 7 bis.1 Pantalla de bienvenida (diseño aprobado el 19/11/2026, implementada el 27/11/2026)
 
-Sustituye a la pantalla de «agente inalcanzable» y al botón «Conexión con el PC» de los formularios, y se actualizará esta sección cuando se implemente.
+Sustituye a la pantalla de «agente inalcanzable» y al botón «Conexión con el PC» de los formularios.
 
 Un solo diseño, con el nombre «Sysmote» centrado arriba (sin logo por ahora) y los botones abajo. Cuáles se ven depende de si la app ya está emparejada:
 
 | Estado | Botones |
 |---|---|
-| **Sin emparejar** (primer inicio) | «Conectar con el agente», que abre la hoja de conexión (dirección, huella e identificador iroh). Sin mensajes de error |
+| **Sin emparejar** (primer inicio) | «Conectar con el agente», que abre la hoja de conexión (dirección, huella e identificador iroh). Sin mensajes de error al arrancar: el aviso de abajo solo sale tras guardar la hoja de conexión |
 | **Emparejada** | «Iniciar sesión» y «Registrar cuenta», siempre los dos |
 
 **Cuándo está emparejada:** la app guarda una marca la primera vez que el agente responde bien. La marca se borra si se cambia la dirección, la huella o el identificador iroh, o al desemparejar. Tras guardar la hoja de conexión, la app comprueba el agente; si responde, marca y muestra los dos botones; si no, sigue en «Conectar con el agente» con el aviso de abajo.
@@ -199,11 +198,13 @@ Si el agente responde `registro_cerrado` al enviar el formulario de registro (ot
 | Identificador iroh no válido | «El identificador del PC no es válido.» |
 | Respuesta inesperada o código HTTP | «El agente respondió algo inesperado.» |
 
-La app vuelve a comprobar el agente al pulsar «Iniciar sesión» o «Registrar cuenta» y cada vez que vuelve a primer plano. Un token guardado no se borra por un fallo de red.
+La app vuelve a comprobar el agente al pulsar «Iniciar sesión» o «Registrar cuenta» y cada vez que vuelve a primer plano (solo desde la bienvenida y con la app emparejada). Un token guardado no se borra por un fallo de red.
 
-**Formularios** de login y registro: sin «Conexión con el PC»; tienen un botón para volver a la bienvenida. Para cambiar de PC se usa Ajustes o desemparejar.
+La comprobación empieza por el token guardado: si el agente lo acepta, la app entra directamente, sin pasar por la bienvenida. Mientras se comprueba, los botones se deshabilitan y en el sitio del aviso aparece un indicador pequeño. Los popups son el diálogo nativo de Android (`AlertDialog`) con el mensaje y el botón «Aceptar».
 
-**Sesión caducada:** el token dura 7 días desde el login. Al caducar, el agente devuelve `401 no_autenticado`, la app borra el token y muestra la bienvenida con el aviso «Tu sesión ha caducado. Inicia sesión de nuevo.»
+**Formularios** de login y registro: sin «Conexión con el PC»; tienen un botón «Volver» a la bienvenida, y el gesto atrás del sistema hace lo mismo. Para cambiar de PC se usa Ajustes o desemparejar.
+
+**Sesión caducada:** el token dura 7 días desde el login. Al caducar, el agente devuelve `401 sesion_caducada` (un token desconocido o mal formado sigue dando `no_autenticado`), la app borra el token y muestra la bienvenida con el aviso «Tu sesión ha caducado. Inicia sesión de nuevo.»
 
 ## 8. Qué es simulado
 
