@@ -88,11 +88,10 @@ November 2026. The app and the agent now have a login: the account is created wi
 - [x] Agent with real metrics and TUI
 - [x] Remote access through iroh
 - [x] Login, secure pairing and encryption (TLS)
-- [ ] Real remote terminal
 - [ ] Agent installation as a system service
-- [ ] Processes
-- [ ] Quick actions
+- [ ] Real remote terminal and quick actions
 - [ ] Notifications and alert rules
+- [ ] Processes
 - [ ] Shared notes between phone and PC
 - [ ] QR scanner in the app and automatic discovery on the local network (the TUI already shows the QR)
 
