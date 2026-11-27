@@ -1,6 +1,6 @@
 # Tests del agente
 
-Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 162 tests (150 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
+Documentación de los tests de [`agent/tests/`](../../agent/tests/): qué prueba cada archivo y para qué sirve. Hay 177 tests (165 del agente y 12 del túnel iroh), todos automáticos; ninguno requiere pasos manuales.
 
 ```bash
 cd agent && .venv/bin/pytest -q
@@ -20,14 +20,14 @@ cd agent && .venv/bin/pytest -q
 | [`test_iroh_tunnel.py`](../../agent/tests/test_iroh_tunnel.py) | 9 | El túnel iroh del agente (`sysmote/iroh_tunnel.py`) | Integración |
 | [`test_iroh_secret_key.py`](../../agent/tests/test_iroh_secret_key.py) | 3 | La clave secreta del túnel, que fija el identificador iroh | Unitario |
 | [`test_database.py`](../../agent/tests/test_database.py) | 3 | La conexión a SQLite: permisos, claves foráneas y cuenta única | Unitario |
-| [`test_migraciones.py`](../../agent/tests/test_migraciones.py) | 6 | La versión del esquema y las migraciones de las bases de datos que ya existen | Unitario (SQLite) |
+| [`test_migraciones.py`](../../agent/tests/test_migraciones.py) | 10 | La versión del esquema y las migraciones de las bases de datos que ya existen | Unitario (SQLite) |
 | [`test_password_service.py`](../../agent/tests/test_password_service.py) | 3 | Hashing de contraseñas con Argon2 | Unitario |
-| [`test_token_service.py`](../../agent/tests/test_token_service.py) | 5 | Tokens de sesión y su caducidad | Unitario |
+| [`test_token_service.py`](../../agent/tests/test_token_service.py) | 6 | Tokens de sesión y su caducidad absoluta a los 7 días | Unitario |
 | [`test_tls_service.py`](../../agent/tests/test_tls_service.py) | 3 | Certificado TLS autofirmado y su huella | Unitario |
 | [`test_limite_service.py`](../../agent/tests/test_limite_service.py) | 10 | Límite de intentos de login y su configuración | Unitario |
 | [`test_pairing_service.py`](../../agent/tests/test_pairing_service.py) | 6 | URI de emparejamiento y QR en texto | Unitario + lector real |
-| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 54 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
-| [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 19 | Las rutas de autenticación y la protección de `/metrics` | Integración |
+| [`test_auth_service.py`](../../agent/tests/test_auth_service.py) | 61 | Registro, login, solicitud de login, sesiones y acciones de la TUI | Unitario (SQLite) |
+| [`test_api_auth.py`](../../agent/tests/test_api_auth.py) | 22 | Las rutas de autenticación y la protección de `/metrics` | Integración |
 | [`test_server.py`](../../agent/tests/test_server.py) | 7 | Los servidores reales (HTTPS, HTTP interno, iroh) y su ciclo de vida | Integración |
 | [`test_tui_security.py`](../../agent/tests/test_tui_security.py) | 21 | Las subpestañas Seguridad y Dispositivo de la TUI | Interfaz (arnés de Textual) |
 
@@ -106,7 +106,7 @@ Los tests de esta fase se agrupan por comportamiento: una fila por cada grupo de
 
 ### `test_migraciones.py`: versión del esquema y migraciones
 
-Cada test inyecta migraciones de prueba en `sysmote.migraciones` y usa una base de datos real en la carpeta temporal.
+Todos usan una base de datos real en la carpeta temporal. Los que prueban el mecanismo inyectan migraciones de prueba en `sysmote.migraciones` y parten de `MIGRACIONES = ()` para simular una base de la versión 1; los de la migración 1 usan la migración real sobre una base del esquema 1 escrita a mano en el propio test.
 
 | Grupo | Qué comprueba | Qué fallo detecta |
 |---|---|---|
@@ -116,6 +116,9 @@ Cada test inyecta migraciones de prueba en `sysmote.migraciones` y usa una base 
 | Migración ya aplicada | Abrir la base otra vez no la repite | Un error de «columna duplicada» en cada petición |
 | Migración que falla | Se deshace entera: no queda ninguna sentencia a medias ni cambia la versión | Una base a medio migrar |
 | Base más nueva que el agente | Error claro en lugar de seguir con un esquema que no conoce | Que un agente antiguo estropee una base nueva |
+| Esquema actual | La versión es la 2 y una base nueva ya tiene `sesion.caduca_en` como `NOT NULL` | Un `schema.sql` que no coincida con la migración |
+| Migración 1 (con `user_version` 0 o 1) | Cada sesión recibe `caduca_en = creado_en + 7 días` en ISO 8601 con zona horaria, y el resto de sus columnas y el número de filas quedan intactos (el historial no se pierde) | Perder sesiones al actualizar, o una fecha que luego no se pueda comparar |
+| Sesiones tras migrar | La vigente sigue valiendo, la de más de 7 días da `sesion_caducada` y la desemparejada sigue dando `desemparejado` | Que la migración deje sesiones antiguas con una caducidad equivocada |
 
 ### `test_password_service.py` y `test_token_service.py`
 
@@ -123,7 +126,7 @@ Cada test inyecta migraciones de prueba en `sysmote.migraciones` y usa una base 
 |---|---|---|
 | Argon2 | El hash empieza por `$argon2` y no contiene la contraseña; dos hashes de la misma contraseña difieren; un hash corrupto devuelve `False` sin lanzar (aceptar la correcta y rechazar la incorrecta lo prueban los tests de login) | Guardar contraseñas en claro o con una sal fija, o un 500 ante un hash dañado |
 | Tokens | 43 caracteres en base64url, siempre distintos; el hash es SHA-256 en hexadecimal y no contiene el token | Tokens predecibles o guardados en claro |
-| Caducidad | Una sesión usada hace 29 días vale; a los 31 días sin uso caduca | Que la caducidad de 30 días por inactividad se aplique mal |
+| Caducidad | `caduca_en` es 7 días después de crearse; un segundo antes no ha caducado y a partir de ese instante sí | Un error de un instante en el límite, o una duración distinta de 7 días |
 
 ### `test_tls_service.py`: certificado TLS
 
@@ -164,7 +167,8 @@ Usa la fixture `connection`: SQLite real en una carpeta temporal.
 | Registro | Crea la cuenta con Argon2 y devuelve una sesión; `registro_cerrado` con cuenta o si nunca se abrió el registro; `codigo_caducado` si el código enviado es el que caducó; `codigo_invalido` si no coincide con ninguno guardado (también cuando solo hay uno caducado), si ya se usó o si pertenece a un registro anterior; una contraseña débil no gasta el código; si dos registros coinciden, solo uno crea la cuenta y el otro da `registro_cerrado` | Registrar sin código, gastar el código sin crear cuenta o confundir al usuario con el error equivocado |
 | Login | Abre sesión; credenciales incorrectas o usuario inexistente dan `credenciales_invalidas`, y con usuario inexistente también se ejecuta Argon2, para que el tiempo de respuesta no delate si existe | Mensajes o tiempos que revelen qué cuentas existen |
 | Solicitud de login | Con sesión activa no se abre sesión y se crea una solicitud pendiente (5 minutos); una nueva solicitud sustituye a la anterior; aprobar entrega el token una sola vez y revoca la sesión anterior; rechazar la mantiene; sin respuesta caduca | Que un login correcto eche a otro dispositivo sin confirmar en la TUI |
-| Sesión | Una sesión sin uso 30 días caduca y deja de contar como activa; autenticar renueva el último acceso; logout revoca; desemparejar da `401 desemparejado` | Errores de sesión equivocados en la app |
+| Sesión | Con un reloj controlado: la sesión deja de valer a los 7 días de iniciarla y deja de contar como activa; usarla no alarga su caducidad pero sí anota el último acceso; con la sesión caducada el login no pide confirmación; la sesión nueva guarda `caduca_en = creado_en + 7 días`; las filas de `sesion` no se borran nunca; logout revoca | Una sesión que no caduca, que se renueva con el uso o que desaparece del historial |
+| Error de sesión | `sesion_caducada` si la sesión pasó su `caduca_en` (aunque esté revocada); `no_autenticado` para un token desconocido o mal formado y para una sesión cerrada antes de caducar; `desemparejado` hasta su `caduca_en` y `sesion_caducada` después | Que la app no distinga «tu sesión ha caducado» de «token inválido» |
 | Límite de intentos | Cinco fallos bloquean incluso con la contraseña correcta; el quinto aún da `credenciales_invalidas`; un acierto reinicia; un usuario inexistente también se bloquea; cada intento queda registrado con su origen; reiniciar permite entrar | Un bloqueo mal aplicado o sin registro |
 | Acciones de la TUI | Abrir el registro genera un código de 16 caracteres base32 con 10 minutos, solo se guarda su hash e invalida el anterior; el código se acepta sin guiones, en minúsculas y con `0`/`1` por `O`/`I`; cambiar la contraseña actualiza el hash, cierra las sesiones y levanta el bloqueo por intentos; cerrar todas las sesiones; consultar la solicitud pendiente ignora las caducadas; desemparejar desde la TUI, y sin sesión activa no hace nada | Que la TUI y la API no se entiendan a través de SQLite |
 
@@ -180,6 +184,7 @@ Usa el cliente de pruebas de FastAPI; las peticiones abren la base de datos real
 | Solicitud de login | Flujo completo: `202`, consulta pendiente, aprobación desde la TUI, token entregado una vez y `404` después | Cualquier paso roto del flujo de una sola sesión |
 | Sesión | `/sesion` devuelve usuario, dispositivo y fecha con zona horaria; logout da `204` y el token deja de valer; desemparejar da `204` y luego `401 desemparejado` | Que la app no se entere de que fue desemparejada |
 | Errores | Los `422` de FastAPI y los `404` usan el formato `{"error","mensaje"}`; `/docs` y `/openapi.json` están desactivados | Errores sin el formato del contrato o documentación abierta sin login |
+| Sesión caducada | Con la sesión pasada de su `caduca_en`, todas las rutas protegidas dan `401 sesion_caducada` con su mensaje; un token desconocido sigue dando `401 no_autenticado`; tras caducar se puede iniciar sesión de nuevo (`200`, sin confirmación en la TUI) y la sesión vieja se conserva en el historial | Que la app no pueda mostrar «Tu sesión ha caducado» o que una sesión vencida bloquee el login |
 | Límite de intentos | Cinco fallos dan `429` con `Retry-After` y `espera_s`; el origen del intento es la dirección del cliente | Un `429` sin el tiempo de espera o un origen falso |
 
 ### `test_server.py`: servidores reales
