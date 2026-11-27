@@ -94,7 +94,7 @@ Según los requisitos mínimos del proyecto final de DAM (apartados generales y 
 | Navegación fluida entre pantallas | Menú lateral (drawer) entre Inicio, Métricas, Procesos, Terminal y Notas, con Ajustes en el pie del menú |
 | Validaciones en formularios | Validaciones en el login, en el formulario de acciones rápidas y en los ajustes |
 | Gestión de usuarios y autenticación (registro/login) | Emparejamiento por QR, login con token de sesión, contraseña con Argon2 |
-| CRUD de al menos dos entidades relacionadas | Grupos y acciones rápidas (fase 7); reforzado con reglas de alerta/notificaciones y notas |
+| CRUD de al menos dos entidades relacionadas | Grupos y acciones rápidas (fase 5); reforzado con reglas de alerta/notificaciones y notas |
 | Lógica de negocio (búsquedas, cálculos, filtrado) | Reglas de alerta por umbral, estadísticas y filtros del historial de ejecuciones |
 | Gestión de errores y feedback al usuario | Avisos de conexión con reintento, confirmaciones antes de acciones destructivas, mensajes de error claros |
 | Base de datos con mínimo 3-4 tablas y relaciones | 9 tablas relacionadas en `schema.sql` |

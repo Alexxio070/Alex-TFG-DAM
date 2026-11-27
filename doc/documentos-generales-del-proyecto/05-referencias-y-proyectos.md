@@ -20,7 +20,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### xterm.dart
 - **Qué es:** emulador de terminal para Flutter, para móvil y escritorio.
-- **Te aporta:** es directamente la pieza de la terminal en la app (fase 4). Incluye un ejemplo de terminal en ~100 líneas y un cliente SSH en ~100 líneas con `dartssh2`, que es casi el Módulo A del lado móvil.
+- **Te aporta:** es directamente la pieza de la terminal en la app (fase 5). Incluye un ejemplo de terminal en ~100 líneas y un cliente SSH en ~100 líneas con `dartssh2`, que es casi el Módulo A del lado móvil.
 - **Uso:** dependencia directa y código de ejemplo reutilizable.
 - **Licencia:** MIT.
 - **Repositorio:** github.com/TerminalStudio/xterm.dart
@@ -40,7 +40,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### iroh-ssh-android
 - **Qué es:** cliente SSH para Android construido con Flutter que conecta a través de iroh (vía flutter_rust_bridge), con sesiones en un servicio en primer plano para sobrevivir en segundo plano.
-- **Te aporta:** **el caso más parecido a tu proyecto**: Flutter + iroh + terminal remota + servicio en segundo plano en Android. Referencia clave para la fase 2 (prueba de concepto e integración de iroh, noviembre – diciembre) y la fase 8 (servicio en primer plano).
+- **Te aporta:** **el caso más parecido a tu proyecto**: Flutter + iroh + terminal remota + servicio en segundo plano en Android. Referencia clave para la fase 2 (prueba de concepto e integración de iroh, noviembre – diciembre) y la fase 6 (servicio en primer plano).
 - **Uso:** solo inspiración (usa flutter_rust_bridge; la arquitectura del servicio y la terminal es aplicable sea cual sea la vía elegida para iroh).
 - **Licencia:** GPL-3.0. **No copiar código.**
 - **Repositorio:** github.com/futpib/iroh-ssh-android
@@ -54,7 +54,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### iroh-android-native
 - **Qué es:** no es una librería genérica, sino el transporte P2P de un proyecto concreto de 1337farm: un motor iroh (Rust, iroh 1.1) expuesto a Kotlin mediante JNI, más un servicio en primer plano de tipo `dataSync`.
-- **Te aporta:** ejemplo de cómo empaquetar iroh y un servicio en primer plano en Android (fases 2 y 8). Ojo: su tipo `dataSync` se detiene tras 6 h cada 24 desde Android 15, así que ese detalle no se debe copiar.
+- **Te aporta:** ejemplo de cómo empaquetar iroh y un servicio en primer plano en Android (fases 2 y 6). Ojo: su tipo `dataSync` se detiene tras 6 h cada 24 desde Android 15, así que ese detalle no se debe copiar.
 - **Uso:** solo inspiración.
 - **Licencia:** no declara ninguna. **No se puede reutilizar código.**
 - **Repositorio:** github.com/1337farm/iroh-android-native
@@ -65,14 +65,14 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### terminado
 - **Qué es:** el backend de las terminales de Jupyter: PTY servido por WebSocket (Tornado).
-- **Te aporta:** implementación probada de PTY + WebSocket en Python: gestión de sesiones, redimensionado y cierre limpio (fase 4). También útil para la ejecución de acciones rápidas en segundo plano (fase 7).
+- **Te aporta:** implementación probada de PTY + WebSocket en Python: gestión de sesiones, redimensionado y cierre limpio (fase 5). Sirve también para las acciones rápidas, que se ejecutan en una sesión de terminal.
 - **Uso:** inspiración y posible reutilización de lógica (adaptada de Tornado a FastAPI).
 - **Licencia:** BSD-2-Clause.
 - **Repositorio:** github.com/jupyter/terminado
 
 ### pyxtermjs
 - **Qué es:** proyecto mínimo que conecta una shell en un PTY de Python con xterm.js en el navegador. Usa Flask + flask-socketio (no FastAPI), así que la parte del servidor hay que adaptarla.
-- **Te aporta:** el ejemplo **más corto y legible** para entender cómo funciona un PTY por WebSocket. Ideal para leer antes de empezar la fase 4.
+- **Te aporta:** el ejemplo **más corto y legible** para entender cómo funciona un PTY por WebSocket. Ideal para leer antes de empezar la fase 5.
 - **Uso:** inspiración.
 - **Licencia:** MIT.
 - **Repositorio:** github.com/cs01/pyxtermjs
@@ -88,7 +88,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### psutil
 - **Qué es:** la librería de métricas que usarás directamente.
-- **Te aporta:** su documentación tiene ejemplos listos para CPU, memoria, discos, sensores y procesos (fases 1 y 6).
+- **Te aporta:** su documentación tiene ejemplos listos para CPU, memoria, discos, sensores y procesos (fases 1 y 7).
 - **Uso:** dependencia directa.
 - **Licencia:** BSD-3-Clause.
 - **Repositorio:** github.com/giampaolo/psutil
@@ -138,7 +138,7 @@ Proyectos existentes que resuelven partes del problema. Para cada uno se indica 
 
 ### Clientes SSH móviles (Termius, ConnectBot, JuiceSSH)
 - **Qué son:** clientes SSH para Android.
-- **Te aportan:** referencia de diseño de la barra de teclas especiales y de la experiencia de terminal en pantalla táctil (fase 4).
+- **Te aportan:** referencia de diseño de la barra de teclas especiales y de la experiencia de terminal en pantalla táctil (fase 5).
 - **Uso:** inspiración de interfaz. ConnectBot es de código abierto (Apache-2.0); Termius y JuiceSSH son privativos.
 
 ---

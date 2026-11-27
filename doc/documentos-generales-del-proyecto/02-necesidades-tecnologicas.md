@@ -168,8 +168,8 @@ Cada bloque sigue el mismo esquema:
 ### 4.1 Mantener la conexión en segundo plano
 - **Necesidad:** recibir notificaciones del PC y mantener el túnel aunque la app esté minimizada.
 - **Tipo de tecnología:** servicio en primer plano de Android (*foreground service*) + notificaciones locales.
-- **Elección:** **servicio en primer plano** (el mismo que mantiene el túnel iroh) y `flutter_local_notifications`. La implementación concreta (servicio en Kotlin o paquete de Flutter para servicios en primer plano) se decide en la fase 8.
-  - **Requisitos de Android** (*pendiente de revisión:* se confirman en la fase 8):
+- **Elección:** **servicio en primer plano** (el mismo que mantiene el túnel iroh) y `flutter_local_notifications`. La implementación concreta (servicio en Kotlin o paquete de Flutter para servicios en primer plano) se decide en la fase 6.
+  - **Requisitos de Android** (*pendiente de revisión:* se confirman en la fase 6):
     - pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución (Android 13+);
     - declarar el tipo del servicio, obligatorio con `targetSdk` 34 o superior;
     - no usar `dataSync`, que con `targetSdk` 35 o superior se detiene tras 6 horas cada 24;

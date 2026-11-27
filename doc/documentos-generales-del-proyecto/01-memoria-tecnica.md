@@ -101,7 +101,7 @@ En la app, las acciones aparecen como una **cuadrícula de botones** en la panta
 1. **Inicio (cuadrícula):** botones de acción y carpetas, ejecución con un toque (con confirmación opcional), reordenado por arrastre, papelera y botón «+». Un aviso inferior muestra el nombre y el comando mientras se ejecuta.
 2. **Carpeta:** diálogo con sus acciones, que también se ejecutan con un toque.
 3. **Edición de carpeta** (nombre y color) y **creación rápida de acción** (nombre, comando y confirmación).
-4. **Ficha de la acción** (pantalla secundaria; el acceso se define en la fase 7): todos sus datos editables, estadísticas, botón "Ejecutar" e historial reciente.
+4. **Ficha de la acción** (pantalla secundaria; el acceso se define en la fase 5): todos sus datos editables, estadísticas, botón "Ejecutar" e historial reciente.
 5. **Historial de ejecuciones** con filtros, y **detalle de ejecución** con estado, duración y salida del comando (opcionalmente mostrada con xterm.dart para conservar los colores).
 
 Rutas de la API: ver «API REST (resumen)» al final de esta sección.
@@ -129,7 +129,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 - En el móvil, un **servicio en primer plano** mantiene la conexión abierta y muestra los avisos como notificaciones de Android. No se usa Firebase ni ningún servidor externo.
 - **Requisitos de Android:**
   - desde Android 13 la app debe pedir el permiso `POST_NOTIFICATIONS` en tiempo de ejecución; sin él, los avisos no se muestran;
-  - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1; se confirma en la fase 8.
+  - tipo del servicio en primer plano (candidato `connectedDevice`, permisos del manifiesto): justificación y detalle en `02-necesidades-tecnologicas.md` §4.1; se confirma en la fase 6.
 
 Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 
@@ -143,7 +143,7 @@ Rutas de la API: ver «API REST (resumen)» al final de esta sección.
 La app se organiza con un **menú lateral (drawer)** con cinco secciones: **Inicio** (cuadrícula de acciones rápidas, Módulo E), **Métricas** (Módulo B), **Procesos** (Módulo D), **Terminal** (Módulo A) y **Notas** (espacio compartido, Módulo F). En el pie del menú están el botón de **Ajustes** (engranaje) y el estado de conexión ("Conectado" / "Sin emparejar").
 
 - **Ajustes:** unidades de temperatura (°C / °F) y de almacenamiento (GB / GiB), alerta de temperatura, tamaño de fuente de la terminal, tema claro u oscuro, color de acento (uno de seis), modo de conexión **Local / iroh** con la dirección del agente (`host:puerto` en Local, identificador a mano en iroh) y emparejar o desemparejar el móvil. Se guardan en el propio móvil. La alerta de temperatura de Ajustes solo resalta el valor en la pantalla de métricas cuando supera el límite elegido (60–95 °C); no es una regla de alerta del agente (Módulo G) ni genera notificaciones. Cerrar sesión y los datos del servidor se añaden cuando exista el login.
-- **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 7.
+- **Pantallas secundarias de Inicio:** carpeta, edición de carpeta, creación rápida, ficha de la acción e historial de ejecuciones (ver Módulo E). El acceso a la ficha y al historial se define en la fase 5.
 - **Aún sin ubicación decidida:** energía (Módulo C), reglas de alerta e historial de notificaciones (Módulo G), y las pantallas de login, conexión y escaneo del QR (Módulo H y §5). *Ubicación pendiente de revisión.*
 
 ### API REST (resumen)
@@ -193,7 +193,7 @@ Agente PC (Python): Rutas API (FastAPI) → Servicios → Repositorios → SQLit
 GNU/Linux: /proc y /sys · D-Bus (systemd-logind) · systemd (usuario)
 ```
 
-*(\*) La implementación del servicio en primer plano se decide en la fase 8 (`02` §4.1).*
+*(\*) La implementación del servicio en primer plano se decide en la fase 6 (`02` §4.1).*
 
 ### 4.2 Arquitectura en capas
 
@@ -234,11 +234,11 @@ El usuario escribe `sysmote` en el PC y se abre la **TUI** (interfaz de texto co
 - genera un certificado TLS autofirmado propio del equipo;
 - abre el **modo registro** y muestra en la terminal un **código QR** con la dirección, la huella del certificado, el identificador iroh (cuando exista) y un **código de registro de un solo uso** con caducidad corta.
 
-Con el escáner de la fase 9, la app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
+Con el escáner de la fase 8, la app escanea el QR con la cámara (`mobile_scanner`), guarda la huella del certificado (**certificate pinning**) y muestra el mensaje "Emparejado, se necesita crear autenticación". Después abre un diálogo para crear el usuario y la contraseña, con confirmación y validación de robustez. El agente comprueba el código de registro, guarda la contraseña con hash **Argon2** y **cierra el modo registro** en cuanto se crea la primera cuenta. Un código caducado o ya usado no sirve.
 
 A partir de entonces la app solo confía en ese certificado. Esto vale para la conexión por red local (USB o LAN). **Por iroh no se añade un TLS propio:** la conexión de iroh ya va cifrada de extremo a extremo (QUIC con TLS 1.3) y autentica al agente por su clave pública, el identificador iroh, que viaja en el QR. El identificador cumple así el papel de la huella, y el login sigue siendo obligatorio. El túnel reenvía a un puerto HTTP interno que solo escucha en `127.0.0.1`. Para volver a emparejar la app (por ejemplo, reinstalada), la TUI tiene un botón que muestra el QR de emparejamiento (sin código de registro); tras escanearlo, la app pide el login.
 
-La TUI no crea la cuenta: solo abre el modo registro. La cuenta la crea la app con `POST /registro` y el código de registro (16 caracteres en base32, un solo uso, 10 minutos; se acepta sin guiones y en minúsculas). La contraseña debe tener como mínimo 5 caracteres, un número y una mayúscula. Hasta que llegue el escáner de QR de la app (fase 9), la dirección, la huella y el código se escriben a mano y la huella se compara a ojo con la de la TUI.
+La TUI no crea la cuenta: solo abre el modo registro. La cuenta la crea la app con `POST /registro` y el código de registro (16 caracteres en base32, un solo uso, 10 minutos; se acepta sin guiones y en minúsculas). La contraseña debe tener como mínimo 5 caracteres, un número y una mayúscula. Hasta que llegue el escáner de QR de la app (fase 8), la dirección, la huella y el código se escriben a mano y la huella se compara a ojo con la de la TUI.
 
 ### 5.2 Autenticación
 - Login con usuario y contraseña; el agente devuelve un **token de sesión** aleatorio que se guarda con hash en SQLite.
@@ -323,7 +323,7 @@ El historial de comandos de terminal **no** vive en esta base de datos: va en un
 La configuración editable a mano (puertos, relés, umbrales por defecto) se guarda aparte en `~/.config/sysmote/config.toml`.
 
 ### 6.3 Exportación desde la TUI
-La TUI tiene dos botones de exportación (fase 7). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`) o, si no está definido, en la carpeta personal, con la fecha y la hora en el nombre para no sobrescribir exportaciones anteriores.
+La TUI tiene dos botones de exportación (fase 5). Los archivos se guardan en el escritorio del usuario (`XDG_DESKTOP_DIR`, normalmente `~/Escritorio`) o, si no está definido, en la carpeta personal, con la fecha y la hora en el nombre para no sobrescribir exportaciones anteriores.
 - **Exportar datos:** un único archivo JSON, `sysmote-datos-AAAAMMDD-HHMM.json`, con una sección por tabla. Se excluyen las tablas `sesion` e `intento_login` (datos de seguridad sin utilidad fuera del agente) y el hash de la contraseña. Alternativas descartadas: CSV (un archivo por tabla y se pierden los tipos) y SQL con `INSERT` (mezcla datos y estructura).
 - **Exportar estructura:** una carpeta `sysmote-estructura-AAAAMMDD-HHMM/` con `tablas.sql`, `indices.sql`, `vistas.sql` y `triggers.sql`, generados a partir de la tabla `sqlite_schema` de SQLite, que guarda la sentencia de creación de cada tabla, índice, vista y trigger. Los índices que SQLite crea automáticamente no tienen sentencia y no aparecen. Los *joins* no se guardan en la base de datos, porque forman parte de las consultas; las relaciones están como claves foráneas dentro de `tablas.sql`. Si un archivo no tiene contenido (el diseño actual no tiene vistas ni triggers), lleva un comentario que lo explica.
 
@@ -415,7 +415,7 @@ Con *linger* activado, el agente arranca al encender el PC aunque nadie inicie s
 Un repositorio Git con `App-movil/` (Flutter) y `agent/` (Python). Ramas y convención de commits: `CLAUDE.md`.
 
 ### 9.2 Entorno de pruebas
-Métodos y alternativas descartadas: `02` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04`, «Entorno de pruebas».
+Métodos y alternativas descartadas: `02` §8.4. Tabla operativa del entorno de pruebas: `07` §6; matriz de pruebas de iroh: `doc/iroh/04-pruebas.md`.
 
 ### 9.3 Pruebas
 - **Agente:** pruebas automáticas con **pytest** de la lógica de negocio (repositorios, reglas de negocio de grupos y acciones, evaluación de reglas de alerta, autenticación y límite de intentos).

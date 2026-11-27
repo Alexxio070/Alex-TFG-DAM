@@ -81,6 +81,7 @@ Este documento recoge, por orden cronológico, las cosas que **originalmente era
 | 24/11/2026 | Plan / Documentación | Justificación ampliada de iroh frente a WireGuard y Tailscale, con criterios, límites asumidos y fuentes consultadas | Aplicado en la documentación |
 | 27/11/2026 | Interfaz | Corrección del cliente HTTPS: descarta las conexiones paradas a los 4 s, porque el agente cierra las suyas a los 5 s | Aplicado en código (PR 22); sin probar con el agente real |
 | 27/11/2026 | Interfaz | La app avisa también cuando el token ya no es válido (`no_autenticado`), con un popup, igual que al caducar | Aplicado en código (PR 24) |
+| 27/11/2026 | Plan / Documentación | Fases renumeradas en orden de ejecución, terminal y acciones rápidas fusionadas en la fase 5, y control de energía fuera del proyecto | Aplicado en la documentación; quedan por actualizar `01` (Módulos C y E), `02` y `03` |
 
 ---
 
@@ -762,3 +763,16 @@ Correcciones aplicadas tras revisar todos los documentos frente al código:
 - **Afecta a:** `AuthViewModel` y la bienvenida de la app, `doc/ui/interfaz-app.md` (§7 bis.1) y `doc/agente/contrato-api-fase3.md` (tabla de errores), cuando se implemente.
 - **Qué se hizo (PR 24):** `no_autenticado` con token guardado vuelve a la bienvenida con el popup «Tu sesión ya no es válida. Inicia sesión de nuevo.»; el aviso de caducidad pasa de mensaje gris a popup («Tu sesión ha caducado. Inicia sesión de nuevo.»). Ninguno avisa sin token guardado, con `desemparejado` ni con un login fallido. De paso se corrigió un fallo: «Cerrar sesión» y «Desemparejar» con un token que el agente ya no reconoce lanzaban una excepción y no olvidaban la sesión local; ahora la olvidan.
 - **Estado:** aplicado y fusionado el 27/11/2026 (PR 24). Probado con dobles de prueba; el aviso de caducidad no se verá de punta a punta hasta que el agente envíe `sesion_caducada`.
+
+### 27/11/2026 — Fases en orden de ejecución, terminal y acciones fusionadas, energía fuera
+
+- **Qué era:** las fases se numeraban de 0 a 10 y el orden real de trabajo no coincidía (servicio antes que terminal, notificaciones antes que acciones). Las acciones rápidas tenían un motor de ejecución propio, con historial de estado, código de salida y estadísticas. El control de energía estaba «pendiente de decidir».
+- **Qué es ahora:**
+  - **Fases:** el número es el orden de ejecución. 4 Instalación y servicio (antes 5); 5 Terminal y acciones rápidas (antes 4 y 7); 6 Notificaciones (antes 8); 7 Procesos (antes 6, sin energía); 8 Descubrimiento, emparejamiento y espacio compartido (antes 9); 9 Pulido (antes 10). Las fases 0 a 3 no cambian.
+  - **Acciones rápidas:** ejecutar una es abrir una sesión de terminal con su comando, en una pestaña nueva que se cierra sola al terminar. El historial guarda el comando, la fecha y hora y un resumen de la salida; sin código de salida ni estadísticas de éxito.
+  - **Notificar al terminar:** opción global de Ajustes, no casilla por acción; funciona desde la fase 6.
+  - **Energía:** fuera del proyecto; solo un aviso al crear o ejecutar una acción que apague o reinicie. Pasa a `06`.
+  - **`04`:** nuevo orden, calendario con el calendario académico, estado actual, recortes, «Sueltas y cierres» (cierre de cada fase y tres rondas fijas) y cobertura de requisitos al final. El entorno de pruebas pasa a `07` §6, con el USB como obsoleto.
+- **Por qué:** una numeración que coincida con el orden de trabajo es más fácil de seguir; la terminal ya sabe ejecutar comandos, así que un motor de ejecución aparte duplicaba trabajo.
+- **Afecta a:** `04`, `06`, `07` (§3.8, §3.10 y §6), `09`, los README (hoja de ruta), `doc/agente/` (estructura, tui, terminal-sesiones-tmux, contrato y README), `doc/iroh/`, `doc/ui/` y esta entrada. Las entradas anteriores de este historial conservan la numeración antigua, porque describen lo que se pensaba entonces.
+- **Estado:** aplicado en la documentación. **Pendientes de actualizar al nuevo diseño:** `01` §3 (Módulo C de energía y Módulo E de acciones rápidas, con su API, tablas y pantallas), `02` §2.4 y §2.5, y las menciones a la energía de `03`. Los comentarios con números de fase del código (agente y app) van en un cambio aparte.

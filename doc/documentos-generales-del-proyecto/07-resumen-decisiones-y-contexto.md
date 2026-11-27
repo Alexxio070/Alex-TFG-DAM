@@ -25,7 +25,7 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 - En el móvil, **solo descargar la app**; nada de instalar VPNs ni otras apps.
 - En el PC se aceptan dependencias.
 - **Nunca configurar el router.**
-- Flujo deseado: instalar agente → abrir la TUI y hacer la configuración inicial → instalar app → escanear el QR → crear la cuenta → conectar desde cualquier parte. Hasta la fase 9 la app no escanea el QR: la dirección, la huella y el identificador de iroh se escriben a mano, y la cuenta se crea desde la app con el código de registro que muestra la TUI. La TUI no crea la cuenta.
+- Flujo deseado: instalar agente → abrir la TUI y hacer la configuración inicial → instalar app → escanear el QR → crear la cuenta → conectar desde cualquier parte. Hasta la fase 8 la app no escanea el QR: la dirección, la huella y el identificador de iroh se escriben a mano, y la cuenta se crea desde la app con el código de registro que muestra la TUI. La TUI no crea la cuenta.
 
 **Filosofía de desarrollo:** la primera versión (beta) debe tener **pocas funciones, pero todas funcionando**: una base sólida sobre la que ampliar. La beta es mínima: la interfaz definitiva con *placeholders*, las métricas y la conexión por iroh, sin login.
 
@@ -50,8 +50,8 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 | Arquitectura app | MVVM con provider + repositorios simulados | Capas claras (requisito); permite trabajar sin el agente | BLoC (demasiado para quien empieza) |
 
 ### 3.2 Seguridad
-- **Registro por QR (12/10/2026):** la TUI muestra un QR con un código de registro de un solo uso (desde la fase 3); la app lo escanea y crea la cuenta (el escáner llega en la fase 9; hasta entonces el código se escribe a mano en la app). La TUI no crea la cuenta. Detalle en `01-memoria-tecnica.md` §5.1.
-- **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 9, que añade el escáner, se escribe a mano comparándola con la que muestra la TUI). Solo en red local (USB/LAN): por iroh no hay TLS propio, porque iroh ya cifra y autentica al agente con su identificador (decisión del 17/11/2026, ver `08`).
+- **Registro por QR (12/10/2026):** la TUI muestra un QR con un código de registro de un solo uso (desde la fase 3); la app lo escanea y crea la cuenta (el escáner llega en la fase 8; hasta entonces el código se escribe a mano en la app). La TUI no crea la cuenta. Detalle en `01-memoria-tecnica.md` §5.1.
+- **TLS autofirmado con certificate pinning.** La huella llega en el QR (hasta la fase 8, que añade el escáner, se escribe a mano comparándola con la que muestra la TUI). Solo en red local (USB/LAN): por iroh no hay TLS propio, porque iroh ya cifra y autentica al agente con su identificador (decisión del 17/11/2026, ver `08`).
 - **2FA descartado** porque choca con la configuración mínima. Se compensa con contraseña robusta, límite de intentos y revocación.
 - **Un solo dispositivo.**
 - **Caducidad de la sesión (19/11/2026):** 7 días desde el inicio de sesión, sin renovarse con el uso (antes, 30 días sin uso). Se prefiere la caducidad absoluta porque limita lo que dura un token robado y obliga a una confirmación periódica de la contraseña; el coste, un login semanal, se asume con una sola persona usuaria.
@@ -75,7 +75,7 @@ Este documento complementa a los archivos 01–06, 08 y 09. Aquellos describen *
 
 ### 3.5 Espacio compartido (dentro del TFG, decidido el 12/10/2026)
 - **Sustituye al explorador y la transferencia de archivos**, que pasan a `06-ideas-de-futuro.md`.
-- Notas de texto y enlaces entre el móvil y el PC, en la fase 9, reutilizando el patrón del CRUD de la fase 7. Sin actualización al momento (es una app para usar lejos del PC); si los dos lados editan la misma nota, gana el último cambio. Detalle en `01` §3 (Módulo F).
+- Notas de texto y enlaces entre el móvil y el PC, en la fase 8, reutilizando el patrón del CRUD de la fase 5. Sin actualización al momento (es una app para usar lejos del PC); si los dos lados editan la misma nota, gana el último cambio. Detalle en `01` §3 (Módulo F).
 - **Imágenes: aún pensándolo** (§3.8).
 - **Pantalla de Notas:** lista de tarjetas con búsqueda y formulario aparte, en lugar del campo de texto único del prototipo v1. Detalle en `../ui/historico/ui-v2/design.md`.
 
@@ -92,7 +92,7 @@ Se evaluó el proyecto contra la normativa del centro. Huecos detectados y cómo
 - **TUI en lugar de CLI (12/10/2026; Textual confirmado el 15/10/2026):** al escribir `sysmote` se abre una TUI con botones para todo, en vez de comandos que recordar.
 - **Construida entera en la fase 1 (15/10/2026):** igual que la interfaz de la app, con cuatro secciones fijas (Emparejamiento, Historial, Base de datos y Notas). Las fases posteriores activan contenido dentro de ellas, no añaden botones. Especificación en `../agente/tui.md`.
 - **Historial de comandos de terminal (15/10/2026):** archivo de log aparte en `~/.cache`, no en SQLite. Solo registra lo que la app envía por la terminal; lo escrito directamente en la ventana del PC exigiría integración de shell (OSC 133), descartada del TFG (`06` §5).
-- **Exportar la base de datos (12/10/2026), en la fase 7:** dos botones de la TUI que dejan los archivos en el escritorio. Los datos van en un JSON (descartados CSV, que pierde los tipos, y SQL con `INSERT`, que mezcla datos y estructura); la estructura, en archivos `.sql` leídos de `sqlite_schema`. Detalle en `01` §6.3.
+- **Exportar la base de datos (12/10/2026), en la fase 5:** dos botones de la TUI que dejan los archivos en el escritorio. Los datos van en un JSON (descartados CSV, que pierde los tipos, y SQL con `INSERT`, que mezcla datos y estructura); la estructura, en archivos `.sql` leídos de `sqlite_schema`. Detalle en `01` §6.3.
 
 ### 3.8 Decisiones abiertas
 
@@ -100,24 +100,13 @@ Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la secci�
 
 | Decisión | Estado | Cuándo resolverla |
 |---|---|---|
-| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 9 |
-| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 8 |
+| Imágenes en el espacio compartido | **Aún pensándolo** (fuera del alcance confirmado) | Antes de la fase 8 |
+| Tipo del servicio en primer plano de Android | **Pendiente de revisión:** no `dataSync`; candidato `connectedDevice` | En la fase 6 |
 | Fecha exacta del hito de febrero y fecha oficial de entrega de la memoria | **Pendiente de revisión** | Cuando se conozcan |
 | ¿La red del centro deja salir el tráfico de iroh hacia los relés? (forma prevista de probarlo: abajo) | **Pendiente de revisión** (14/11/2026) | Antes de la defensa |
-| ¿Entra el control de energía (apagar, reiniciar, suspender, hibernar, bloquear) en el proyecto? (motivos: abajo) | **Pendiente de decidir** | Antes de la fase 6 |
 | Nombre «Sysmote» y marcas: comprobación preliminar en TMview (EUIPO, noviembre de 2026, solo marcas activas): ningún resultado idéntico. Existen un producto de Priente Software (`sysmote.com`) y el proyecto `freol35241/sysmote` en GitHub (Apache-2.0, 2021-2022). TMview no es una fuente oficial ni asesoría legal | **Pendiente de decidir** si hace falta una consulta legal o cambiar de nombre | Antes de publicar la primera versión |
-| Energía sin sesión activa: logind puede necesitar una regla de polkit, instalada a mano con sudo, para funcionar sin sesión gráfica | **Pendiente de investigar:** confirmar si falla de verdad en KDE Plasma 6 y valorar los riesgos de esa regla | Antes de la fase 6 |
 
 **Red del centro.** Aún no se sabe en qué condiciones se podrá probar en el centro. Forma prevista, si el centro la permite: dejar el agente en marcha en el PC de casa, vigilarlo desde el centro con una sesión de AnyDesk y conectar el móvil por iroh desde la Wi-Fi del centro. AnyDesk también sale por la red del centro, así que, aunque funcione, no garantiza que funcione iroh: lo que cuenta es la conexión del móvil.
-
-**Control de energía.**
-- *Por qué está:* encaja con el criterio de alcance (tiene sentido sin estar delante del PC), forma parte del valor diferencial (`01` §2) y cuenta como elemento diferenciador de integración con el sistema (D-Bus / systemd-logind, `01` §12), aunque quedan otros (cámara/QR, servicio en segundo plano, P2P con iroh).
-- *Por qué se duda:*
-  - sin sesión activa polkit puede denegarla y la solución exige una regla manual con sudo (última fila de la tabla);
-  - apagado el PC no se puede volver a encender desde el móvil (Wake-on-LAN descartado);
-  - hibernar suele no estar configurado y es el primer recorte;
-  - su pantalla no tiene sitio decidido en la app.
-- *Otros motivos del autor:* pendientes de anotar.
 
 ### 3.9 Pantalla de bienvenida de la app (implementada el 27/11/2026)
 
@@ -126,6 +115,15 @@ Con su fecha límite para resolverlas. Cuando una se cierre, se pasa a la secci�
 - **Arranque:** la comprobación empieza por el token guardado; si el agente lo acepta, se entra sin pasar por la bienvenida. Sin emparejar no se avisa de nada al arrancar: el aviso gris sale tras guardar la hoja de conexión.
 - **Avisos de sesión (27/11/2026, PR 24):** los dos son un popup nativo con «Aceptar»: «Tu sesión ha caducado. Inicia sesión de nuevo.» con `sesion_caducada`, y «Tu sesión ya no es válida. Inicia sesión de nuevo.» con `no_autenticado` (por ejemplo, un token revocado desde la TUI). Se decidió dar más información al usuario final, y el desvío que había respecto al diseño quedó cerrado. No avisan sin token guardado, con `desemparejado` ni con un login fallido, y cada uno sale una sola vez. «Cerrar sesión» y «Desemparejar» con un token que el agente ya no reconoce olvidan igualmente la sesión local.
 - **Sin probar de punta a punta:** `sesion_caducada` solo con dobles de prueba, hasta que el agente la envíe (rama `feature/caducidad-sesion`); la corrección de las conexiones paradas solo con un uvicorn de prueba.
+
+### 3.10 Plan de fases: terminal y acciones rápidas, y la energía fuera (27/11/2026)
+
+- **Fases en orden de ejecución.** Se renumeran de modo que el número de fase es el orden en que se hacen: 4 Instalación y servicio, 5 Terminal y acciones rápidas, 6 Notificaciones, 7 Procesos, 8 Descubrimiento, emparejamiento y espacio compartido, 9 Pulido. Detalle y fechas: `04`.
+- **Terminal y acciones rápidas, en una sola fase.** Ejecutar una acción rápida es abrir una sesión de terminal con su comando, así que no hay un motor de ejecución aparte (ni `os.killpg` propio). Al pulsar una acción (y confirmar, si lo pide), la app abre la pantalla de Terminal con una pestaña nueva con su salida en directo; la pestaña se cierra sola cuando el comando termina.
+- **Historial de acciones (tabla `ejecucion`).** Recoge el comando ejecutado, la fecha y hora y, si es posible, un pequeño resumen de la salida. No se promete código de salida, tasa de éxito ni duración media. Sustituye al diseño de `01` §3 (Módulo E), que queda pendiente de actualizar.
+- **Notificar al terminar.** Es una opción global de Ajustes, «Enviar notificación cuando un comando termine», no una casilla por acción. Se guarda desde la fase 5 y empieza a funcionar en la fase 6, cuando existe el sistema de notificaciones. Queda por fijar si solo cubre las acciones rápidas o también los comandos de la terminal.
+- **Ventana en el PC, opcional.** Abrir una ventana en el PC por cada sesión no compensa; se decide con una casilla en la sección Terminal de la app. Valor por defecto por confirmar.
+- **El control de energía queda fuera del proyecto** (apagar, reiniciar, suspender, hibernar, bloquear). Motivos: una vez apagado el PC no se puede volver a encender desde el móvil (Wake-on-LAN descartado); sin sesión activa polkit puede denegarlo y exigiría una regla manual con sudo; hibernar suele no estar configurado. Solo hay un aviso al crear o ejecutar una acción rápida que apague o reinicie el PC. Pasa a `06`.
 
 ---
 
@@ -164,7 +162,22 @@ Calendario, criterios, orden de recortes y lo que nunca se recorta: `04-plan-de-
 
 ## 6. Entorno de pruebas
 
-Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. Tabla operativa completa, con la matriz de pruebas de iroh: `04`, «Entorno de pruebas».
+Métodos y alternativas descartadas: `02-necesidades-tecnologicas.md` §8.4. La matriz de pruebas de iroh está en `04` (fase 2) y en `doc/iroh/04-pruebas.md`.
+
+El desarrollo diario **no depende de ninguna red externa**, porque la red del centro puede bloquear la comunicación entre el móvil y el PC:
+
+| Método | Cómo funciona | Cuándo usarlo |
+|---|---|---|
+| **Emulador de Android** | Emulador de Android Studio en el mismo portátil; `10.0.2.2` apunta al portátil | Desarrollo sin móvil físico. Requiere virtualización activada. No se usa para iroh: iroh se prueba en el móvil físico (no se ha comprobado si `iroh_flutter` funciona en el emulador x86_64) |
+| **Móvil físico por red local** | El móvil y el portátil en la misma Wi-Fi, con la dirección, la huella y el código de registro de la TUI | Probar el flujo completo: emparejar, registrar, iniciar sesión |
+| **Punto de acceso del móvil** | El portátil se conecta al punto de acceso del móvil; ambos quedan en una red privada propia | Probar como LAN real (incluido mDNS). Puede requerir abrir el puerto en el cortafuegos del portátil |
+| **Repositorio simulado** | Versión falsa del repositorio de la app que devuelve datos inventados | Trabajar en pantallas sin el agente arrancado |
+| **iroh (desde la fase 2)** | Túnel P2P que empieza por un relé y luego intenta pasar a conexión directa (detalle y versiones: `02` §3.3) | Acceder al PC desde fuera de casa, siempre con un móvil físico. *Pendiente de revisión: confirmar con el centro que deja salir HTTPS con WebSocket y que no hay un proxy que inspeccione el tráfico (§3.8)* |
+| **USB con `adb reverse`** | Obsoleto desde el 19/11/2026 como método de prueba; solo sigue sirviendo para instalar la app con `adb install` | — |
+
+**Cuenta de pruebas (27/11/2026).** El agente de desarrollo se trata como entorno de pruebas: su base de datos y su cuenta se pueden rehacer cuando haga falta para ensayar el flujo completo, dentro y fuera de casa.
+
+**Para la defensa:** punto de acceso del móvil como opción principal y un vídeo grabado como respaldo. No depender de la red del tribunal.
 
 ---
 

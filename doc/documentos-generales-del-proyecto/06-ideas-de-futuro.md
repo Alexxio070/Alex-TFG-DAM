@@ -37,7 +37,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ## 2. Archivos y ampliaciones del espacio compartido
 
-*(El espacio compartido de notas de texto y enlaces entre el móvil y el PC sí forma parte del TFG, fase 9, desde el 12/10/2026. Aquí queda lo que se dejó fuera.)*
+*(El espacio compartido de notas de texto y enlaces entre el móvil y el PC sí forma parte del TFG, fase 8, desde el 12/10/2026. Aquí queda lo que se dejó fuera.)*
 
 ### Explorador y transferencia de archivos 🟡
 - Navegar por el sistema de archivos del PC desde el móvil, descargar archivos al móvil y subirlos al PC (por ejemplo, a la carpeta de descargas del usuario).
@@ -48,7 +48,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 ### Imágenes en el espacio compartido 🟡 *(aún pensándolo)*
 - Subir imágenes desde el móvil y verlas en el PC (y al revés), con un tamaño máximo.
 - **Retos:** almacenamiento en el agente, previsualización y límites de tamaño.
-- Si se decide incluirlas en el TFG, irían en la fase 9 junto al resto del espacio compartido.
+- Si se decide incluirlas en el TFG, irían en la fase 8 junto al resto del espacio compartido.
 
 ### Otras ampliaciones del espacio compartido 🟢🟡
 - Opción "Compartir con…" de Android para enviar texto o enlaces al espacio compartido desde otras apps.
@@ -103,7 +103,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Requiere configuración específica por shell.
 
 ### Alternativas al multiplexor de terminal 🟡
-*(tmux ya forma parte del TFG, fase 4. Las pestañas de terminal ya tienen maqueta de UI, fase 0; conectarlas a sesiones reales es parte de la fase 4, ver `04-plan-de-fases.md`.)*
+*(tmux ya forma parte del TFG, fase 5. Las pestañas de terminal ya tienen maqueta de UI, fase 0; conectarlas a sesiones reales es parte de la fase 5, ver `04-plan-de-fases.md`.)*
 - Zellij como alternativa a tmux.
 
 ### Cliente de sesiones propio, sin tmux 🟢 *(muy largo plazo)*
@@ -133,6 +133,10 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
   - *Comando local* (`sysmote reset-password`): se ejecuta por SSH o en el PC. Simple, pero exige acceso al PC.
   - *Aprobación desde la TUI:* como el login actual; exige estar en el PC.
 
+### Control de energía 🟡
+- Apagar, reiniciar, suspender, hibernar y bloquear la sesión desde el móvil, vía systemd-logind (D-Bus).
+- Quedó fuera del TFG el 27/11/2026: una vez apagado el PC no se puede volver a encender desde el móvil, sin sesión activa polkit puede denegarlo (hace falta una regla manual con sudo) y hibernar suele no estar configurado. Mientras tanto, el usuario puede crear una acción rápida con `systemctl poweroff`, y la app avisa de que no podrá volver a encenderlo.
+
 ### Wake-on-LAN 🔴
 - Encender el PC apagado desde el móvil.
 - Solo funciona desde la misma red, salvo que otro dispositivo encendido (router, Raspberry Pi) reenvíe el paquete. Requiere activarlo en la BIOS y también en la tarjeta de red desde el sistema (por ejemplo, `WakeOnLan=magic` en systemd.link).
@@ -152,13 +156,13 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 
 ### Historial de métricas 🟡
 - Guardar métricas en el tiempo (SQLite) y mostrar gráficas de horas o días.
-- Exportar ese histórico a un archivo de texto desde un botón de la TUI (como las exportaciones de la fase 7, pero para métricas en vez de para la BD de acciones/notas).
+- Exportar ese histórico a un archivo de texto desde un botón de la TUI (como las exportaciones de la fase 5, pero para métricas en vez de para la BD de acciones/notas).
 
 ### Más fuentes de datos 🟡
 - GPU (uso y VRAM, NVIDIA y AMD), red (tráfico por interfaz), estado de servicios systemd, contenedores Docker/Podman.
 
 ### Alertas más completas 🟢🟡
-*(Las reglas de alerta básicas con CRUD desde la app ya forman parte del TFG, fase 8.)*
+*(Las reglas de alerta básicas con CRUD desde la app ya forman parte del TFG, fase 6.)*
 - Silenciar alertas por horario ("no molestar").
 - Alertas cuando un servicio systemd falla.
 - Reglas combinadas (por ejemplo, CPU alta **y** temperatura alta).
@@ -174,7 +178,7 @@ Un modo adicional de la app, pensado para cuando estás en la misma habitación 
 - Widget en la pantalla de inicio con el estado del PC y botones rápidos.
 
 ### Acciones rápidas avanzadas 🟡
-*(Las acciones rápidas con grupos, ejecuciones e historial ya forman parte del TFG, fase 7.)*
+*(Las acciones rápidas con grupos, ejecuciones e historial ya forman parte del TFG, fase 5.)*
 - Parámetros al ejecutar (por ejemplo, pedir un nombre de rama antes de lanzar `git checkout`).
 - Programar ejecuciones (a una hora o de forma periódica, con temporizadores de systemd).
 - Encadenar acciones (ejecutar B solo si A termina bien).
