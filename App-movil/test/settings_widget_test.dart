@@ -165,7 +165,9 @@ void main() {
     expect(settings.irohId, '');
   });
 
-  testWidgets('desemparejar pide confirmación, olvida el equipo y vuelve al login', (tester) async {
+  testWidgets('desemparejar pide confirmación, olvida el equipo y vuelve a la bienvenida', (
+    tester,
+  ) async {
     await openSettings(tester);
 
     await tester.tap(find.text('Desemparejar'));
@@ -175,10 +177,11 @@ void main() {
     await tester.tap(find.text('Desemparejar').last);
     await pumpFor(tester, 300);
 
-    expect(find.text('Iniciar sesión'), findsOneWidget);
+    expect(find.text('Conectar con el agente'), findsOneWidget);
     expect(find.text('Cerrar sesión'), findsNothing);
     expect(settings.agentAddress, kDefaultAgentAddress);
     expect(settings.fingerprint, '');
+    expect(settings.paired, isFalse);
   });
 
   testWidgets('cancelar el diálogo mantiene el emparejado', (tester) async {

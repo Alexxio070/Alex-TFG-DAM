@@ -9,11 +9,15 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/agent_exceptions.dart';
 import '../../data/repositories/token_storage.dart';
 
+/// Popups de la bienvenida según el estado del agente.
+const kAccountExistsPopup = 'Este agente ya tiene una cuenta. Inicia sesión.';
+const kNoAccountPopup = 'El agente aún no tiene cuenta. Regístrala.';
+const kRegistrationClosedPopup = 'El registro está cerrado. Ábrelo desde la TUI del PC.';
+
 /// En qué punto está el login; [LoginView] muestra una pantalla distinta para cada uno.
 enum AuthStage {
   loading,
-  unreachable,
-  noAccount,
+  welcome,
   needsRegistration,
   registering,
   needsLogin,
@@ -23,7 +27,7 @@ enum AuthStage {
   loggedIn,
 }
 
-/// Comprueba el agente al arrancar, registra la cuenta, inicia y cierra sesión, espera la
+/// Comprueba el agente al arrancar y desde la bienvenida, registra la cuenta, inicia y cierra sesión, espera la
 /// confirmación en la TUI cuando ya hay otra sesión y guarda el token en el móvil y en memoria.
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel(
@@ -31,6 +35,8 @@ class AuthViewModel extends ChangeNotifier {
     this._tokenStorage, {
     this.pollInterval = const Duration(seconds: 2),
     this.onForgetDevice,
+    this.isPaired,
+    this.markPaired,
   }) {
     start();
   }
@@ -43,9 +49,16 @@ class AuthViewModel extends ChangeNotifier {
   /// iroh) cuando se desempareja o el agente avisa de que ya no está emparejado.
   final Future<void> Function()? onForgetDevice;
 
+  /// Lee y pone la marca de emparejada, que vive en los ajustes.
+  final bool Function()? isPaired;
+  final Future<void> Function()? markPaired;
+
   String? _token;
   AuthStage _stage = AuthStage.loading;
   bool _sesionActivaAviso = false;
+  bool _checking = false;
+  bool _sessionExpired = false;
+  AgentUnavailableCause? _unreachableCause;
   String? _error;
   String? _pendingSolicitudId;
   String? _pendingSesionActivaEn;
@@ -57,65 +70,137 @@ class AuthViewModel extends ChangeNotifier {
   String? get token => _token;
   AuthStage get stage => _stage;
   bool get sesionActivaAviso => _sesionActivaAviso;
+  bool get paired => isPaired?.call() ?? false;
+  bool get checking => _checking;
+  bool get sessionExpired => _sessionExpired;
+
+  /// Por qué no responde el PC; `null` si respondió o no hay nada que avisar.
+  AgentUnavailableCause? get unreachableCause => _unreachableCause;
   String? get error => _error;
   String? get pendingSesionActivaEn => _pendingSesionActivaEn;
   int get pendingSecondsLeft => _pendingSecondsLeft;
   int get blockedSecondsLeft => _blockedSecondsLeft;
 
-  /// Entra con el token guardado si el agente lo acepta; si no, pregunta al agente en qué estado
-  /// está para mostrar el formulario que toque.
+  /// Entra con el token guardado si el agente lo acepta; si no, muestra la bienvenida. Sin
+  /// emparejar no avisa de que el PC no responde.
   Future<void> start() async {
     _stage = AuthStage.loading;
     notifyListeners();
-    final token = await _tokenStorage.read();
-    if (token != null) {
-      try {
-        await _repository.session();
-        _token = token;
-        _stage = AuthStage.loggedIn;
-        notifyListeners();
-        return;
-      } on NotAuthenticatedException {
-        await _tokenStorage.clear();
-      } on UnpairedException {
-        await _forgetDevice();
-      } on AgentUnavailableException catch (e) {
-        _unreachable(e);
-        return;
-      }
-    }
-    await _checkStatus();
+    await _check();
+    if (_stage == AuthStage.loggedIn) return;
+    if (!paired) _unreachableCause = null;
+    _toWelcome();
   }
 
-  /// Vuelve a comprobar el agente tras fallar la conexión o cambiar la
-  /// dirección, la huella o el identificador en Ajustes.
-  Future<void> retry() => start();
+  /// Comprueba el agente tras guardar la hoja de conexión; si responde, queda emparejada.
+  Future<void> connect() => _checkFromWelcome();
 
-  void _unreachable(AgentUnavailableException e) {
-    _error = e.message;
-    _stage = AuthStage.unreachable;
-    notifyListeners();
+  /// Vuelve a comprobar el agente al volver la app a primer plano.
+  Future<void> refresh() async {
+    if (_stage != AuthStage.welcome || _checking || !paired) return;
+    await _checkFromWelcome();
   }
 
-  Future<void> _checkStatus() async {
-    final AgentStatus status;
-    try {
-      status = await _repository.status();
-    } on AgentUnavailableException catch (e) {
-      _unreachable(e);
-      return;
-    }
+  /// Abre el formulario de login si el agente tiene cuenta; si no, devuelve el popup que toca.
+  Future<String?> openLogin() => _openForm(login: true);
+
+  /// Abre el formulario de registro si está abierto; si no, devuelve el popup que toca.
+  Future<String?> openRegistration() => _openForm(login: false);
+
+  Future<String?> _openForm({required bool login}) async {
+    final status = await _checkFromWelcome();
+    if (status == null) return null;
+    final popup = login ? _loginPopup(status) : _registrationPopup(status);
+    if (popup != null) return popup;
+    _sessionExpired = false;
+    _error = null;
     _sesionActivaAviso = status.sesionActiva;
-    _stage = status.configurado
-        ? AuthStage.needsLogin
-        : status.registroAbierto
-        ? AuthStage.needsRegistration
-        : AuthStage.noAccount;
+    _stage = login ? AuthStage.needsLogin : AuthStage.needsRegistration;
+    notifyListeners();
+    return null;
+  }
+
+  String? _loginPopup(AgentStatus status) => status.configurado
+      ? null
+      : status.registroAbierto
+      ? kNoAccountPopup
+      : kRegistrationClosedPopup;
+
+  String? _registrationPopup(AgentStatus status) => status.configurado
+      ? kAccountExistsPopup
+      : status.registroAbierto
+      ? null
+      : kRegistrationClosedPopup;
+
+  /// Deja el formulario y vuelve a la bienvenida.
+  void backToWelcome() {
+    _stopWaiting();
+    _error = null;
+    _toWelcome();
+  }
+
+  void _toWelcome() {
+    _stage = AuthStage.welcome;
     notifyListeners();
   }
 
-  /// Crea la cuenta con el código de registro de la TUI y entra en sesión.
-  Future<void> register({
+  Future<AgentStatus?> _checkFromWelcome() async {
+    _checking = true;
+    notifyListeners();
+    final status = await _check();
+    _checking = false;
+    notifyListeners();
+    return status;
+  }
+
+  // Entra si el token guardado sigue valiendo; si no, consulta /estado. Devuelve el estado, o
+  // `null` si ya ha entrado o el agente no responde. Un fallo de red no borra el token.
+  Future<AgentStatus?> _check() async {
+    try {
+      if (await _enterWithSavedToken()) return null;
+      final status = await _repository.status();
+      _unreachableCause = null;
+      await _markPaired();
+      return status;
+    } on AgentUnavailableException catch (e) {
+      _unreachableCause = e.cause;
+    } on AgentErrorException {
+      _unreachableCause = AgentUnavailableCause.unexpected;
+    }
+    return null;
+  }
+
+  Future<bool> _enterWithSavedToken() async {
+    final token = await _tokenStorage.read();
+    if (token == null) return false;
+    try {
+      await _repository.session();
+    } on NotAuthenticatedException {
+      await _tokenStorage.clear();
+      return false;
+    } on SessionExpiredException {
+      await _tokenStorage.clear();
+      _sessionExpired = true;
+      return false;
+    } on UnpairedException {
+      await _forgetDevice();
+      return false;
+    }
+    _unreachableCause = null;
+    await _markPaired();
+    _token = token;
+    _stage = AuthStage.loggedIn;
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> _markPaired() async {
+    if (!paired) await markPaired?.call();
+  }
+
+  /// Crea la cuenta con el código de registro de la TUI y entra en sesión. Si otro móvil se ha
+  /// adelantado (`registro_cerrado`), vuelve a la bienvenida y devuelve el popup que toca.
+  Future<String?> register({
     required String codigo,
     required String usuario,
     required String contrasena,
@@ -132,9 +217,10 @@ class AuthViewModel extends ChangeNotifier {
         dispositivo: dispositivo,
       );
       await _enterSession(session.token);
-      return;
+      return null;
     } on RegistrationClosedException {
-      _error = 'El registro no está abierto. Pulsa configuración inicial en la TUI.';
+      _toWelcome();
+      return kAccountExistsPopup;
     } on CodeExpiredException {
       _error =
           'El código de registro ha caducado. '
@@ -150,6 +236,7 @@ class AuthViewModel extends ChangeNotifier {
     }
     _stage = AuthStage.needsRegistration;
     notifyListeners();
+    return null;
   }
 
   /// Inicia sesión; si ya hay una sesión activa en otro dispositivo, pasa a esperar la confirmación
@@ -278,14 +365,14 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> logout() async {
     await _tryRevoking(_repository.logout);
     await _forgetSession();
-    await _checkStatus();
+    _toWelcome();
   }
 
   /// Desempareja el móvil en el agente (si responde) y olvida el equipo en el móvil.
   Future<void> unpair() async {
     await _tryRevoking(_repository.unpair);
     await _forgetDevice();
-    await _checkStatus();
+    _toWelcome();
   }
 
   // Si el agente no responde, igualmente se olvida la sesión (o el equipo) en
@@ -299,16 +386,23 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Reacciona a un 401 de cualquier petición protegida: sin sesión
-  /// (`no_autenticado`) se vuelve al login; si el agente avisa de que ya no
-  /// está emparejado (`desemparejado`) se olvida también el equipo. Devuelve
-  /// `true` si [error] era de sesión y ya está tratado.
+  /// (`no_autenticado`) se vuelve a la bienvenida; con el token pasado de
+  /// los 7 días (`sesion_caducada`), también con el aviso de sesión
+  /// caducada; si el agente avisa de que ya no está emparejado
+  /// (`desemparejado`) se olvida también el equipo. Devuelve `true` si
+  /// [error] era de sesión y ya está tratado.
   bool handleSessionError(Object error) {
     if (error is NotAuthenticatedException) {
-      _forgetSession().then((_) => _checkStatus());
+      _forgetSession().then((_) => _toWelcome());
+      return true;
+    }
+    if (error is SessionExpiredException) {
+      _sessionExpired = true;
+      _forgetSession().then((_) => _toWelcome());
       return true;
     }
     if (error is UnpairedException) {
-      _forgetDevice().then((_) => _checkStatus());
+      _forgetDevice().then((_) => _toWelcome());
       return true;
     }
     return false;

@@ -1,4 +1,5 @@
-// Tests de SettingsViewModel: ajustes corruptos y que un cambio no se da por hecho hasta guardarse.
+// Tests de SettingsViewModel: ajustes corruptos, que un cambio no se da por hecho hasta guardarse y
+// cuándo se borra la marca de emparejado.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sysmote/data/repositories/settings_repository.dart';
@@ -44,5 +45,41 @@ void main() {
     await vm.setIrohId('abc123');
 
     expect(repository.saved?.irohId, 'abc123');
+  });
+
+  group('la marca de emparejado', () {
+    Future<SettingsViewModel> paired() async {
+      final vm = SettingsViewModel(_SlowSettingsRepository());
+      await Future<void>.delayed(Duration.zero);
+      await vm.setPaired(true);
+      return vm;
+    }
+
+    test('se borra al cambiar la dirección', () async {
+      final vm = await paired();
+      await vm.setAgentAddress('192.168.1.50:8443');
+      expect(vm.paired, isFalse);
+    });
+
+    test('se borra al cambiar la huella', () async {
+      final vm = await paired();
+      await vm.setFingerprint('a' * 64);
+      expect(vm.paired, isFalse);
+    });
+
+    test('se borra al cambiar el identificador iroh', () async {
+      final vm = await paired();
+      await vm.setIrohId('b' * 64);
+      expect(vm.paired, isFalse);
+    });
+
+    test('no se borra al guardar los mismos valores ni al cambiar de modo', () async {
+      final vm = await paired();
+      await vm.setAgentAddress(vm.agentAddress);
+      await vm.setFingerprint(vm.fingerprint);
+      await vm.setIrohId(vm.irohId);
+      await vm.setConnectionMode(ConnectionMode.iroh);
+      expect(vm.paired, isTrue);
+    });
   });
 }

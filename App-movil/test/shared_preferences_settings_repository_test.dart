@@ -32,6 +32,7 @@ void main() {
       agentAddress: '192.168.1.50:9000',
       fingerprint: 'a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1a3f5c9d1',
       irohId: 'nodeid-de-prueba',
+      paired: true,
     );
 
     await repository.save(data);
@@ -49,6 +50,7 @@ void main() {
     expect(loaded.agentAddress, data.agentAddress);
     expect(loaded.fingerprint, data.fingerprint);
     expect(loaded.irohId, data.irohId);
+    expect(loaded.paired, data.paired);
   });
 
   test('un índice de enum guardado fuera de rango lanza al leerlo', () async {

@@ -10,12 +10,15 @@ import '../../../data/device_name.dart';
 import '../auth_viewmodel.dart';
 import 'auth_banner.dart';
 
-/// Código de registro de la TUI, usuario, contraseña y nombre del dispositivo.
+/// Código de registro de la TUI, usuario, contraseña y nombre del dispositivo, y «Volver» a la
+/// bienvenida.
 class RegistrationForm extends StatefulWidget {
-  const RegistrationForm({super.key, required this.vm, required this.onConnection});
+  const RegistrationForm({super.key, required this.vm, required this.onPopup});
 
   final AuthViewModel vm;
-  final VoidCallback onConnection;
+
+  /// Muestra el popup que devuelve el registro cuando otro móvil se ha adelantado.
+  final void Function(String message) onPopup;
 
   @override
   State<RegistrationForm> createState() => _RegistrationFormState();
@@ -51,12 +54,16 @@ class _RegistrationFormState extends State<RegistrationForm> {
       return;
     }
     setState(() => _aviso = null);
-    widget.vm.register(
-      codigo: _codigo.text.trim(),
-      usuario: _usuario.text.trim(),
-      contrasena: _contrasena.text,
-      dispositivo: deviceNameOrDefault(_dispositivo.text),
-    );
+    widget.vm
+        .register(
+          codigo: _codigo.text.trim(),
+          usuario: _usuario.text.trim(),
+          contrasena: _contrasena.text,
+          dispositivo: deviceNameOrDefault(_dispositivo.text),
+        )
+        .then((popup) {
+          if (popup != null) widget.onPopup(popup);
+        });
   }
 
   @override
@@ -107,7 +114,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             fill: t.accent,
             onPressed: busy ? null : _submit,
           ),
-          AppButton(label: 'Conexión con el PC', onPressed: widget.onConnection),
+          AppButton(label: 'Volver', onPressed: widget.vm.backToWelcome),
         ],
       ),
     );

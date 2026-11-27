@@ -59,6 +59,9 @@ class FakeAuthRepository implements AuthRepository {
     _fallos = 0;
   }
 
+  /// Si es true, session() responde como un token que ha pasado sus 7 días.
+  bool tokenCaducado = false;
+
   int logoutCalls = 0;
   int unpairCalls = 0;
 
@@ -160,6 +163,7 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<SessionInfo> session() async {
     final token = _token;
+    if (tokenCaducado) throw SessionExpiredException();
     if (token == null) throw NotAuthenticatedException();
     return SessionInfo(usuario: usuarioValido, dispositivo: _dispositivo!, creada: DateTime.now());
   }

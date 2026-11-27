@@ -48,10 +48,19 @@ Future<http.Response> sendToAgent(http.Client client, http.BaseRequest request) 
   try {
     return await client.send(request).then(http.Response.fromStream).timeout(_timeout);
   } on TimeoutException {
-    throw AgentUnavailableException('El agente no respondió a tiempo');
+    throw AgentUnavailableException(
+      'El agente no respondió a tiempo',
+      cause: AgentUnavailableCause.timeout,
+    );
   } on HandshakeException {
-    throw AgentUnavailableException(kFingerprintMismatchMessage);
+    throw AgentUnavailableException(
+      kFingerprintMismatchMessage,
+      cause: AgentUnavailableCause.fingerprint,
+    );
   } catch (_) {
-    throw AgentUnavailableException('No se pudo conectar con el agente');
+    throw AgentUnavailableException(
+      'No se pudo conectar con el agente',
+      cause: AgentUnavailableCause.unreachable,
+    );
   }
 }
