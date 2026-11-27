@@ -48,8 +48,11 @@ class _Harness {
   Future<String> request() => connection.request(_request);
 }
 
-Matcher _unavailable(String message) =>
-    throwsA(isA<AgentUnavailableException>().having((e) => e.message, 'message', message));
+Matcher _unavailable(String message, AgentUnavailableCause cause) => throwsA(
+  isA<AgentUnavailableException>()
+      .having((e) => e.message, 'message', message)
+      .having((e) => e.cause, 'cause', cause),
+);
 
 void main() {
   test('reutiliza la conexión entre peticiones', () async {
@@ -64,7 +67,10 @@ void main() {
   test('un identificador inválido avisa con su propio mensaje y no intenta conectar', () async {
     final harness = _Harness()..id = 'no-es-un-identificador';
 
-    await expectLater(harness.request(), _unavailable(kInvalidIrohIdMessage));
+    await expectLater(
+      harness.request(),
+      _unavailable(kInvalidIrohIdMessage, AgentUnavailableCause.invalidIrohId),
+    );
 
     expect(harness.connectedIds, isEmpty);
   });
@@ -94,7 +100,10 @@ void main() {
       },
     );
 
-    await expectLater(harness.request(), _unavailable('El agente no respondió a tiempo'));
+    await expectLater(
+      harness.request(),
+      _unavailable('El agente no respondió a tiempo', AgentUnavailableCause.timeout),
+    );
     expect(links.single.closed, isTrue);
 
     expect(await harness.request(), _response);
@@ -112,7 +121,7 @@ void main() {
 
     await expectLater(
       harness.request(),
-      _unavailable('No se pudo conectar con el agente por iroh'),
+      _unavailable('No se pudo conectar con el agente por iroh', AgentUnavailableCause.unreachable),
     );
     expect(await harness.request(), _response);
     expect(harness.connectedIds, [_idA, _idA]);

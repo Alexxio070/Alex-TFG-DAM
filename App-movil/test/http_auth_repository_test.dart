@@ -221,9 +221,9 @@ void main() {
       final roto = repoWith((_) => http.Response('no es json', 200));
       final tipoMalo = repoWith((_) => _json(200, {'api': 'uno'}));
 
-      expect(() => sinConexion.status(), throwsA(isA<AgentUnavailableException>()));
-      expect(() => roto.status(), throwsA(isA<AgentUnavailableException>()));
-      expect(() => tipoMalo.status(), throwsA(isA<AgentUnavailableException>()));
+      expect(() => sinConexion.status(), _unavailable(AgentUnavailableCause.unreachable));
+      expect(() => roto.status(), _unavailable(AgentUnavailableCause.unexpected));
+      expect(() => tipoMalo.status(), _unavailable(AgentUnavailableCause.unexpected));
     },
   );
 
@@ -238,11 +238,9 @@ void main() {
     await expectLater(
       repo.status(),
       throwsA(
-        isA<AgentUnavailableException>().having(
-          (e) => e.message,
-          'message',
-          kFingerprintMismatchMessage,
-        ),
+        isA<AgentUnavailableException>()
+            .having((e) => e.message, 'message', kFingerprintMismatchMessage)
+            .having((e) => e.cause, 'cause', AgentUnavailableCause.fingerprint),
       ),
     );
   });
@@ -258,7 +256,7 @@ void main() {
       }),
     );
 
-    await expectLater(repo.status(), throwsA(isA<AgentUnavailableException>()));
+    await expectLater(repo.status(), _unavailable(AgentUnavailableCause.timeout));
   }, timeout: const Timeout(Duration(seconds: 10)));
 
   group('huella del certificado', () {
@@ -279,3 +277,6 @@ void main() {
     });
   });
 }
+
+Matcher _unavailable(AgentUnavailableCause cause) =>
+    throwsA(isA<AgentUnavailableException>().having((e) => e.cause, 'cause', cause));
