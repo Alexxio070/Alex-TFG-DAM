@@ -21,6 +21,32 @@ def _en(delta: timedelta) -> str:
     return (datetime.now(UTC) + delta).isoformat()
 
 
+class _Reloj:
+    """Reloj de mentira: `auth_service` lo consulta en vez del real, y el test lo adelanta a mano."""
+
+    def __init__(self):
+        self.ahora = datetime.now(UTC)
+
+    def __call__(self):
+        return self.ahora
+
+    def avanzar(self, delta: timedelta) -> None:
+        self.ahora += delta
+
+
+@pytest.fixture
+def reloj(monkeypatch):
+    reloj = _Reloj()
+    monkeypatch.setattr(auth_service, "_ahora", reloj)
+    return reloj
+
+
+def _sesion_de(connection, resultado):
+    return sesion_repository.obtener_por_hash_token(
+        connection, token_service.hashear(resultado["token"])
+    )
+
+
 def _abrir_registro(connection, caduca_en=None):
     codigo_registro_repository.crear(
         connection, auth_service.hash_codigo(CODIGO), caduca_en or _en(timedelta(minutes=10))
@@ -302,18 +328,52 @@ def test_responder_solicitud_ya_resuelta_no_hace_nada(connection):
     assert auth_service.autenticar(connection, primera["token"]).dispositivo == "Pixel 8"
 
 
-def test_sesion_caducada_por_inactividad_no_cuenta_como_activa_y_el_login_no_pide_confirmacion(
-    connection,
-):
+def test_la_sesion_deja_de_valer_a_los_7_dias_de_iniciarla(connection, reloj):
     primera = _cuenta(connection)
-    connection.execute("UPDATE sesion SET ultimo_acceso = ?", (_en(timedelta(days=-31)),))
 
-    assert auth_service.estado(connection)["sesion_activa"] is False
+    reloj.avanzar(timedelta(days=7) - timedelta(seconds=1))
+    assert auth_service.autenticar(connection, primera["token"]).dispositivo == "Pixel 8"
+    assert auth_service.estado(connection)["sesion_activa"] is True
+
+    reloj.avanzar(timedelta(seconds=1))
     assert (
         _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
         == "no_autenticado"
     )
+    assert auth_service.estado(connection)["sesion_activa"] is False
+
+
+def test_con_la_sesion_caducada_el_login_no_pide_confirmacion(connection, reloj):
+    _cuenta(connection)
+    reloj.avanzar(timedelta(days=8))
+
     assert "token" in auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+
+def test_usar_la_sesion_no_alarga_su_caducidad(connection, reloj):
+    primera = _cuenta(connection)
+    caduca_en = _sesion_de(connection, primera).caduca_en
+
+    reloj.avanzar(timedelta(days=6))
+    auth_service.autenticar(connection, primera["token"])  # un uso el día 6
+
+    assert _sesion_de(connection, primera).caduca_en == caduca_en
+    reloj.avanzar(timedelta(days=1))  # día 7: caduca aunque se usara el día anterior
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
+        == "no_autenticado"
+    )
+
+
+def test_las_sesiones_no_se_borran_nunca(connection, reloj):
+    _cuenta(connection)
+    auth_service.cerrar_todas_las_sesiones(connection)
+    auth_service.login(connection, "alex", "Clave1", "Tablet")
+    reloj.avanzar(timedelta(days=8))
+    auth_service.login(connection, "alex", "Clave1", "Tablet")
+
+    historial = connection.execute("SELECT id, motivo_revocacion FROM sesion ORDER BY id")
+    assert historial.fetchall() == [(1, "cerrar_todas"), (2, "caducada"), (3, None)]
 
 
 def test_autenticar_sin_token_o_con_token_desconocido(connection):
@@ -325,26 +385,20 @@ def test_autenticar_sin_token_o_con_token_desconocido(connection):
 
 
 def test_la_sesion_nueva_guarda_su_caducidad_a_los_7_dias_de_crearse(connection):
-    resultado = _cuenta(connection)
-
-    sesion = sesion_repository.obtener_por_hash_token(
-        connection, token_service.hashear(resultado["token"])
-    )
+    sesion = _sesion_de(connection, _cuenta(connection))
 
     assert datetime.fromisoformat(sesion.caduca_en) - datetime.fromisoformat(
         sesion.creado_en
     ) == timedelta(days=7)
 
 
-def test_autenticar_renueva_el_ultimo_acceso(connection):
+def test_autenticar_sigue_anotando_el_ultimo_acceso(connection, reloj):
     resultado = _cuenta(connection)
-    connection.execute("UPDATE sesion SET ultimo_acceso = ?", (_en(timedelta(days=-10)),))
+    reloj.avanzar(timedelta(days=2))
 
-    sesion = auth_service.autenticar(connection, resultado["token"])
+    auth_service.autenticar(connection, resultado["token"])
 
-    assert sesion_repository.obtener_por_hash_token(
-        connection, sesion.hash_token
-    ).ultimo_acceso > _en(timedelta(days=-1))
+    assert _sesion_de(connection, resultado).ultimo_acceso == reloj.ahora.isoformat()
 
 
 def test_logout_revoca_la_sesion(connection):

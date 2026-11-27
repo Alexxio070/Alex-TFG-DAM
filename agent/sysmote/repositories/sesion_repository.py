@@ -1,7 +1,6 @@
 """Acceso a la tabla `sesion`: las sesiones de la app, identificadas por el hash de su token."""
 
 import sqlite3
-from datetime import UTC, datetime
 
 from sysmote.models.auth import Sesion
 
@@ -65,19 +64,16 @@ def obtener_por_hash_token(connection: sqlite3.Connection, hash_token: str) -> S
 
 
 def obtener_activa(connection: sqlite3.Connection) -> Sesion | None:
-    """Devuelve la sesión sin revocar más reciente; no comprueba si ha caducado por inactividad."""
+    """Devuelve la sesión sin revocar más reciente; no comprueba si ya ha llegado a su `caduca_en`."""
     row = connection.execute(
         f"SELECT {_COLUMNS} FROM sesion WHERE revocada = 0 ORDER BY id DESC LIMIT 1"
     ).fetchone()
     return _to_sesion(row) if row else None
 
 
-def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int) -> None:
-    """Pone el último acceso a ahora: cada uso renueva los 30 días de caducidad."""
-    connection.execute(
-        "UPDATE sesion SET ultimo_acceso = ? WHERE id = ?",
-        (datetime.now(UTC).isoformat(), sesion_id),
-    )
+def tocar_ultimo_acceso(connection: sqlite3.Connection, sesion_id: int, ahora: str) -> None:
+    """Anota el último uso de la sesión (lo muestra la TUI). No cambia su `caduca_en`."""
+    connection.execute("UPDATE sesion SET ultimo_acceso = ? WHERE id = ?", (ahora, sesion_id))
     connection.commit()
 
 
