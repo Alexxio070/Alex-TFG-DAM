@@ -1,6 +1,9 @@
 """Pantalla principal: banner, área de datos y la barra de cuatro botones."""
 
+from typing import ClassVar
+
 from textual.app import ComposeResult
+from textual.binding import BindingType
 from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, ContentSwitcher, Footer, Static
@@ -34,7 +37,7 @@ SECTION_IDS = {
 class MainScreen(Screen):
     """Banner arriba, área de datos en el centro, barra de botones abajo."""
 
-    BINDINGS = [("q", "quit", "Salir")]
+    BINDINGS: ClassVar[list[BindingType]] = [("q", "quit", "Salir")]
 
     CSS = """
     #banner {
