@@ -129,5 +129,7 @@ class Servidores:
             raise
         except SystemExit:
             self._errores[nombre] = "error: no se pudo abrir el puerto (¿ya está en uso?)"
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
+            # Cualquier fallo de un servidor (uvicorn o iroh pueden lanzar casi cualquier cosa) se
+            # guarda como su estado para que la TUI lo avise, y no tumba a los demás.
             self._errores[nombre] = f"error: {error}"
