@@ -178,11 +178,13 @@ void main() {
     expect(session.creada.toUtc(), DateTime.utc(2026, 12, 20, 17, 30));
   });
 
-  test('un 401 no_autenticado o desemparejado se distingue', () async {
+  test('un 401 no_autenticado, sesion_caducada o desemparejado se distingue', () async {
     final noAuth = repoWith((_) => _json(401, {'error': 'no_autenticado', 'mensaje': 'x'}));
+    final caducada = repoWith((_) => _json(401, {'error': 'sesion_caducada', 'mensaje': 'x'}));
     final desemp = repoWith((_) => _json(401, {'error': 'desemparejado', 'mensaje': 'x'}));
 
     expect(() => noAuth.session(), throwsA(isA<NotAuthenticatedException>()));
+    expect(() => caducada.session(), throwsA(isA<SessionExpiredException>()));
     expect(() => desemp.session(), throwsA(isA<UnpairedException>()));
   });
 
@@ -221,9 +223,9 @@ void main() {
       final roto = repoWith((_) => http.Response('no es json', 200));
       final tipoMalo = repoWith((_) => _json(200, {'api': 'uno'}));
 
-      expect(() => sinConexion.status(), throwsA(isA<AgentUnavailableException>()));
-      expect(() => roto.status(), throwsA(isA<AgentUnavailableException>()));
-      expect(() => tipoMalo.status(), throwsA(isA<AgentUnavailableException>()));
+      expect(() => sinConexion.status(), _unavailable(AgentUnavailableCause.unreachable));
+      expect(() => roto.status(), _unavailable(AgentUnavailableCause.unexpected));
+      expect(() => tipoMalo.status(), _unavailable(AgentUnavailableCause.unexpected));
     },
   );
 
@@ -238,11 +240,9 @@ void main() {
     await expectLater(
       repo.status(),
       throwsA(
-        isA<AgentUnavailableException>().having(
-          (e) => e.message,
-          'message',
-          kFingerprintMismatchMessage,
-        ),
+        isA<AgentUnavailableException>()
+            .having((e) => e.message, 'message', kFingerprintMismatchMessage)
+            .having((e) => e.cause, 'cause', AgentUnavailableCause.fingerprint),
       ),
     );
   });
@@ -258,8 +258,18 @@ void main() {
       }),
     );
 
-    await expectLater(repo.status(), throwsA(isA<AgentUnavailableException>()));
+    await expectLater(repo.status(), _unavailable(AgentUnavailableCause.timeout));
   }, timeout: const Timeout(Duration(seconds: 10)));
+
+  test(
+    'el cliente descarta las conexiones paradas antes de los 5 s en que las cierra el agente',
+    () {
+      final client = pinnedHttpClient(() => '');
+
+      expect(client.idleTimeout, lessThan(const Duration(seconds: 5)));
+      client.close();
+    },
+  );
 
   group('huella del certificado', () {
     final abc = Uint8List.fromList(utf8.encode('abc'));
@@ -279,3 +289,6 @@ void main() {
     });
   });
 }
+
+Matcher _unavailable(AgentUnavailableCause cause) =>
+    throwsA(isA<AgentUnavailableException>().having((e) => e.cause, 'cause', cause));

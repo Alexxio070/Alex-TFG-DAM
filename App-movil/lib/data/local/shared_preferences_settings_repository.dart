@@ -17,6 +17,7 @@ const _keyConnectionMode = 'settings_connection_mode';
 const _keyAgentAddress = 'settings_agent_address';
 const _keyFingerprint = 'settings_fingerprint';
 const _keyIrohId = 'settings_iroh_id';
+const _keyPaired = 'settings_paired';
 
 /// [SettingsRepository] que guarda cada ajuste con su propia clave.
 class SharedPreferencesSettingsRepository implements SettingsRepository {
@@ -36,6 +37,7 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
       agentAddress: prefs.getString(_keyAgentAddress) ?? kDefaultAgentAddress,
       fingerprint: prefs.getString(_keyFingerprint) ?? '',
       irohId: prefs.getString(_keyIrohId) ?? '',
+      paired: prefs.getBool(_keyPaired) ?? false,
     );
   }
 
@@ -53,5 +55,6 @@ class SharedPreferencesSettingsRepository implements SettingsRepository {
     await prefs.setString(_keyAgentAddress, data.agentAddress);
     await prefs.setString(_keyFingerprint, data.fingerprint);
     await prefs.setString(_keyIrohId, data.irohId);
+    await prefs.setBool(_keyPaired, data.paired);
   }
 }

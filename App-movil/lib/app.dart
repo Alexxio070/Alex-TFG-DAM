@@ -11,23 +11,24 @@ import 'features/settings/settings_viewmodel.dart';
 import 'features/shell/shell_view.dart';
 
 /// MaterialApp de Sysmote: pantalla de carga mientras se leen los ajustes, [ShellView] con la
-/// sesión abierta y [LoginView] en cualquier otro caso.
+/// sesión abierta y [LoginView] en cualquier otro caso. [AuthViewModel] no se crea hasta tener los
+/// ajustes, porque al arrancar usa la dirección y la marca de emparejada.
 class SysmoteApp extends StatelessWidget {
   const SysmoteApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsViewModel>();
-    final auth = context.watch<AuthViewModel>();
+    final stage = settings.ready ? context.watch<AuthViewModel>().stage : null;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Sysmote',
       theme: buildTheme(dark: settings.dark, accent: settings.accent),
-      home: !settings.ready
-          ? const _LoadingPlaceholder()
-          : auth.stage == AuthStage.loggedIn
-          ? const ShellView()
-          : const LoginView(),
+      home: switch (stage) {
+        null => const _LoadingPlaceholder(),
+        AuthStage.loggedIn => const ShellView(),
+        _ => const LoginView(),
+      },
     );
   }
 }

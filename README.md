@@ -96,7 +96,7 @@ Noviembre de 2026. La app y el agente ya tienen login: se crea la cuenta con un 
 
 ## Limitaciones conocidas
 
-- **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 30 días sin uso.
+- **Desemparejar al desinstalar:** desinstalar la app del móvil o el agente del PC no desempareja automáticamente. Android no avisa a una app cuando se desinstala, y la app no puede distinguir un agente desinstalado de un PC apagado. Se desempareja con el botón «Desemparejar» (en la TUI o en la app), y la sesión caduca sola a los 7 días de iniciarla.
 - **Bloqueo por intentos:** el límite de intentos de login es por cuenta y no por dirección, porque por iroh todas las conexiones llegan desde `127.0.0.1`. Quien alcance el agente puede bloquear el login del dueño durante unos minutos con cinco intentos fallidos. La TUI tiene un botón para levantar el bloqueo.
 - **Sin escáner de QR:** la TUI muestra el QR de emparejamiento, pero la app aún no lo escanea. La dirección, la huella del certificado, el identificador de iroh y el código de registro se escriben a mano en la app.
 
@@ -149,7 +149,7 @@ flutter run                                          # móvil conectado o emulad
 flutter build apk --release --target-platform android-arm64   # genera el APK
 ```
 
-El agente se arranca y se conecta igual que en la instalación rápida. Las pruebas se ejecutan con `.venv/bin/pytest` (en `agent/`) y `flutter test` (en `App-movil/`).
+El agente se arranca y se conecta igual que en la instalación rápida. Las pruebas se ejecutan con `.venv/bin/pytest` (en `agent/`) y `flutter test` (en `App-movil/`). El código se formatea con `.venv/bin/ruff format` (Python, en `agent/`) y `dart format -l 100` (Dart); `agent/uv.lock` fija las versiones de desarrollo para quien use `uv`.
 
 > [!NOTE]
 > Si quieres el comando `sysmote` sin entorno virtual, desde la raíz del repositorio:

@@ -13,8 +13,7 @@ void main() {
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(app());
-    await tester.pump();
+    await startApp(tester);
     await tester.pumpAndSettle();
   }
 

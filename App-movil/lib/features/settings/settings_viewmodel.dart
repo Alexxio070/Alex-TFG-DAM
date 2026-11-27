@@ -28,6 +28,7 @@ class SettingsViewModel extends ChangeNotifier {
   String _agentAddress = kDefaultAgentAddress;
   String _fingerprint = '';
   String _irohId = '';
+  bool _paired = false;
 
   bool get ready => _ready;
   bool get dark => _dark;
@@ -41,6 +42,7 @@ class SettingsViewModel extends ChangeNotifier {
   String get agentAddress => _agentAddress;
   String get fingerprint => _fingerprint;
   String get irohId => _irohId;
+  bool get paired => _paired;
 
   Future<void> _load() async {
     try {
@@ -57,6 +59,7 @@ class SettingsViewModel extends ChangeNotifier {
         _agentAddress = saved.agentAddress;
         _fingerprint = saved.fingerprint;
         _irohId = saved.irohId;
+        _paired = saved.paired;
       }
     } catch (_) {
       // Ajustes guardados corruptos (p. ej. un índice de enum fuera de
@@ -75,9 +78,21 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> setTempLimit(int value) => _update(() => _tempLimit = value.clamp(60, 95));
   Future<void> setTermFont(int value) => _update(() => _termFont = value.clamp(10, 22));
   Future<void> setConnectionMode(ConnectionMode value) => _update(() => _connectionMode = value);
-  Future<void> setAgentAddress(String value) => _update(() => _agentAddress = value);
-  Future<void> setFingerprint(String value) => _update(() => _fingerprint = value);
-  Future<void> setIrohId(String value) => _update(() => _irohId = value);
+  Future<void> setPaired(bool value) => _update(() => _paired = value);
+
+  // Cambiar la dirección, la huella o el identificador deja de dar por emparejado al agente.
+  Future<void> setAgentAddress(String value) => _update(() {
+    if (value != _agentAddress) _paired = false;
+    _agentAddress = value;
+  });
+  Future<void> setFingerprint(String value) => _update(() {
+    if (value != _fingerprint) _paired = false;
+    _fingerprint = value;
+  });
+  Future<void> setIrohId(String value) => _update(() {
+    if (value != _irohId) _paired = false;
+    _irohId = value;
+  });
 
   Future<void> _update(VoidCallback change) async {
     change();
@@ -97,6 +112,7 @@ class SettingsViewModel extends ChangeNotifier {
         agentAddress: _agentAddress,
         fingerprint: _fingerprint,
         irohId: _irohId,
+        paired: _paired,
       ),
     );
   }

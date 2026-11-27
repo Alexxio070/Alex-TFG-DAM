@@ -1,4 +1,4 @@
-// Tests de la pantalla de login: cada estado de AuthViewModel y su formulario.
+// Tests de la pantalla de login: la bienvenida con sus popups y avisos, y cada formulario.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,13 +29,37 @@ Widget _app(AuthViewModel vm) => MultiProvider(
   ),
 );
 
+/// ViewModel con la marca de emparejada en memoria.
+AuthViewModel _vm(AuthRepository repo, {bool paired = true}) {
+  var marca = paired;
+  return AuthViewModel(
+    repo,
+    InMemoryTokenStorage(),
+    isPaired: () => marca,
+    markPaired: () async => marca = true,
+  );
+}
+
+/// Monta la bienvenida y pulsa [boton].
+Future<void> _abrir(WidgetTester tester, AuthViewModel vm, String boton) async {
+  addTearDown(vm.dispose);
+  await tester.pumpWidget(_app(vm));
+  await tester.pump();
+  await tester.tap(find.text(boton));
+  await tester.pump();
+  await tester.pump();
+}
+
+/// Sin agente mientras [cause] no sea null; si no, delega en un [FakeAuthRepository].
 class _Down implements AuthRepository {
-  bool available = false;
+  _Down([this.cause = AgentUnavailableCause.timeout]);
+
+  AgentUnavailableCause? cause;
   final _inner = FakeAuthRepository();
 
   @override
   Future<AgentStatus> status() async {
-    if (!available) throw AgentUnavailableException('El agente no respondió a tiempo');
+    if (cause case final cause?) throw AgentUnavailableException('x', cause: cause);
     return _inner.status();
   }
 
@@ -74,14 +98,112 @@ class _Down implements AuthRepository {
 }
 
 void main() {
-  testWidgets('sin cuenta en el agente, avisa de crearla en la TUI', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(configurado: false), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+  group('bienvenida', () {
+    testWidgets('sin emparejar solo ofrece conectar con el agente, sin avisos', (tester) async {
+      final vm = _vm(_Down(), paired: false);
+      addTearDown(vm.dispose);
+      await tester.pumpWidget(_app(vm));
+      await tester.pump();
 
-    expect(find.textContaining('Créala desde la TUI del PC'), findsOneWidget);
-    expect(find.text('Entrar'), findsNothing);
+      expect(find.text('Sysmote'), findsOneWidget);
+      expect(find.text('Conectar con el agente'), findsOneWidget);
+      expect(find.text('Iniciar sesión'), findsNothing);
+      expect(find.text('Registrar cuenta'), findsNothing);
+      expect(find.text('El PC no responde. ¿Está encendido y en la misma red?'), findsNothing);
+    });
+
+    testWidgets('«Conectar con el agente» abre los campos de dirección y huella', (tester) async {
+      await _abrir(tester, _vm(_Down(), paired: false), 'Conectar con el agente');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Local'), findsOneWidget);
+      expect(find.text('iroh'), findsOneWidget);
+      expect(find.text('Guardar'), findsOneWidget);
+    });
+
+    testWidgets('emparejada ofrece iniciar sesión y registrar cuenta', (tester) async {
+      final vm = _vm(FakeAuthRepository());
+      addTearDown(vm.dispose);
+      await tester.pumpWidget(_app(vm));
+      await tester.pump();
+
+      expect(find.text('Iniciar sesión'), findsOneWidget);
+      expect(find.text('Registrar cuenta'), findsOneWidget);
+      expect(find.text('Conectar con el agente'), findsNothing);
+    });
+
+    for (final (cause, message) in [
+      (AgentUnavailableCause.timeout, 'El PC no responde. ¿Está encendido y en la misma red?'),
+      (AgentUnavailableCause.unreachable, 'No se puede llegar al PC. Revisa la dirección.'),
+      (AgentUnavailableCause.fingerprint, 'La huella no coincide con la de este PC.'),
+      (AgentUnavailableCause.invalidIrohId, 'El identificador del PC no es válido.'),
+      (AgentUnavailableCause.unexpected, 'El agente respondió algo inesperado.'),
+    ]) {
+      testWidgets('sin respuesta por ${cause.name}: aviso en gris sin reintentar', (tester) async {
+        final vm = _vm(_Down(cause));
+        addTearDown(vm.dispose);
+        await tester.pumpWidget(_app(vm));
+        await tester.pump();
+
+        expect(find.text(message), findsOneWidget);
+        expect(find.text('Reintentar'), findsNothing);
+        expect(find.text('Iniciar sesión'), findsOneWidget);
+      });
+    }
+
+    testWidgets('al pulsar un botón vuelve a comprobar el agente', (tester) async {
+      final repo = _Down();
+      final vm = _vm(repo);
+      addTearDown(vm.dispose);
+      await tester.pumpWidget(_app(vm));
+      await tester.pump();
+      repo.cause = null;
+
+      await tester.tap(find.text('Iniciar sesión'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('El PC no responde. ¿Está encendido y en la misma red?'), findsNothing);
+      expect(find.text('Usuario'), findsOneWidget);
+    });
+
+    for (final (repo, boton, popup) in [
+      (FakeAuthRepository(), 'Registrar cuenta', kAccountExistsPopup),
+      (
+        FakeAuthRepository(configurado: false, registroAbierto: true),
+        'Iniciar sesión',
+        kNoAccountPopup,
+      ),
+      (FakeAuthRepository(configurado: false), 'Iniciar sesión', kRegistrationClosedPopup),
+      (FakeAuthRepository(configurado: false), 'Registrar cuenta', kRegistrationClosedPopup),
+    ]) {
+      testWidgets('«$boton» muestra el popup «$popup»', (tester) async {
+        await _abrir(tester, _vm(repo), boton);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text(popup), findsOneWidget);
+
+        await tester.tap(find.text('Aceptar'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(find.text('Iniciar sesión'), findsOneWidget);
+      });
+    }
+
+    testWidgets('la sesión caducada se avisa en la bienvenida', (tester) async {
+      final vm = _vm(FakeAuthRepository());
+      addTearDown(vm.dispose);
+      await tester.pumpWidget(_app(vm));
+      await tester.pump();
+
+      vm.handleSessionError(SessionExpiredException());
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Tu sesión ha caducado. Inicia sesión de nuevo.'), findsOneWidget);
+    });
   });
 
   FakeAuthRepository sinCuenta({bool caducado = false}) => FakeAuthRepository(
@@ -100,24 +222,51 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('sin cuenta y con el registro abierto, muestra el formulario de registro', (
-    tester,
-  ) async {
-    final vm = AuthViewModel(sinCuenta(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+  testWidgets('«Registrar cuenta» con el registro abierto muestra el formulario', (tester) async {
+    await _abrir(tester, _vm(sinCuenta()), 'Registrar cuenta');
 
     expect(find.text('Crear la cuenta'), findsOneWidget);
     expect(find.text('Código de registro'), findsOneWidget);
+    expect(find.text('Conexión con el PC'), findsNothing);
     expect(find.text('Entrar'), findsNothing);
   });
 
-  testWidgets('un registro correcto entra en sesión', (tester) async {
-    final vm = AuthViewModel(sinCuenta(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
+  testWidgets('si otro móvil se adelanta al registrar, vuelve con el popup', (tester) async {
+    final repo = sinCuenta();
+    await _abrir(tester, _vm(repo), 'Registrar cuenta');
+    repo.configurado = true;
+
+    await rellenarRegistro(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text(kAccountExistsPopup), findsOneWidget);
+    expect(find.text('Registrar cuenta'), findsOneWidget);
+  });
+
+  testWidgets('«Volver» y el gesto atrás vuelven a la bienvenida', (tester) async {
+    final vm = _vm(sinCuenta());
+    await _abrir(tester, vm, 'Registrar cuenta');
+
+    await tester.ensureVisible(find.text('Volver'));
+    await tester.tap(find.text('Volver'));
     await tester.pump();
+
+    expect(vm.stage, AuthStage.welcome);
+
+    await tester.tap(find.text('Registrar cuenta'));
+    await tester.pump();
+    await tester.pump();
+    expect(vm.stage, AuthStage.needsRegistration);
+
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+
+    expect(vm.stage, AuthStage.welcome);
+  });
+
+  testWidgets('un registro correcto entra en sesión', (tester) async {
+    final vm = _vm(sinCuenta());
+    await _abrir(tester, vm, 'Registrar cuenta');
 
     await rellenarRegistro(tester);
 
@@ -125,10 +274,7 @@ void main() {
   });
 
   testWidgets('un código caducado explica cómo generar otro', (tester) async {
-    final vm = AuthViewModel(sinCuenta(caducado: true), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    await _abrir(tester, _vm(sinCuenta(caducado: true)), 'Registrar cuenta');
 
     await rellenarRegistro(tester);
 
@@ -140,10 +286,8 @@ void main() {
   });
 
   testWidgets('una contraseña débil muestra los motivos', (tester) async {
-    final vm = AuthViewModel(sinCuenta(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(sinCuenta());
+    await _abrir(tester, vm, 'Registrar cuenta');
 
     await rellenarRegistro(tester, contrasena: 'abc');
 
@@ -152,10 +296,8 @@ void main() {
   });
 
   testWidgets('con cuenta y sin sesión activa, muestra el formulario sin aviso', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(FakeAuthRepository());
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     expect(find.text('Usuario'), findsOneWidget);
     expect(find.text('Contraseña'), findsOneWidget);
@@ -165,19 +307,15 @@ void main() {
 
   testWidgets('con sesión activa en otro dispositivo, avisa antes del login', (tester) async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
-    final vm = AuthViewModel(repo, InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(repo);
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     expect(find.textContaining('sesión activa en otro dispositivo'), findsOneWidget);
   });
 
   testWidgets('credenciales correctas entran en sesión', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(FakeAuthRepository());
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
@@ -189,10 +327,8 @@ void main() {
   });
 
   testWidgets('credenciales incorrectas muestran el error', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(FakeAuthRepository());
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.enterText(find.byType(TextField).at(1), 'mala');
@@ -204,10 +340,8 @@ void main() {
   });
 
   testWidgets('sin usuario o contraseña avisa de lo que falta', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(FakeAuthRepository());
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.tap(find.text('Entrar'));
@@ -219,10 +353,8 @@ void main() {
 
   testWidgets('sin nombre de dispositivo entra con el nombre por defecto', (tester) async {
     final repo = FakeAuthRepository();
-    final vm = AuthViewModel(repo, InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(repo);
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
@@ -234,10 +366,8 @@ void main() {
   });
 
   testWidgets('sin código, usuario o contraseña el registro avisa de lo que falta', (tester) async {
-    final vm = AuthViewModel(sinCuenta(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(sinCuenta());
+    await _abrir(tester, vm, 'Registrar cuenta');
 
     await tester.tap(find.text('Crear cuenta'));
     await tester.pump();
@@ -248,9 +378,8 @@ void main() {
 
   testWidgets('bloqueado muestra la cuenta atrás y deshabilita Entrar', (tester) async {
     final repo = FakeAuthRepository()..bloqueadoPor = TooManyAttemptsException(40);
-    final vm = AuthViewModel(repo, InMemoryTokenStorage());
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(repo);
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
@@ -262,17 +391,15 @@ void main() {
     final button = tester.widget<AppButton>(find.widgetWithText(AppButton, 'Entrar'));
     expect(button.onPressed, isNull);
 
-    vm.dispose();
+    vm.backToWelcome();
   });
 
   testWidgets('sesión activa en otro dispositivo: espera con cuenta atrás y cancelar', (
     tester,
   ) async {
     final repo = FakeAuthRepository()..sesionActivaEnDispositivo = 'iPhone 15';
-    final vm = AuthViewModel(repo, InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
+    final vm = _vm(repo);
+    await _abrir(tester, vm, 'Iniciar sesión');
 
     await tester.enterText(find.byType(TextField).at(0), 'alex');
     await tester.enterText(find.byType(TextField).at(1), 'contraseña-valida');
@@ -290,37 +417,17 @@ void main() {
     expect(find.text('Usuario'), findsOneWidget);
   });
 
-  testWidgets('sin conexión con el agente, avisa y deja reintentar', (tester) async {
-    final repo = _Down();
-    final vm = AuthViewModel(repo, InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
+  testWidgets('el login no tiene «Conexión con el PC» y «Volver» regresa', (tester) async {
+    final vm = _vm(FakeAuthRepository());
+    await _abrir(tester, vm, 'Iniciar sesión');
+
+    expect(find.text('Conexión con el PC'), findsNothing);
+
+    await tester.ensureVisible(find.text('Volver'));
+    await tester.tap(find.text('Volver'));
     await tester.pump();
 
-    expect(find.text('No se puede conectar con el agente'), findsOneWidget);
-    expect(find.text('El agente no respondió a tiempo'), findsOneWidget);
-
-    repo.available = true;
-    await tester.tap(find.text('Reintentar'));
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.text('Usuario'), findsOneWidget);
-  });
-
-  testWidgets('«Conexión con el PC» abre los campos de dirección y huella', (tester) async {
-    final vm = AuthViewModel(FakeAuthRepository(), InMemoryTokenStorage());
-    addTearDown(vm.dispose);
-    await tester.pumpWidget(_app(vm));
-    await tester.pump();
-
-    await tester.ensureVisible(find.text('Conexión con el PC'));
-    await tester.tap(find.text('Conexión con el PC'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Local'), findsOneWidget);
-    expect(find.text('iroh'), findsOneWidget);
-    expect(find.text('Guardar'), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(5));
+    expect(find.text('Iniciar sesión'), findsOneWidget);
+    expect(find.text('Usuario'), findsNothing);
   });
 }

@@ -140,13 +140,21 @@ class IrohConnection {
   /// [AgentUnavailableException] si no se puede hablar con el agente.
   Future<String> request(String rawRequest) async {
     final endpointId = _endpointId();
-    if (!isValidIrohId(endpointId)) throw AgentUnavailableException(kInvalidIrohIdMessage);
+    if (!isValidIrohId(endpointId)) {
+      throw AgentUnavailableException(
+        kInvalidIrohIdMessage,
+        cause: AgentUnavailableCause.invalidIrohId,
+      );
+    }
 
     final IrohLink link;
     try {
       link = await _connect(endpointId);
     } catch (_) {
-      throw AgentUnavailableException('No se pudo conectar con el agente por iroh');
+      throw AgentUnavailableException(
+        'No se pudo conectar con el agente por iroh',
+        cause: AgentUnavailableCause.unreachable,
+      );
     }
 
     try {
@@ -156,7 +164,10 @@ class IrohConnection {
       // que cerrarla, no solo olvidarla: si no, el Endpoint la sigue viendo
       // activa y la reconexión al mismo agente se queda colgada.
       if (identical(_link, link)) _drop();
-      throw AgentUnavailableException('El agente no respondió a tiempo');
+      throw AgentUnavailableException(
+        'El agente no respondió a tiempo',
+        cause: AgentUnavailableCause.timeout,
+      );
     }
   }
 }

@@ -52,7 +52,10 @@ List<SingleChildWidget> buildProviders({
             await settings.setAgentAddress(kDefaultAgentAddress);
             await settings.setFingerprint('');
             await settings.setIrohId('');
+            await settings.setPaired(false);
           },
+          isPaired: () => settings.paired,
+          markPaired: () => settings.setPaired(true),
         );
       },
     ),

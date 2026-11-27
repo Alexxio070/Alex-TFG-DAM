@@ -18,6 +18,7 @@ class SettingsData {
     required this.agentAddress,
     required this.fingerprint,
     required this.irohId,
+    required this.paired,
   });
 
   final bool dark;
@@ -31,6 +32,9 @@ class SettingsData {
   final String agentAddress;
   final String fingerprint;
   final String irohId;
+
+  /// El agente ha respondido bien con la dirección, la huella y el identificador guardados.
+  final bool paired;
 }
 
 /// Carga y guarda [SettingsData].
