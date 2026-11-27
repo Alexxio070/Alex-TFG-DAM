@@ -1,4 +1,4 @@
-// PLACEHOLDER: shell simulado mientras el agente no abra terminales reales (fase 4). No es código
+// PLACEHOLDER: shell simulado mientras el agente no abra terminales reales (fase 5). No es código
 // muerto: lo usa main.dart, una instancia por pestaña.
 
 import 'dart:async';

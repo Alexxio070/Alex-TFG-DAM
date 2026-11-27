@@ -14,5 +14,5 @@ class HistorySection(Container):
     def on_mount(self) -> None:
         table = self.query_one("#history-table", DataTable)
         table.add_columns("Fecha y hora", "Origen", "Comando")
-        # TODO: combinar `ejecucion` (MACRO, fase 7) con el log de comandos de
-        # terminal (TERMINAL, fase 4) solo al mostrarlos, ordenado por fecha.
+        # TODO: combinar `ejecucion` (MACRO, fase 5) con el log de comandos de
+        # terminal (TERMINAL, fase 5) solo al mostrarlos, ordenado por fecha.
