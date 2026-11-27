@@ -86,11 +86,10 @@ Noviembre de 2026. La app y el agente ya tienen login: se crea la cuenta con un 
 - [x] Agente con métricas reales y TUI
 - [x] Acceso remoto por iroh
 - [x] Login, emparejamiento seguro y cifrado (TLS)
-- [ ] Terminal remota real
 - [ ] Instalación del agente como servicio del sistema
-- [ ] Procesos
-- [ ] Acciones rápidas
+- [ ] Terminal remota real y acciones rápidas
 - [ ] Notificaciones y reglas de alerta
+- [ ] Procesos
 - [ ] Notas compartidas entre móvil y PC
 - [ ] Escáner de QR en la app y descubrimiento automático en red local (la TUI ya muestra el QR)
 
