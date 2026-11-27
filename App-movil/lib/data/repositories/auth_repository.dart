@@ -28,8 +28,8 @@ abstract class AuthRepository {
   Future<LoginRequestStatus> checkLoginRequest(String solicitudId);
 
   /// Comprueba que el token guardado sigue siendo válido, sin pedir la
-  /// contraseña. Lanza [NotAuthenticatedException] o [UnpairedException] si
-  /// no lo es.
+  /// contraseña. Lanza [NotAuthenticatedException], [SessionExpiredException]
+  /// o [UnpairedException] si no lo es.
   Future<SessionInfo> session();
 
   /// Cierra la sesión en el agente.

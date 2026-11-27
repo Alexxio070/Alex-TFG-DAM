@@ -178,11 +178,13 @@ void main() {
     expect(session.creada.toUtc(), DateTime.utc(2026, 12, 20, 17, 30));
   });
 
-  test('un 401 no_autenticado o desemparejado se distingue', () async {
+  test('un 401 no_autenticado, sesion_caducada o desemparejado se distingue', () async {
     final noAuth = repoWith((_) => _json(401, {'error': 'no_autenticado', 'mensaje': 'x'}));
+    final caducada = repoWith((_) => _json(401, {'error': 'sesion_caducada', 'mensaje': 'x'}));
     final desemp = repoWith((_) => _json(401, {'error': 'desemparejado', 'mensaje': 'x'}));
 
     expect(() => noAuth.session(), throwsA(isA<NotAuthenticatedException>()));
+    expect(() => caducada.session(), throwsA(isA<SessionExpiredException>()));
     expect(() => desemp.session(), throwsA(isA<UnpairedException>()));
   });
 
