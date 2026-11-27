@@ -61,7 +61,15 @@ def _abrir_sesion(connection: sqlite3.Connection, usuario_id: int, dispositivo: 
     if anterior is not None:
         sesion_repository.revocar(connection, anterior.id, "caducada")
     token = token_service.generar()
-    sesion_repository.crear(connection, usuario_id, token_service.hashear(token), dispositivo)
+    ahora = _ahora()
+    sesion_repository.crear(
+        connection,
+        usuario_id,
+        token_service.hashear(token),
+        dispositivo,
+        ahora.isoformat(),
+        token_service.calcular_caducidad(ahora).isoformat(),
+    )
     return token
 
 

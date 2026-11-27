@@ -22,6 +22,7 @@ class Sesion(BaseModel):
     hash_token: str
     dispositivo: str
     creado_en: str
+    caduca_en: str
     ultimo_acceso: str
     revocada: bool
     motivo_revocacion: str | None

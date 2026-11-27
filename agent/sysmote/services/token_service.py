@@ -9,6 +9,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 INACTIVIDAD_MAXIMA = timedelta(days=30)
+DURACION_SESION = timedelta(days=7)
 
 
 def generar() -> str:
@@ -19,6 +20,11 @@ def generar() -> str:
 def hashear(token: str) -> str:
     """Devuelve el SHA-256 del token en hexadecimal, que es lo que se guarda en la base de datos."""
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def calcular_caducidad(creado_en: datetime) -> datetime:
+    """Devuelve cuándo caduca una sesión creada en `creado_en`: 7 días después."""
+    return creado_en + DURACION_SESION
 
 
 def esta_caducada(ultimo_acceso: str) -> bool:

@@ -324,6 +324,18 @@ def test_autenticar_sin_token_o_con_token_desconocido(connection):
     )
 
 
+def test_la_sesion_nueva_guarda_su_caducidad_a_los_7_dias_de_crearse(connection):
+    resultado = _cuenta(connection)
+
+    sesion = sesion_repository.obtener_por_hash_token(
+        connection, token_service.hashear(resultado["token"])
+    )
+
+    assert datetime.fromisoformat(sesion.caduca_en) - datetime.fromisoformat(
+        sesion.creado_en
+    ) == timedelta(days=7)
+
+
 def test_autenticar_renueva_el_ultimo_acceso(connection):
     resultado = _cuenta(connection)
     connection.execute("UPDATE sesion SET ultimo_acceso = ?", (_en(timedelta(days=-10)),))
