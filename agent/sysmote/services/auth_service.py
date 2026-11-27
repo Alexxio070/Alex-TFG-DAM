@@ -222,15 +222,18 @@ def autenticar(connection: sqlite3.Connection, token: str | None) -> Sesion:
     """Devuelve la sesión de un token y anota su último acceso (no alarga la caducidad).
 
     Raises:
-        AuthError: `desemparejado` si la sesión se revocó al desemparejar; `no_autenticado` en
-            cualquier otro caso (sin token, token desconocido, caducado o revocado).
+        AuthError: `sesion_caducada` si la sesión ya pasó su `caduca_en` (también si estaba
+            revocada); `desemparejado` si se revocó al desemparejar y aún no ha caducado;
+            `no_autenticado` en cualquier otro caso (sin token, token desconocido o revocado).
     """
     no_autenticado = AuthError("no_autenticado", "Hace falta iniciar sesión")
     if not token:
         raise no_autenticado
     sesion = sesion_repository.obtener_por_hash_token(connection, token_service.hashear(token))
-    if sesion is None or token_service.esta_caducada(sesion.caduca_en, _ahora()):
+    if sesion is None:
         raise no_autenticado
+    if token_service.esta_caducada(sesion.caduca_en, _ahora()):
+        raise AuthError("sesion_caducada", "La sesión ha caducado. Inicia sesión de nuevo.")
     if sesion.revocada:
         if sesion.motivo_revocacion == "desemparejado":
             raise AuthError("desemparejado", "El dispositivo fue desemparejado")

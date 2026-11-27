@@ -338,9 +338,57 @@ def test_la_sesion_deja_de_valer_a_los_7_dias_de_iniciarla(connection, reloj):
     reloj.avanzar(timedelta(seconds=1))
     assert (
         _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
-        == "no_autenticado"
+        == "sesion_caducada"
     )
     assert auth_service.estado(connection)["sesion_activa"] is False
+
+
+def test_un_token_desconocido_o_mal_formado_sigue_dando_no_autenticado_aunque_haya_sesiones(
+    connection, reloj
+):
+    _cuenta(connection)
+    reloj.avanzar(timedelta(days=30))
+
+    for token in ("inventado", "no es un token!", "A" * 43):
+        assert (
+            _codigo_de_error(lambda t=token: auth_service.autenticar(connection, t))
+            == "no_autenticado"
+        )
+
+
+def test_una_sesion_cerrada_antes_de_caducar_da_no_autenticado_y_despues_sesion_caducada(
+    connection, reloj
+):
+    resultado = _cuenta(connection)
+    auth_service.cerrar_sesion(connection, auth_service.autenticar(connection, resultado["token"]))
+
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "no_autenticado"
+    )
+    reloj.avanzar(timedelta(days=7))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "sesion_caducada"
+    )
+
+
+def test_una_sesion_desemparejada_da_desemparejado_hasta_su_caduca_en_y_despues_sesion_caducada(
+    connection, reloj
+):
+    resultado = _cuenta(connection)
+    auth_service.desemparejar_sesion_activa(connection)
+
+    reloj.avanzar(timedelta(days=7) - timedelta(seconds=1))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "desemparejado"
+    )
+    reloj.avanzar(timedelta(seconds=1))
+    assert (
+        _codigo_de_error(lambda: auth_service.autenticar(connection, resultado["token"]))
+        == "sesion_caducada"
+    )
 
 
 def test_con_la_sesion_caducada_el_login_no_pide_confirmacion(connection, reloj):
@@ -361,7 +409,7 @@ def test_usar_la_sesion_no_alarga_su_caducidad(connection, reloj):
     reloj.avanzar(timedelta(days=1))  # día 7: caduca aunque se usara el día anterior
     assert (
         _codigo_de_error(lambda: auth_service.autenticar(connection, primera["token"]))
-        == "no_autenticado"
+        == "sesion_caducada"
     )
 
 

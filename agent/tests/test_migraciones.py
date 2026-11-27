@@ -7,7 +7,8 @@ import pytest
 
 from sysmote import database, migraciones, rutas
 from sysmote.repositories import usuario_repository
-from sysmote.services import token_service
+from sysmote.services import auth_service, token_service
+from sysmote.services.auth_service import AuthError
 
 ANADIR_APODO = (("ALTER TABLE usuario ADD COLUMN apodo TEXT",),)
 
@@ -185,4 +186,21 @@ def test_la_migracion_1_da_a_cada_sesion_creado_en_mas_7_dias_y_no_toca_nada_mas
         creado_en, caduca_en = datetime.fromisoformat(fila[4]), datetime.fromisoformat(fila[-1])
         assert caduca_en.tzinfo is not None
         assert abs(caduca_en - creado_en - timedelta(days=7)) < timedelta(milliseconds=1)
+    connection.close()
+
+
+def test_tras_la_migracion_las_sesiones_ya_vencidas_fallan_y_las_vigentes_siguen():
+    _crear_base_del_esquema_1(
+        1,
+        [("vigente", 2, None), ("vencida", 10, None), ("desemparejada", 3, "desemparejado")],
+    )
+    connection = database.connect()
+
+    assert auth_service.autenticar(connection, "vigente").dispositivo == "Pixel 8"
+    with pytest.raises(AuthError) as vencida:
+        auth_service.autenticar(connection, "vencida")
+    assert vencida.value.codigo == "sesion_caducada"
+    with pytest.raises(AuthError) as desemparejada:
+        auth_service.autenticar(connection, "desemparejada")
+    assert desemparejada.value.codigo == "desemparejado"
     connection.close()

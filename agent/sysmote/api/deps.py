@@ -26,7 +26,8 @@ def requiere_sesion(
     """Devuelve la sesión del token `Authorization: Bearer <token>`.
 
     Raises:
-        AuthError: si falta el token, no es válido, caducó o fue revocado (la API responde 401).
+        AuthError: si falta el token, no es válido, caducó (`sesion_caducada`) o fue revocado
+            (la API responde 401).
     """
     esquema, _, token = (authorization or "").partition(" ")
     return auth_service.autenticar(connection, token if esquema.lower() == "bearer" else None)
